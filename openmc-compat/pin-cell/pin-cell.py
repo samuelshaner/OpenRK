@@ -40,7 +40,7 @@ bottom.setBoundaryType(REFLECTIVE)
 log.py_printf('NORMAL', 'Creating cells...')
 
 cells = []
-cells.append(CellBasic(universe=1, material=uo2_id))
+cells.append(CellBasic(universe=1, material=uo2_id, rings=2, sectors=8))
 cells.append(CellBasic(universe=1, material=water_id))
 cells.append(CellFill(universe=0, universe_fill=2))
 
@@ -75,6 +75,22 @@ for cell in cells: geometry.addCell(cell)
 geometry.addLattice(lattice)
 
 
+###############################################################################
+###################   Exporting to OpenMC XML Input Files  ####################
+###############################################################################
 
 
-openmc.create_geometry_file(geometry)
+geometry_file = openmc.GeometryFile()
+geometry_file.createGeometrySubelements(geometry)
+geometry_file.exportToXML()
+
+settings_file = openmc.SettingsFile()
+settings_file.createEigenvalueSubelement()
+settings_file.createOutputSubelement(['tallies'])
+settings_file.createStatepointSubelement(batches=[1,2,3,4,5])
+settings_file.createSourceSpaceSubelement(type='box', params=[-1,-1,-1,1,1,1])
+settings_file.exportToXML()
+
+plot_file = openmc.PlotsFile()
+plot_file.addNewPlot(id=1, width=[4.0,4.0], origin=[0.,0.,0.], pixels=[100,100])
+plot_file.exportToXML()
