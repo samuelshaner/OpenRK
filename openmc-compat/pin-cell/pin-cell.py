@@ -94,3 +94,34 @@ settings_file.exportToXML()
 plot_file = openmc.PlotsFile()
 plot_file.addNewPlot(id=1, width=[4.0,4.0], origin=[0.,0.,0.], pixels=[100,100])
 plot_file.exportToXML()
+
+
+h1 = Isotope(isotope_id(), 'H-1')
+o16 = Isotope(isotope_id(), 'O-16')
+u234 = Isotope(isotope_id(), 'U-234')
+u235 = Isotope(isotope_id(), 'U-235')
+u238 = Isotope(isotope_id(), 'U-238')
+h1.setNumEnergyGroups(7)
+o16.setNumEnergyGroups(7)
+u234.setNumEnergyGroups(7)
+u235.setNumEnergyGroups(7)
+u238.setNumEnergyGroups(7)
+
+h2o = IsoMaterial(material_id(), 'H2O')
+h2o.setDensity(0.99, 'g/cc')
+h2o.addIsotope(h1, 2.0)
+h2o.addIsotope(o16, 1.0)
+
+u2o = IsoMaterial(material_id(), 'UO2')
+u2o.setDensity(10., 'g/cc')
+u2o.addIsotope(o16, 2.0)
+u2o.addIsotope(u234, 0.001)
+u2o.addIsotope(u235, 0.04)
+u2o.addIsotope(u238, 0.959)
+
+materials = [u2o, h2o]
+
+materials_file = openmc.MaterialsFile()
+materials_file.createDefaultXSSubelement()
+materials_file.createMaterialsSubelements(materials)
+materials_file.exportToXML()
