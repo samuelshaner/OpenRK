@@ -10,7 +10,7 @@ import openmoc.compatible.openmc as openmc
 
 log.py_printf('NORMAL', 'Creating Isotopes...')
 
-# 3.1% enriched uranium fuel
+# 2.4% enriched uranium fuel
 u234 = openmc.Isotope(isotope_id(), 'U-234')
 u235 = openmc.Isotope(isotope_id(), 'U-235')
 u238 = openmc.Isotope(isotope_id(), 'U-238')
@@ -50,6 +50,30 @@ sn120 = openmc.Isotope(isotope_id(), 'Sn-120')
 sn122 = openmc.Isotope(isotope_id(), 'Sn-122')
 sn124 = openmc.Isotope(isotope_id(), 'Sn-124')
 
+# Air
+c12 = openmc.Isotope(isotope_id(), 'C-12')
+c13 = openmc.Isotope(isotope_id(), 'C-13')
+o16 = openmc.Isotope(isotope_id(), 'O-16')
+n14 = openmc.Isotope(isotope_id(), 'N-14')
+n15 = openmc.Isotope(isotope_id(), 'N-15')
+ar36 = openmc.Isotope(isotope_id(), 'Ar-36')
+ar38 = openmc.Isotope(isotope_id(), 'Ar-38')
+ar40 = openmc.Isotope(isotope_id(), 'Ar-40')
+
+# Borosilicate glass
+al27 = openmc.Isotope(isotope_id(), 'Al-27')
+si28 = openmc.Isotope(isotope_id(), 'Si-28')
+si29 = openmc.Isotope(isotope_id(), 'Si-29')
+si30 = openmc.Isotope(isotope_id(), 'Si-30')
+
+# Stainless steel
+mn55 = openmc.Isotope(isotope_id(), 'Mn-55')
+ni58 = openmc.Isotope(isotope_id(), 'Ni-58')
+ni60 = openmc.Isotope(isotope_id(), 'Ni-60')
+ni61 = openmc.Isotope(isotope_id(), 'Ni-61')
+ni62 = openmc.Isotope(isotope_id(), 'Ni-62')
+ni64 = openmc.Isotope(isotope_id(), 'Ni-64')
+
 u234.setNumEnergyGroups(1)
 u235.setNumEnergyGroups(1)
 u238.setNumEnergyGroups(1)
@@ -82,6 +106,23 @@ sn119.setNumEnergyGroups(1)
 sn120.setNumEnergyGroups(1)
 sn122.setNumEnergyGroups(1)
 sn124.setNumEnergyGroups(1)
+c12.setNumEnergyGroups(1)
+c13.setNumEnergyGroups(1)
+n14.setNumEnergyGroups(1)
+n15.setNumEnergyGroups(1)
+ar36.setNumEnergyGroups(1)
+ar38.setNumEnergyGroups(1)
+ar40.setNumEnergyGroups(1)
+al27.setNumEnergyGroups(1)
+si28.setNumEnergyGroups(1)
+si29.setNumEnergyGroups(1)
+si30.setNumEnergyGroups(1)
+mn55.setNumEnergyGroups(1)
+ni58.setNumEnergyGroups(1)
+ni60.setNumEnergyGroups(1)
+ni61.setNumEnergyGroups(1)
+ni62.setNumEnergyGroups(1)
+ni64.setNumEnergyGroups(1)
 
 
 
@@ -93,10 +134,10 @@ log.py_printf('NORMAL', 'Creating Materials...')
 
 fuel = openmc.IsoMaterial(material_id(), '1.6% Enr. Fuel')
 fuel.setNumEnergyGroups(1)
-fuel.setDensity(10.30166, 'g/cc')
-fuel.addIsotope(u234, 5.7987e-6)
-fuel.addIsotope(u235, 7.2175e-4)
-fuel.addIsotope(u238, 2.2253e-2)
+fuel.setDensity(10.29748, 'g/cc')
+fuel.addIsotope(u234, 4.4842E-6)
+fuel.addIsotope(u235, 5.5814e-4)
+fuel.addIsotope(u238, 2.2407e-2)
 fuel.addIsotope(o16, 4.5940e-2)    # Includes O-17 and O-18 number densities
 
 moderator = openmc.IsoMaterial(material_id(), 'Moderator')
@@ -141,6 +182,49 @@ clad.addIsotope(sn120, 1.5697e-4)
 clad.addIsotope(sn122, 2.2308e-5)
 clad.addIsotope(sn124, 2.7897e-5)
 
+air = openmc.IsoMaterial(material_id(), 'Air')
+air.setNumEnergyGroups(1)
+air.setDensity(0.000616, 'g/cc')
+#air.addIsotope(c12, 6.7565e-9)       # Unavailable in cross-section library?
+#air.addIsotope(c13, 7.3706e-11)      # Unavailable in cross-section library?
+air.addIsotope(o16, 5.2993e-6)        # Includes O-17 and O-18 number densities
+air.addIsotope(n14, 1.9681e-5)
+air.addIsotope(n15, 7.1900e-8)
+air.addIsotope(ar36, 7.9414e-10)
+air.addIsotope(ar38, 1.4915e-10)
+air.addIsotope(ar40, 2.3506e-7)
+
+boroglass = openmc.IsoMaterial(material_id(), 'Borosilicate Glass')
+boroglass.setNumEnergyGroups(1)
+boroglass.setDensity(2.26000, 'g/cc')
+boroglass.addIsotope(b10, 9.6506e-4)
+boroglass.addIsotope(b11, 3.9189e-3)
+boroglass.addIsotope(o16, 4.6624e-2)   # Includes O-17 and O-18 number densities
+boroglass.addIsotope(al27, 1.7352e-3)
+boroglass.addIsotope(si28, 1.6924e-2)
+boroglass.addIsotope(si29, 8.5977e-4)
+boroglass.addIsotope(si30, 5.6743e-4)
+
+steel = openmc.IsoMaterial(material_id(), 'Stainless Steel')
+steel.setNumEnergyGroups(1)
+steel.setDensity(8.0300, 'g/cc')
+steel.addIsotope(si28, 9.5274e-4)
+steel.addIsotope(si29, 4.8400e-5)
+steel.addIsotope(si30, 3.1943e-5)
+steel.addIsotope(cr50, 7.6778e-4)
+steel.addIsotope(cr52, 1.4806e-2)
+steel.addIsotope(cr53, 1.6789e-3)
+steel.addIsotope(cr54, 4.1791e-4)
+steel.addIsotope(mn55, 1.7604e-3)
+steel.addIsotope(fe54, 3.4620e-3)
+steel.addIsotope(fe56, 5.4345e-2)
+steel.addIsotope(fe57, 1.2551e-3)
+steel.addIsotope(fe58, 1.6703e-4)
+steel.addIsotope(ni58, 5.6089e-3)
+steel.addIsotope(ni60, 2.1605e-3)
+steel.addIsotope(ni61, 9.3917e-5)
+steel.addIsotope(ni62, 2.9945e-4)
+steel.addIsotope(ni64, 7.6261e-5)
 
 
 ###############################################################################
@@ -158,9 +242,19 @@ surfaces = {}
 
 surfaces['Fuel Radius'] = Circle(x=0.0, y=0.0, radius=0.39218)
 surfaces['Gap Radius'] = Circle(x=0.0, y=0.0, radius=0.40005)
+
 surfaces['Fuel Clad Radius'] = Circle(x=0.0, y=0.0, radius=0.45720)
 surfaces['GT Radius'] = Circle(x=0.0, y=0.0, radius=0.50419)
 surfaces['GT Clad Radius'] = Circle(x=0.0, y=0.0, radius=0.54610)
+
+surfaces['BP Radius 1'] = Circle(x=0.0, y=0.0, radius=0.21400)
+surfaces['BP Radius 2'] = Circle(x=0.0, y=0.0, radius=0.23051)
+surfaces['BP Radius 3'] = Circle(x=0.0, y=0.0, radius=0.24130)
+surfaces['BP Radius 4'] = Circle(x=0.0, y=0.0, radius=0.42672)
+surfaces['BP Radius 5'] = Circle(x=0.0, y=0.0, radius=0.43688)
+surfaces['BP Radius 6'] = Circle(x=0.0, y=0.0, radius=0.48387)
+surfaces['BP Radius 7'] = Circle(x=0.0, y=0.0, radius=0.56134)
+surfaces['BP Radius 8'] = Circle(x=0.0, y=0.0, radius=0.60198)
 
 surfaces['Left Boundary'] = XPlane(x=-lattice_width / 2.)
 surfaces['Right Boundary'] = XPlane(x=lattice_width / 2.)
@@ -228,6 +322,55 @@ universes[2].append(clad_region)
 universes[2].append(outer_water_region)
 
 
+
+# Burnable absorber
+universes[3] = []
+
+region1 = CellBasic(universe=3, material=air.getId(), sectors=4)
+region1.addSurface(halfspace=-1, surface=surfaces['BP Radius 1'])
+
+region2 = CellBasic(universe=3, material=steel.getId(), sectors=4)
+region2.addSurface(halfspace=-1, surface=surfaces['BP Radius 2'])
+region2.addSurface(halfspace=+1, surface=surfaces['BP Radius 1'])
+
+region3 = CellBasic(universe=3, material=air.getId(), sectors=4)
+region3.addSurface(halfspace=-1, surface=surfaces['BP Radius 3'])
+region3.addSurface(halfspace=+1, surface=surfaces['BP Radius 2'])
+
+region4 = CellBasic(universe=3, material=boroglass.getId(), sectors=4)
+region4.addSurface(halfspace=-1, surface=surfaces['BP Radius 4'])
+region4.addSurface(halfspace=+1, surface=surfaces['BP Radius 3'])
+
+region5 = CellBasic(universe=3, material=air.getId(), sectors=4)
+region5.addSurface(halfspace=-1, surface=surfaces['BP Radius 5'])
+region5.addSurface(halfspace=+1, surface=surfaces['BP Radius 4'])
+
+region6 = CellBasic(universe=3, material=steel.getId(), sectors=4)
+region6.addSurface(halfspace=-1, surface=surfaces['BP Radius 6'])
+region6.addSurface(halfspace=+1, surface=surfaces['BP Radius 5'])
+
+region7 = CellBasic(universe=3, material=moderator.getId(), sectors=4)
+region7.addSurface(halfspace=-1, surface=surfaces['BP Radius 7'])
+region7.addSurface(halfspace=+1, surface=surfaces['BP Radius 6'])
+
+region8 = CellBasic(universe=3, material=clad.getId(), sectors=4)
+region8.addSurface(halfspace=-1, surface=surfaces['BP Radius 8'])
+region8.addSurface(halfspace=+1, surface=surfaces['BP Radius 7'])
+
+region9 = CellBasic(universe=3, material=moderator.getId())
+region9.addSurface(halfspace=+1, surface=surfaces['BP Radius 8'])
+
+universes[3].append(region1)
+universes[3].append(region2)
+universes[3].append(region3)
+universes[3].append(region4)
+universes[3].append(region5)
+universes[3].append(region6)
+universes[3].append(region7)
+universes[3].append(region8)
+universes[3].append(region9)
+
+
 # Root cell - full geometry
 universes[0] = []
 root = CellFill(universe=0, universe_fill=10)
@@ -250,19 +393,19 @@ log.py_printf('NORMAL', 'Creating Lattices...')
 lattice = Lattice(id=10, width_x=pitch, width_y=pitch)
 lattice.setLatticeCells([[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
                          [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-                         [1,1,1,1,1,2,1,1,2,1,1,2,1,1,1,1,1],
-                         [1,1,1,2,1,1,1,1,1,1,1,1,1,2,1,1,1],
+                         [1,1,1,1,1,3,1,1,2,1,1,3,1,1,1,1,1],
+                         [1,1,1,3,1,1,1,1,1,1,1,1,1,3,1,1,1],
                          [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-                         [1,1,2,1,1,2,1,1,2,1,1,2,1,1,2,1,1],
-                         [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-                         [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-                         [1,1,2,1,1,2,1,1,2,1,1,2,1,1,2,1,1],
+                         [1,1,3,1,1,2,1,1,2,1,1,2,1,1,3,1,1],
                          [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
                          [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
                          [1,1,2,1,1,2,1,1,2,1,1,2,1,1,2,1,1],
                          [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-                         [1,1,1,2,1,1,1,1,1,1,1,1,1,2,1,1,1],
-                         [1,1,1,1,1,2,1,1,2,1,1,2,1,1,1,1,1],
+                         [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                         [1,1,3,1,1,2,1,1,2,1,1,2,1,1,3,1,1],
+                         [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                         [1,1,1,3,1,1,1,1,1,1,1,1,1,3,1,1,1],
+                         [1,1,1,1,1,3,1,1,2,1,1,3,1,1,1,1,1],
                          [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
                          [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]])
 
@@ -279,6 +422,9 @@ geometry.addMaterial(fuel)
 geometry.addMaterial(moderator)
 geometry.addMaterial(gap)
 geometry.addMaterial(clad)
+geometry.addMaterial(air)
+geometry.addMaterial(boroglass)
+geometry.addMaterial(steel)
 
 for cells in universes.values():
   for cell in cells:
@@ -318,6 +464,9 @@ materials_file.createMaterialSubelement(fuel)
 materials_file.createMaterialSubelement(moderator)
 materials_file.createMaterialSubelement(gap)
 materials_file.createMaterialSubelement(clad)
+materials_file.createMaterialSubelement(air)
+materials_file.createMaterialSubelement(boroglass)
+materials_file.createMaterialSubelement(steel)
 materials_file.exportToXML()
 
 # geometry.xml
