@@ -59,3 +59,10 @@ simulation-state/*
 .idea/*
 .idea/*.xml
 
+# OpenMC files
+*.h5
+*/*.h5
+*.ppm
+*/*.ppm
+*.out
+*/*.out
