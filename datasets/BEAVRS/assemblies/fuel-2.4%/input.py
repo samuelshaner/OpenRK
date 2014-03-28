@@ -91,7 +91,7 @@ sn124.setNumEnergyGroups(1)
 
 log.py_printf('NORMAL', 'Creating Materials...')
 
-fuel = openmc.IsoMaterial(material_id(), '1.6% Enr. Fuel')
+fuel = openmc.IsoMaterial(material_id(), '2.4% Enr. Fuel')
 fuel.setNumEnergyGroups(1)
 fuel.setDensity(10.29748, 'g/cc')
 fuel.addIsotope(u234, 4.4842E-6)

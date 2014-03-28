@@ -10,7 +10,7 @@ import openmoc.compatible.openmc as openmc
 
 log.py_printf('NORMAL', 'Creating Isotopes...')
 
-# 2.4% enriched uranium fuel
+# 3.1% enriched uranium fuel
 u234 = openmc.Isotope(isotope_id(), 'U-234')
 u235 = openmc.Isotope(isotope_id(), 'U-235')
 u238 = openmc.Isotope(isotope_id(), 'U-238')
@@ -132,12 +132,12 @@ ni64.setNumEnergyGroups(1)
 
 log.py_printf('NORMAL', 'Creating Materials...')
 
-fuel = openmc.IsoMaterial(material_id(), '2.4% Enr. Fuel')
+fuel = openmc.IsoMaterial(material_id(), '3.1% Enr. Fuel')
 fuel.setNumEnergyGroups(1)
-fuel.setDensity(10.29748, 'g/cc')
-fuel.addIsotope(u234, 4.4842E-6)
-fuel.addIsotope(u235, 5.5814e-4)
-fuel.addIsotope(u238, 2.2407e-2)
+fuel.setDensity(10.30166, 'g/cc')
+fuel.addIsotope(u234, 5.7987e-6)
+fuel.addIsotope(u235, 7.2175e-4)
+fuel.addIsotope(u238, 2.2253e-2)
 fuel.addIsotope(o16, 4.5940e-2)    # Includes O-17 and O-18 number densities
 
 moderator = openmc.IsoMaterial(material_id(), 'Moderator')
@@ -402,10 +402,10 @@ lattice.setLatticeCells([[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
                          [1,1,2,1,1,2,1,1,2,1,1,2,1,1,2,1,1],
                          [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
                          [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-                         [1,1,3,1,1,2,1,1,2,1,1,2,1,1,3,1,1],
+                         [1,1,2,1,1,2,1,1,2,1,1,2,1,1,2,1,1],
                          [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-                         [1,1,1,3,1,1,1,1,1,1,1,1,1,3,1,1,1],
-                         [1,1,1,1,1,3,1,1,2,1,1,3,1,1,1,1,1],
+                         [1,1,1,2,1,1,1,1,1,1,1,1,1,2,1,1,1],
+                         [1,1,1,1,1,2,1,1,2,1,1,2,1,1,1,1,1],
                          [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
                          [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]])
 
