@@ -2,6 +2,10 @@ from openmoc import *
 import openmoc.log as log
 import openmoc.compatible.openmc as openmc
 
+from materials import *
+
+global materials
+print materials
 
 
 ###############################################################################
