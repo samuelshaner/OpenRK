@@ -93,11 +93,11 @@ log.py_printf('NORMAL', 'Creating Materials...')
 
 fuel = openmc.IsoMaterial(material_id(), '1.6% Enr. Fuel')
 fuel.setNumEnergyGroups(1)
-fuel.setDensity(10.31341, 'g/cc')
-fuel.addIsotope(u234, 3.0131e-6)
-fuel.addIsotope(u235, 3.7503e-4)
-fuel.addIsotope(u238, 2.2625e-2)
-fuel.addIsotope(o16, 4.6007e-2)    # Includes O-17 and O-18 number densities
+fuel.setDensity(10.29748, 'g/cc')
+fuel.addIsotope(u234, 4.4842E-6)
+fuel.addIsotope(u235, 5.5814e-4)
+fuel.addIsotope(u238, 2.2407e-2)
+fuel.addIsotope(o16, 4.5940e-2)    # Includes O-17 and O-18 number densities
 
 moderator = openmc.IsoMaterial(material_id(), 'Moderator')
 moderator.setNumEnergyGroups(1)
