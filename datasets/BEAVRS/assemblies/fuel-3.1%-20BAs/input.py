@@ -26,7 +26,7 @@ h2 = openmc.Isotope(isotope_id(), 'H-2')
 he4 = openmc.Isotope(isotope_id(), 'He-4')
 
 # Zircaloy
-cr50 = openmc.Isotope(isotope_id(), 'Cr-50')
+cr50 = Isotope(isotope_id(), 'Cr-50')
 cr52 = openmc.Isotope(isotope_id(), 'Cr-52')
 cr53 = openmc.Isotope(isotope_id(), 'Cr-53')
 cr54 = openmc.Isotope(isotope_id(), 'Cr-54')
