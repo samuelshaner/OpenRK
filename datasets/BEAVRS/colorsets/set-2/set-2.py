@@ -6,9 +6,7 @@ import surfaces
 import pincells
 
 
-# NOTE - This is the 3x3 geometry of 1.6% and 2.4% (16BA) assemblies found at
-#        the center of the BEAVRS core.
-
+# NOTE - This is a 3x3 geometry of 1.6% and 3.1% (16BA) enriched fuel assemblies
 
 ###############################################################################
 ###################   Simulation Input File Parameters   ######################
@@ -16,7 +14,7 @@ import pincells
 
 # Get the appropriate lattice from the lattices module
 lattice1 = lattices['1.6% Fuel - 0BA']
-lattice2 = lattices['2.4% Fuel - 16BA']
+lattice2 = lattices['3.1% Fuel - 16BA']
 lattice1_id = lattice1.getId()
 lattice2_id = lattice2.getId()
 
