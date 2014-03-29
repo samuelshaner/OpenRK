@@ -7,12 +7,27 @@ import pincells
 
 
 ###############################################################################
+###################   Simulation Input File Parameters   ######################
+###############################################################################
+
+# Get the appropriate lattice from the lattices module
+lattice = lattices['1.6% Fuel - 0BA']
+lattice_id = lattice.getId()
+
+# Height of the axial slice
+slice_height = 10.
+
+# OpenMC simulation parameters
+batches = 25
+inactive = 10
+particles = 10000
+
+
+###############################################################################
 ######################   Creating Bounding Surfaces   #########################
 ###############################################################################
 
 log.py_printf('NORMAL', 'Creating the bounding Surfaces...')
-
-slice_height = 10.
 
 boundaries = dict()
 
@@ -33,8 +48,6 @@ for index in boundaries.keys():
 ###############################################################################
 
 log.py_printf('NORMAL', 'Creating the root Universe...')
-
-lattice_id = lattices['1.6% Fuel - 0BA'].getId()
 
 # Root cell encapsulates the full geometry
 root = CellFill(universe=0, universe_fill=lattice_id)
@@ -70,7 +83,7 @@ for cell in pincells.cells:
   geometry.addCell(cell)
 
 # Add lattice to
-geometry.addLattice(lattices['1.6% Fuel - 0BA'])
+geometry.addLattice(lattice)
 
 
 
@@ -82,8 +95,9 @@ log.py_printf('NORMAL', 'Exporting to OpenMC XML Files...')
 
 # settings.xml
 settings_file = openmc.SettingsFile()
-settings_file.setBatches(25)
-settings_file.setParticles(10000)
+settings_file.setBatches(batches)
+settings_file.setInactive(inactive)
+settings_file.setParticles(particles)
 settings_file.createEigenvalueSubelement()
 
 source = [-pin_pitch/2., -pin_pitch/2., -slice_height/2.,
