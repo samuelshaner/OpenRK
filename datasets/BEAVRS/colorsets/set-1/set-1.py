@@ -11,8 +11,10 @@ import pincells
 ###############################################################################
 
 # Get the appropriate lattice from the lattices module
-lattice = lattices['3.1% Fuel - 6BA']
-lattice_id = lattice.getId()
+lattice1 = lattices['1.6% Fuel - 0BA']
+lattice2 = lattices['2.4% Fuel - 16BA']
+lattice1_id = lattice1.getId()
+lattice2_id = lattice2.getId()
 
 # Discretization of pin cells
 rings = 3
@@ -28,6 +30,28 @@ particles = 10000
 
 # Plotting parameters
 pixels = 1000
+
+
+###############################################################################
+######################   Creating Bounding Surfaces   #########################
+###############################################################################
+
+log.py_printf('NORMAL', 'Creating the bounding Surfaces...')
+
+boundaries = dict()
+
+width = lattice_width * 3.
+
+boundaries['X-Min'] = XPlane(x=-width / 2.)
+boundaries['X-Max'] = XPlane(x=width / 2.)
+boundaries['Y-Min'] = YPlane(y=-width / 2.)
+boundaries['Y-Max'] = YPlane(y=width / 2.)
+boundaries['Z-Min'] = ZPlane(z=-slice_height / 2.)
+boundaries['Z-Max'] = ZPlane(z=slice_height / 2.)
+
+for index in boundaries.keys():
+  boundaries[index].setBoundaryType(REFLECTIVE)
+  surfaces.surfaces[index] = boundaries[index]
 
 
 ###############################################################################
@@ -53,23 +77,22 @@ for pin in pincells.pincells.keys():
 
 
 ###############################################################################
-######################   Creating Bounding Surfaces   #########################
+#####################   Creating Colorset Lattice   ###########################
 ###############################################################################
 
-log.py_printf('NORMAL', 'Creating the bounding Surfaces...')
+cell1 = CellFill(universe=universe_id(), universe_fill=lattice1_id)
+cell2 = CellFill(universe=universe_id(), universe_fill=lattice2_id)
 
-boundaries = dict()
+cell1_id = cell1.getUniverseId()
+cell2_id = cell2.getUniverseId()
 
-boundaries['X-Min'] = XPlane(x=-lattice_width / 2.)
-boundaries['X-Max'] = XPlane(x=lattice_width / 2.)
-boundaries['Y-Min'] = YPlane(y=-lattice_width / 2.)
-boundaries['Y-Max'] = YPlane(y=lattice_width / 2.)
-boundaries['Z-Min'] = ZPlane(z=-slice_height / 2.)
-boundaries['Z-Max'] = ZPlane(z=slice_height / 2.)
+pincells.cells.append(cell1)
+pincells.cells.append(cell2)
 
-for index in boundaries.keys():
-  boundaries[index].setBoundaryType(REFLECTIVE)
-  surfaces.surfaces[index] = boundaries[index]
+lattice = Lattice(id=universe_id(), width_x=lattice_width, width_y=lattice_width)
+lattice.setLatticeCells([[cell2_id, cell1_id, cell2_id],
+                         [cell1_id, cell2_id, cell1_id],
+                         [cell2_id, cell1_id, cell2_id]])
 
 
 ###############################################################################
@@ -79,7 +102,7 @@ for index in boundaries.keys():
 log.py_printf('NORMAL', 'Creating the root Universe...')
 
 # Root cell encapsulates the full geometry
-root = CellFill(universe=0, universe_fill=lattice_id)
+root = CellFill(universe=0, universe_fill=lattice.getId())
 root.addSurface(halfspace=+1, surface=boundaries['X-Min'])
 root.addSurface(halfspace=-1, surface=boundaries['X-Max'])
 root.addSurface(halfspace=+1, surface=boundaries['Y-Min'])
@@ -111,9 +134,10 @@ for surface in surfaces.surfaces.values():
 for cell in pincells.cells:
   geometry.addCell(cell)
 
-# Add lattice to
+# Add all Lattices to the Geometry
+geometry.addLattice(lattice1)
+geometry.addLattice(lattice2)
 geometry.addLattice(lattice)
-
 
 
 ###############################################################################

@@ -26,6 +26,9 @@ batches = 25
 inactive = 10
 particles = 10000
 
+# Plotting parameters
+pixels = 1000
+
 
 ###############################################################################
 #########################   Discretize Pin Cells  #############################
@@ -134,8 +137,9 @@ settings_file.exportToXML()
 
 # plots.xml
 plot_file = openmc.PlotsFile()
-plot_file.addNewPlot(id=1, width=[lattice_width, lattice_width],
-                     origin=[0.,0.,0.], pixels=[1000,1000])
+plot_file.addNewPlot(id=1, width=[geometry.getXMax()-geometry.getXMin(),
+                                  geometry.getXMax()-geometry.getXMin()],
+                     origin=[0.,0.,0.], pixels=[pixels,pixels])
 plot_file.exportToXML()
 
 # materials.xml
