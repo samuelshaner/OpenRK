@@ -3,6 +3,11 @@ import openmoc.log as log
 import openmoc.compatible.openmc as openmc
 
 
+from lattices import *
+
+print lattices
+
+
 ###############################################################################
 ############################   Creating Isotopes   ############################
 ###############################################################################
