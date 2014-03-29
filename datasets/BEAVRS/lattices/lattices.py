@@ -20,17 +20,23 @@ lattice_width = lattice_pin_dims * pin_pitch               # Lattice width [cm]
 
 cells = templates['0BA']
 
-# Fuel Pins
-univ_id = pincells['1.6% Fuel']['Universe']
-cells = [univ_id if x is masks['Fuel Pin'] else x for x in cells]
+for i in range(len(cells)):
 
-# Guide Tubes
-univ_id = pincells['Guide Tube']['Universe']
-cells = [univ_id if x is masks['Guide Tube'] else x for x in cells]
+  row = cells[i]
 
-# Instrument Tubes
-univ_id = pincells['Instrument Tube']['Universe']
-cells = [univ_id if x is masks['Instrument Tube'] else x for x in cells]
+  # Fuel Pins
+  univ_id = pincells['1.6% Fuel']['Universe']
+  row = [univ_id if x == masks['Fuel Pin'] else x for x in row]
+
+  # Guide Tubes
+  univ_id = pincells['Guide Tube']['Universe']
+  row = [univ_id if x == masks['Guide Tube'] else x for x in row]
+
+  # Instrument Tubes
+  univ_id = pincells['Instrument Tube']['Universe']
+  row = [univ_id if x == masks['Instrument Tube'] else x for x in row]
+
+  cells[i] = row
 
 lattice = Lattice(id=universe_id(), width_x=pin_pitch, width_y=pin_pitch)
 lattice.setLatticeCells(cells)
