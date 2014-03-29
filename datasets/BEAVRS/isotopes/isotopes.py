@@ -1,7 +1,7 @@
 from openmoc import *
 
 # Keys are Isotope string names and values are OpenMOC Isotopes.
-isotopes = {}
+isotopes = dict()
 
 ################################################################################
 ###########################  Initialize Isotopes  ##############################

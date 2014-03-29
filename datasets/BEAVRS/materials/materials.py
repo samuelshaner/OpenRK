@@ -3,7 +3,7 @@ from isotopes import *
 
 # Keys are string material names and values are OpenMOC IsoMaterials filled
 # with Isotopes
-materials = {}
+materials = dict()
 
 
 ################################################################################
