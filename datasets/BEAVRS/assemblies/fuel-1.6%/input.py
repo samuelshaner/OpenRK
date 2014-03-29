@@ -3,9 +3,11 @@ import openmoc.log as log
 import openmoc.compatible.openmc as openmc
 
 from pincells import *
+from materials import *
 
-global pincells
 print pincells
+print materials
+
 
 
 ###############################################################################
