@@ -14,6 +14,10 @@ import pincells
 lattice = lattices['2.4% Fuel - 12BA']
 lattice_id = lattice.getId()
 
+# Discretization of pin cells
+rings = 3
+sectors = 4
+
 # Height of the axial slice
 slice_height = 10.
 
@@ -21,6 +25,28 @@ slice_height = 10.
 batches = 25
 inactive = 10
 particles = 10000
+
+
+###############################################################################
+#########################   Discretize Pin Cells  #############################
+###############################################################################
+
+# Loop over all pin types
+for pin in pincells.pincells.keys():
+
+  # Loop over all cells for this pin type
+  for cell in pincells.pincells[pin].keys():
+
+    # Ignore the Universe entry
+    if cell == 'Universe':
+      continue
+
+    # Set the number of sectors
+    pincells.pincells[pin][cell].setNumSectors(sectors)
+
+    # Set the number of rings in the fuel
+    if 'Fuel' in cell:
+      pincells.pincells[pin][cell].setNumRings(rings)
 
 
 ###############################################################################
