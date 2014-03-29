@@ -38,7 +38,7 @@ bottom.setBoundaryType(REFLECTIVE)
 #############################   Creating Cells   ##############################
 ###############################################################################
 
-log.py_printf('NORMAL', 'Creating cells...')
+log.py_printf('NORMAL', 'Creating pincells...')
 
 cells = []
 cells.append(CellBasic(universe=1, material=10008, rings=2, sectors=4))

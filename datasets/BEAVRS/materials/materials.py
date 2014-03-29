@@ -4,29 +4,29 @@ global isotopes
 
 materials = {}
 
-materials['1.6% Enr. Fuel'] = IsoMaterial(material_id(), '1.6% Enr. Fuel')
-materials['1.6% Enr. Fuel'].setNumEnergyGroups(1)
-materials['1.6% Enr. Fuel'].setDensity(10.31341, 'g/cc')
-materials['1.6% Enr. Fuel'].addIsotope(isotopes['U-234'], 3.0131e-6)
-materials['1.6% Enr. Fuel'].addIsotope(isotopes['U-235'], 3.7503e-4)
-materials['1.6% Enr. Fuel'].addIsotope(isotopes['U-238'], 2.2625e-2)
-materials['1.6% Enr. Fuel'].addIsotope(isotopes['O-16'], 4.6007e-2)    # Includes O-17 and O-18 number densities
+materials['1.6% Fuel'] = IsoMaterial(material_id(), '1.6% Enr. Fuel')
+materials['1.6% Fuel'].setNumEnergyGroups(1)
+materials['1.6% Fuel'].setDensity(10.31341, 'g/cc')
+materials['1.6% Fuel'].addIsotope(isotopes['U-234'], 3.0131e-6)
+materials['1.6% Fuel'].addIsotope(isotopes['U-235'], 3.7503e-4)
+materials['1.6% Fuel'].addIsotope(isotopes['U-238'], 2.2625e-2)
+materials['1.6% Fuel'].addIsotope(isotopes['O-16'], 4.6007e-2)    # Includes O-17 and O-18 number densities
 
-materials['2.4% Enr. Fuel'] = IsoMaterial(material_id(), '2.4% Enr. Fuel')
-materials['2.4% Enr. Fuel'].setNumEnergyGroups(1)
-materials['2.4% Enr. Fuel'].setDensity(10.29748, 'g/cc')
-materials['2.4% Enr. Fuel'].addIsotope(isotopes['U-234'], 4.4842E-6)
-materials['2.4% Enr. Fuel'].addIsotope(isotopes['U-235'], 5.5814e-4)
-materials['2.4% Enr. Fuel'].addIsotope(isotopes['U-238'], 2.2407e-2)
-materials['2.4% Enr. Fuel'].addIsotope(isotopes['O-16'], 4.5940e-2)    # Includes O-17 and O-18 number densities
+materials['2.4% Fuel'] = IsoMaterial(material_id(), '2.4% Enr. Fuel')
+materials['2.4% Fuel'].setNumEnergyGroups(1)
+materials['2.4% Fuel'].setDensity(10.29748, 'g/cc')
+materials['2.4% Fuel'].addIsotope(isotopes['U-234'], 4.4842E-6)
+materials['2.4% Fuel'].addIsotope(isotopes['U-235'], 5.5814e-4)
+materials['2.4% Fuel'].addIsotope(isotopes['U-238'], 2.2407e-2)
+materials['2.4% Fuel'].addIsotope(isotopes['O-16'], 4.5940e-2)    # Includes O-17 and O-18 number densities
 
-materials['3.1% Enr. Fuel'] = IsoMaterial(material_id(), '3.1% Enr. Fuel')
-materials['3.1% Enr. Fuel'].setNumEnergyGroups(1)
-materials['3.1% Enr. Fuel'].setDensity(10.30166, 'g/cc')
-materials['3.1% Enr. Fuel'].addIsotope(isotopes['U-234'], 5.7987e-6)
-materials['3.1% Enr. Fuel'].addIsotope(isotopes['U-235'], 7.2175e-4)
-materials['3.1% Enr. Fuel'].addIsotope(isotopes['U-238'], 2.2253e-2)
-materials['3.1% Enr. Fuel'].addIsotope(isotopes['O-16'], 4.5940e-2)    # Includes O-17 and O-18 number densities
+materials['3.1% Fuel'] = IsoMaterial(material_id(), '3.1% Enr. Fuel')
+materials['3.1% Fuel'].setNumEnergyGroups(1)
+materials['3.1% Fuel'].setDensity(10.30166, 'g/cc')
+materials['3.1% Fuel'].addIsotope(isotopes['U-234'], 5.7987e-6)
+materials['3.1% Fuel'].addIsotope(isotopes['U-235'], 7.2175e-4)
+materials['3.1% Fuel'].addIsotope(isotopes['U-238'], 2.2253e-2)
+materials['3.1% Fuel'].addIsotope(isotopes['O-16'], 4.5940e-2)    # Includes O-17 and O-18 number densities
 
 materials['Borated Water'] = IsoMaterial(material_id(), 'Moderator')
 materials['Borated Water'].setNumEnergyGroups(1)
@@ -37,10 +37,10 @@ materials['Borated Water'].addIsotope(isotopes['H-1'], 4.9457e-2)
 materials['Borated Water'].addIsotope(isotopes['H-2'], 7.4196e-6)
 materials['Borated Water'].addIsotope(isotopes['O-16'], 2.4732e-2)  # Includes O-17 and O-18 number densities
 
-materials['Zircaloy'] = IsoMaterial(material_id(), 'Gap')
-materials['Zircaloy'].setNumEnergyGroups(1)
-materials['Zircaloy'].setDensity(0.001598, 'g/cc')
-materials['Zircaloy'].addIsotope(isotopes['He-4'], 2.4044e-4)
+materials['Gap'] = IsoMaterial(material_id(), 'Gap')
+materials['Gap'].setNumEnergyGroups(1)
+materials['Gap'].setDensity(0.001598, 'g/cc')
+materials['Gap'].addIsotope(isotopes['He-4'], 2.4044e-4)
 
 materials['Zircaloy'] = IsoMaterial(material_id(), 'Clad')
 materials['Zircaloy'].setNumEnergyGroups(1)
