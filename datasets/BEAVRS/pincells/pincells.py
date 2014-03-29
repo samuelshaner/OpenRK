@@ -108,37 +108,37 @@ pin = {}
 pin_id = universe_id()
 
 pin['Region-1'] = CellBasic(pin_id, materials['Air'].getId())
-pin['Region-1'].addSurface(halfspace=-1, surface=surfaces['BP Radius 1'])
+pin['Region-1'].addSurface(halfspace=-1, surface=surfaces['BA Radius 1'])
 
 pin['Region-2'] = CellBasic(pin_id, materials['Steel'].getId())
-pin['Region-2'].addSurface(halfspace=-1, surface=surfaces['BP Radius 2'])
-pin['Region-2'].addSurface(halfspace=+1, surface=surfaces['BP Radius 1'])
+pin['Region-2'].addSurface(halfspace=-1, surface=surfaces['BA Radius 2'])
+pin['Region-2'].addSurface(halfspace=+1, surface=surfaces['BA Radius 1'])
 
 pin['Region-3'] = CellBasic(pin_id, materials['Air'].getId())
-pin['Region-3'].addSurface(halfspace=-1, surface=surfaces['BP Radius 3'])
-pin['Region-3'].addSurface(halfspace=+1, surface=surfaces['BP Radius 2'])
+pin['Region-3'].addSurface(halfspace=-1, surface=surfaces['BA Radius 3'])
+pin['Region-3'].addSurface(halfspace=+1, surface=surfaces['BA Radius 2'])
 
 pin['Region-4'] = CellBasic(pin_id, materials['Boro. Glass'].getId())
-pin['Region-4'].addSurface(halfspace=-1, surface=surfaces['BP Radius 4'])
-pin['Region-4'].addSurface(halfspace=+1, surface=surfaces['BP Radius 3'])
+pin['Region-4'].addSurface(halfspace=-1, surface=surfaces['BA Radius 4'])
+pin['Region-4'].addSurface(halfspace=+1, surface=surfaces['BA Radius 3'])
 
 pin['Region-5'] = CellBasic(pin_id, materials['Air'].getId())
-pin['Region-5'].addSurface(halfspace=-1, surface=surfaces['BP Radius 5'])
-pin['Region-5'].addSurface(halfspace=+1, surface=surfaces['BP Radius 4'])
+pin['Region-5'].addSurface(halfspace=-1, surface=surfaces['BA Radius 5'])
+pin['Region-5'].addSurface(halfspace=+1, surface=surfaces['BA Radius 4'])
 
 pin['Region-6'] = CellBasic(pin_id, materials['Steel'].getId())
-pin['Region-6'].addSurface(halfspace=-1, surface=surfaces['BP Radius 6'])
-pin['Region-6'].addSurface(halfspace=+1, surface=surfaces['BP Radius 5'])
+pin['Region-6'].addSurface(halfspace=-1, surface=surfaces['BA Radius 6'])
+pin['Region-6'].addSurface(halfspace=+1, surface=surfaces['BA Radius 5'])
 
 pin['Region-7'] = CellBasic(pin_id, materials['Borated Water'].getId())
-pin['Region-7'].addSurface(halfspace=-1, surface=surfaces['BP Radius 7'])
-pin['Region-7'].addSurface(halfspace=+1, surface=surfaces['BP Radius 6'])
+pin['Region-7'].addSurface(halfspace=-1, surface=surfaces['BA Radius 7'])
+pin['Region-7'].addSurface(halfspace=+1, surface=surfaces['BA Radius 6'])
 
 pin['Region-8'] = CellBasic(pin_id, materials['Zircaloy'].getId())
-pin['Region-8'].addSurface(halfspace=-1, surface=surfaces['BP Radius 8'])
-pin['Region-8'].addSurface(halfspace=+1, surface=surfaces['BP Radius 7'])
+pin['Region-8'].addSurface(halfspace=-1, surface=surfaces['BA Radius 8'])
+pin['Region-8'].addSurface(halfspace=+1, surface=surfaces['BA Radius 7'])
 
 pin['Region-9'] = CellBasic(pin_id, materials['Borated Water'].getId())
-pin['Region-9'].addSurface(halfspace=+1, surface=surfaces['BP Radius 8'])
+pin['Region-9'].addSurface(halfspace=+1, surface=surfaces['BA Radius 8'])
 
 pincells['Burnable Asborber'] = pin
