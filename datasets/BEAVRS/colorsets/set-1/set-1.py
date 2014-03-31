@@ -156,6 +156,7 @@ settings_file.setBatches(batches)
 settings_file.setInactive(inactive)
 settings_file.setParticles(particles)
 settings_file.createEigenvalueSubelement()
+settings_file.createStatepointSubelement(interval=5)
 
 source = [-pin_pitch/2., -pin_pitch/2., -slice_height/2.,
           pin_pitch/2., pin_pitch/2., slice_height/2.]
@@ -180,3 +181,16 @@ materials_file.exportToXML()
 geometry_file = openmc.GeometryFile()
 geometry_file.createGeometrySubelements(geometry)
 geometry_file.exportToXML()
+
+
+# This must be called after the
+# hmm = sp.get_value(0, [('distribcell',2)], 0)[0]
+
+
+# tallies.xml
+tally = openmc.Tally(label='test')
+tally.addFilter(type='distribcell', bins=10034)
+tally.addScore(score='flux')
+tallies_file = openmc.TalliesFile()
+tallies_file.addTallySubelement(tally)
+tallies_file.exportToXML()

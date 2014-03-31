@@ -22,9 +22,9 @@ sectors = 4
 slice_height = 10.
 
 # OpenMC simulation parameters
-batches = 25
+batches = 20
 inactive = 10
-particles = 10000
+particles = 1000
 
 # Plotting parameters
 pixels = 1000
@@ -111,7 +111,7 @@ for surface in surfaces.surfaces.values():
 for cell in pincells.cells:
   geometry.addCell(cell)
 
-# Add lattice to
+# Add Lattice to the Geometry
 geometry.addLattice(lattice)
 
 
@@ -128,6 +128,7 @@ settings_file.setBatches(batches)
 settings_file.setInactive(inactive)
 settings_file.setParticles(particles)
 settings_file.createEigenvalueSubelement()
+settings_file.createStatepointSubelement(interval=5)
 
 source = [-pin_pitch/2., -pin_pitch/2., -slice_height/2.,
           pin_pitch/2., pin_pitch/2., slice_height/2.]
@@ -136,8 +137,6 @@ settings_file.createSourceSpaceSubelement(type='box', params=source)
 settings_file.exportToXML()
 
 # plots.xml
-
-
 plot_file = openmc.PlotsFile()
 plot_file.addNewPlot(id=1, width=[geometry.getXMax()-geometry.getXMin(),
                                   geometry.getXMax()-geometry.getXMin()],
@@ -154,3 +153,22 @@ materials_file.exportToXML()
 geometry_file = openmc.GeometryFile()
 geometry_file.createGeometrySubelements(geometry)
 geometry_file.exportToXML()
+
+# tallies.xml
+num_cells = geometry.getNumCells()
+cell_ids = geometry.getCellIds(num_cells)
+
+tallies_file = openmc.TalliesFile()
+scores = ['flux', 'total', 'nu-fission']
+
+for cell_id in cell_ids:
+
+  tally = openmc.Tally(label='test')
+  tally.addFilter(type='distribcell', bins=cell_id)
+
+  for score in scores:
+    tally.addScore(score=score)
+
+  tallies_file.addTallySubelement(tally)
+
+tallies_file.exportToXML()
