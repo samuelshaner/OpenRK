@@ -1,9 +1,12 @@
-import openmoc.log as log
-import openmoc.compatible.openmc as openmc
+from openmoc.compatible.openmc import *
+import openmoc.plotter as plotter
 from lattices import *
 import materials
 import surfaces
 import pincells
+from input.settings import SettingsFile
+from input.tallies import TalliesFile, Tally
+from input.plots import PlotsFile, Plot
 
 
 # NOTE - This is the 3x3 geometry of 1.6% and 2.4% (16BA) assemblies found at
@@ -28,9 +31,9 @@ sectors = 4
 slice_height = 10.
 
 # OpenMC simulation parameters
-batches = 25
+batches = 20
 inactive = 10
-particles = 10000
+particles = 1000
 
 # Plotting parameters
 pixels = 1000
@@ -134,9 +137,29 @@ for material in materials.materials.values():
 for surface in surfaces.surfaces.values():
   geometry.addSurface(surface)
 
-# Add all Cells to the Geometry
-for cell in pincells.cells:
-  geometry.addCell(cell)
+for cell in pincells.pincells['1.6% Fuel'].values():
+  if not isinstance(cell, int):
+    geometry.addCell(cell)
+
+for cell in pincells.pincells['2.4% Fuel'].values():
+  if not isinstance(cell, int):
+    geometry.addCell(cell)
+
+for cell in pincells.pincells['Guide Tube'].values():
+  if not isinstance(cell, int):
+    geometry.addCell(cell)
+
+for cell in pincells.pincells['Instrument Tube'].values():
+  if not isinstance(cell, int):
+    geometry.addCell(cell)
+
+for cell in pincells.pincells['Burnable Absorber'].values():
+  if not isinstance(cell, int):
+    geometry.addCell(cell)
+
+geometry.addCell(root)
+geometry.addCell(cell1)
+geometry.addCell(cell2)
 
 # Add all Lattices to the Geometry
 geometry.addLattice(lattice1)
@@ -150,37 +173,64 @@ geometry.addLattice(lattice)
 
 log.py_printf('NORMAL', 'Exporting to OpenMC XML Files...')
 
+log.py_printf('NORMAL', 'Exporting to OpenMC XML Files...')
+
 # settings.xml
-settings_file = openmc.SettingsFile()
+settings_file = SettingsFile()
 settings_file.setBatches(batches)
 settings_file.setInactive(inactive)
 settings_file.setParticles(particles)
-settings_file.createEigenvalueSubelement()
-settings_file.createStatepointSubelement(interval=5)
+settings_file.setStatepointInterval(5)
 
 source = [-pin_pitch/2., -pin_pitch/2., -slice_height/2.,
           pin_pitch/2., pin_pitch/2., slice_height/2.]
-settings_file.createSourceSpaceSubelement(type='box', params=source)
+settings_file.setSourceSpace(type='box', params=source)
 
 settings_file.exportToXML()
 
 # plots.xml
-plot_file = openmc.PlotsFile()
-plot_file.addNewPlot(id=1, width=[geometry.getXMax()-geometry.getXMin(),
-                                  geometry.getXMax()-geometry.getXMin()],
-                     origin=[0.,0.,0.], pixels=[pixels,pixels])
+plot = Plot(plot_id=1)
+plot.setWidth(width=[geometry.getXMax()-geometry.getXMin(),
+                     geometry.getXMax()-geometry.getXMin()])
+plot.setOrigin([0., 0., 0.])
+plot.setPixels([pixels, pixels])
+
+plot_file = PlotsFile()
+plot_file.addPlot(plot)
 plot_file.exportToXML()
 
-# materials.xml
-materials_file = openmc.MaterialsFile()
-materials_file.createDefaultXSSubelement()
-materials_file.createMaterialsSubelements(materials.materials.values())
-materials_file.exportToXML()
+# materials.xml and geometry.xml
+create_input_files(geometry)
 
-# geometry.xml
-geometry_file = openmc.GeometryFile()
-geometry_file.createGeometrySubelements(geometry)
-geometry_file.exportToXML()
+# Create a plot using OpenMOC's plotting module
+plotter.plot_cells(geometry, gridsize=1000)
+
+
+# tallies.xml
+#num_cells = geometry.getNumCells()
+#cell_ids = geometry.getCellIds(num_cells)
+
+#tallies_file = openmc.TalliesFile()
+#scores = ['flux', 'total', 'nu-fission']
+
+#print cell_ids
+
+#for index, cell_id in enumerate(cell_ids):
+
+#  if cell_id == 10027:
+
+#    print index, cell_id
+
+#    tally = openmc.Tally(label='test')
+#    tally.addFilter(type='distribcell', bins=cell_id)
+#    tally.addFilter(type='energy', bins=[0.0, 0.625, 10000000.])
+
+#    for score in scores:
+#      tally.addScore(score=score)
+
+#    tallies_file.addTallySubelement(tally)
+
+#tallies_file.exportToXML()
 
 
 # This must be called after the
@@ -188,9 +238,18 @@ geometry_file.exportToXML()
 
 
 # tallies.xml
-tally = openmc.Tally(label='test')
-tally.addFilter(type='distribcell', bins=10034)
-tally.addScore(score='flux')
-tallies_file = openmc.TalliesFile()
-tallies_file.addTallySubelement(tally)
-tallies_file.exportToXML()
+#tally = openmc.Tally(label='test')
+#tally.addFilter(type='distribcell', bins=10034)
+#tally.addScore(score='flux')
+#tallies_file = openmc.TalliesFile()
+#tallies_file.addTallySubelement(tally)
+#tallies_file.exportToXML()
+
+
+#from statepoint import StatePoint
+#import openmoc.compatible.openmc.plotter.plotter as plot
+
+#sp = StatePoint('statepoint.15.h5')
+#sp.read_results()
+
+#plot.plot_fluxes(geometry, sp, energies=[0], gridsize=100)
