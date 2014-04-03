@@ -33,7 +33,7 @@ slice_height = 10.
 # OpenMC simulation parameters
 batches = 20
 inactive = 10
-particles = 1000
+particles = 10000
 
 # Plotting parameters
 pixels = 1000
@@ -182,8 +182,8 @@ settings_file.setInactive(inactive)
 settings_file.setParticles(particles)
 settings_file.setStatepointInterval(5)
 
-source = [-pin_pitch/2., -pin_pitch/2., -slice_height/2.,
-          pin_pitch/2., pin_pitch/2., slice_height/2.]
+source = [-width/2., -width/2., -slice_height/2.,
+          width/2., width/2., slice_height/2.]
 settings_file.setSourceSpace(type='box', params=source)
 
 settings_file.exportToXML()
@@ -203,7 +203,37 @@ plot_file.exportToXML()
 create_input_files(geometry)
 
 # Create a plot using OpenMOC's plotting module
-plotter.plot_cells(geometry, gridsize=1000)
+#plotter.plot_cells(geometry, gridsize=1000)
+
+
+# tallies.xml
+num_cells = geometry.getNumCells()
+cell_ids = geometry.getCellIds(num_cells)
+
+tallies_file = TalliesFile()
+scores = ['flux']
+
+for cell_id in cell_ids:
+
+  tally = Tally(label='test')
+  tally.addFilter(type='distribcell', bins=cell_id)
+  tally.addFilter(type='energy', bins=[0.0, 0.625, 10000000.])
+
+  for score in scores:
+    tally.addScore(score=score)
+
+  tallies_file.addTally(tally)
+
+tallies_file.exportToXML()
+
+
+from statepoint import StatePoint
+import openmoc.compatible.openmc.plotter.plotter as plot
+
+sp = StatePoint('statepoint.20.h5')
+sp.read_results()
+
+plot.plot_fluxes(geometry, sp, energies=[0,1], gridsize=250)
 
 
 # tallies.xml

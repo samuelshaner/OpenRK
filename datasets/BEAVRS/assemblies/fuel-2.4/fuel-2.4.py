@@ -163,4 +163,33 @@ plot_file.exportToXML()
 create_input_files(geometry)
 
 # Create a plot using OpenMOC's plotting module
-plotter.plot_cells(geometry, gridsize=1000)
+#plotter.plot_cells(geometry, gridsize=1000)
+
+# tallies.xml
+num_cells = geometry.getNumCells()
+cell_ids = geometry.getCellIds(num_cells)
+
+tallies_file = TalliesFile()
+scores = ['flux']
+
+for cell_id in cell_ids:
+
+  tally = Tally(label='test')
+  tally.addFilter(type='distribcell', bins=cell_id)
+  tally.addFilter(type='energy', bins=[0.0, 0.625, 10000000.])
+
+  for score in scores:
+    tally.addScore(score=score)
+
+  tallies_file.addTally(tally)
+
+tallies_file.exportToXML()
+
+
+from statepoint import StatePoint
+import openmoc.compatible.openmc.plotter.plotter as plot
+
+sp = StatePoint('statepoint.25.h5')
+sp.read_results()
+
+plot.plot_fluxes(geometry, sp, energies=[0,1], gridsize=250)

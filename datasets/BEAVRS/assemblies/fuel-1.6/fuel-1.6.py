@@ -166,7 +166,7 @@ num_cells = geometry.getNumCells()
 cell_ids = geometry.getCellIds(num_cells)
 
 tallies_file = TalliesFile()
-scores = ['flux', 'total', 'nu-fission']
+scores = ['flux']
 
 for cell_id in cell_ids:
 
@@ -182,14 +182,14 @@ for cell_id in cell_ids:
 tallies_file.exportToXML()
 
 
-#from statepoint import StatePoint
-#import openmoc.compatible.openmc.plotter.plotter as plot
+from statepoint import StatePoint
+import openmoc.compatible.openmc.plotter.plotter as plot
 
-#sp = StatePoint('statepoint.20.h5')
-#sp.read_results()
+sp = StatePoint('statepoint.20.h5')
+sp.read_results()
 
-#plot.plot_fluxes(geometry, sp, energies=[0,1], gridsize=500)
+plot.plot_fluxes(geometry, sp, energies=[0,1], gridsize=250)
 
 # Create a plot using OpenMOC's plotting module
-import openmoc.plotter as plotter
-plotter.plot_cells(geometry, gridsize=1000)
+#import openmoc.plotter as plotter
+#plotter.plot_cells(geometry, gridsize=1000)

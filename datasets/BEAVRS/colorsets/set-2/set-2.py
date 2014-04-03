@@ -179,8 +179,8 @@ settings_file.setInactive(inactive)
 settings_file.setParticles(particles)
 settings_file.setStatepointInterval(5)
 
-source = [-pin_pitch/2., -pin_pitch/2., -slice_height/2.,
-          pin_pitch/2., pin_pitch/2., slice_height/2.]
+source = [-width/2., -width/2., -slice_height/2.,
+          width/2., width/2., slice_height/2.]
 settings_file.setSourceSpace(type='box', params=source)
 
 settings_file.exportToXML()
