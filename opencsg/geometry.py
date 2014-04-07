@@ -1,3 +1,6 @@
+__author__ = 'Will Boyd'
+__email__ = 'wboyd@mit.edu'
+
 from surface import *
 from cell import *
 from lattice import *

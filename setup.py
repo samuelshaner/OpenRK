@@ -1,3 +1,7 @@
+__author__ = 'Will Boyd'
+__email__ = 'wboyd@mit.edu'
+
+
 from distutils.core import setup
 
 setup(name='OpenCSG',
