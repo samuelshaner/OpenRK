@@ -53,6 +53,22 @@ class Universe(object):
     return self._cells
 
 
+  def getCellOffset(self, cell):
+
+    if not isinstance(cell, Cell):
+      exit('Unable to get cell offset from Universe ID=%d for %s which '
+           'is not a Cell' % (self._id, str(cell)))
+
+    cell_id = cell.getId()
+
+    if not cell_id in self._cell_offsets.keys():
+      print self._cell_offsets.keys()
+      exit('Unable to get cell offset from Universe ID=%d for Cell ID=%d '
+           'which is not in the Universe' % (self._id, cell_id))
+
+    return self._cell_offsets[cell_id]
+
+
   def getCellOffsets(self):
     return self._cell_offsets
 
@@ -355,8 +371,50 @@ class Lattice(Universe):
     return self._width
 
 
+  def getUniverse(self, lat_x, lat_y):
+
+    if not is_integer(lat_x):
+      exit('Unable to get Universe from Lattice ID=%d since x=%s is not '
+           'a lattice cell' % self._id, str(lat_x))
+
+    if not is_integer(lat_y):
+      exit('Unable to get Universe from Lattice ID=%d since y=%s is not '
+           'a lattice cell' % self._id, str(lat_y))
+
+    if lat_x < 0 or lat_x > self._dimension[0]:
+      exit('Unable to get Universe from Lattice ID=%d since x=%s is '
+           'outside the bounds of the lattice cells', self._id, lat_x)
+
+    if lat_y < 0 or lat_y > self._dimension[1]:
+      exit('Unable to get Universe from Lattice ID=%d since y=%s is '
+           'outside the bounds of the lattice cells', self._id, lat_y)
+
+    return self._universes[lat_x][lat_y]
+
+
   def getUniverses(self):
     return self._universes
+
+
+  def getCellOffset(self, lat_x, lat_y):
+
+    if not is_integer(lat_x):
+      exit('Unable to get cell offset from Lattice ID=%d since lat_x=%s is '
+           'not a lattice cell' % self._id, str(lat_x))
+
+    if not is_integer(lat_y):
+      exit('Unable to get cell offset from Lattice ID=%d since lat_y=%s is '
+           'not a lattice cell' % self._id, str(lat_y))
+
+    if lat_x < 0 or lat_x > self._dimension[0]:
+      exit('Unable to get Universe from Lattice ID=%d since lat_x=%s is '
+           'outside the bounds of the lattice cells', self._id, lat_x)
+
+    if lat_y < 0 or lat_y > self._dimension[1]:
+      exit('Unable to get Universe from Lattice ID=%d since lat_y=%s is '
+           'outside the bounds of the lattice cells', self._id, lat_y)
+
+    return self._cell_offsets[lat_x][lat_y]
 
 
   def getMaxX(self):
@@ -537,9 +595,9 @@ class Lattice(Universe):
 
       for i in range(self._dimension[0]):
         for j in range(self._dimension[1]):
-          self._cell_offsets[i,j] = count
-          self._universes[i,j].initializeCellOffsets()
-          count += self._universes[i,j].getNumRegions()
+          self._cell_offsets[i][j] = count
+          self._universes[i][j].initializeCellOffsets()
+          count += self._universes[i][j].getNumRegions()
 
     if num_dims == 3:
 
@@ -962,7 +1020,7 @@ class Cell(object):
 
     elif isinstance(self._fill, (Universe, Lattice)):
       self._fill.initializeCellOffsets()
-      self._num_subcells = self._fill.getNumRgions()
+      self._num_subcells = self._fill.getNumRegions()
 
     else:
       exit('Unable to compute the number of subcells for Cell ID=%d since '

@@ -116,4 +116,8 @@ geometry = Geometry()
 for universe in universes: geometry.addUniverse(universe)
 for lattice in lattices: geometry.addLattice(lattice)
 
+geometry.initializeCellOffsets()
+
 plotter.plot_cells(geometry)
+plotter.plot_materials(geometry)
+plotter.plot_regions(geometry)

@@ -133,7 +133,34 @@ class Geometry(object):
     self._num_regions = root.getNumRegions()
 
 
+  def getRegionId(self, x=0., y=0., z=0.):
+
+    coords = self.findCoords(x=x, y=y, z=z)
+    region_id = 0
+
+    while not coords is None:
+
+      # The coords is a UnivCoords object
+      if isinstance(coords, UnivCoords):
+        universe = coords.getUniverse()
+        cell = coords.getCell()
+        region_id += universe.getCellOffset(cell)
+
+      # The coords is a LatCoords object
+      else:
+        lattice = coords.getLattice()
+        lat_x, lat_y = coords.getLatticeX(), coords.getLatticeY()
+        region_id += lattice.getCellOffset(lat_x, lat_y)
+
+      coords = coords.getNext()
+
+    return region_id
+
+
+
+
   def findCell(self, x=0., y=0., z=0.):
+
     if not 0 in self._universes.keys():
       exit('Unable to find cell since the Geometry does not contain the '
            'base Universe ID=0')
@@ -149,8 +176,23 @@ class Geometry(object):
 #  def findCell(self, region_id):
 
 
+  def findCoords(self, x=0., y=0., z=0.):
 
-#  def buildPath(self, x, y):
+    if not 0 in self._universes.keys():
+      exit('Unable to find coords since the Geometry does not contain the '
+           'base Universe ID=0')
+
+    root = self._universes[0]
+    point = Point(x=x, y=y, z=z)
+    localcoords = UnivCoords(point=point)
+    localcoords.setUniverse(root)
+    cell = root.findCell(localcoords=localcoords)
+    localcoords = localcoords.getHeadNode()
+
+    return localcoords
+
+
+#  def buildPath(self, localcoords):
 
 
 
