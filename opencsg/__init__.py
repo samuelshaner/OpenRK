@@ -3,6 +3,5 @@ __email__ = 'wboyd@mit.edu'
 
 from material import *
 from surface import *
-from cell import *
-from lattice import *
+from universe import *
 from geometry import *

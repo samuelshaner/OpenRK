@@ -1,11 +1,12 @@
 __author__ = 'Will Boyd'
 __email__ = 'wboyd@mit.edu'
 
+
 from checkvalue import *
 import numpy as np
 
 
-def Point(object):
+class Point(object):
 
   def __init__(self, x=0., y=0., z=0.):
 

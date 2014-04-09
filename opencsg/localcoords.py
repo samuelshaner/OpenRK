@@ -2,9 +2,8 @@ __author__ = 'Will Boyd'
 __email__ = 'wboyd@mit.edu'
 
 
-from point import *
-
-coords_types = ['universe', 'lattice']
+from universe import *
+from checkvalue import *
 
 
 class LocalCoords(object):
@@ -53,7 +52,7 @@ class LocalCoords(object):
 
   def setNext(self, next):
 
-    if not isinstance(next, (None, LocalCoords)):
+    if not isinstance(next, None) and not issubclass(next, LocalCoords):
       exit('Unable to set the next to %s for LocalCoords since it is not '
            'a LocalCoords object', str(next))
 
@@ -62,7 +61,7 @@ class LocalCoords(object):
 
   def setPrev(self, prev):
 
-    if not isinstance(prev, (None, LocalCoords)):
+    if not isinstance(prev, None) and not issubclass(prev, LocalCoords):
       exit('Unable to set the prev to %s for LocalCoords since it is not '
            'a LocalCoords object', str(prev))
 
@@ -94,6 +93,7 @@ class LocalCoords(object):
 
 
   def prune(self):
+
     curr = self.getTailNode()
     next = curr.getPrev()
 
@@ -111,7 +111,7 @@ class LocalCoords(object):
 
     string = ''
 
-    string += 'Surface\n'
+    string += 'LocalCoords\n'
 
     type = '{0: <16}'.format('\tType') + '=\t' + str(self._type)
     string += type + '\n'
@@ -130,76 +130,76 @@ class LocalCoords(object):
 class UnivCoords(LocalCoords):
 
   def __init__(self, point=None, next=None, prev=None,
-               universe_id=None, cell_id=None):
+               universe=None, cell=None):
 
     super(self, point, next, prev)
 
     self._type = 'universe'
     self._universe = None
-    self._cell_id = None
+    self._cell = None
 
-    if not universe_id is None:
-      self.setUniverseId(universe_id)
+    if not universe is None:
+      self.setUniverse(universe)
 
-    if not cell_id is None:
-      self.setCellId(cell_id)
-
-
-    def getUniverseId(self):
-      return self._universe_id
+    if not cell is None:
+      self.setCell(cell)
 
 
-    def getCellId(self):
-      return self._cell_id
+  def getUniverse(self):
+    return self._universe
 
 
-    def setUniverseId(self, universe_id):
-
-      if not is_integer(universe_id):
-        exit('Unable to set the Universe ID to %s for LocalCoords since it '
-             'is not an integer', str(universe_id))
-
-      self._universe_id = universe_id
+  def getCell(self):
+    return self._cell
 
 
-    def setCellId(self, cell_id):
+  def setUniverse(self, universe):
 
-      if not is_integer(cell_id):
-        exit('Unable to set the Cell ID to %s for LocalCoords since it '
-             'is not an integer', str(cell_id))
+    if not isinstance(universe, Universe):
+      exit('Unable to set the Universe to %s for LocalCoords since it '
+           'is not a Universe', str(universe))
 
-      self._cell_id = cell_id
+    self._universe = universe
 
 
-    def toString(self):
+  def setCell(self, cell):
 
-      string = super(self)
+    if not isinstance(cell, Cell):
+      exit('Unable to set the Cell to %s for LocalCoords since it '
+           'is not a Cell', str(cell))
 
-      universe_id = '{0: <16}'.format('\tUniverse') + '=\t'
-      universe_id += str(self._universe_id) + '\n'
-      string += universe_id
+    self._cell = cell
 
-      cell_id = '{0: <16}'.format('\tCell') + '=\t' + str(self._cell_id)
-      string += cell_id
 
-      return string
+  def toString(self):
+
+    string = super(self)
+
+    universe_id = '{0: <16}'.format('\tUniverse') + '=\t'
+    universe_id += str(self._universe.getId()) + '\n'
+    string += universe_id
+
+    cell_id = '{0: <16}'.format('\tCell') + '=\t' + str(self._cell.getId())
+    string += cell_id
+
+    return string
 
 
 
 class LatCoords(LocalCoords):
 
   def __init__(self, point=None, next=None, prev=None,
-               lattice_id=None, lattice_x=None, lattice_y=None):
+               lattice=None, lattice_x=None, lattice_y=None):
 
     super(self, point, next, prev)
 
     self._type = 'lattice'
-    self._lattice_id = None
+    self._lattice = None
     self._lattice_x = None
     self._lattice_y = None
 
-    if not lattice_id is None:
-      self.setLatticeId(lattice_id)
+    if not lattice is None:
+      self.setLatticeId(lattice)
 
     if not lattice_x is None:
       self.setLatticeX(lattice_x)
@@ -208,8 +208,8 @@ class LatCoords(LocalCoords):
       self.setLatticeY(lattice_y)
 
 
-  def getLatticeId(self):
-    return self._lattice_id
+  def getLattice(self):
+    return self._lattice
 
 
   def getLatticeX(self):
@@ -220,13 +220,13 @@ class LatCoords(LocalCoords):
     return self._lattice_y
 
 
-  def setLatticeId(self, lattice_id):
+  def setLattice(self, lattice):
 
-    if not is_integer(lattice_id):
-      exit('Unable to set the Lattice ID to %s for LocalCoords since it '
-           'is not an integer', str(lattice_id))
+    if not isinstance(lattice, Lattice):
+      exit('Unable to set the Lattice to %s for LocalCoords since it '
+           'is not a Lattice', str(lattice))
 
-    self._lattice_id = lattice_id
+    self._lattice = lattice
 
 
   def setLatticeX(self, lattice_x):
@@ -251,8 +251,8 @@ class LatCoords(LocalCoords):
 
     string = super(self)
 
-    lattice_id = '{0: <16}'.format('\tLattuce') + '=\t'
-    lattice_id += str(self._lattice_id) + '\n'
+    lattice_id = '{0: <16}'.format('\tLattice') + '=\t'
+    lattice_id += str(self._lattice.getId()) + '\n'
     string += lattice_id
 
     lattice_x = '{0: <16}'.format('\tLattice X') + '=\t'

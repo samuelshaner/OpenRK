@@ -1,82 +1,120 @@
 __author__ = 'Will Boyd'
 __email__ = 'wboyd@mit.edu'
 
-from surface import *
-from cell import *
-from lattice import *
+
+from universe import Universe, Lattice
+from localcoords import UnivCoords
+from point import Point
 
 
-class GeometryFile(object):
+class Geometry(object):
 
-    def __init__(self):
+  def __init__(self):
 
-        # Initialize Geometry class attributes
-        self._geometry_file = ET.Element("geometry")
-        self._surfaces = list()
-        self._cells = list()
-        self._lattices = list()
-
-
-    def addSurface(self, surface):
-
-        if not isinstance(surface, Surface):
-            exit('Unable to add %s to GeometryFile since it is '
-                 'not a Surface', str(surface))
-
-        if not surface in self._cells:
-            self._surfaces.append(surface)
+    # Initialize Geometry class attributes
+    self._universes = dict()
+    self._lattices = dict()
+    self._num_regions = 0
 
 
-    def removeSurface(self, surface):
-
-        if surface in self._surfaces:
-            self._surfaces.remove(surface)
+  def getUniverses(self):
+    return self._universes
 
 
-    def addCell(self, cell):
-
-        if not isinstance(cell, Cell):
-            exit('Unable to add %s to GeometryFile since it is '
-                 'not a Cell', str(cell))
-
-        if not cell in self._cells:
-            self._cells.append(cell)
+  def getLattices(self):
+    return self._lattices
 
 
-    def removeCell(self, cell):
-
-        if cell in self._cells:
-            self._cells.remove(cell)
+  def getNumRegions(self):
+    return self._num_regions
 
 
-    def addLattice(self, lattice):
+  def addUniverse(self, universe):
 
-        if not isinstance(lattice, Lattice):
-            exit('Unable to add %s to GeometryFile since it is '
-                 'not a Lattice', str(lattice))
+    if not isinstance(universe, Universe):
+      exit('Unable to add Universe to the Geometry since %s is not '
+           'a Universe', str(universe))
 
-        if not lattice in self._lattices:
-            self._lattices.append(lattice)
-
-
-    def removeLattice(self, lattice):
-
-        if lattice in self._lattices:
-            self._lattices.remove(lattice)
+    univ_id = universe.getId()
+    self._universes[univ_id] = universe
 
 
-    def toString(self):
+  def removeUniverse(self, universe):
 
-      string = ''
-
-      for cell in self._cells:
-          string += cell.toString()
-
-      for lattice in self._lattices:
-          string += lattice.toString()
-
-      return string
+    univ_id = universe.getId()
+    if univ_id in self._universes.keys():
+      del self._universes[univ_id]
 
 
-    def printString(self):
-        print(self.toString())
+  def addLattice(self, lattice):
+
+    if not isinstance(lattice, Lattice):
+      exit('Unable to add Lattice to the Geometry since %s is not '
+           'a Lattice', str(lattice))
+
+    lat_id = lattice.getId()
+    self._universes[lat_id] = lattice
+
+
+  def removeLattice(self, lattice):
+
+    lat_id = lattice.getId()
+    if lat_id in self._lattices.keys():
+      del self._lattices[lat_id]
+
+
+  def initializeCellOffsets(self):
+
+    if not 0 in self._universes.keys():
+      exit('Unable to initialize cell offsets since the Geometry does not '
+           'contain the base Universe ID=0')
+
+    root = self._universes[0]
+    root.initializeCellOffsets()
+    self._num_regions = root.getNumRegions()
+
+
+  def findCell(self, x=0., y=0., z=0.):
+    if not 0 in self._universes.keys():
+      exit('Unable to find cell since the Geometry does not contain the '
+           'base Universe ID=0')
+
+    root = self._universes[0]
+    point = Point(x=x, y=y, z=z)
+    localcoords = UnivCoords(point=point)
+    localcoords.setUniverse(root)
+
+    return root.findCell(localcoords=localcoords)
+
+
+#  def findCell(self, region_id):
+
+
+
+#  def buildPath(self, x, y):
+
+
+
+#  def buildPath(self, region_id):
+
+
+
+
+
+  def toString(self):
+
+    string = ''
+
+    string += 'Geometry\n'
+
+    for universe in self._universes.values():
+      string += universe.toString()
+
+    for lattice in self._lattices:
+      string += lattice.toString()
+
+    return string
+
+
+  def printString(self):
+    print(self.toString())

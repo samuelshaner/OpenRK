@@ -2,11 +2,11 @@ __author__ = 'Will Boyd'
 __email__ = 'wboyd@mit.edu'
 
 
-from point import *
+from point import Point
 import numpy as np
 
 
-# threshold for determining how close a point must be to a surface to be on it
+# Threshold for determining how close a point must be to a surface to be on it
 on_surface_thresh = 1e-12
 
 # A list of all IDs for all Surfaces created
@@ -44,14 +44,9 @@ class Surface(object):
     self._boundary_type = ''
 
     # A dictionary of the quadratic surface coefficients
-    # Key  - coefficeint name
-    # Value  - coefficient value
+    # Key   - coefficient name
+    # Value - coefficient value
     self._coeffs = dict()
-
-    self.setId(surface_id)
-    self.setName(name)
-    self.setBoundaryType(boundary)
-
 
     # Max/min values
     self._max_x = np.float64("inf")
@@ -60,6 +55,10 @@ class Surface(object):
     self._min_x = -np.float64("inf")
     self._min_y = -np.float64("inf")
     self._min_z = -np.float64("inf")
+
+    self.setId(surface_id)
+    self.setName(name)
+    self.setBoundaryType(boundary)
 
 
   def getId(self):
@@ -89,7 +88,7 @@ class Surface(object):
 
     else:
       exit('Unable to return the coeff %s for Surface ID=%d since it '
-         'does not contain that coefficient', str(coeff), self._id)
+           'does not contain that coefficient', str(coeff), self._id)
 
 
   def getMaxX(self):
@@ -151,12 +150,12 @@ class Surface(object):
         surface_ids.remove(self._id)
 
       if surface_id in surface_ids:
-        exit('Unable to set Surface ID to %s since a Material '
-            'with this ID was already initialized.', str(surface_id))
+        exit('Unable to set Surface ID to %s since a Surface '
+             'with this ID was already initialized.', str(surface_id))
 
       if surface_id < 0:
         exit('Unable to set Surface ID to %d since it must be a '
-           'non-negative integer', surface_id)
+             'non-negative integer', surface_id)
 
       else:
         self._id = surface_id
@@ -170,7 +169,7 @@ class Surface(object):
 
     if not is_string(name):
       exit('Unable to set name for Surface ID=%d with a non-string '
-         'value %s', self._id, str(name))
+           'value %s', self._id, str(name))
 
     else:
       self._name = name
@@ -180,11 +179,11 @@ class Surface(object):
 
     if not is_string(boundary):
       exit('Unable to set boundary type for Surface ID=%d with a '
-         'non-string value %s', self._id, str(boundary))
+           'non-string value %s', self._id, str(boundary))
 
     elif not boundary in boundary_types:
       exit('Unable to set boundary type for Surface ID=%d to %s which '
-         'is not trasmission, vacuum or reflective', boundary)
+           'is not transmission, vacuum or reflective', boundary)
 
     else:
       self._boundary_type = boundary
@@ -272,8 +271,8 @@ class Plane(Surface):
   def setA(self, A):
 
     if not is_integer(A) and not is_float(A):
-      exit('Unable to set A coefficient for Plane ID=%d to a '
-         'non-integer value %s', self._id, str(A))
+      exit('Unable to set A coefficient for Plane ID=%d to a non-integer '
+           'or floating point value %s', self._id, str(A))
 
     self._coeffs['A'] = np.float64(A)
 
@@ -281,8 +280,8 @@ class Plane(Surface):
   def setB(self, B):
 
     if not is_integer(B) and not is_float(B):
-      exit('Unable to set B coefficient for Plane ID=%d to a '
-         'non-integer value %s', self._id, str(B))
+      exit('Unable to set B coefficient for Plane ID=%d to a non-integer '
+           'or floating point value %s', self._id, str(B))
 
     self._coeffs['B'] = np.float64(B)
 
@@ -290,8 +289,8 @@ class Plane(Surface):
   def setC(self, C):
 
     if not is_integer(C) and not is_float(C):
-      exit('Unable to set C coefficient for Plane ID=%d to a '
-         'non-integer value %s', self._id, str(C))
+      exit('Unable to set C coefficient for Plane ID=%d to a non-integer '
+           'or floating point value %s', self._id, str(C))
 
     self._coeffs['C'] = np.float64(C)
 
@@ -299,8 +298,8 @@ class Plane(Surface):
   def setD(self, D):
 
     if not is_integer(D) and not is_float(D):
-      exit('Unable to set D coefficient for Plane ID=%d to a '
-         'non-integer value %s', self._id, str(D))
+      exit('Unable to set D coefficient for Plane ID=%d to a non-integer '
+           'or floating point value %s', self._id, str(D))
 
     self._coeffs['D'] = np.float64(D)
 
@@ -309,10 +308,12 @@ class Plane(Surface):
 
     super(point)
 
-    (x,y,z) = point.getX(), point.getY(), point.getZ()
+    x, y, z = point.getX(), point.getY(), point.getZ()
 
-    value = self._coeffs['A'] * x + self._coeffs['B'] * y + \
-            self._coeffs['C'] * z + self._coeffs['D']
+    value = self._coeffs['A'] * x + \
+            self._coeffs['B'] * y + \
+            self._coeffs['C'] * z + \
+            self._coeffs['D']
 
     return value
 
@@ -324,7 +325,8 @@ class XPlane(Plane):
                boundary='transmission', x0=None):
 
     # Initialize XPlane class attributes
-    super(XPlane, self).__init__(surface_id, name, boundary, A=0., B=1., C=1.)
+    super(XPlane, self).__init__(surface_id, name, boundary,
+                                 A=0., B=1., C=1., D=-x0)
 
     self._type = 'x-plane'
     self._coeffs['x0'] = None
@@ -340,11 +342,11 @@ class XPlane(Plane):
   def setX0(self, x0):
 
     if not is_integer(x0) and not is_float(x0):
-      exit('Unable to set x0 coefficient for XPlane ID=%d to a '
-           'non-integer value %s', self._id, str(x0))
+      exit('Unable to set x0 coefficient for XPlane ID=%d to a non-integer '
+           'or floating point value %s', self._id, str(x0))
 
     self._coeffs['x0'] = np.float64(x0)
-    self._coeffs['D'] = -np.float64(x0)
+    self.setD(-x0)
     self._max_x = np.float64(x0)
     self._min_x = np.float64(x0)
 
@@ -355,7 +357,8 @@ class YPlane(Plane):
                boundary='transmission', y0=None):
 
     # Initialize YPlane class attributes
-    super(YPlane, self).__init__(surface_id, name, boundary, A=1., B=0., C=1.)
+    super(YPlane, self).__init__(surface_id, name, boundary,
+                                 A=1., B=0., C=1., D=-y0)
 
     self._type = 'y-plane'
     self._coeffs['y0'] = None
@@ -371,11 +374,13 @@ class YPlane(Plane):
   def setY0(self, y0):
 
     if not is_integer(y0) and not is_float(y0):
-      exit('Unable to set y0 coefficient for XPlane ID=%d to a '
-           'non-integer value %s', self._id, str(y0))
+      exit('Unable to set y0 coefficient for YPlane ID=%d to a non-integer '
+           'or floating point value %s', self._id, str(y0))
 
     self._coeffs['y0'] = np.float64(y0)
-    self._coeffs['D'] = -np.float64(y0)
+    self.setD(-y0)
+    self._max_y = np.float64(y0)
+    self._min_y = np.float64(y0)
 
 
 class ZPlane(Plane):
@@ -384,7 +389,8 @@ class ZPlane(Plane):
                boundary='transmission', z0=None):
 
     # Initialize ZPlane class attributes
-    super(ZPlane, self).__init__(surface_id, name, boundary, A=1., B=1., C=0.)
+    super(ZPlane, self).__init__(surface_id, name, boundary,
+                                 A=1., B=1., C=0., D=-z0)
 
     self._type = 'z-plane'
     self._coeffs['z0'] = None
@@ -400,11 +406,13 @@ class ZPlane(Plane):
   def setZ0(self, z0):
 
     if not is_integer(z0) and not is_float(z0):
-      exit('Unable to set z0 coefficient for ZPlane ID=%d to a '
-           'non-integer value %s', self._id, str(z0))
+      exit('Unable to set z0 coefficient for ZPlane ID=%d to a non-integer '
+           'or floating point value %s', self._id, str(z0))
 
     self._coeffs['z0'] = np.float64(z0)
-    self._coeffs['D'] = -np.float64(z0)
+    self.setD(-z0)
+    self._max_z = z0
+    self._min_z = z0
 
 
 
@@ -429,8 +437,8 @@ class Cylinder(Surface):
   def setR(self, R):
 
     if not is_integer(R) and not is_float(R):
-      exit('Unable to set R coefficient for Cylinder ID=%d to a '
-         'non-integer value %s', self._id, str(R))
+      exit('Unable to set R coefficient for Cylinder ID=%d to a non-integer '
+           'or floating point value %s', self._id, str(R))
 
     self._coeffs['R'] = np.float64(R)
 
@@ -458,6 +466,7 @@ class XCylinder(Cylinder):
   def getY0(self):
     return self._coeffs['y0']
 
+
   def getZ0(self):
     return self._coeffs['z0']
 
@@ -465,19 +474,40 @@ class XCylinder(Cylinder):
   def setY0(self, y0):
 
     if not is_integer(y0) and not is_float(y0):
-      exit('Unable to set y0 coefficient for XCylinder ID=%d to a '
-         'non-integer value %s', self._id, str(y0))
+      exit('Unable to set y0 coefficient for XCylinder ID=%d to a non-integer '
+           'or floating point value %s', self._id, str(y0))
 
     self._coeffs['y0'] = np.float64(y0)
+
+    if not self._coeffs['R'] is None:
+      self._max_y = y0 + self._R
+      self._min_y = y0 - self._R
 
 
   def setZ0(self, z0):
 
     if not is_integer(z0) and not is_float(z0):
-      exit('Unable to set z0 coefficient for XCylinder ID=%d to a '
-         'non-integer value %s', self._id, str(z0))
+      exit('Unable to set z0 coefficient for XCylinder ID=%d to a non-integer '
+           'or floating point value %s', self._id, str(z0))
 
     self._coeffs['z0'] = np.float64(z0)
+
+    if not self._coeffs['R'] is None:
+      self._max_z = z0 + self._R
+      self._min_z = z0 - self._R
+
+
+  def setR(self, R):
+
+    super(R)
+
+    if not self._coeffs['y0'] is None:
+      self._max_y = self._coeffs['y0'] + self._R
+      self._min_y = self._coeffs['y0'] - self._R
+
+    if not self._coeffs['z0'] is None:
+      self._max_z = self._coeffs['z0'] + self._R
+      self._min_z = self._coeffs['z0'] - self._R
 
 
   def evaluate(self, point):
@@ -485,7 +515,8 @@ class XCylinder(Cylinder):
     super(point)
 
     coords = point.getCoords()
-    r = (coords[1]-self._coeffs['y0'])**2 + (coords[2]-self._coeffs['z0'])**2
+    r = (coords[1] - self._coeffs['y0'])**2 + \
+        (coords[2] - self._coeffs['z0'])**2
     halfspace = np.sign(self._coeffs['R'] - r)
     return halfspace * np.sqrt(r)
 
@@ -521,19 +552,40 @@ class YCylinder(Cylinder):
   def setX0(self, x0):
 
     if not is_integer(x0) and not is_float(x0):
-      exit('Unable to set x0 coefficient for YCylinder ID=%d to a '
-         'non-integer value %s', self._id, str(x0))
+      exit('Unable to set x0 coefficient for YCylinder ID=%d to a non-integer '
+           'or floating point value %s', self._id, str(x0))
 
     self._coeffs['x0'] = np.float64(x0)
+
+    if not self._coeffs['R'] is None:
+      self._max_x = x0 + self._R
+      self._min_x = x0 - self._R
 
 
   def setZ0(self, z0):
 
     if not is_integer(z0) and not is_float(z0):
-      exit('Unable to set z0 coefficient for YCylinder ID=%d to a '
-         'non-integer value %s', self._id, str(z0))
+      exit('Unable to set z0 coefficient for YCylinder ID=%d to a non-integer '
+           'or floating point value %s', self._id, str(z0))
 
     self._coeffs['z0'] = np.float64(z0)
+
+    if not self._coeffs['R'] is None:
+      self._max_z = z0 + self._R
+      self._min_z = z0 - self._R
+
+
+  def setR(self, R):
+
+    super(R)
+
+    if not self._coeffs['x0'] is None:
+      self._max_x = self._coeffs['x0'] + self._R
+      self._min_x = self._coeffs['x0'] - self._R
+
+    if not self._coeffs['z0'] is None:
+      self._max_z = self._coeffs['z0'] + self._R
+      self._min_z = self._coeffs['z0'] - self._R
 
 
   def evaluate(self, point):
@@ -541,7 +593,8 @@ class YCylinder(Cylinder):
     super(point)
 
     coords = point.getCoords()
-    r = (coords[0]-self._coeffs['x0'])**2 + (coords[2]-self._coeffs['z0'])**2
+    r = (coords[0] - self._coeffs['x0'])**2 + \
+        (coords[2] - self._coeffs['z0'])**2
     halfspace = np.sign(self._coeffs['R'] - r)
     return halfspace * np.sqrt(r)
 
@@ -581,6 +634,10 @@ class ZCylinder(Cylinder):
 
     self._coeffs['x0'] = np.float64(x0)
 
+    if not self._coeffs['R'] is None:
+      self._max_x = x0 + self._R
+      self._min_x = x0 - self._R
+
 
   def setY0(self, y0):
 
@@ -590,13 +647,31 @@ class ZCylinder(Cylinder):
 
     self._coeffs['y0'] = np.float64(y0)
 
+    if not self._coeffs['R'] is None:
+      self._max_y = y0 + self._R
+      self._min_y = y0 - self._R
+
+
+  def setR(self, R):
+
+    super(R)
+
+    if not self._coeffs['x0'] is None:
+      self._max_x = self._coeffs['x0'] + self._R
+      self._min_x = self._coeffs['x0'] - self._R
+
+    if not self._coeffs['y0'] is None:
+      self._max_y = self._coeffs['y0'] + self._R
+      self._min_y = self._coeffs['y0'] - self._R
+
 
   def evaluate(self, point):
 
     super(point)
 
     coords = point.getCoords()
-    r = (coords[0]-self._coeffs['x0'])**2 + (coords[1]-self._coeffs['y0'])**2
+    r = (coords[0] - self._coeffs['x0'])**2 + \
+        (coords[1] - self._coeffs['y0'])**2
     halfspace = np.sign(self._coeffs['R'] - r)
     return halfspace * np.sqrt(r)
 
@@ -615,7 +690,6 @@ class Sphere(Surface):
     self._coeffs['y0'] = None
     self._coeffs['z0'] = None
     self._coeffs['R'] = None
-    self._coeff_keys = ['x0', 'y0', 'z0', 'R']
 
     if not x0 is None:
       self.setX0(x0)
@@ -649,37 +723,61 @@ class Sphere(Surface):
   def setX0(self, x0):
 
     if not is_integer(x0) and not is_float(x0):
-      exit('Unable to set x0 coefficient for Sphere ID=%d to a '
-           'non-integer value %s', self._id, str(x0))
+      exit('Unable to set x0 coefficient for Sphere ID=%d to a non-integer '
+           'or floating point value %s', self._id, str(x0))
 
     self._coeffs['x0'] = np.float64(x0)
+
+    if not self._coeffs['R'] is None:
+      self._max_x = x0 + self._coeffs['R']
+      self._min_x = x0 - self._coeffs['R']
 
 
   def setY0(self, y0):
 
     if not is_integer(y0) and not is_float(y0):
-      exit('Unable to set y0 coefficient for Sphere ID=%d to a '
-           'non-integer value %s', self._id, str(y0))
+      exit('Unable to set y0 coefficient for Sphere ID=%d to a non-integer '
+           'or floating point value %s', self._id, str(y0))
 
     self._coeffs['y0'] = np.float64(y0)
+
+    if not self._coeffs['R'] is None:
+      self._max_y = y0 + self._coeffs['R']
+      self._min_y = y0 - self._coeffs['R']
 
 
   def setZ0(self, z0):
 
     if not is_integer(z0) and not is_float(z0):
-      exit('Unable to set z0 coefficient for Sphere ID=%d to a '
-           'non-integer value %s', self._id, str(z0))
+      exit('Unable to set z0 coefficient for Sphere ID=%d to a non-integer '
+           'or floating point value %s', self._id, str(z0))
 
     self._coeffs['z0'] = np.float64(z0)
+
+    if not self._coeffs['R'] is None:
+      self._max_z = z0 + self._coeffs['R']
+      self._min_z = z0 - self._coeffs['R']
 
 
   def setR(self, R):
 
     if not is_integer(R) and not is_float(R):
-      exit('Unable to set R coefficient for Sphere ID=%d to a '
-           'non-integer value %s', self._id, str(R))
+      exit('Unable to set R coefficient for Sphere ID=%d to a non-integer '
+           'or floating point value %s', self._id, str(R))
 
     self._coeffs['R'] = np.float64(R)
+
+    if not self._coeffs['x0'] is None:
+      self._max_x = self._coeffs['x0'] + R
+      self._min_x = self._coeffs['x0'] - R
+
+    if not self._coeffs['y0'] is None:
+      self._max_y = self._coeffs['y0'] + R
+      self._min_y = self._coeffs['y0'] - R
+
+    if not self._coeffs['z0'] is None:
+      self._max_z = self._coeffs['z0'] + R
+      self._min_z = self._coeffs['z0'] - R
 
 
   def evaluate(self, point):
@@ -691,9 +789,10 @@ class Sphere(Surface):
     R2 = (self._coeffs['x0'] - coords[0])**2 + \
          (self._coeffs['y0'] - coords[1])**2 + \
          (self._coeffs['z0'] - coords[2])**2
-    halfspace = np.sign(self._coeffs['R2'] - R2)
+    R = np.sqrt(R2)
+    halfspace = np.sign(self._coeffs['R'] - R)
 
-    return halfspace * np.sqrt(R2)
+    return halfspace * R
 
 
 
@@ -720,7 +819,7 @@ class Cone(Surface):
       self.setZ0(z0)
 
     if not R2 is None:
-      self.setZ0(R2)
+      self.setR2(R2)
 
 
   def getX0(self):
@@ -742,8 +841,8 @@ class Cone(Surface):
   def setX0(self, x0):
 
     if not is_integer(x0) and not is_float(x0):
-      exit('Unable to set x0 coefficient for Cone ID=%d to a '
-           'non-integer value %s', self._id, str(x0))
+      exit('Unable to set x0 coefficient for Cone ID=%d to a non-integer '
+           'or floating point value %s', self._id, str(x0))
 
     self._coeffs['x0'] = np.float64(x0)
 
@@ -751,8 +850,8 @@ class Cone(Surface):
   def setY0(self, y0):
 
     if not is_integer(y0) and not is_float(y0):
-      exit('Unable to set y0 coefficient for Cone ID=%d to a '
-           'non-integer value %s', self._id, str(y0))
+      exit('Unable to set y0 coefficient for Cone ID=%d to a non-integer '
+           'or floating point value %s', self._id, str(y0))
 
     self._coeffs['y0'] = np.float64(y0)
 
@@ -760,8 +859,8 @@ class Cone(Surface):
   def setZ0(self, z0):
 
     if not is_integer(z0) and not is_float(z0):
-      exit('Unable to set z0 coefficient for Cone ID=%d to a '
-           'non-integer value %s', self._id, str(z0))
+      exit('Unable to set z0 coefficient for Cone ID=%d to a non-integer '
+           'or floating point value %s', self._id, str(z0))
 
     self._coeffs['z0'] = np.float64(z0)
 
@@ -769,8 +868,8 @@ class Cone(Surface):
   def setR2(self, R2):
 
     if not is_integer(R2) and not is_float(R2):
-      exit('Unable to set R^2 coefficient for Cone ID=%d to a '
-           'non-integer value %s', self._id, str(R2))
+      exit('Unable to set R^2 coefficient for Cone ID=%d to a non-integer '
+           'or floating point value %s', self._id, str(R2))
 
     self._coeffs['R2'] = np.float64(R2)
 
