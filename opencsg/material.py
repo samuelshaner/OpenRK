@@ -52,25 +52,25 @@ class Material(object):
 
       if material_id in material_ids:
         exit('Unable to set Material ID to %s since a Material '
-             'with this ID was already initialized.', str(material_id))
+             'with this ID was already initialized.' % str(material_id))
 
       if material_id < 0:
         exit('Unable to set Material ID to %d since it must be a '
-             'non-negative integer', material_id)
+             'non-negative integer' % material_id)
 
       else:
         self._id = material_id
         material_ids.append(material_id)
 
     else:
-      exit('Unable to set Material ID to a non-integer %s', str(material_id))
+      exit('Unable to set Material ID to a non-integer %s' % str(material_id))
 
 
   def setName(self, name):
 
     if not is_string(name):
       exit('Unable to set name for Material ID=%d with a non-string '
-           'value %s', self._id, str(name))
+           'value %s' % (self._id, str(name)))
 
     else:
       self._name = name

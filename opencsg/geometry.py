@@ -2,8 +2,7 @@ __author__ = 'Will Boyd'
 __email__ = 'wboyd@mit.edu'
 
 
-from universe import Universe, Lattice
-from localcoords import UnivCoords
+from universe import *
 from point import Point
 
 
@@ -29,11 +28,71 @@ class Geometry(object):
     return self._num_regions
 
 
+  def getMaxX(self):
+
+    if not 0 in self._universes.keys():
+      exit('Unable to get the maximum x since the Geometry does not '
+           'contain the base Universe ID=0')
+
+    root = self._universes[0]
+    return root.getMaxX()
+
+
+  def getMaxY(self):
+
+    if not 0 in self._universes.keys():
+      exit('Unable to get the maximum y since the Geometry does not '
+           'contain the base Universe ID=0')
+
+    root = self._universes[0]
+    return root.getMaxY()
+
+
+  def getMaxZ(self):
+
+    if not 0 in self._universes.keys():
+      exit('Unable to get the maximum z since the Geometry does not '
+           'contain the base Universe ID=0')
+
+    root = self._universes[0]
+    return root.getMaxZ()
+
+
+  def getMinX(self):
+
+    if not 0 in self._universes.keys():
+      exit('Unable to get the minimum x since the Geometry does not '
+           'contain the base Universe ID=0')
+
+    root = self._universes[0]
+    return root.getMinX()
+
+
+  def getMinY(self):
+
+    if not 0 in self._universes.keys():
+      exit('Unable to get the minimum y since the Geometry does not '
+           'contain the base Universe ID=0')
+
+    root = self._universes[0]
+    return root.getMinY()
+
+
+  def getMinZ(self):
+
+    if not 0 in self._universes.keys():
+      exit('Unable to get the minimum z since the Geometry does not '
+           'contain the base Universe ID=0')
+
+    root = self._universes[0]
+    return root.getMinZ()
+
+
   def addUniverse(self, universe):
 
     if not isinstance(universe, Universe):
       exit('Unable to add Universe to the Geometry since %s is not '
-           'a Universe', str(universe))
+           'a Universe' % str(universe))
 
     univ_id = universe.getId()
     self._universes[univ_id] = universe
@@ -50,7 +109,7 @@ class Geometry(object):
 
     if not isinstance(lattice, Lattice):
       exit('Unable to add Lattice to the Geometry since %s is not '
-           'a Lattice', str(lattice))
+           'a Lattice' % str(lattice))
 
     lat_id = lattice.getId()
     self._universes[lat_id] = lattice
@@ -96,9 +155,6 @@ class Geometry(object):
 
 
 #  def buildPath(self, region_id):
-
-
-
 
 
   def toString(self):

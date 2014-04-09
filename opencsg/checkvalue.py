@@ -5,13 +5,11 @@ import numpy as np
 
 
 def is_integer(val):
-  return isinstance(val, (int, np.int8, np.int16, np.int32, \
-                          np.int64, np.int128))
+  return isinstance(val, (int, np.int32, np.int64))
 
 
 def is_float(val):
-  return isinstance(val, (float, np.float16, np.int32, np.int64, \
-                          np.float96, np.float128, np.float256))
+  return isinstance(val, (float, np.int32, np.int64))
 
 
 def is_string(val):

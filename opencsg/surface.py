@@ -3,6 +3,7 @@ __email__ = 'wboyd@mit.edu'
 
 
 from point import Point
+from checkvalue import *
 import numpy as np
 
 
@@ -34,8 +35,7 @@ surf_types = ['plane',
 
 class Surface(object):
 
-  def __init__(self, surface_id=None, name='', boundary='transmission'):
-
+  def __init__(self, surface_id=None, name='', boundary='interface'):
 
     # Initialize class attributes
     self._id = None
@@ -88,43 +88,43 @@ class Surface(object):
 
     else:
       exit('Unable to return the coeff %s for Surface ID=%d since it '
-           'does not contain that coefficient', str(coeff), self._id)
+           'does not contain that coefficient' % (str(coeff), self._id))
 
 
-  def getMaxX(self):
+  def getMaxX(self, halfspace=None):
     return self._max_x
 
 
-  def getMaxY(self):
+  def getMaxY(self, halfspace=None):
     return self._max_y
 
 
-  def getMaxZ(self):
+  def getMaxZ(self, halfspace=None):
     return self._max_z
 
 
-  def getMinX(self):
+  def getMinX(self, halfspace=None):
     return self._min_x
 
 
-  def getMinY(self):
+  def getMinY(self, halfspace=None):
     return self._min_y
 
 
-  def getMinZ(self):
+  def getMinZ(self, halfspace=None):
     return self._min_z
 
 
   def evaluate(self, point):
     if not isinstance(point, Point):
       exit('Unable to evaluate point for Surface ID=%d since the input '
-           'is not a Point object', self._id)
+           'is not a Point object' % self._id)
 
 
   def onSurface(self, point):
     if not isinstance(point, Point):
       exit('Unable to determine whether a point is on Surface ID=%d since '
-           'the input is not a Point object', self._id)
+           'the input is not a Point object' % self._id)
 
     if np.abs(self.evaluate(point)) < on_surface_thresh:
       return True
@@ -150,26 +150,26 @@ class Surface(object):
         surface_ids.remove(self._id)
 
       if surface_id in surface_ids:
-        exit('Unable to set Surface ID to %s since a Surface '
-             'with this ID was already initialized.', str(surface_id))
+        exit('Unable to set Surface ID to %s since a Surface with '
+             'this ID was already initialized' % (str(surface_id)))
 
       if surface_id < 0:
         exit('Unable to set Surface ID to %d since it must be a '
-             'non-negative integer', surface_id)
+             'non-negative integer' % surface_id)
 
       else:
         self._id = surface_id
         surface_ids.append(surface_id)
 
     else:
-      exit('Unable to set a non-integer Surface ID %s', str(surface_id))
+      exit('Unable to set a non-integer Surface ID %s' % str(surface_id))
 
 
   def setName(self, name):
 
     if not is_string(name):
       exit('Unable to set name for Surface ID=%d with a non-string '
-           'value %s', self._id, str(name))
+           'value %s' % (self._id, str(name)))
 
     else:
       self._name = name
@@ -179,11 +179,11 @@ class Surface(object):
 
     if not is_string(boundary):
       exit('Unable to set boundary type for Surface ID=%d with a '
-           'non-string value %s', self._id, str(boundary))
+           'non-string value %s' % (self._id, str(boundary)))
 
     elif not boundary in boundary_types:
       exit('Unable to set boundary type for Surface ID=%d to %s which '
-           'is not transmission, vacuum or reflective', boundary)
+           'is not interface, vacuum or reflective' % (self._id, boundary))
 
     else:
       self._boundary_type = boundary
@@ -227,7 +227,7 @@ class Surface(object):
 
 class Plane(Surface):
 
-  def __init__(self, surface_id=None, name='', boundary='transmission',
+  def __init__(self, surface_id=None, name='', boundary='interface',
                A=None, B=None, C=None, D=None):
 
     # Initialize Plane class attributes
@@ -272,7 +272,7 @@ class Plane(Surface):
 
     if not is_integer(A) and not is_float(A):
       exit('Unable to set A coefficient for Plane ID=%d to a non-integer '
-           'or floating point value %s', self._id, str(A))
+           'or floating point value %s' % (self._id, str(A)))
 
     self._coeffs['A'] = np.float64(A)
 
@@ -281,7 +281,7 @@ class Plane(Surface):
 
     if not is_integer(B) and not is_float(B):
       exit('Unable to set B coefficient for Plane ID=%d to a non-integer '
-           'or floating point value %s', self._id, str(B))
+           'or floating point value %s' % (self._id, str(B)))
 
     self._coeffs['B'] = np.float64(B)
 
@@ -290,7 +290,7 @@ class Plane(Surface):
 
     if not is_integer(C) and not is_float(C):
       exit('Unable to set C coefficient for Plane ID=%d to a non-integer '
-           'or floating point value %s', self._id, str(C))
+           'or floating point value %s' % (self._id, str(C)))
 
     self._coeffs['C'] = np.float64(C)
 
@@ -299,14 +299,14 @@ class Plane(Surface):
 
     if not is_integer(D) and not is_float(D):
       exit('Unable to set D coefficient for Plane ID=%d to a non-integer '
-           'or floating point value %s', self._id, str(D))
+           'or floating point value %s' % (self._id, str(D)))
 
     self._coeffs['D'] = np.float64(D)
 
 
   def evaluate(self, point):
 
-    super(point)
+    super(Plane, self).evaluate(point)
 
     x, y, z = point.getX(), point.getY(), point.getZ()
 
@@ -322,7 +322,7 @@ class Plane(Surface):
 class XPlane(Plane):
 
   def __init__(self, surface_id=None, name='',
-               boundary='transmission', x0=None):
+               boundary='interface', x0=None):
 
     # Initialize XPlane class attributes
     super(XPlane, self).__init__(surface_id, name, boundary,
@@ -339,11 +339,57 @@ class XPlane(Plane):
     return self._coeffs['x0']
 
 
+  def getMaxX(self, halfspace=None):
+
+    if halfspace is None:
+      return self._max_x
+
+    else:
+
+      if not is_integer(halfspace):
+        exit('Unable to get the maximum x-coordinate for Surface ID=%d since '
+             'the halfspace is a non-integer value %s',
+             self._id, str(halfspace))
+
+      if not halfspace in [-1, +1]:
+        exit('Unable to get the maximum x-coordinate for Surface ID=%d since '
+             'the halfspace is %s which is not +/-1', self._id, str(halfspace))
+
+      if halfspace == -1:
+        return self._max_x
+
+      else:
+        return np.float64("inf")
+
+
+  def getMinX(self, halfspace=None):
+
+    if halfspace is None:
+      return self._min_x
+
+    else:
+
+      if not is_integer(halfspace):
+        exit('Unable to get the minimum x-coordinate for Surface ID=%d since '
+             'the halfspace is a non-integer value %s',
+             self._id, str(halfspace))
+
+      if not halfspace in [-1, +1]:
+        exit('Unable to get the minimum x-coordinate for Surface ID=%d since '
+             'the halfspace is %s which is not +/-1', self._id, str(halfspace))
+
+      if halfspace == -1:
+        return -np.float64("inf")
+
+      else:
+        return self._min_x
+
+
   def setX0(self, x0):
 
     if not is_integer(x0) and not is_float(x0):
       exit('Unable to set x0 coefficient for XPlane ID=%d to a non-integer '
-           'or floating point value %s', self._id, str(x0))
+           'or floating point value %s' % (self._id, str(x0)))
 
     self._coeffs['x0'] = np.float64(x0)
     self.setD(-x0)
@@ -351,10 +397,11 @@ class XPlane(Plane):
     self._min_x = np.float64(x0)
 
 
+
 class YPlane(Plane):
 
   def __init__(self, surface_id=None, name='',
-               boundary='transmission', y0=None):
+               boundary='interface', y0=None):
 
     # Initialize YPlane class attributes
     super(YPlane, self).__init__(surface_id, name, boundary,
@@ -370,12 +417,57 @@ class YPlane(Plane):
   def getY0(self):
     return self._coeffs['y0']
 
+  def getMaxY(self, halfspace=None):
+
+    if halfspace is None:
+      return self._max_y
+
+    else:
+
+      if not is_integer(halfspace):
+        exit('Unable to get the maximum y-coordinate for Surface ID=%d since '
+             'the halfspace is a non-integer value %s',
+             self._id, str(halfspace))
+
+      if not halfspace in [-1, +1]:
+        exit('Unable to get the maximum y-coordinate for Surface ID=%d since '
+             'the halfspace is %s which is not +/-1', self._id, str(halfspace))
+
+      if halfspace == -1:
+        return self._max_y
+
+      else:
+        return np.float64("inf")
+
+
+  def getMinY(self, halfspace=None):
+
+    if halfspace is None:
+      return self._min_y
+
+    else:
+
+      if not is_integer(halfspace):
+        exit('Unable to get the minimum y-coordinate for XPlane ID=%d since '
+             'the halfspace is a non-integer value %s',
+             self._id, str(halfspace))
+
+      if not halfspace in [-1, +1]:
+        exit('Unable to get the minimum y-coordinate for XPlane ID=%d since '
+             'the halfspace is %s which is not +/-1', self._id, str(halfspace))
+
+      if halfspace == -1:
+        return -np.float64("inf")
+
+      else:
+        return self._min_y
+
 
   def setY0(self, y0):
 
     if not is_integer(y0) and not is_float(y0):
       exit('Unable to set y0 coefficient for YPlane ID=%d to a non-integer '
-           'or floating point value %s', self._id, str(y0))
+           'or floating point value %s' % (self._id, str(y0)))
 
     self._coeffs['y0'] = np.float64(y0)
     self.setD(-y0)
@@ -386,7 +478,7 @@ class YPlane(Plane):
 class ZPlane(Plane):
 
   def __init__(self, surface_id=None, name='',
-               boundary='transmission', z0=None):
+               boundary='interface', z0=None):
 
     # Initialize ZPlane class attributes
     super(ZPlane, self).__init__(surface_id, name, boundary,
@@ -403,11 +495,57 @@ class ZPlane(Plane):
     return self._coeffs['z0']
 
 
+  def getMaxZ(self, halfspace=None):
+
+    if halfspace is None:
+      return self._max_z
+
+    else:
+
+      if not is_integer(halfspace):
+        exit('Unable to get the maximum z-coordinate for YPlane ID=%d since '
+             'the halfspace is a non-integer value %s',
+             self._id, str(halfspace))
+
+      if not halfspace in [-1, +1]:
+        exit('Unable to get the maximum z-coordinate for YPlane ID=%d since '
+             'the halfspace is %s which is not +/-1', self._id, str(halfspace))
+
+      if halfspace == -1:
+        return self._max_z
+
+      else:
+        return np.float64("inf")
+
+
+  def getMinX(self, halfspace=None):
+
+    if halfspace is None:
+      return self._min_z
+
+    else:
+
+      if not is_integer(halfspace):
+        exit('Unable to get the minimum z-coordinate for ZPlane ID=%d since '
+             'the halfspace is a non-integer value %s',
+             self._id, str(halfspace))
+
+      if not halfspace in [-1, +1]:
+        exit('Unable to get the minimum z-coordinate for ZPlane ID=%d since '
+             'the halfspace is %s which is not +/-1', self._id, str(halfspace))
+
+      if halfspace == -1:
+        return -np.float64("inf")
+
+      else:
+        return self._min_z
+
+
   def setZ0(self, z0):
 
     if not is_integer(z0) and not is_float(z0):
       exit('Unable to set z0 coefficient for ZPlane ID=%d to a non-integer '
-           'or floating point value %s', self._id, str(z0))
+           'or floating point value %s' % (self._id, str(z0)))
 
     self._coeffs['z0'] = np.float64(z0)
     self.setD(-z0)
@@ -419,15 +557,12 @@ class ZPlane(Plane):
 class Cylinder(Surface):
 
   def __init__(self, surface_id=None, name='',
-               boundary='transmission', R=None):
+               boundary='interface', R=None):
 
     # Initialize Cylinder class attributes
     super(Cylinder, self).__init__(surface_id, name, boundary)
 
     self._coeffs['R'] = None
-
-    if not R is None:
-      self.setR(R)
 
 
   def getR(self):
@@ -438,7 +573,7 @@ class Cylinder(Surface):
 
     if not is_integer(R) and not is_float(R):
       exit('Unable to set R coefficient for Cylinder ID=%d to a non-integer '
-           'or floating point value %s', self._id, str(R))
+           'or floating point value %s' % (self._id, str(R)))
 
     self._coeffs['R'] = np.float64(R)
 
@@ -447,7 +582,7 @@ class Cylinder(Surface):
 class XCylinder(Cylinder):
 
   def __init__(self, surface_id=None, name='',
-               boundary='transmission', y0=None, z0=None, R=None):
+               boundary='interface', y0=None, z0=None, R=None):
 
     # Initialize XCylinder class attributes
     super(XCylinder, self).__init__(surface_id, name, boundary, R)
@@ -462,6 +597,9 @@ class XCylinder(Cylinder):
     if not z0 is None:
       self.setZ0(z0)
 
+    if not R is None:
+      self.setR(R)
+
 
   def getY0(self):
     return self._coeffs['y0']
@@ -471,61 +609,153 @@ class XCylinder(Cylinder):
     return self._coeffs['z0']
 
 
+  def getMaxY(self, halfspace=None):
+
+    if halfspace is None:
+      return self._max_y
+
+    else:
+
+      if not is_integer(halfspace):
+        exit('Unable to get the maximum y-coordinate for XClinder ID=%d since '
+             'the halfspace is a non-integer value %s',
+             self._id, str(halfspace))
+
+      if not halfspace in [-1, +1]:
+        exit('Unable to get the maximum y-coordinate for XCylinder ID=%d since '
+             'the halfspace is %s which is not +/-1', self._id, str(halfspace))
+
+      if halfspace == -1:
+        return self._max_y
+
+      else:
+        return np.float64("inf")
+
+
+  def getMinY(self, halfspace=None):
+
+    if halfspace is None:
+      return self._min_y
+
+    else:
+
+      if not is_integer(halfspace):
+        exit('Unable to get the minimum y-coordinate for XCylinder ID=%d since '
+             'the halfspace is a non-integer value %s',
+             self._id, str(halfspace))
+
+      if not halfspace in [-1, +1]:
+        exit('Unable to get the minimum y-coordinate for XCylinder ID=%d since '
+             'the halfspace is %s which is not +/-1', self._id, str(halfspace))
+
+      if halfspace == -1:
+        return self._min_y
+
+      else:
+        return -np.float64("inf")
+
+
+  def getMaxZ(self, halfspace=None):
+
+    if halfspace is None:
+      return self._max_z
+
+    else:
+
+      if not is_integer(halfspace):
+        exit('Unable to get the maximum z-coordinate for XClinder ID=%d since '
+             'the halfspace is a non-integer value %s',
+             self._id, str(halfspace))
+
+      if not halfspace in [-1, +1]:
+        exit('Unable to get the maximum z-coordinate for XCylinder ID=%d since '
+             'the halfspace is %s which is not +/-1', self._id, str(halfspace))
+
+      if halfspace == -1:
+        return self._max_z
+
+      else:
+        return np.float64("inf")
+
+
+  def getMinZ(self, halfspace=None):
+
+    if halfspace is None:
+      return self._min_z
+
+    else:
+
+      if not is_integer(halfspace):
+        exit('Unable to get the minimum z-coordinate for XCylinder ID=%d since '
+             'the halfspace is a non-integer value %s',
+             self._id, str(halfspace))
+
+      if not halfspace in [-1, +1]:
+        exit('Unable to get the minimum z-coordinate for XCylinder ID=%d since '
+             'the halfspace is %s which is not +/-1', self._id, str(halfspace))
+
+      if halfspace == -1:
+        return self._min_z
+
+      else:
+        return -np.float64("inf")
+
+
   def setY0(self, y0):
 
     if not is_integer(y0) and not is_float(y0):
       exit('Unable to set y0 coefficient for XCylinder ID=%d to a non-integer '
-           'or floating point value %s', self._id, str(y0))
+           'or floating point value %s' % (self._id, str(y0)))
 
     self._coeffs['y0'] = np.float64(y0)
 
     if not self._coeffs['R'] is None:
-      self._max_y = y0 + self._R
-      self._min_y = y0 - self._R
+      self._max_y = y0 + self._coeffs['R']
+      self._min_y = y0 - self._coeffs['R']
 
 
   def setZ0(self, z0):
 
     if not is_integer(z0) and not is_float(z0):
       exit('Unable to set z0 coefficient for XCylinder ID=%d to a non-integer '
-           'or floating point value %s', self._id, str(z0))
+           'or floating point value %s' % (self._id, str(z0)))
 
     self._coeffs['z0'] = np.float64(z0)
 
     if not self._coeffs['R'] is None:
-      self._max_z = z0 + self._R
-      self._min_z = z0 - self._R
+      self._max_z = z0 + self._coeffs['R']
+      self._min_z = z0 - self._coeffs['R']
 
 
   def setR(self, R):
 
-    super(R)
+    super(XCylinder, self).setR(R)
 
     if not self._coeffs['y0'] is None:
-      self._max_y = self._coeffs['y0'] + self._R
-      self._min_y = self._coeffs['y0'] - self._R
+      self._max_y = self._coeffs['y0'] + self._coeffs['R']
+      self._min_y = self._coeffs['y0'] - self._coeffs['R']
 
     if not self._coeffs['z0'] is None:
-      self._max_z = self._coeffs['z0'] + self._R
-      self._min_z = self._coeffs['z0'] - self._R
+      self._max_z = self._coeffs['z0'] + self._coeffs['R']
+      self._min_z = self._coeffs['z0'] - self._coeffs['R']
 
 
   def evaluate(self, point):
 
-    super(point)
+    super(XCylinder, self).evaluate(point)
 
     coords = point.getCoords()
-    r = (coords[1] - self._coeffs['y0'])**2 + \
+    r2 = (coords[1] - self._coeffs['y0'])**2 + \
         (coords[2] - self._coeffs['z0'])**2
-    halfspace = np.sign(self._coeffs['R'] - r)
-    return halfspace * np.sqrt(r)
-
+    r = np.sqrt(r2)
+    halfspace = np.sign(r - self._coeffs['R'])
+    return halfspace * r
 
 
 class YCylinder(Cylinder):
 
   def __init__(self, surface_id=None, name='',
-               boundary='transmission', x0=None, z0=None, R=None):
+               boundary='interface', x0=None, z0=None, R=None):
 
     # Initialize YCylinder class attributes
     super(YCylinder, self).__init__(surface_id, name, boundary, R)
@@ -540,6 +770,9 @@ class YCylinder(Cylinder):
     if not z0 is None:
       self.setZ0(z0)
 
+    if not R is None:
+      self.setR(R)
+
 
   def getX0(self):
     return self._coeffs['x0']
@@ -549,61 +782,153 @@ class YCylinder(Cylinder):
     return self._coeffs['z0']
 
 
+  def getMaxX(self, halfspace=None):
+
+    if halfspace is None:
+      return self._max_x
+
+    else:
+
+      if not is_integer(halfspace):
+        exit('Unable to get the maximum x-coordinate for YClinder ID=%d since '
+             'the halfspace is a non-integer value %s',
+             self._id, str(halfspace))
+
+      if not halfspace in [-1, +1]:
+        exit('Unable to get the maximum x-coordinate for YCylinder ID=%d since '
+             'the halfspace is %s which is not +/-1', self._id, str(halfspace))
+
+      if halfspace == -1:
+        return self._max_x
+
+      else:
+        return np.float64("inf")
+
+
+  def getMinX(self, halfspace=None):
+
+    if halfspace is None:
+      return self._min_x
+
+    else:
+
+      if not is_integer(halfspace):
+        exit('Unable to get the minimum x-coordinate for YCylinder ID=%d since '
+             'the halfspace is a non-integer value %s',
+             self._id, str(halfspace))
+
+      if not halfspace in [-1, +1]:
+        exit('Unable to get the minimum x-coordinate for YCylinder ID=%d since '
+             'the halfspace is %s which is not +/-1', self._id, str(halfspace))
+
+      if halfspace == -1:
+        return self._min_x
+
+      else:
+        return -np.float64("inf")
+
+
+  def getMaxZ(self, halfspace=None):
+
+    if halfspace is None:
+      return self._max_z
+
+    else:
+
+      if not is_integer(halfspace):
+        exit('Unable to get the maximum z-coordinate for YClinder ID=%d since '
+             'the halfspace is a non-integer value %s',
+             self._id, str(halfspace))
+
+      if not halfspace in [-1, +1]:
+        exit('Unable to get the maximum z-coordinate for YCylinder ID=%d since '
+             'the halfspace is %s which is not +/-1', self._id, str(halfspace))
+
+      if halfspace == -1:
+        return self._max_z
+
+      else:
+        return np.float64("inf")
+
+
+  def getMinZ(self, halfspace=None):
+
+    if halfspace is None:
+      return self._min_z
+
+    else:
+
+      if not is_integer(halfspace):
+        exit('Unable to get the minimum z-coordinate for YCylinder ID=%d since '
+             'the halfspace is a non-integer value %s',
+             self._id, str(halfspace))
+
+      if not halfspace in [-1, +1]:
+        exit('Unable to get the minimum z-coordinate for YCylinder ID=%d since '
+             'the halfspace is %s which is not +/-1', self._id, str(halfspace))
+
+      if halfspace == -1:
+        return self._min_z
+
+      else:
+        return -np.float64("inf")
+
+
   def setX0(self, x0):
 
     if not is_integer(x0) and not is_float(x0):
       exit('Unable to set x0 coefficient for YCylinder ID=%d to a non-integer '
-           'or floating point value %s', self._id, str(x0))
+           'or floating point value %s' % (self._id, str(x0)))
 
     self._coeffs['x0'] = np.float64(x0)
 
     if not self._coeffs['R'] is None:
-      self._max_x = x0 + self._R
-      self._min_x = x0 - self._R
+      self._max_x = x0 + self._coeffs['R']
+      self._min_x = x0 - self._coeffs['R']
 
 
   def setZ0(self, z0):
 
     if not is_integer(z0) and not is_float(z0):
       exit('Unable to set z0 coefficient for YCylinder ID=%d to a non-integer '
-           'or floating point value %s', self._id, str(z0))
+           'or floating point value %s' % (self._id, str(z0)))
 
     self._coeffs['z0'] = np.float64(z0)
 
     if not self._coeffs['R'] is None:
-      self._max_z = z0 + self._R
-      self._min_z = z0 - self._R
+      self._max_z = z0 + self._coeffs['R']
+      self._min_z = z0 - self._coeffs['R']
 
 
   def setR(self, R):
 
-    super(R)
+    super(YCylinder, self).setR(R)
 
     if not self._coeffs['x0'] is None:
-      self._max_x = self._coeffs['x0'] + self._R
-      self._min_x = self._coeffs['x0'] - self._R
+      self._max_x = self._coeffs['x0'] + self._coeffs['R']
+      self._min_x = self._coeffs['x0'] - self._coeffs['R']
 
     if not self._coeffs['z0'] is None:
-      self._max_z = self._coeffs['z0'] + self._R
-      self._min_z = self._coeffs['z0'] - self._R
+      self._max_z = self._coeffs['z0'] + self._coeffs['R']
+      self._min_z = self._coeffs['z0'] - self._coeffs['R']
 
 
   def evaluate(self, point):
 
-    super(point)
+    super(YCylinder, self).evaluate(point)
 
     coords = point.getCoords()
-    r = (coords[0] - self._coeffs['x0'])**2 + \
+    r2 = (coords[0] - self._coeffs['x0'])**2 + \
         (coords[2] - self._coeffs['z0'])**2
-    halfspace = np.sign(self._coeffs['R'] - r)
-    return halfspace * np.sqrt(r)
-
+    r = np.sqrt(r2)
+    halfspace = np.sign(r - self._coeffs['R'])
+    return halfspace * r
 
 
 class ZCylinder(Cylinder):
 
   def __init__(self, surface_id=None, name='',
-               boundary='transmission', x0=None, y0=None, R=None):
+               boundary='interface', x0=None, y0=None, R=None):
 
     # Initialize ZCylinder class attributes
     super(ZCylinder, self).__init__(surface_id, name, boundary, R)
@@ -618,6 +943,9 @@ class ZCylinder(Cylinder):
     if not y0 is None:
       self.setY0(y0)
 
+    if not R is None:
+      self.setR(R)
+
 
   def getX0(self):
     return self._coeffs['x0']
@@ -626,61 +954,154 @@ class ZCylinder(Cylinder):
     return self._coeffs['y0']
 
 
+  def getMaxX(self, halfspace=None):
+
+    if halfspace is None:
+      return self._max_x
+
+    else:
+
+      if not is_integer(halfspace):
+        exit('Unable to get the maximum x-coordinate for ZClinder ID=%d since '
+             'the halfspace is a non-integer value %s',
+             self._id, str(halfspace))
+
+      if not halfspace in [-1, +1]:
+        exit('Unable to get the maximum x-coordinate for ZCylinder ID=%d since '
+             'the halfspace is %s which is not +/-1', self._id, str(halfspace))
+
+      if halfspace == -1:
+        return self._max_x
+
+      else:
+        return np.float64("inf")
+
+
+  def getMinX(self, halfspace=None):
+
+    if halfspace is None:
+      return self._min_x
+
+    else:
+
+      if not is_integer(halfspace):
+        exit('Unable to get the minimum x-coordinate for ZCylinder ID=%d since '
+             'the halfspace is a non-integer value %s',
+             self._id, str(halfspace))
+
+      if not halfspace in [-1, +1]:
+        exit('Unable to get the minimum x-coordinate for ZCylinder ID=%d since '
+             'the halfspace is %s which is not +/-1', self._id, str(halfspace))
+
+      if halfspace == -1:
+        return self._min_x
+
+      else:
+        return -np.float64("inf")
+
+
+  def getMaxY(self, halfspace=None):
+
+    if halfspace is None:
+      return self._max_y
+
+    else:
+
+      if not is_integer(halfspace):
+        exit('Unable to get the maximum y-coordinate for ZClinder ID=%d since '
+             'the halfspace is a non-integer value %s',
+             self._id, str(halfspace))
+
+      if not halfspace in [-1, +1]:
+        exit('Unable to get the maximum y-coordinate for ZCylinder ID=%d since '
+             'the halfspace is %s which is not +/-1', self._id, str(halfspace))
+
+      if halfspace == -1:
+        return self._max_y
+
+      else:
+        return np.float64("inf")
+
+
+  def getMinY(self, halfspace=None):
+
+    if halfspace is None:
+      return self._min_y
+
+    else:
+
+      if not is_integer(halfspace):
+        exit('Unable to get the minimum y-coordinate for ZCylinder ID=%d since '
+             'the halfspace is a non-integer value %s',
+             self._id, str(halfspace))
+
+      if not halfspace in [-1, +1]:
+        exit('Unable to get the minimum y-coordinate for ZCylinder ID=%d since '
+             'the halfspace is %s which is not +/-1', self._id, str(halfspace))
+
+      if halfspace == -1:
+        return self._min_y
+
+      else:
+        return -np.float64("inf")
+
+
   def setX0(self, x0):
 
     if not is_integer(x0) and not is_float(x0):
       exit('Unable to set x0 coefficient for ZCylinder ID=%d to a '
-         'non-integer value %s', self._id, str(x0))
+         'non-integer value %s' % (self._id, str(x0)))
 
     self._coeffs['x0'] = np.float64(x0)
 
     if not self._coeffs['R'] is None:
-      self._max_x = x0 + self._R
-      self._min_x = x0 - self._R
+      self._max_x = x0 + self._coeffs['R']
+      self._min_x = x0 - self._coeffs['R']
 
 
   def setY0(self, y0):
 
     if not is_integer(y0) and not is_float(y0):
       exit('Unable to set y0 coefficient for ZCylinder ID=%d to a '
-         'non-integer value %s', self._id, str(y0))
+         'non-integer value %s' % (self._id, str(y0)))
 
     self._coeffs['y0'] = np.float64(y0)
 
     if not self._coeffs['R'] is None:
-      self._max_y = y0 + self._R
-      self._min_y = y0 - self._R
+      self._max_y = y0 + self._coeffs['R']
+      self._min_y = y0 - self._coeffs['R']
 
 
   def setR(self, R):
 
-    super(R)
+    super(ZCylinder, self).setR(R)
 
     if not self._coeffs['x0'] is None:
-      self._max_x = self._coeffs['x0'] + self._R
-      self._min_x = self._coeffs['x0'] - self._R
+      self._max_x = self._coeffs['x0'] + self._coeffs['R']
+      self._min_x = self._coeffs['x0'] - self._coeffs['R']
 
     if not self._coeffs['y0'] is None:
-      self._max_y = self._coeffs['y0'] + self._R
-      self._min_y = self._coeffs['y0'] - self._R
+      self._max_y = self._coeffs['y0'] + self._coeffs['R']
+      self._min_y = self._coeffs['y0'] - self._coeffs['R']
 
 
   def evaluate(self, point):
 
-    super(point)
+    super(ZCylinder, self).evaluate(point)
 
     coords = point.getCoords()
-    r = (coords[0] - self._coeffs['x0'])**2 + \
+    r2 = (coords[0] - self._coeffs['x0'])**2 + \
         (coords[1] - self._coeffs['y0'])**2
-    halfspace = np.sign(self._coeffs['R'] - r)
-    return halfspace * np.sqrt(r)
+    r = np.sqrt(r2)
+    halfspace = np.sign(r - self._coeffs['R'])
+    return halfspace * r
 
 
 
 class Sphere(Surface):
 
   def __init__(self, surface_id=None, name='',
-               boundary='transmission', x0=None, y0=None, z0=None, R=None):
+               boundary='interface', x0=None, y0=None, z0=None, R=None):
 
     # Initialize Sphere class attributes
     super(Sphere, self).__init__(surface_id, name, boundary)
@@ -720,11 +1141,149 @@ class Sphere(Surface):
     return self._coeffs['R']
 
 
+  def getMaxX(self, halfspace=None):
+
+    if halfspace is None:
+      return self._max_x
+
+    else:
+
+      if not is_integer(halfspace):
+        exit('Unable to get the maximum x-coordinate for Sphere ID=%d since '
+             'the halfspace is a non-integer value %s',
+             self._id, str(halfspace))
+
+      if not halfspace in [-1, +1]:
+        exit('Unable to get the maximum x-coordinate for Sphere ID=%d since '
+             'the halfspace is %s which is not +/-1', self._id, str(halfspace))
+
+      if halfspace == -1:
+        return self._max_x
+
+      else:
+        return np.float64("inf")
+
+
+  def getMinX(self, halfspace=None):
+
+    if halfspace is None:
+      return self._min_x
+
+    else:
+
+      if not is_integer(halfspace):
+        exit('Unable to get the minimum x-coordinate for Sphere ID=%d since '
+             'the halfspace is a non-integer value %s',
+             self._id, str(halfspace))
+
+      if not halfspace in [-1, +1]:
+        exit('Unable to get the minimum x-coordinate for Sphere ID=%d since '
+             'the halfspace is %s which is not +/-1', self._id, str(halfspace))
+
+      if halfspace == -1:
+        return self._min_x
+
+      else:
+        return -np.float64("inf")
+
+
+  def getMaxY(self, halfspace=None):
+
+    if halfspace is None:
+      return self._max_y
+
+    else:
+
+      if not is_integer(halfspace):
+        exit('Unable to get the maximum y-coordinate for Sphere ID=%d since '
+             'the halfspace is a non-integer value %s',
+             self._id, str(halfspace))
+
+      if not halfspace in [-1, +1]:
+        exit('Unable to get the maximum y-coordinate for Sphere ID=%d since '
+             'the halfspace is %s which is not +/-1', self._id, str(halfspace))
+
+      if halfspace == -1:
+        return self._max_y
+
+      else:
+        return np.float64("inf")
+
+
+  def getMinY(self, halfspace=None):
+
+    if halfspace is None:
+      return self._min_y
+
+    else:
+
+      if not is_integer(halfspace):
+        exit('Unable to get the minimum y-coordinate for Sphere ID=%d since '
+             'the halfspace is a non-integer value %s',
+             self._id, str(halfspace))
+
+      if not halfspace in [-1, +1]:
+        exit('Unable to get the minimum y-coordinate for Sphere ID=%d since '
+             'the halfspace is %s which is not +/-1', self._id, str(halfspace))
+
+      if halfspace == -1:
+        return self._min_y
+
+      else:
+        return -np.float64("inf")
+
+
+  def getMaxZ(self, halfspace=None):
+
+    if halfspace is None:
+      return self._max_z
+
+    else:
+
+      if not is_integer(halfspace):
+        exit('Unable to get the maximum z-coordinate for Sphere ID=%d since '
+             'the halfspace is a non-integer value %s',
+             self._id, str(halfspace))
+
+      if not halfspace in [-1, +1]:
+        exit('Unable to get the maximum z-coordinate for Sphere ID=%d since '
+             'the halfspace is %s which is not +/-1', self._id, str(halfspace))
+
+      if halfspace == -1:
+        return self._max_z
+
+      else:
+        return np.float64("inf")
+
+
+  def getMinZ(self, halfspace=None):
+
+    if halfspace is None:
+      return self._min_z
+
+    else:
+
+      if not is_integer(halfspace):
+        exit('Unable to get the minimum z-coordinate for Sphere ID=%d since '
+             'the halfspace is a non-integer value %s',
+             self._id, str(halfspace))
+
+      if not halfspace in [-1, +1]:
+        exit('Unable to get the minimum z-coordinate for Sphere ID=%d since '
+             'the halfspace is %s which is not +/-1', self._id, str(halfspace))
+
+      if halfspace == -1:
+        return self._min_z
+
+      else:
+        return -np.float64("inf")
+
+
   def setX0(self, x0):
 
     if not is_integer(x0) and not is_float(x0):
       exit('Unable to set x0 coefficient for Sphere ID=%d to a non-integer '
-           'or floating point value %s', self._id, str(x0))
+           'or floating point value %s' % (self._id, str(x0)))
 
     self._coeffs['x0'] = np.float64(x0)
 
@@ -737,7 +1296,7 @@ class Sphere(Surface):
 
     if not is_integer(y0) and not is_float(y0):
       exit('Unable to set y0 coefficient for Sphere ID=%d to a non-integer '
-           'or floating point value %s', self._id, str(y0))
+           'or floating point value %s' % (self._id, str(y0)))
 
     self._coeffs['y0'] = np.float64(y0)
 
@@ -750,7 +1309,7 @@ class Sphere(Surface):
 
     if not is_integer(z0) and not is_float(z0):
       exit('Unable to set z0 coefficient for Sphere ID=%d to a non-integer '
-           'or floating point value %s', self._id, str(z0))
+           'or floating point value %s' % (self._id, str(z0)))
 
     self._coeffs['z0'] = np.float64(z0)
 
@@ -763,7 +1322,7 @@ class Sphere(Surface):
 
     if not is_integer(R) and not is_float(R):
       exit('Unable to set R coefficient for Sphere ID=%d to a non-integer '
-           'or floating point value %s', self._id, str(R))
+           'or floating point value %s' % (self._id, str(R)))
 
     self._coeffs['R'] = np.float64(R)
 
@@ -782,7 +1341,7 @@ class Sphere(Surface):
 
   def evaluate(self, point):
 
-    super(point)
+    super(Sphere, self).evaluate(point)
 
     coords = point.getCoords()
 
@@ -790,121 +1349,6 @@ class Sphere(Surface):
          (self._coeffs['y0'] - coords[1])**2 + \
          (self._coeffs['z0'] - coords[2])**2
     R = np.sqrt(R2)
-    halfspace = np.sign(self._coeffs['R'] - R)
+    halfspace = np.sign(R - self._coeffs['R'])
 
     return halfspace * R
-
-
-
-class Cone(Surface):
-
-  def __init__(self, surface_id=None, name='',
-               boundary='transmission', x0=None, y0=None, z0=None, R2=None):
-
-    # Initialize Cone class attributes
-    super(Cone, self).__init__(surface_id, name, boundary)
-
-    self._coeffs['x0'] = None
-    self._coeffs['y0'] = None
-    self._coeffs['z0'] = None
-    self._coeffs['R2'] = None
-
-    if not x0 is None:
-      self.setX0(x0)
-
-    if not y0 is None:
-      self.setY0(y0)
-
-    if not z0 is None:
-      self.setZ0(z0)
-
-    if not R2 is None:
-      self.setR2(R2)
-
-
-  def getX0(self):
-    return self._coeffs['x0']
-
-
-  def getY0(self):
-    return self._coeffs['y0']
-
-
-  def getZ0(self):
-    return self._coeffs['z0']
-
-
-  def getR2(self):
-    return self._coeffs['R2']
-
-
-  def setX0(self, x0):
-
-    if not is_integer(x0) and not is_float(x0):
-      exit('Unable to set x0 coefficient for Cone ID=%d to a non-integer '
-           'or floating point value %s', self._id, str(x0))
-
-    self._coeffs['x0'] = np.float64(x0)
-
-
-  def setY0(self, y0):
-
-    if not is_integer(y0) and not is_float(y0):
-      exit('Unable to set y0 coefficient for Cone ID=%d to a non-integer '
-           'or floating point value %s', self._id, str(y0))
-
-    self._coeffs['y0'] = np.float64(y0)
-
-
-  def setZ0(self, z0):
-
-    if not is_integer(z0) and not is_float(z0):
-      exit('Unable to set z0 coefficient for Cone ID=%d to a non-integer '
-           'or floating point value %s', self._id, str(z0))
-
-    self._coeffs['z0'] = np.float64(z0)
-
-
-  def setR2(self, R2):
-
-    if not is_integer(R2) and not is_float(R2):
-      exit('Unable to set R^2 coefficient for Cone ID=%d to a non-integer '
-           'or floating point value %s', self._id, str(R2))
-
-    self._coeffs['R2'] = np.float64(R2)
-
-
-
-class XCone(Cone):
-
-  def __init__(self, surface_id=None, name='',
-               boundary='transmission', x0=None, y0=None, z0=None, R2=None):
-
-    # Initialize XCone class attributes
-    super(XCone, self).__init__(surface_id, name, boundary, x0, y0, z0, R2)
-
-    self._type = 'x-cone'
-
-
-
-class YCone(Cone):
-
-  def __init__(self, surface_id=None, name='',
-         boundary='transmission', x0=None, y0=None, z0=None, R2=None):
-
-    # Initialize YCone class attributes
-    super(YCone, self).__init__(surface_id, name, boundary, x0, y0, z0, R2)
-
-    self._type = 'y-cone'
-
-
-
-class ZCone(Cone):
-
-  def __init__(self, surface_id=None, name='',
-         boundary='transmission', x0=None, y0=None, z0=None, R2=None):
-
-    # Initialize ZCone class attributes
-    super(ZCone, self).__init__(surface_id, name, boundary, x0, y0, z0, R2)
-
-    self._type = 'z-cone'

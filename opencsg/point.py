@@ -43,7 +43,7 @@ class Point(object):
 
     if not isinstance(coords, tuple) and len(coords) != 3:
       exit('Unable to set coords for point to %s since it is '
-           'not a 3D tuple', str(coords))
+           'not a 3D tuple' % str(coords))
 
     self.setX(coords[0])
     self.setY(coords[1])
@@ -52,7 +52,7 @@ class Point(object):
   def setX(self, x):
     if not is_integer(x) and not is_float(x):
       exit('Unable to set x coordinate for point to %s since it is not an '
-           'integer or floating point value', str(x))
+           'integer or floating point value' % str(x))
 
     self._coords[0] = np.float64(x)
 
@@ -60,7 +60,7 @@ class Point(object):
   def setY(self, y):
     if not is_integer(y) and not is_float(y):
       exit('Unable to set y coordinate for point to %s since it is not an '
-           'integer or floating point value', str(y))
+           'integer or floating point value' % str(y))
 
     self._coords[1] = np.float64(y)
 
@@ -68,7 +68,7 @@ class Point(object):
   def setZ(self, z):
     if not is_integer(z) and not is_float(z):
       exit('Unable to set z coordinate for point to %s since it is not an '
-           'integer or floating point value', str(z))
+           'integer or floating point value' % str(z))
 
     self._coords[2] = np.float64(z)
 
