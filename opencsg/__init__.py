@@ -5,3 +5,4 @@ from material import *
 from surface import *
 from universe import *
 from geometry import *
+from mesh import *

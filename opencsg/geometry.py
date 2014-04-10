@@ -151,6 +151,12 @@ class Geometry(object):
     root.computeVolumeFractions(volume=self._volume)
 
 
+#  def subdivideCells(self):
+
+#    for universe_id in self._universes:
+#      universe = self._universes[universe_id]
+#      universe.subdivideCells()
+
 
   def initializeCellOffsets(self):
 

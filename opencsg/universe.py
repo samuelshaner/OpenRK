@@ -316,6 +316,13 @@ class Universe(object):
         fill.computeVolumeFractions(volume=volume*volume_fraction)
 
 
+#  def subdivideCells(self):
+
+#    for cell_id in self._cells:
+#      cell = self._cells[cell_id]
+
+
+
   def initializeCellOffsets(self):
 
 
