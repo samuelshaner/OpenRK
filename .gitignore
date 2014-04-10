@@ -20,3 +20,8 @@ var/
 
 .idea/
 .idea/*
+
+*.png
+*/*.png
+*plots
+*/plots/*

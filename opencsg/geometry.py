@@ -157,8 +157,6 @@ class Geometry(object):
     return region_id
 
 
-
-
   def findCell(self, x=0., y=0., z=0.):
 
     if not 0 in self._universes.keys():
@@ -173,7 +171,33 @@ class Geometry(object):
     return root.findCell(localcoords=localcoords)
 
 
-#  def findCell(self, region_id):
+
+
+  #def findCell(self, region_id):
+
+
+
+
+  def findRegion(self, region_id=0):
+
+    if not 0 in self._universes.keys():
+      exit('Unable to find coords since the Geometry does not contain the '
+           'base Universe ID=0')
+
+    if not is_integer(region_id):
+      exit('Unable to get the path for region_id %s since it is '
+           'not an integer value' % str(region_id))
+
+    if region_id < 0:
+      exit('Unable to get the path for region_id=%d since it is '
+           'a negative integer' % region_id)
+
+
+    root = self._universes[0]
+    localcoords = UnivCoords(universe=root)
+    root.findRegion(region_id=region_id, univ_coords=localcoords)
+    localcoords = localcoords.getHeadNode()
+    return localcoords
 
 
   def findCoords(self, x=0., y=0., z=0.):
@@ -190,13 +214,6 @@ class Geometry(object):
     localcoords = localcoords.getHeadNode()
 
     return localcoords
-
-
-#  def buildPath(self, localcoords):
-
-
-
-#  def buildPath(self, region_id):
 
 
   def toString(self):

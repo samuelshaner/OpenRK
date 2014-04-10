@@ -62,7 +62,6 @@ class Universe(object):
     cell_id = cell.getId()
 
     if not cell_id in self._cell_offsets.keys():
-      print self._cell_offsets.keys()
       exit('Unable to get cell offset from Universe ID=%d for Cell ID=%d '
            'which is not in the Universe' % (self._id, cell_id))
 
@@ -293,6 +292,64 @@ class Universe(object):
 
 
 #  def findCell(self, region_id):
+
+
+  def findRegion(self, region_id, univ_coords):
+
+    if not is_integer(region_id):
+      exit('Unable to find region_id in Universe ID=%d since %s is '
+           'not an integer value' % (self._id, str(region_id)))
+
+    if not isinstance(univ_coords, UnivCoords):
+      exit('Unable to find region_id in Universe ID=%d since %s is '
+           'not a UnivCoords' % (self._id, str(univ_coords)))
+
+    # Initialize cell and offset
+    cell = None
+    offset = 0
+
+    # Loop over cells until we reach the one the first one with
+    # an offset larger than region_id - return the one prior
+    for cell_id in self._cells.keys():
+
+      cell = self._cells[cell_id]
+
+      if self._cell_offsets[cell_id] <= region_id:
+        offset = self._cell_offsets[cell_id]
+
+      elif self._cell_offsets[cell_id] > region_id:
+        break
+
+    if cell is None:
+      exit('Unable to find region_id=%d in Universe '
+           'ID=%d' % (self._id, region_id))
+
+    region_id -= offset
+    univ_coords.setCell(cell)
+    fill = cell.getFill()
+
+    # The next nested level is at a Lattice
+    if region_id >= 0 and isinstance(fill, Lattice):
+      next_coords = LatCoords(lattice=fill)
+      univ_coords.setNext(next_coords)
+      next_coords.setPrev(univ_coords)
+      fill.findRegion(region_id, next_coords)
+
+    # The next nested level is at a Universe
+    elif region_id >= 0 and isinstance(fill, Universe):
+      next_coords = UnivCoords(universe=fill)
+      univ_coords.setNext(next_coords)
+      next_coords.setPrev(univ_coords)
+      fill.findRegion(region_id, next_coords)
+
+    # We have found the cell in the base nested universe
+    elif region_id == 0 and isinstance(fill, Material):
+      return
+
+    # We were unable to find the cell
+    else:
+      exit('Unable to find cell for region_id=%d in Universe '
+           'ID=%d' % (self._id, region_id))
 
 
   def toString(self):
@@ -677,7 +734,7 @@ class Lattice(Universe):
       next_coords.setLattice(universe)
 
     else:
-      exit('Unable to find cell since in Lattice ID=%d does not contain a '
+      exit('Unable to find Cell since Lattice ID=%d does not contain a '
            'Universe or Lattice in lattice cell (%d, %d)' %
            (self._id, lat_x, lat_y))
 
@@ -686,6 +743,65 @@ class Lattice(Universe):
 
     return universe.findCell(next_coords)
 
+
+  def findRegion(self, region_id, lat_coords):
+
+    if not is_integer(region_id):
+      exit('Unable to find region_id=%d in Lattice ID=%d since %s is '
+           'not an integer value' % (region_id, self._id, str(region_id)))
+
+    if not isinstance(lat_coords, LatCoords):
+      exit('Unable to find region_id=%d in Lattice ID=%d since %s is '
+           'not a LatCoords' % (region_id, self._id, str(lat_coords)))
+
+    # Initialize cell and offset
+    universe = None
+    offset = 0
+    lat_x = 0
+    lat_y = 0
+
+    # Loop over cells until we reach the one the first one with
+    # an offset larger than region_id - return the one prior
+    for i in range(len(self._cell_offsets)):
+      for j in range(len(self._cell_offsets[i])):
+
+        universe = self._universes[i][j]
+
+        if self._cell_offsets[i][j] <= region_id:
+          offset = self._cell_offsets[i][j]
+          lat_x = i
+          lat_y = j
+
+        elif self._cell_offsets[i][j] > region_id:
+          break
+
+
+    if universe is None:
+      exit('Unable to find region_id=%d for FSR ID=%d in Lattice '
+           'ID=%d' % (region_id, self._id))
+
+    region_id -= offset
+    lat_coords.setLatticeX(lat_x)
+    lat_coords.setLatticeY(lat_y)
+
+    # The next nested level is at a Lattice
+    if region_id >= 0 and isinstance(universe, Lattice):
+      next_coords = LatCoords(lattice=universe)
+      lat_coords.setNext(next_coords)
+      next_coords.setPrev(lat_coords)
+      universe.findRegion(region_id, next_coords)
+
+    # The next nested level is at a Universe
+    elif region_id >= 0 and isinstance(universe, Universe):
+      next_coords = UnivCoords(universe=universe)
+      lat_coords.setNext(next_coords)
+      next_coords.setPrev(lat_coords)
+      universe.findRegion(region_id, next_coords)
+
+    # We were unable to find the Cell
+    else:
+      exit('Unable to find region_id=%d in Lattice '
+           'ID=%d' % (region_id, self._id))
 
 
   def toString(self):
@@ -1263,7 +1379,11 @@ class LocalCoords(object):
     type = '{0: <16}'.format('\tType') + '=\t' + str(self._type)
     string += type + '\n'
 
-    point = '{0: <16}'.format('\tPoint') + '=\t' + str(self._point.getCoords())
+    point = '{0: <16}'.format('\tPoint') + '=\t'
+
+    if not self._point is None:
+        point += str(self._point.getCoords())
+
     string += point + '\n'
 
     return string
@@ -1350,7 +1470,7 @@ class LatCoords(LocalCoords):
     self._lattice_y = None
 
     if not lattice is None:
-      self.setLatticeId(lattice)
+      self.setLattice(lattice)
 
     if not lattice_x is None:
       self.setLatticeX(lattice_x)
