@@ -297,6 +297,25 @@ class Universe(object):
       del self._cells[cell_id]
 
 
+  def computeVolumeFractions(self, volume=np.float64(1.)):
+
+    if not is_float(volume):
+      exit('Unable to compute volume fractions for Universe ID=%d since '
+           'volume=%s is not a floating point value' % (self._id, str(volume)))
+
+    for cell_id in self._cells:
+
+      cell = self._cells[cell_id]
+      cell.computeVolumeFraction(volume=volume)
+
+      # Recursively compute volume fractions below this Universe
+      fill = cell.getFill()
+
+      if isinstance(fill, Universe):
+        volume_fraction = cell.getVolumeFraction()
+        fill.computeVolumeFractions(volume=volume*volume_fraction)
+
+
   def initializeCellOffsets(self):
 
 
@@ -713,6 +732,20 @@ class Lattice(Universe):
           universe.setMinZ(-self._width[2]/2.)
 
 
+  def computeVolumeFractions(self, volume=np.float64(1.)):
+
+    if not is_float(volume):
+      exit('Unable to compute volume fractions for Lattice ID=%d since '
+           'volume=%s is not a floating point value' % (self._id, str(volume)))
+
+    volume_fraction = np.float64(1. / (self._dimension[0] * self._dimension[1]))
+
+    for i in range(len(self._universes)):
+      for j in range(len(self._universes[i])):
+        universe = self._universes[i][j]
+        universe.computeVolumeFractions(volume=(volume * volume_fraction))
+
+
   def initializeCellOffsets(self):
 
     # If we have already called this routine, return the total number of regions
@@ -959,6 +992,7 @@ class Cell(object):
     self._type = None
     self._num_subcells = None
     self._volume_fraction = np.float64(0.)
+    self._volume = np.float64(0.)
 
     # Keys   - Surface IDs
     # Values - (halfpsace, Surface) tuples
@@ -1003,6 +1037,10 @@ class Cell(object):
 
   def getVolumeFraction(self):
     return self._volume_fraction
+
+
+  def getVolume(self):
+    return self._volume
 
 
   def getSurfaces(self):
@@ -1301,7 +1339,17 @@ class Cell(object):
     return True
 
 
-  def computeVolumeFraction(self, num_samples=10000, tolerance=1e-3):
+  def computeVolumeFraction(self, volume=np.float(1.),
+                            num_samples=10000, tolerance=1e-3):
+
+    # Do not recompute the volume fraction if it was already computed
+    if self._volume_fraction != 0.:
+      return
+
+    if not is_float(volume):
+      exit('Unable to compute the volume fraction for Cell '
+           'ID=%d since volume=%s is not a floating point '
+           'value' % (self._id, str(volume)))
 
     if not is_integer(num_samples):
       exit('Unable to compute the volume fraction for Cell '
@@ -1357,11 +1405,9 @@ class Cell(object):
       # Compute uncertainty
       uncertainty = box_volume * np.sqrt((fraction - fraction**2) / tot_samples)
 
-    # Compute the final volume fraction
+    # Compute the final volume fraction and volume
     self._volume_fraction = np.float64(counter / tot_samples)
-
-    print('Cell ID = %d has fraction = %f with '
-          'uncertainty=%f' % (self._id, self._volume_fraction, uncertainty))
+    self._volume = np.float64(self._volume_fraction * volume)
 
 
   def toString(self):

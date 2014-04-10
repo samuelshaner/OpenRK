@@ -14,6 +14,7 @@ class Geometry(object):
     self._universes = dict()
     self._lattices = dict()
     self._num_regions = 0
+    self._volume = np.float64(0.)
 
 
   def getUniverses(self):
@@ -26,6 +27,10 @@ class Geometry(object):
 
   def getNumRegions(self):
     return self._num_regions
+
+
+  def getVolume(self):
+    return self._volume
 
 
   def getMaxX(self):
@@ -100,6 +105,10 @@ class Geometry(object):
 
   def removeUniverse(self, universe):
 
+    if not isinstance(universe, Universe):
+      exit('Unable to remove Universe to the Geometry since %s is not '
+           'a Universe' % str(universe))
+
     univ_id = universe.getId()
     if univ_id in self._universes.keys():
       del self._universes[univ_id]
@@ -117,9 +126,30 @@ class Geometry(object):
 
   def removeLattice(self, lattice):
 
+    if not isinstance(lattice, Lattice):
+      exit('Unable to remove Lattice to the Geometry since %s is not '
+           'a Lattice' % str(lattice))
+
     lat_id = lattice.getId()
     if lat_id in self._lattices.keys():
       del self._lattices[lat_id]
+
+
+  def setVolume(self, volume):
+
+    if not is_float(volume) and not is_integer(volume):
+      exit('Unable to set the volume of the Geometry to %s since it is '
+           'neither an integer nor a floating point value' % str(volume))
+
+    if not 0 in self._universes.keys():
+      exit('Unable to initialize cell offsets since the Geometry does not '
+           'contain the base Universe ID=0')
+
+    self._volume = np.float64(volume)
+
+    root = self._universes[0]
+    root.computeVolumeFractions(volume=self._volume)
+
 
 
   def initializeCellOffsets(self):
