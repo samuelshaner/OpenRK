@@ -297,7 +297,7 @@ class Universe(object):
       del self._cells[cell_id]
 
 
-  def computeVolumeFractions(self, volume=np.float64(1.)):
+  def computeVolumeFractions(self, volume=np.float64(1.), tolerance=1e-3):
 
     if not is_float(volume):
       exit('Unable to compute volume fractions for Universe ID=%d since '
@@ -306,14 +306,15 @@ class Universe(object):
     for cell_id in self._cells:
 
       cell = self._cells[cell_id]
-      cell.computeVolumeFraction(volume=volume)
+      cell.computeVolumeFraction(volume=volume, tolerance=tolerance)
 
       # Recursively compute volume fractions below this Universe
       fill = cell.getFill()
 
       if isinstance(fill, Universe):
         volume_fraction = cell.getVolumeFraction()
-        fill.computeVolumeFractions(volume=volume*volume_fraction)
+        fill.computeVolumeFractions(volume=volume*volume_fraction,
+                                    tolerance=tolerance)
 
 
 #  def subdivideCells(self):
@@ -739,7 +740,7 @@ class Lattice(Universe):
           universe.setMinZ(-self._width[2]/2.)
 
 
-  def computeVolumeFractions(self, volume=np.float64(1.)):
+  def computeVolumeFractions(self, volume=np.float64(1.), tolerance=1e-3):
 
     if not is_float(volume):
       exit('Unable to compute volume fractions for Lattice ID=%d since '
@@ -750,7 +751,8 @@ class Lattice(Universe):
     for i in range(len(self._universes)):
       for j in range(len(self._universes[i])):
         universe = self._universes[i][j]
-        universe.computeVolumeFractions(volume=(volume * volume_fraction))
+        universe.computeVolumeFractions(volume=(volume * volume_fraction),
+                                        tolerance=tolerance)
 
 
   def initializeCellOffsets(self):

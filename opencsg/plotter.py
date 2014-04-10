@@ -73,11 +73,7 @@ def plot_cells(geometry, gridsize=250):
     for j in range(gridsize):
 
       cell = geometry.findCell(x=xcoords[i], y=ycoords[j])
-      surface[j][i] = color_map[cell.getId() % num_colors]
-
-  # Flip the surface vertically to align NumPy row/column indices with the
-  # orientation expected by the user
-  surface = np.flipud(surface)
+      surface[i][j] = color_map[cell.getId() % num_colors]
 
   # Plot a 2D color map of the flat source regions
   fig = plt.figure()
@@ -129,11 +125,7 @@ def plot_materials(geometry, gridsize=250):
     for j in range(gridsize):
 
       cell = geometry.findCell(x=xcoords[i], y=ycoords[j])
-      surface[j][i] = color_map[cell.getFill().getId() % num_colors]
-
-  # Flip the surface vertically to align NumPy row/column indices with the
-  # orientation expected by the user
-  surface = np.flipud(surface)
+      surface[i][j] = color_map[cell.getFill().getId() % num_colors]
 
   # Plot a 2D color map of the flat source regions
   fig = plt.figure()
@@ -187,11 +179,7 @@ def plot_regions(geometry, gridsize=250):
     for j in range(gridsize):
 
       region_id = geometry.getRegionId(x=xcoords[i], y=ycoords[j])
-      surface[j][i] = color_map[region_id % num_colors]
-
-  # Flip the surface vertically to align NumPy row/column indices with the
-  # orientation expected by the user
-  surface = np.flipud(surface)
+      surface[i][j] = color_map[region_id % num_colors]
 
   # Plot a 2D color map of the flat source regions
   fig = plt.figure()

@@ -37,7 +37,7 @@ bottom.setBoundaryType('reflective')
 print('Creating Universes...')
 
 universes = list()
-universes.append(Universe(name='Pin'))
+universes.append(Universe(name='pin'))
 universes.append(Universe(universe_id=0, name='root'))
 
 
@@ -48,8 +48,8 @@ universes.append(Universe(universe_id=0, name='root'))
 print('Creating Cells...')
 
 cells = list()
-cells.append(Cell(name='Fuel', fill=uo2))
-cells.append(Cell(name='Water', fill=water))
+cells.append(Cell(name='fuel', fill=uo2))
+cells.append(Cell(name='water', fill=water))
 cells.append(Cell(name='root'))
 
 cells[0].addSurface(halfspace=-1, surface=cylinder)

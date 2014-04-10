@@ -135,11 +135,15 @@ class Geometry(object):
       del self._lattices[lat_id]
 
 
-  def setVolume(self, volume):
+  def setVolume(self, volume, tolerance=1e-3):
 
     if not is_float(volume) and not is_integer(volume):
       exit('Unable to set the volume of the Geometry to %s since it is '
            'neither an integer nor a floating point value' % str(volume))
+
+    if not is_float(tolerance):
+      exit('Unable to compute the volume of the Geometry to a tolerance '
+           'of %s since it is not a floating point value' % str(tolerance))
 
     if not 0 in self._universes.keys():
       exit('Unable to initialize cell offsets since the Geometry does not '
@@ -148,7 +152,7 @@ class Geometry(object):
     self._volume = np.float64(volume)
 
     root = self._universes[0]
-    root.computeVolumeFractions(volume=self._volume)
+    root.computeVolumeFractions(volume=self._volume, tolerance=tolerance)
 
 
 #  def subdivideCells(self):
