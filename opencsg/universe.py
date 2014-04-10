@@ -154,6 +154,72 @@ class Universe(object):
     return min_z
 
 
+  def setMaxX(self, max_x):
+
+    if not is_float(max_x) and not is_integer(max_x):
+      exit('Unable to set the maximum x for Universe ID=%d to %s since it '
+           'is not an integer or floating point value' % (self._id, str(max_x)))
+
+    for cell_id in self._cells.keys():
+      cell = self._cells[cell_id]
+      cell.setMaxX(max_x=max_x)
+
+
+  def setMaxY(self, max_y):
+
+    if not is_float(max_y) and not is_integer(max_y):
+      exit('Unable to set the maximum y for Universe ID=%d to %s since it '
+           'is not an integer or floating point value' % (self._id, str(max_y)))
+
+    for cell_id in self._cells.keys():
+      cell = self._cells[cell_id]
+      cell.setMaxY(max_y=max_y)
+
+
+  def setMaxZ(self, max_z):
+
+    if not is_float(max_z) and not is_integer(max_z):
+      exit('Unable to set the maximum z for Universe ID=%d to %s since it '
+           'is not an integer or floating point value' % (self._id, str(max_z)))
+
+    for cell_id in self._cells.keys():
+      cell = self._cells[cell_id]
+      cell.setMaxZ(max_z=max_z)
+
+
+  def setMinX(self, min_x):
+
+    if not is_float(min_x) and not is_integer(min_x):
+      exit('Unable to set the minimum x for Universe ID=%d to %s since it '
+           'is not an integer or floating point value' % (self._id, str(min_x)))
+
+    for cell_id in self._cells.keys():
+      cell = self._cells[cell_id]
+      cell.setMinX(min_x=min_x)
+
+
+  def setMinY(self, min_y):
+
+    if not is_float(min_y) and not is_integer(min_y):
+      exit('Unable to set the minimum y for Universe ID=%d to %s since it '
+           'is not an integer or floating point value' % (self._id, str(min_y)))
+
+    for cell_id in self._cells.keys():
+      cell = self._cells[cell_id]
+      cell.setMinY(min_y=min_y)
+
+
+  def setMinZ(self, min_z):
+
+    if not is_float(min_z) and not is_integer(min_z):
+      exit('Unable to set the minimum z for Universe ID=%d to %s since it '
+           'is not an integer or floating point value' % (self._id, str(min_z)))
+
+    for cell_id in self._cells.keys():
+      cell = self._cells[cell_id]
+      cell.setMinZ(min_z=min_z)
+
+
   def setId(self, universe_id=None):
 
     global universe_ids
@@ -632,6 +698,20 @@ class Lattice(Universe):
 
     self._universes = universes
 
+    for i in range(len(self._universes)):
+      for j in range(len(self._universes[i])):
+
+        universe = self._universes[i][j]
+
+        universe.setMaxX(self._width[0]/2.)
+        universe.setMinX(-self._width[0]/2.)
+        universe.setMaxY(self._width[1]/2.)
+        universe.setMinY(-self._width[1]/2.)
+
+        if len(self._width) == 3:
+          universe.setMaxZ(self._width[2]/2.)
+          universe.setMinZ(-self._width[2]/2.)
+
 
   def initializeCellOffsets(self):
 
@@ -878,6 +958,7 @@ class Cell(object):
     self._fill = None
     self._type = None
     self._num_subcells = None
+    self._volume_fraction = np.float64(0.)
 
     # Keys   - Surface IDs
     # Values - (halfpsace, Surface) tuples
@@ -918,6 +999,10 @@ class Cell(object):
 
   def getType(self):
     return self._type
+
+
+  def getVolumeFraction(self):
+    return self._volume_fraction
 
 
   def getSurfaces(self):
@@ -1197,7 +1282,6 @@ class Cell(object):
       self.setMinZ(-np.float64("inf"))
 
 
-
   def containsPoint(self, point):
 
     if not isinstance(point, Point):
@@ -1217,6 +1301,69 @@ class Cell(object):
     return True
 
 
+  def computeVolumeFraction(self, num_samples=10000, tolerance=1e-3):
+
+    if not is_integer(num_samples):
+      exit('Unable to compute the volume fraction for Cell '
+           'ID=%d since num_samples=%s is not an integer '
+           'value' % (self._id, str(num_samples)))
+
+    if not is_float(tolerance):
+      exit('Unable to compute the volume fraction for Cell '
+           'ID=%d since tolerance=%s is not a floating point '
+           'value' % (self._id, str(tolerance)))
+
+    from numpy.random import uniform
+
+    # Initialize the point
+    point = Point()
+
+    # Compute the volume/area of the bounding box we sample from
+    box_volume = np.float64(1.)
+
+    if self._min_x > -np.float64("inf") and self._max_x < np.float64("inf"):
+      box_volume *= (self._max_x - self._min_x)
+    if self._min_y > -np.float64("inf") and self._max_y < np.float64("inf"):
+      box_volume *= (self._max_y - self._min_y)
+    if self._min_z > -np.float64("inf") and self._max_z < np.float64("inf"):
+      box_volume *= (self._max_z - self._min_z)
+
+    # Initialize variables
+    counter = 0.
+    tot_samples = 0.
+    uncertainty = np.float64("inf")
+
+    while (uncertainty > tolerance):
+
+      # Increment the total samples
+      tot_samples += num_samples
+
+      # Draw random samples for x,y,z coordinates
+      x = uniform(low=self._min_x, high=self._max_x, size=num_samples)
+      y = uniform(low=self._min_y, high=self._max_y, size=num_samples)
+      z = uniform(low=self._min_z, high=self._max_z, size=num_samples)
+
+      for i in range(num_samples):
+
+        point.setX(x[i])
+        point.setY(y[i])
+        point.setZ(z[i])
+
+        if self.containsPoint(point):
+          counter += 1.
+
+      fraction = np.float64(counter / tot_samples)
+
+      # Compute uncertainty
+      uncertainty = box_volume * np.sqrt((fraction - fraction**2) / tot_samples)
+
+    # Compute the final volume fraction
+    self._volume_fraction = np.float64(counter / tot_samples)
+
+    print('Cell ID = %d has fraction = %f with '
+          'uncertainty=%f' % (self._id, self._volume_fraction, uncertainty))
+
+
   def toString(self):
 
     string = ''
@@ -1232,6 +1379,10 @@ class Cell(object):
     type = '{0: <16}'.format('\tType') + '=\t'
     type += str(self._type)
     string += type + '\n'
+
+    volume_fraction = '{0: <16}'.format('\tVolume Fraction') + '=\t'
+    volume_fraction += str(self._volume_fraction)
+    string += volume_fraction + '\n'
 
     fill = '{0: <16}'.format('\tFill') + '=\t'
 

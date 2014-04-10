@@ -118,6 +118,14 @@ for lattice in lattices: geometry.addLattice(lattice)
 
 geometry.initializeCellOffsets()
 
-plotter.plot_cells(geometry)
-plotter.plot_materials(geometry)
-plotter.plot_regions(geometry)
+#plotter.plot_cells(geometry)
+#plotter.plot_materials(geometry)
+#plotter.plot_regions(geometry)
+
+cells[0].computeVolumeFraction()
+cells[1].computeVolumeFraction()
+cells[2].computeVolumeFraction()
+cells[3].computeVolumeFraction()
+cells[4].computeVolumeFraction()
+cells[5].computeVolumeFraction()
+cells[6].computeVolumeFraction()
