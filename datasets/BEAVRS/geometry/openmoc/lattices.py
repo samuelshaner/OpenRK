@@ -1,7 +1,9 @@
 import copy
+
 from openmoc import Lattice, universe_id
 from datasets.BEAVRS.geometry.openmoc.pincells import pincells
-from datasets.BEAVRS.geometry.templates import *
+from datasets.BEAVRS.templates import *
+
 
 # Keys are Lattice string names and values are OpenMOC Lattices.
 lattices = dict()

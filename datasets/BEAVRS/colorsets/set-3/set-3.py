@@ -1,15 +1,12 @@
-from openmoc.compatible.openmc import *
-import openmoc.plotter as plotter
-from lattices import *
-import materials
-import surfaces
-import pincells
-from input.settings import SettingsFile
-from input.tallies import TalliesFile, Tally
-from input.plots import PlotsFile, Plot
+from openmc.input.settings import SettingsFile
+from openmc.input.tallies import TalliesFile, Tally
+from openmc.input.plots import PlotsFile, Plot
+from openmc.input.material import MaterialsFile
+from openmc.input.opencsg_compatible import create_geometry_xml
+import opencsg
+from datasets.BEAVRS.materials import openmc_materials
+from datasets.BEAVRS.lattices import *
 
-
-# NOTE - This is a 3x3 geometry of 2.4% and 3.1% (0BA) enriched fuel assemblies
 
 
 ###############################################################################
@@ -19,8 +16,6 @@ from input.plots import PlotsFile, Plot
 # Get the appropriate lattice from the lattices module
 lattice1 = lattices['2.4% Fuel - 0BA']
 lattice2 = lattices['3.1% Fuel - 0BA']
-lattice1_id = lattice1.getId()
-lattice2_id = lattice2.getId()
 
 # Discretization of pin cells
 rings = 3
@@ -30,7 +25,7 @@ sectors = 4
 slice_height = 10.
 
 # OpenMC simulation parameters
-batches = 25
+batches = 20
 inactive = 10
 particles = 10000
 
@@ -42,22 +37,21 @@ pixels = 1000
 ######################   Creating Bounding Surfaces   #########################
 ###############################################################################
 
-log.py_printf('NORMAL', 'Creating the bounding Surfaces...')
+print('Creating the bounding Surfaces...')
 
 boundaries = dict()
 
 width = lattice_width * 3.
 
-boundaries['X-Min'] = XPlane(x=-width / 2.)
-boundaries['X-Max'] = XPlane(x=width / 2.)
-boundaries['Y-Min'] = YPlane(y=-width / 2.)
-boundaries['Y-Max'] = YPlane(y=width / 2.)
-boundaries['Z-Min'] = ZPlane(z=-slice_height / 2.)
-boundaries['Z-Max'] = ZPlane(z=slice_height / 2.)
+boundaries['X-Min'] = opencsg.XPlane(x0=-width / 2.)
+boundaries['X-Max'] = opencsg.XPlane(x0=width / 2.)
+boundaries['Y-Min'] = opencsg.YPlane(y0=-width / 2.)
+boundaries['Y-Max'] = opencsg.YPlane(y0=width / 2.)
+boundaries['Z-Min'] = opencsg.ZPlane(z0=-slice_height / 2.)
+boundaries['Z-Max'] = opencsg.ZPlane(z0=slice_height / 2.)
 
 for index in boundaries.keys():
-  boundaries[index].setBoundaryType(REFLECTIVE)
-  surfaces.surfaces[index] = boundaries[index]
+  boundaries[index].setBoundaryType('reflective')
 
 
 ###############################################################################
@@ -65,112 +59,88 @@ for index in boundaries.keys():
 ###############################################################################
 
 # Loop over all pin types
-for pin in pincells.pincells.keys():
+#for pin in pincells.pincells.keys():
 
   # Loop over all cells for this pin type
-  for cell in pincells.pincells[pin].keys():
+#  for cell in pincells.pincells[pin].keys():
 
     # Ignore the Universe entry
-    if cell == 'Universe':
-      continue
+#    if cell == 'Universe':
+#      continue
 
     # Set the number of sectors
-    pincells.pincells[pin][cell].setNumSectors(sectors)
+#    pincells.pincells[pin][cell].setNumSectors(sectors)
 
     # Set the number of rings in the fuel
-    if 'Fuel' in cell:
-      pincells.pincells[pin][cell].setNumRings(rings)
+#    if 'Fuel' in cell:
+#      pincells.pincells[pin][cell].setNumRings(rings)
 
 
 ###############################################################################
 #####################   Creating Colorset Lattice   ###########################
 ###############################################################################
 
-cell1 = CellFill(universe=universe_id(), universe_fill=lattice1_id)
-cell2 = CellFill(universe=universe_id(), universe_fill=lattice2_id)
+cell1 = opencsg.Cell(name=lattice1.getName(), fill=lattice1)
+cell2 = opencsg.Cell(name=lattice2.getName(), fill=lattice2)
 
-cell1_id = cell1.getUniverseId()
-cell2_id = cell2.getUniverseId()
+universe1 = opencsg.Universe(name=cell1.getName())
+universe1.addCell(cell1)
 
-pincells.cells.append(cell1)
-pincells.cells.append(cell2)
+universe2 = opencsg.Universe(name=cell2.getName())
+universe2.addCell(cell2)
 
-lattice = Lattice(id=universe_id(), width_x=lattice_width, width_y=lattice_width)
-lattice.setLatticeCells([[cell2_id, cell1_id, cell2_id],
-                         [cell1_id, cell2_id, cell1_id],
-                         [cell2_id, cell1_id, cell2_id]])
+lattice = opencsg.Lattice(name='3x3 Lattice')
+lattice.setDimension((3, 3))
+lattice.setWidth((lattice_width, lattice_width))
+lattice.setLowerLeft((-width/2., -width/2.))
+lattice.setUniverses([[universe2, universe1, universe2],
+                      [universe1, universe2, universe1],
+                      [universe2, universe1, universe2]])
 
 
 ###############################################################################
 ######################   Creating Root Universe   #############################
 ###############################################################################
 
-log.py_printf('NORMAL', 'Creating the root Universe...')
+print('Creating the root Universe...')
 
-# Root cell encapsulates the full geometry
-root = CellFill(universe=0, universe_fill=lattice.getId())
-root.addSurface(halfspace=+1, surface=boundaries['X-Min'])
-root.addSurface(halfspace=-1, surface=boundaries['X-Max'])
-root.addSurface(halfspace=+1, surface=boundaries['Y-Min'])
-root.addSurface(halfspace=-1, surface=boundaries['Y-Max'])
-root.addSurface(halfspace=+1, surface=boundaries['Z-Min'])
-root.addSurface(halfspace=-1, surface=boundaries['Z-Max'])
+# Root Cell fills the root Universe which encapsulates the complete Geometry
+root_universe = opencsg.Universe(universe_id=0, name='Root Universe')
+root_cell = opencsg.Cell(name='Root Cell', fill=lattice)
+root_universe.addCell(root_cell)
 
-# Append the root to the list of all Cells
-pincells.cells.append(root)
+# Append the bounding surfaces for the Geometry to the root Cell
+root_cell.addSurface(surface=boundaries['X-Min'], halfspace=+1)
+root_cell.addSurface(surface=boundaries['X-Max'], halfspace=-1)
+root_cell.addSurface(surface=boundaries['Y-Min'], halfspace=+1)
+root_cell.addSurface(surface=boundaries['Y-Max'], halfspace=-1)
+root_cell.addSurface(surface=boundaries['Z-Min'], halfspace=+1)
+root_cell.addSurface(surface=boundaries['Z-Max'], halfspace=-1)
 
 
 ###############################################################################
 ##########################   Creating the Geometry   ##########################
 ###############################################################################
 
-log.py_printf('NORMAL', 'Creating the Geometry...')
+print('Creating the Geometry...')
 
-geometry = Geometry()
-
-# Add all Materials to the Geometry
-for material in materials.materials.values():
-  geometry.addMaterial(material)
-
-# Add all Surfaces to the Geometry
-for surface in surfaces.surfaces.values():
-  geometry.addSurface(surface)
-
-for cell in pincells.pincells['2.4% Fuel'].values():
-  if not isinstance(cell, int):
-    geometry.addCell(cell)
-
-for cell in pincells.pincells['3.1% Fuel'].values():
-  if not isinstance(cell, int):
-    geometry.addCell(cell)
-
-for cell in pincells.pincells['Guide Tube'].values():
-  if not isinstance(cell, int):
-    geometry.addCell(cell)
-
-for cell in pincells.pincells['Instrument Tube'].values():
-  if not isinstance(cell, int):
-    geometry.addCell(cell)
-
-for cell in pincells.pincells['Burnable Absorber'].values():
-  if not isinstance(cell, int):
-    geometry.addCell(cell)
-
-geometry.addCell(root)
-geometry.addCell(cell1)
-geometry.addCell(cell2)
-
-# Add all Lattices to the Geometry
-geometry.addLattice(lattice1)
-geometry.addLattice(lattice2)
-geometry.addLattice(lattice)
+geometry = opencsg.Geometry()
+geometry.setRootUniverse(root_universe)
 
 
 ###############################################################################
 ###################   Exporting to OpenMC XML Input Files  ####################
 ###############################################################################
 
-log.py_printf('NORMAL', 'Exporting to OpenMC XML Files...')
+print('Exporting to OpenMC XML Files...')
+
+# geometry.xml
+create_geometry_xml(geometry)
+
+# material.xml
+materials_file = MaterialsFile()
+materials_file.addMaterials(openmc_materials.values())
+materials_file.exportToXML()
 
 # settings.xml
 settings_file = SettingsFile()
@@ -187,8 +157,8 @@ settings_file.exportToXML()
 
 # plots.xml
 plot = Plot(plot_id=1)
-plot.setWidth(width=[geometry.getXMax()-geometry.getXMin(),
-                     geometry.getXMax()-geometry.getXMin()])
+plot.setWidth(width=[geometry.getMaxX()-geometry.getMinX(),
+                     geometry.getMaxY()-geometry.getMinY()])
 plot.setOrigin([0., 0., 0.])
 plot.setPixels([pixels, pixels])
 
@@ -196,8 +166,22 @@ plot_file = PlotsFile()
 plot_file.addPlot(plot)
 plot_file.exportToXML()
 
-# materials.xml and geometry.xml
-create_input_files(geometry)
+# tallies.xml
+#num_cells = geometry.getNumCells()
+#cell_ids = geometry.getCellIds(num_cells)
 
-# Create a plot using OpenMOC's plotting module
-plotter.plot_cells(geometry, gridsize=1000)
+tallies_file = TalliesFile()
+#scores = ['flux']
+
+#for cell_id in cell_ids:
+
+#  tally = Tally(label='test')
+#  tally.addFilter(type='distribcell', bins=cell_id)
+#  tally.addFilter(type='energy', bins=[0.0, 0.625, 10000000.])
+
+#  for score in scores:
+#    tally.addScore(score=score)
+
+#  tallies_file.addTally(tally)
+
+tallies_file.exportToXML()

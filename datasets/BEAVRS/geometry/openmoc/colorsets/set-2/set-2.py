@@ -2,10 +2,10 @@ from openmoc import *
 import openmoc.log as log
 from openmoc.compatible.openmc import create_input_files
 from datasets.BEAVRS.materials import materials
-from datasets.BEAVRS.geometry.templates import lattice_width
+from datasets.BEAVRS.templates import lattice_width
 from datasets.BEAVRS.geometry.openmoc import *
-from input.settings import SettingsFile
-from input.plots import PlotsFile, Plot
+from openmc.input.settings import SettingsFile
+from openmc.input.plots import PlotsFile, Plot
 
 
 # NOTE - This is a 3x3 geometry of 1.6% and 3.1% (16BA) enriched fuel assemblies

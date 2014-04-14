@@ -1,12 +1,12 @@
-from openmoc.compatible.openmc import *
-import openmoc.plotter as plotter
-from lattices import *
-import materials
-import surfaces
-import pincells
-from input.settings import SettingsFile
-from input.tallies import TalliesFile, Tally
-from input.plots import PlotsFile, Plot
+from openmc.input.settings import SettingsFile
+from openmc.input.tallies import TalliesFile, Tally
+from openmc.input.plots import PlotsFile, Plot
+from openmc.input.material import MaterialsFile
+from openmc.input.opencsg_compatible import create_geometry_xml
+import opencsg
+from opencsg.plotter import plot_regions
+from datasets.BEAVRS.materials import openmc_materials, opencsg_materials
+from datasets.BEAVRS.lattices import *
 
 
 # NOTE - This is a quarter core BEAVRS geometry.
@@ -17,15 +17,15 @@ from input.plots import PlotsFile, Plot
 ###############################################################################
 
 # Get the Lattice IDs from the lattices module
-id1 = lattices['1.6% Fuel - 0BA'].getId()
-id2 = lattices['2.4% Fuel - 0BA'].getId()
-id3 = lattices['2.4% Fuel - 12BA'].getId()
-id4 = lattices['2.4% Fuel - 16BA'].getId()
-id5 = lattices['3.1% Fuel - 0BA'].getId()
-id6 = lattices['3.1% Fuel - 6BA'].getId()
-id7 = lattices['3.1% Fuel - 15BA'].getId()
-id8 = lattices['3.1% Fuel - 16BA'].getId()
-id9 = lattices['3.1% Fuel - 20BA'].getId()
+lat1 = lattices['1.6% Fuel - 0BA']
+lat2 = lattices['2.4% Fuel - 0BA']
+lat3 = lattices['2.4% Fuel - 12BA']
+lat4 = lattices['2.4% Fuel - 16BA']
+lat5 = lattices['3.1% Fuel - 0BA']
+lat6 = lattices['3.1% Fuel - 6BA']
+lat7 = lattices['3.1% Fuel - 15BA']
+lat8 = lattices['3.1% Fuel - 16BA']
+lat9 = lattices['3.1% Fuel - 20BA']
 
 # Discretization of pin cells
 rings = 3
@@ -47,22 +47,21 @@ pixels = 2000
 ######################   Creating Bounding Surfaces   #########################
 ###############################################################################
 
-log.py_printf('NORMAL', 'Creating the bounding Surfaces...')
+print('Creating the bounding Surfaces...')
 
 boundaries = dict()
 
 width = lattice_width * 10.
 
-boundaries['X-Min'] = XPlane(x=-width / 2.)
-boundaries['X-Max'] = XPlane(x=width / 2.)
-boundaries['Y-Min'] = YPlane(y=-width / 2.)
-boundaries['Y-Max'] = YPlane(y=width / 2.)
-boundaries['Z-Min'] = ZPlane(z=-slice_height / 2.)
-boundaries['Z-Max'] = ZPlane(z=slice_height / 2.)
+boundaries['X-Min'] = opencsg.XPlane(x0=-width / 2.)
+boundaries['X-Max'] = opencsg.XPlane(x0=width / 2.)
+boundaries['Y-Min'] = opencsg.YPlane(y0=-width / 2.)
+boundaries['Y-Max'] = opencsg.YPlane(y0=width / 2.)
+boundaries['Z-Min'] = opencsg.ZPlane(z0=-slice_height / 2.)
+boundaries['Z-Max'] = opencsg.ZPlane(z0=slice_height / 2.)
 
 for index in boundaries.keys():
-  boundaries[index].setBoundaryType(REFLECTIVE)
-  surfaces.surfaces[index] = boundaries[index]
+  boundaries[index].setBoundaryType('reflective')
 
 
 ###############################################################################
@@ -70,148 +69,132 @@ for index in boundaries.keys():
 ###############################################################################
 
 # Loop over all pin types
-for pin in pincells.pincells.keys():
+#for pin in pincells.pincells.keys():
 
   # Loop over all cells for this pin type
-  for cell in pincells.pincells[pin].keys():
+#  for cell in pincells.pincells[pin].keys():
 
     # Ignore the Universe entry
-    if cell == 'Universe':
-      continue
+#    if cell == 'Universe':
+#      continue
 
     # Set the number of sectors
-    pincells.pincells[pin][cell].setNumSectors(sectors)
+#    pincells.pincells[pin][cell].setNumSectors(sectors)
 
     # Set the number of rings in the fuel
-    if 'Fuel' in cell:
-      pincells.pincells[pin][cell].setNumRings(rings)
+#    if 'Fuel' in cell:
+#      pincells.pincells[pin][cell].setNumRings(rings)
 
 
 ###############################################################################
 #####################   Creating Colorset Lattice   ###########################
 ###############################################################################
 
-cell1 = CellFill(universe=universe_id(), universe_fill=id1)
-cell2 = CellFill(universe=universe_id(), universe_fill=id2)
-cell3 = CellFill(universe=universe_id(), universe_fill=id3)
-cell4 = CellFill(universe=universe_id(), universe_fill=id4)
-cell5 = CellFill(universe=universe_id(), universe_fill=id5)
-cell6 = CellFill(universe=universe_id(), universe_fill=id6)
-cell7 = CellFill(universe=universe_id(), universe_fill=id7)
-cell8 = CellFill(universe=universe_id(), universe_fill=id8)
-cell9 = CellFill(universe=universe_id(), universe_fill=id9)
+cell1 = opencsg.Cell(name=lat1.getName(), fill=lat1)
+cell2 = opencsg.Cell(name=lat2.getName(), fill=lat2)
+cell3 = opencsg.Cell(name=lat3.getName(), fill=lat3)
+cell4 = opencsg.Cell(name=lat4.getName(), fill=lat4)
+cell5 = opencsg.Cell(name=lat5.getName(), fill=lat5)
+cell6 = opencsg.Cell(name=lat6.getName(), fill=lat6)
+cell7 = opencsg.Cell(name=lat7.getName(), fill=lat7)
+cell8 = opencsg.Cell(name=lat8.getName(), fill=lat8)
+cell9 = opencsg.Cell(name=lat9.getName(), fill=lat9)
 
 # Create a pure water Cell
-water_id = materials.materials['Borated Water'].getId()
-cell10 = CellBasic(universe=universe_id(), material=water_id)
+water = opencsg_materials['Borated Water']
+cell10 = opencsg.Cell(name='Water cell', fill=water)
 
-id1 = cell1.getUniverseId()
-id2 = cell2.getUniverseId()
-id3 = cell3.getUniverseId()
-id4 = cell4.getUniverseId()
-id5 = cell5.getUniverseId()
-id6 = cell6.getUniverseId()
-id7 = cell7.getUniverseId()
-id8 = cell8.getUniverseId()
-id9 = cell9.getUniverseId()
-id10 = cell10.getUniverseId()
+u1 = opencsg.Universe(name=cell1.getName())
+u1.addCell(cell1)
 
-lattice = Lattice(id=universe_id(), width_x=lattice_width, width_y=lattice_width)
-lattice.setLatticeCells([[id1, id4, id1, id3, id1, id4, id1, id6, id10, id10],
-                         [id4, id1, id3, id1, id3, id1, id9, id5, id10, id10],
-                         [id1, id3, id1, id3, id1, id4, id1, id6, id10, id10],
-                         [id3, id1, id3, id1, id4, id1, id8, id5, id10, id10],
-                         [id1, id3, id1, id4, id2, id4, id5, id10, id10, id10],
-                         [id4, id1, id4, id1, id4, id7, id5, id10, id10, id10],
-                         [id1, id9, id1, id8, id5, id5, id10, id10, id10, id10],
-                         [id6, id5, id6, id5, id10, id10, id10, id10, id10, id10],
-                         [id10, id10, id10, id10, id10, id10, id10, id10, id10, id10],
-                         [id10, id10, id10, id10, id10, id10, id10, id10, id10, id10]])
+u2 = opencsg.Universe(name=cell2.getName())
+u2.addCell(cell2)
 
-lattices['Quarter Core'] = lattice
+u3 = opencsg.Universe(name=cell3.getName())
+u3.addCell(cell3)
+
+u4 = opencsg.Universe(name=cell4.getName())
+u4.addCell(cell4)
+
+u5 = opencsg.Universe(name=cell5.getName())
+u5.addCell(cell5)
+
+u6 = opencsg.Universe(name=cell6.getName())
+u6.addCell(cell6)
+
+u7 = opencsg.Universe(name=cell7.getName())
+u7.addCell(cell7)
+
+u8 = opencsg.Universe(name=cell8.getName())
+u8.addCell(cell8)
+
+u9 = opencsg.Universe(name=cell9.getName())
+u9.addCell(cell9)
+
+u10 = opencsg.Universe(name=cell10.getName())
+u10.addCell(cell10)
+
+lattice = Lattice(name='Quarter Core')
+lattice.setDimension((10, 10))
+lattice.setWidth((lattice_width, lattice_width))
+lattice.setLowerLeft((-width/2., -width/2.))
+lattice.setUniverses([[u1, u4, u1, u3, u1, u4, u1, u6, u10, u10],
+                      [u4, u1, u3, u1, u3, u1, u9, u5, u10, u10],
+                      [u1, u3, u1, u3, u1, u4, u1, u6, u10, u10],
+                      [u3, u1, u3, u1, u4, u1, u8, u5, u10, u10],
+                      [u1, u3, u1, u4, u2, u4, u5, u10, u10, u10],
+                      [u4, u1, u4, u1, u4, u7, u5, u10, u10, u10],
+                      [u1, u9, u1, u8, u5, u5, u10, u10, u10, u10],
+                      [u6, u5, u6, u5, u10, u10, u10, u10, u10, u10],
+                      [u10, u10, u10, u10, u10, u10, u10, u10, u10, u10],
+                      [u10, u10, u10, u10, u10, u10, u10, u10, u10, u10]])
 
 
 ###############################################################################
 ######################   Creating Root Universe   #############################
 ###############################################################################
 
-log.py_printf('NORMAL', 'Creating the root Universe...')
+print('Creating the root Universe...')
 
-# Root cell encapsulates the full geometry
-root = CellFill(universe=0, universe_fill=lattice.getId())
-root.addSurface(halfspace=+1, surface=boundaries['X-Min'])
-root.addSurface(halfspace=-1, surface=boundaries['X-Max'])
-root.addSurface(halfspace=+1, surface=boundaries['Y-Min'])
-root.addSurface(halfspace=-1, surface=boundaries['Y-Max'])
-root.addSurface(halfspace=+1, surface=boundaries['Z-Min'])
-root.addSurface(halfspace=-1, surface=boundaries['Z-Max'])
+# Root Cell fills the root Universe which encapsulates the complete Geometry
+root_universe = opencsg.Universe(universe_id=0, name='Root Universe')
+root_cell = opencsg.Cell(name='Root Cell', fill=lattice)
+root_universe.addCell(root_cell)
 
-# Append the root to the list of all Cells
-pincells.cells.append(root)
+# Append the bounding surfaces for the Geometry to the root Cell
+root_cell.addSurface(surface=boundaries['X-Min'], halfspace=+1)
+root_cell.addSurface(surface=boundaries['X-Max'], halfspace=-1)
+root_cell.addSurface(surface=boundaries['Y-Min'], halfspace=+1)
+root_cell.addSurface(surface=boundaries['Y-Max'], halfspace=-1)
+root_cell.addSurface(surface=boundaries['Z-Min'], halfspace=+1)
+root_cell.addSurface(surface=boundaries['Z-Max'], halfspace=-1)
 
 
 ###############################################################################
 ##########################   Creating the Geometry   ##########################
 ###############################################################################
 
-log.py_printf('NORMAL', 'Creating the Geometry...')
+print('Creating the Geometry...')
 
-geometry = Geometry()
+geometry = opencsg.Geometry()
+geometry.setRootUniverse(root_universe)
 
-# Add all Materials to the Geometry
-for material in materials.materials.values():
-  geometry.addMaterial(material)
-
-# Add all Surfaces to the Geometry
-for surface in surfaces.surfaces.values():
-  geometry.addSurface(surface)
-
-for cell in pincells.pincells['1.6% Fuel'].values():
-  if not isinstance(cell, int):
-    geometry.addCell(cell)
-
-for cell in pincells.pincells['2.4% Fuel'].values():
-  if not isinstance(cell, int):
-    geometry.addCell(cell)
-
-for cell in pincells.pincells['3.1% Fuel'].values():
-  if not isinstance(cell, int):
-    geometry.addCell(cell)
-
-for cell in pincells.pincells['Guide Tube'].values():
-  if not isinstance(cell, int):
-    geometry.addCell(cell)
-
-for cell in pincells.pincells['Instrument Tube'].values():
-  if not isinstance(cell, int):
-    geometry.addCell(cell)
-
-for cell in pincells.pincells['Burnable Absorber'].values():
-  if not isinstance(cell, int):
-    geometry.addCell(cell)
-
-geometry.addCell(root)
-geometry.addCell(cell1)
-geometry.addCell(cell2)
-geometry.addCell(cell3)
-geometry.addCell(cell4)
-geometry.addCell(cell5)
-geometry.addCell(cell6)
-geometry.addCell(cell7)
-geometry.addCell(cell8)
-geometry.addCell(cell9)
-geometry.addCell(cell10)
-
-# Add all Lattices to the Geometry
-for lattice in lattices.values():
-  geometry.addLattice(lattice)
+plot_regions(geometry, gridsize=1000)
 
 
 ###############################################################################
 ###################   Exporting to OpenMC XML Input Files  ####################
 ###############################################################################
 
-log.py_printf('NORMAL', 'Exporting to OpenMC XML Files...')
+print('Exporting to OpenMC XML Files...')
+
+# geometry.xml
+create_geometry_xml(geometry)
+
+# material.xml
+materials_file = MaterialsFile()
+materials_file.addMaterials(openmc_materials.values())
+materials_file.exportToXML()
 
 # settings.xml
 settings_file = SettingsFile()
@@ -228,8 +211,8 @@ settings_file.exportToXML()
 
 # plots.xml
 plot = Plot(plot_id=1)
-plot.setWidth(width=[geometry.getXMax()-geometry.getXMin(),
-                     geometry.getXMax()-geometry.getXMin()])
+plot.setWidth(width=[geometry.getMaxX()-geometry.getMinX(),
+                     geometry.getMaxY()-geometry.getMinY()])
 plot.setOrigin([0., 0., 0.])
 plot.setPixels([pixels, pixels])
 
@@ -237,38 +220,31 @@ plot_file = PlotsFile()
 plot_file.addPlot(plot)
 plot_file.exportToXML()
 
-# materials.xml and geometry.xml
-create_input_files(geometry)
-
-# Create a plot using OpenMOC's plotting module
-#plotter.plot_cells(geometry, gridsize=1000)
-
-
 # tallies.xml
-num_cells = geometry.getNumCells()
-cell_ids = geometry.getCellIds(num_cells)
+#num_cells = geometry.getNumCells()
+#cell_ids = geometry.getCellIds(num_cells)
 
 tallies_file = TalliesFile()
-scores = ['flux']
+#scores = ['flux']
 
-for cell_id in cell_ids:
+#for cell_id in cell_ids:
 
-  tally = Tally(label='test')
-  tally.addFilter(type='distribcell', bins=cell_id)
-  tally.addFilter(type='energy', bins=[0.0, 0.625, 10000000.])
+#  tally = Tally(label='test')
+#  tally.addFilter(type='distribcell', bins=cell_id)
+#  tally.addFilter(type='energy', bins=[0.0, 0.625, 10000000.])
 
-  for score in scores:
-    tally.addScore(score=score)
+#  for score in scores:
+#    tally.addScore(score=score)
 
-  tallies_file.addTally(tally)
+#  tallies_file.addTally(tally)
 
 tallies_file.exportToXML()
 
 
-from statepoint import StatePoint
-import openmoc.compatible.openmc.plotter.plotter as plot
+#from statepoint import StatePoint
+#import openmoc.compatible.plotter.plotter as plot
 
-sp = StatePoint('statepoint.20.h5')
-sp.read_results()
+#sp = StatePoint('statepoint.20.h5')
+#sp.read_results()
 
-plot.plot_fluxes(geometry, sp, energies=[0,1], gridsize=250)
+#plot.plot_fluxes(geometry, sp, energies=[0,1], gridsize=250)

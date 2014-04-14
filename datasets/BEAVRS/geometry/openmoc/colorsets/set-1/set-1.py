@@ -2,11 +2,11 @@ from openmoc import *
 import openmoc.log as log
 from openmoc.compatible.openmc import create_input_files
 from datasets.BEAVRS.materials import materials
-from datasets.BEAVRS.geometry.templates import lattice_width
+from datasets.BEAVRS.templates import lattice_width
 from datasets.BEAVRS.geometry.openmoc import *
-from input.settings import SettingsFile
-from input.plots import PlotsFile, Plot
-from input.tallies import TalliesFile, Tally
+from openmc.input.settings import SettingsFile
+from openmc.input.plots import PlotsFile, Plot
+from openmc.input.tallies import TalliesFile, Tally
 
 
 # NOTE - This is the 3x3 geometry of 1.6% and 2.4% (16BA) assemblies found at
