@@ -78,6 +78,36 @@ lattice.setUniverses([[universes[0]]])
 cells[2].setFill(lattice)
 
 
+mesh = RadialMesh(cell=cells[0])
+mesh.setSpacingType('2D')
+mesh.setNumRings(5)
+mesh.setMaxRadius(1.0)
+mesh.setMinRadius(0.0)
+new_cells = mesh.subdivideCell()
+
+universes[0].removeCell(cells[0])
+universes[0].addCells(new_cells)
+
+mesh = RadialMesh(cell=cells[1])
+mesh.setSpacingType('2D')
+mesh.setNumRings(5)
+mesh.setMaxRadius(2.3)
+mesh.setMinRadius(1.0)
+mesh.setWithOuter(True)
+new_cells = mesh.subdivideCell()
+
+universes[0].removeCell(cells[1])
+universes[0].addCells(new_cells)
+
+
+cells = universes[0].getCells()
+for cell_id in cells:
+  cell = cells[cell_id]
+  cell.printString()
+
+
+
+
 ###############################################################################
 ##########################   Creating the Geometry   ##########################
 ###############################################################################
@@ -85,13 +115,21 @@ cells[2].setFill(lattice)
 print('Creating Geometry...')
 
 geometry = Geometry()
+geometry.setRootUniverse(universes[1])
 
-for universe in universes: geometry.addUniverse(universe)
-geometry.addLattice(lattice)
+universes[0].printString()
+universes[1].printString()
 
 geometry.initializeCellOffsets()
-geometry.setVolume(16.)
+#geometry.setVolume(volume=16., tolerance=1e-2)
+
+
+###############################################################################
+##########################   Plotting the Geometry   ##########################
+###############################################################################
+
+print('Plotting Geometry...')
 
 plotter.plot_cells(geometry)
-plotter.plot_materials(geometry)
-plotter.plot_regions(geometry)
+# #plotter.plot_materials(geometry)
+#plotter.plot_regions(geometry)

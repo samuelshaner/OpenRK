@@ -27,10 +27,7 @@ surf_types = ['plane',
               'x-cylinder',
               'y-cylinder',
               'z-cylinder',
-              'sphere',
-              'x-cone',
-              'y-cone',
-              'z-cone']
+              'sphere']
 
 
 class Surface(object):
@@ -326,7 +323,7 @@ class XPlane(Plane):
 
     # Initialize XPlane class attributes
     super(XPlane, self).__init__(surface_id, name, boundary,
-                                 A=0., B=1., C=1., D=-x0)
+                                 A=1., B=0., C=0., D=-x0)
 
     self._type = 'x-plane'
     self._coeffs['x0'] = None
@@ -405,7 +402,7 @@ class YPlane(Plane):
 
     # Initialize YPlane class attributes
     super(YPlane, self).__init__(surface_id, name, boundary,
-                                 A=1., B=0., C=1., D=-y0)
+                                 A=0., B=1., C=0., D=-y0)
 
     self._type = 'y-plane'
     self._coeffs['y0'] = None
@@ -482,7 +479,7 @@ class ZPlane(Plane):
 
     # Initialize ZPlane class attributes
     super(ZPlane, self).__init__(surface_id, name, boundary,
-                                 A=1., B=1., C=0., D=-z0)
+                                 A=0., B=0., C=1., D=-z0)
 
     self._type = 'z-plane'
     self._coeffs['z0'] = None

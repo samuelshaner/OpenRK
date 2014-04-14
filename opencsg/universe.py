@@ -36,7 +36,8 @@ class Universe(object):
     # Keys   - Cell IDs
     # Values - Offsets
     self._cell_offsets = dict()
-    self._num_regions = None
+    self._num_regions = 0
+    self._volume = np.float("inf")
 
     self.setId(universe_id)
     self.setName(name)
@@ -74,6 +75,10 @@ class Universe(object):
 
   def getNumRegions(self):
     return self._num_regions
+
+
+  def getVolume(self):
+    return self._volume
 
 
   def getMaxX(self):
@@ -297,16 +302,22 @@ class Universe(object):
       del self._cells[cell_id]
 
 
+  def clearCells(self):
+    self._cells.clear()
+
+
   def computeVolumeFractions(self, volume=np.float64(1.), tolerance=1e-3):
 
     if not is_float(volume):
       exit('Unable to compute volume fractions for Universe ID=%d since '
            'volume=%s is not a floating point value' % (self._id, str(volume)))
 
+    self._volume = volume
+
     for cell_id in self._cells:
 
       cell = self._cells[cell_id]
-      cell.computeVolumeFraction(volume=volume, tolerance=tolerance)
+      cell.computeVolumeFraction(volume=self._volume, tolerance=tolerance)
 
       # Recursively compute volume fractions below this Universe
       fill = cell.getFill()
@@ -315,13 +326,6 @@ class Universe(object):
         volume_fraction = cell.getVolumeFraction()
         fill.computeVolumeFractions(volume=volume*volume_fraction,
                                     tolerance=tolerance)
-
-
-#  def subdivideCells(self):
-
-#    for cell_id in self._cells:
-#      cell = self._cells[cell_id]
-
 
 
   def initializeCellOffsets(self):
@@ -457,7 +461,8 @@ class Universe(object):
     name = '{0: <16}'.format('\tName') + '=\t' + self._name
     string += name + '\n'
 
-    num_regions = '{0: <16}'.format('\t# Regions') + '=\t' + self._num_regions
+    num_regions = '{0: <16}'.format('\t# Regions') + '=\t'
+    num_regions += str(self._num_regions)
     string += num_regions + '\n'
 
     cells = '{0: <16}'.format('\tCells') + '=\t'
@@ -1125,10 +1130,10 @@ class Cell(object):
 
   def setFill(self, fill):
 
-    if isinstance(fill, Universe):
-      self.setType('universe')
-    elif isinstance(fill, Lattice):
+    if isinstance(fill, Lattice):
       self.setType('lattice')
+    elif isinstance(fill, Universe):
+      self.setType('universe')
     elif isinstance(fill, Material):
       self.setType('material')
     else:
@@ -1254,6 +1259,24 @@ class Cell(object):
       del self._surfaces[surf_id]
 
     self.findBoundingBox()
+
+
+  def setVolumeFraction(self, volume_fraction):
+
+    if not is_float(volume_fraction):
+      exit('Unable to set the volume fraction for Cell ID=%s to %s since it '
+           'is not a floating point value' % str(volume_fraction))
+
+    self._volume_fraction = volume_fraction
+
+
+  def setVolume(self, volume):
+
+    if not is_float(volume):
+      exit('Unable to set the volume for Cell ID=%s to %s since it '
+           'is not a floating point value' % str(volume))
+
+    self._volume = volume
 
 
   def getNumSubCells(self):
@@ -1419,6 +1442,29 @@ class Cell(object):
     self._volume = np.float64(self._volume_fraction * volume)
 
 
+  def clone(self):
+
+    clone = Cell()
+    clone.setName(self._name)
+    clone.setFill(self._fill)
+
+    for surface_id in self._surfaces.keys():
+      surface = self._surfaces[surface_id][0]
+      halfspace = self._surfaces[surface_id][1]
+      clone.addSurface(surface=surface, halfspace=halfspace)
+
+    clone.setMaxX(self._max_x)
+    clone.setMaxY(self._max_y)
+    clone.setMaxZ(self._max_z)
+    clone.setMinX(self._min_x)
+    clone.setMinY(self._min_y)
+    clone.setMinZ(self._min_z)
+    clone.setVolume(self._volume)
+    clone.setVolumeFraction(self._volume_fraction)
+
+    return clone
+
+
   def toString(self):
 
     string = ''
@@ -1459,8 +1505,12 @@ class Cell(object):
     string += num_subcells + '\n'
 
     surfaces = '{0: <16}'.format('\tSurfaces') + '=\t'
-    surfaces += str(self._surfaces.keys())
-    string += surfaces + '\n'
+
+    for surface_id in self._surfaces.keys():
+      halfspace = self._surfaces[surface_id][1]
+      surfaces += str(surface_id*halfspace) + ', '
+
+    string += surfaces.rstrip(', ') + '\n'
 
     return string
 

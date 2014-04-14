@@ -16,23 +16,15 @@ interval_types = ['linear', 'logarithmic']
 
 class Mesh(object):
 
-  def __init__(self, universe=None, cell=None):
+  def __init__(self, cell=None):
 
     # Initialize Mesh class attributes
-    self._universe = None
     self._cell = None
     self._spacing_type = '1D'
     self._interval_type = 'linear'
 
-    if not universe is None:
-      self.setUniverse(universe)
-
     if not cell is None:
       self.setCell(cell)
-
-
-  def getUniverse(self):
-    return self._universe
 
 
   def getCell(self):
@@ -45,15 +37,6 @@ class Mesh(object):
 
   def getIntervalType(self):
     return self._interval_type
-
-
-  def setUniverse(self, universe):
-
-    if not isinstance(universe, Universe):
-      exit('Unable to set the universe for mesh since %s is not '
-           'a Universe' % str(universe))
-
-    self._universe = universe
 
 
   def setCell(self, cell):
@@ -78,7 +61,7 @@ class Mesh(object):
     self._interval_type = interval_type
 
 
-  def setSpacingType(self, spacing_type='linear'):
+  def setSpacingType(self, spacing_type='1D'):
 
     if not is_string(spacing_type):
       exit('Unable to set the spacing type for Mesh to %s since it '
@@ -91,12 +74,6 @@ class Mesh(object):
     self._spacing_type = spacing_type
 
 
-  def subdivideUniverse(self):
-
-    if self._universe is None:
-      exit('Unable to subdivide Mesh universe since it has not been set')
-
-
   def subdivideCell(self):
 
     if self._cell is None:
@@ -106,17 +83,19 @@ class Mesh(object):
 
 class RadialMesh(Mesh):
 
-  def __init__(self, universe=None, cell=None, num_rings=None):
+  def __init__(self, cell=None):
 
-    super(RadialMesh, self).__init__(universe=universe, cell=cell)
+    super(RadialMesh, self).__init__(cell=cell)
 
     # Initialize RadialMesh class attributes
     self._num_rings = 0.
-    self._max_radius = 0.
-    self._min_radius = 0.
+    self._max_radius = -np.float("inf")
+    self._min_radius = np.float("inf")
+    self._with_outer = False
+    self._with_inner = False
 
-    if not num_rings is None:
-      self.setNumRings(num_rings)
+    if not cell is None:
+      self.setCell(cell)
 
 
   def getNumRings(self):
@@ -129,6 +108,14 @@ class RadialMesh(Mesh):
 
   def getMinRadius(self):
     return self._min_radius
+
+
+  def getWithOuter(self):
+    return self._with_outer
+
+
+  def getWithInner(self):
+    return self._with_inner
 
 
   def setNumRings(self, num_rings):
@@ -170,95 +157,112 @@ class RadialMesh(Mesh):
     self._min_radius = np.float64(min_radius)
 
 
-  def subdivideUniverse(self):
+  def setWithOuter(self, with_outer):
 
-    super(RadialMesh, self).subdivideUniverse()
+    if not isinstance(with_outer, bool):
+      exit('Unable to set with outer for RadialMesh to %s since '
+           'it is not a boolean value' % str(with_outer))
 
-    if self._min_radius == 0:
-      exit('Unable ot subdivide Universe ID=%d with RadialMesh since the '
-           'maximum radius has not been set' % str(self._universe.getId()))
+    self._with_outer = with_outer
 
-    if self._min_radius == 0:
-      exit('Unable ot subdivide Universe ID=%d with RadialMesh since the '
-           'minimum radius has not been set' % str(self._universe.getId()))
+
+  def setWithInner(self, with_inner):
+
+    if not isinstance(with_inner, bool):
+      exit('Unable to set with inner for RadialMesh to %s since '
+           'it is not a boolean value' % str(with_inner))
+
+    self._with_inner = with_inner
+
+
+  def subdivideCell(self):
+
+    super(RadialMesh, self).subdivideCell()
+
+    if self._cell is None:
+      exit('Unable to subdivide Cell with RadialMesh since no Cell has '
+           'been set')
+
+    if self._max_radius == -np.float("inf"):
+      exit('Unable to subdivide Cell ID=%s with RadialMesh since the '
+           'maximum radius has not been set' % str(self._cell.getId()))
+
+    if self._min_radius == np.float("inf"):
+      exit('Unable to subdivide Cell ID=%s with RadialMesh since the '
+           'minimum radius has not been set' % str(self._cell.getId()))
 
     # Create ZCylinders
-    radii = None
     cylinders = list()
 
-    # Equally spaced radii
-    if self._spacing_type is '1D' :
-      if self._interval_type is 'linear':
-        radii = np.linspace(self._max_radius, self._min_radius, self._num_rings)
+    if self._interval_type == 'logarithmic':
+      exit('Unable to subdivide Cells using a Radial mesh with '
+           'logarithmically spaced radii since that feature is not supported')
 
-      # Logarithmically spaced radii
-      else:
-        log_max_radius = np.log(self._max_radius)
-        log_min_radius = np.log(self._min_radius)
-        radii = np.logspace(log_max_radius, log_min_radius, self._num_rings)
+    if self._spacing_type is '1D':
+
+      # Equally spaced radii
+      radii = np.linspace(self._max_radius, self._min_radius, self._num_rings+1)
 
     elif self._spacing_type is '2D':
 
       # Equal area radii
-      if self._interval_type is 'linear':
-        area = np.pi * (self._max_radius**2 - self._min_radius**2) / self._num_rings
+      radii = list()
+      area = (self._max_radius**2 - self._min_radius**2) / self._num_rings
 
-        # Initialize successively smaller rings
-        radii.append(self._max_radius)
+      # Initialize successively smaller rings
+      radii.append(self._max_radius)
 
-        for i in range(self._num_rings-1):
-          radii.append(np.sqrt(radii[-1]**2 - (area / np.pi)))
+      for i in range(self._num_rings):
+        delta_area = radii[-1]**2 - area
 
-      # Equal log(area) spaced radii
-      else:
+        if delta_area <= 0.:
+          radii.append(0.)
 
-        exit('Unable to create 2D RadialMesh with logarithmically spaced rings')
+        else:
+          radii.append(np.sqrt(delta_area))
+
 
     # Create ZCylinders for each radius
     for radius in radii:
       if radius != 0.:
         cylinders.append(ZCylinder(x0=0., y0=0., R=radius))
 
-    # Retrieve the Cells from the Universe
-    cells = self._universe.getCells()
-
     # Initialize an empty list of the new subdivided cells
     new_cells = list()
 
-    for cell_id in cells:
-      cell = cells[cell_id]
+    # Loop over all rings
+    for i in range(self._num_rings):
 
-      # Loop over all rings
-      for i in range(self._num_rings-1):
+      min_radius = radii[i+1]
 
-        min_radius = radii[i+1]
+      # Create a clone of this cell for this ring
+      clone = self._cell.clone()
 
-        # Create a clone of this cell for this ring
-        clone = cell.clone()
+      # Add outer bounding Surface to the clone
+      clone.addSurface(surface=cylinders[i], halfspace=-1)
 
-        # Add outer bounding Surface to the clone
-        clone.addSurface(surface=cylinders[i], halfspace=-1)
+      # Add non-trivial inner bounding Surface to the clone
+      if min_radius != 0.:
+        clone.addSurface(surface=cylinders[i+1], halfspace=+1)
 
-        # Add non-trivial inner bounding Surface to the clone
-        if min_radius != 0.:
-          clone.addSurface(surface=cylinders[i+1], halfspace=+1)
-
-        # Add this clone to the new_cells list
-        new_cells.append(clone)
-
-        # MUST REMOVE SURFACES IF AN EQUIVALENT ALREADY EXISTS IN THE CELL!
+      # Add this clone to the new_cells list
+      new_cells.append(clone)
 
 
+    if self._with_outer:
+      clone = self._cell.clone()
+      clone.addSurface(surface=cylinders[0], halfspace=+1)
+      new_cells.append(clone)
+
+    if self._with_inner:
+      clone = self._cell.clone()
+      clone.addSurface(surface=cylinders[-1], halfspace=-1)
+      new_cells.append(clone)
 
 
-#      for cylinder
+    # MUST REMOVE SURFACES IF AN EQUIVALENT ALREADY EXISTS IN THE CELL!
 
-
-
-  def subdivdeCell(self):
-
-    super(RadialMesh, self).subdivideCell()
-
+    return new_cells
 
 
 class SectorMesh(Mesh):

@@ -8,21 +8,18 @@ from point import Point
 
 class Geometry(object):
 
-  def __init__(self):
+  def __init__(self, root_universe=None):
 
     # Initialize Geometry class attributes
-    self._universes = dict()
-    self._lattices = dict()
+#    self._universes = dict()
+#    self._lattices = dict()
+    self._root_universe = None
     self._num_regions = 0
     self._volume = np.float64(0.)
 
 
-  def getUniverses(self):
-    return self._universes
-
-
-  def getLattices(self):
-    return self._lattices
+  def getRootUniverse(self):
+    return self._root_universe
 
 
   def getNumRegions(self):
@@ -35,104 +32,70 @@ class Geometry(object):
 
   def getMaxX(self):
 
-    if not 0 in self._universes.keys():
+    if self._root_universe is None:
       exit('Unable to get the maximum x since the Geometry does not '
            'contain the base Universe ID=0')
 
-    root = self._universes[0]
-    return root.getMaxX()
+    return self._root_universe.getMaxX()
 
 
   def getMaxY(self):
 
-    if not 0 in self._universes.keys():
+    if self._root_universe is None:
       exit('Unable to get the maximum y since the Geometry does not '
            'contain the base Universe ID=0')
 
-    root = self._universes[0]
-    return root.getMaxY()
+    return self._root_universe.getMaxY()
 
 
   def getMaxZ(self):
 
-    if not 0 in self._universes.keys():
+    if self._root_universe is None:
       exit('Unable to get the maximum z since the Geometry does not '
            'contain the base Universe ID=0')
 
-    root = self._universes[0]
-    return root.getMaxZ()
+    return self._root_universe.getMaxZ()
 
 
   def getMinX(self):
 
-    if not 0 in self._universes.keys():
+    if self._root_universe is None:
       exit('Unable to get the minimum x since the Geometry does not '
            'contain the base Universe ID=0')
 
-    root = self._universes[0]
-    return root.getMinX()
+    return self._root_universe.getMinX()
 
 
   def getMinY(self):
 
-    if not 0 in self._universes.keys():
+    if self._root_universe is None:
       exit('Unable to get the minimum y since the Geometry does not '
            'contain the base Universe ID=0')
 
-    root = self._universes[0]
-    return root.getMinY()
+    return self._root_universe.getMinY()
 
 
   def getMinZ(self):
 
-    if not 0 in self._universes.keys():
+    if self._root_universe is None:
       exit('Unable to get the minimum z since the Geometry does not '
            'contain the base Universe ID=0')
 
-    root = self._universes[0]
-    return root.getMinZ()
+    return self._root_universe.getMinZ()
 
 
-  def addUniverse(self, universe):
+  def setRootUniverse(self, root_universe):
 
-    if not isinstance(universe, Universe):
-      exit('Unable to add Universe to the Geometry since %s is not '
-           'a Universe' % str(universe))
+    if not isinstance(root_universe, Universe):
+      exit('Unable to set the root Universe for the Geometry since %s is '
+           'not a Universe' % str(root_universe))
 
-    univ_id = universe.getId()
-    self._universes[univ_id] = universe
+    if not root_universe.getId() == 0:
+      exit('Unable to set the root Universe for the Geometry with a Universe '
+           'with ID=%d. The root Universe must have ID=0.' %
+           root_universe.getId())
 
-
-  def removeUniverse(self, universe):
-
-    if not isinstance(universe, Universe):
-      exit('Unable to remove Universe to the Geometry since %s is not '
-           'a Universe' % str(universe))
-
-    univ_id = universe.getId()
-    if univ_id in self._universes.keys():
-      del self._universes[univ_id]
-
-
-  def addLattice(self, lattice):
-
-    if not isinstance(lattice, Lattice):
-      exit('Unable to add Lattice to the Geometry since %s is not '
-           'a Lattice' % str(lattice))
-
-    lat_id = lattice.getId()
-    self._universes[lat_id] = lattice
-
-
-  def removeLattice(self, lattice):
-
-    if not isinstance(lattice, Lattice):
-      exit('Unable to remove Lattice to the Geometry since %s is not '
-           'a Lattice' % str(lattice))
-
-    lat_id = lattice.getId()
-    if lat_id in self._lattices.keys():
-      del self._lattices[lat_id]
+    self._root_universe = root_universe
 
 
   def setVolume(self, volume, tolerance=1e-3):
@@ -145,32 +108,24 @@ class Geometry(object):
       exit('Unable to compute the volume of the Geometry to a tolerance '
            'of %s since it is not a floating point value' % str(tolerance))
 
-    if not 0 in self._universes.keys():
+    if self._root_universe is None:
       exit('Unable to initialize cell offsets since the Geometry does not '
            'contain the base Universe ID=0')
 
     self._volume = np.float64(volume)
 
-    root = self._universes[0]
-    root.computeVolumeFractions(volume=self._volume, tolerance=tolerance)
-
-
-#  def subdivideCells(self):
-
-#    for universe_id in self._universes:
-#      universe = self._universes[universe_id]
-#      universe.subdivideCells()
+    self._root_universe.computeVolumeFractions(volume=self._volume,
+                                               tolerance=tolerance)
 
 
   def initializeCellOffsets(self):
 
-    if not 0 in self._universes.keys():
+    if self._root_universe is None:
       exit('Unable to initialize cell offsets since the Geometry does not '
            'contain the base Universe ID=0')
 
-    root = self._universes[0]
-    root.initializeCellOffsets()
-    self._num_regions = root.getNumRegions()
+    self._root_universe.initializeCellOffsets()
+    self._num_regions = self._root_universe.getNumRegions()
 
 
   def getRegionId(self, x=0., y=0., z=0.):
@@ -199,16 +154,15 @@ class Geometry(object):
 
   def findCell(self, x=0., y=0., z=0.):
 
-    if not 0 in self._universes.keys():
+    if self._root_universe is None:
       exit('Unable to find cell since the Geometry does not contain the '
            'base Universe ID=0')
 
-    root = self._universes[0]
     point = Point(x=x, y=y, z=z)
     localcoords = UnivCoords(point=point)
-    localcoords.setUniverse(root)
+    localcoords.setUniverse(self._root_universe)
 
-    return root.findCell(localcoords=localcoords)
+    return self._root_universe.findCell(localcoords=localcoords)
 
 
 
@@ -220,7 +174,7 @@ class Geometry(object):
 
   def findRegion(self, region_id=0):
 
-    if not 0 in self._universes.keys():
+    if self._root_universe is None:
       exit('Unable to find coords since the Geometry does not contain the '
            'base Universe ID=0')
 
@@ -233,43 +187,22 @@ class Geometry(object):
            'a negative integer' % region_id)
 
 
-    root = self._universes[0]
-    localcoords = UnivCoords(universe=root)
-    root.findRegion(region_id=region_id, univ_coords=localcoords)
+    localcoords = UnivCoords(universe=self._root_universe)
+    self._root_universe.findRegion(region_id=region_id, univ_coords=localcoords)
     localcoords = localcoords.getHeadNode()
     return localcoords
 
 
   def findCoords(self, x=0., y=0., z=0.):
 
-    if not 0 in self._universes.keys():
+    if self._root_universe is None:
       exit('Unable to find coords since the Geometry does not contain the '
            'base Universe ID=0')
 
-    root = self._universes[0]
     point = Point(x=x, y=y, z=z)
     localcoords = UnivCoords(point=point)
-    localcoords.setUniverse(root)
-    cell = root.findCell(localcoords=localcoords)
+    localcoords.setUniverse(self._root_universe)
+    cell = self._root_universe.findCell(localcoords=localcoords)
     localcoords = localcoords.getHeadNode()
 
     return localcoords
-
-
-  def toString(self):
-
-    string = ''
-
-    string += 'Geometry\n'
-
-    for universe in self._universes.values():
-      string += universe.toString()
-
-    for lattice in self._lattices:
-      string += lattice.toString()
-
-    return string
-
-
-  def printString(self):
-    print(self.toString())
