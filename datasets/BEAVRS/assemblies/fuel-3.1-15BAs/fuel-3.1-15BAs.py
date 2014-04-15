@@ -16,7 +16,8 @@ from datasets.BEAVRS.lattices import *
 lattice = lattices['3.1% Fuel - 15BA']
 
 # Discretization of pin cells
-rings = 3
+fuel_rings = 3
+mod_rings = 3
 sectors = 4
 
 # Height of the axial slice
@@ -54,22 +55,22 @@ for index in boundaries.keys():
 #########################   Discretize Pin Cells  #############################
 ###############################################################################
 
+print('Discretizing the Cells...')
+
 # Loop over all pin types
-#for pin in pincells.pincells.keys():
+for pin in pin_cells.keys():
 
-  # Loop over all cells for this pin type
-#  for cell in pincells.pincells[pin].keys():
+  universe = pin_cells[pin]
+  cells = universe.getCells()
 
-    # Ignore the Universe entry
-#    if cell == 'Universe':
-#      continue
+  for cell_id in cells.keys():
 
-    # Set the number of sectors
-#    pincells.pincells[pin][cell].setNumSectors(sectors)
+    cell = cells[cell_id]
 
-    # Set the number of rings in the fuel
-#    if 'Fuel' in cell:
-#      pincells.pincells[pin][cell].setNumRings(rings)
+    if 'Fuel' in cell.getName():
+
+      mesh = opencsg.RadialMesh(cell=cell, num_rings=fuel_rings)
+      mesh.subdivideCell(universe=universe)
 
 
 ###############################################################################
