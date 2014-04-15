@@ -40,10 +40,10 @@ for plane in planes: plane.setBoundaryType('reflective')
 print('Creating Universes...')
 
 universes = list()
-universes.append(Universe(name='pin 1'))
-universes.append(Universe(name='pin 2'))
-universes.append(Universe(name='pin 3'))
-universes.append(Universe(universe_id=0, name='root'))
+universes.append(Universe(name='Pin 1'))
+universes.append(Universe(name='Pin 2'))
+universes.append(Universe(name='Pin 3'))
+universes.append(Universe(universe_id=0, name='Root Universe'))
 
 
 ###############################################################################
@@ -53,13 +53,13 @@ universes.append(Universe(universe_id=0, name='root'))
 print('Creating Cells...')
 
 cells = list()
-cells.append(Cell(name='pin 1 fuel', fill=uo2))
-cells.append(Cell(name='pin 1 water', fill=water))
-cells.append(Cell(name='pin 2 fuel', fill=uo2))
-cells.append(Cell(name='pin 2 water', fill=water))
-cells.append(Cell(name='pin 3 fuel', fill=uo2))
-cells.append(Cell(name='pin 3 water', fill=water))
-cells.append(Cell(name='root'))
+cells.append(Cell(name='Pin 1 Fuel', fill=uo2))
+cells.append(Cell(name='Pin 1 Water', fill=water))
+cells.append(Cell(name='Pin 2 Fuel', fill=uo2))
+cells.append(Cell(name='Pin 2 Water', fill=water))
+cells.append(Cell(name='Pin 3 Fuel', fill=uo2))
+cells.append(Cell(name='Pin 3 Water', fill=water))
+cells.append(Cell(name='Root Cell'))
 
 cells[0].addSurface(halfspace=-1, surface=cylinders[0])
 cells[1].addSurface(halfspace=+1, surface=cylinders[0])
@@ -77,6 +77,34 @@ universes[0].addCells(cells[0:2])
 universes[1].addCells(cells[2:4])
 universes[2].addCells(cells[4:6])
 universes[3].addCell(cells[6])
+
+
+###############################################################################
+###########################   Meshing the Cells   #############################
+###############################################################################
+
+print('Meshing the Cells...')
+
+mesh = RadialMesh(cell=cells[0])
+mesh.setSpacingType('2D')
+mesh.setNumRings(3)
+mesh.setMaxRadius(cells[0].getMaxX())
+mesh.setMinRadius(0.0)
+new_cells = mesh.subdivideCell(universe=universes[0])
+
+mesh = RadialMesh(cell=cells[2])
+mesh.setSpacingType('2D')
+mesh.setNumRings(3)
+mesh.setMaxRadius(cells[2].getMaxX())
+mesh.setMinRadius(0.0)
+new_cells = mesh.subdivideCell(universe=universes[1])
+
+mesh = RadialMesh(cell=cells[4])
+mesh.setSpacingType('2D')
+mesh.setNumRings(3)
+mesh.setMaxRadius(cells[4].getMaxX())
+mesh.setMinRadius(0.0)
+new_cells = mesh.subdivideCell(universe=universes[2])
 
 
 ###############################################################################
@@ -112,13 +140,18 @@ cells[6].setFill(lattices[0])
 print('Creating Geometry...')
 
 geometry = Geometry()
-
-for universe in universes: geometry.addUniverse(universe)
-for lattice in lattices: geometry.addLattice(lattice)
+geometry.setRootUniverse(universes[3])
 
 geometry.initializeCellOffsets()
-geometry.setVolume(16.)
+geometry.setVolume(16., tolerance=1e-1)
+
+
+###############################################################################
+##########################   Plotting the Geometry   ##########################
+###############################################################################
+
+print('Plotting Geometry...')
 
 plotter.plot_cells(geometry)
-plotter.plot_materials(geometry)
-plotter.plot_regions(geometry)
+#plotter.plot_materials(geometry)
+#plotter.plot_regions(geometry)

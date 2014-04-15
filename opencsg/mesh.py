@@ -10,9 +10,6 @@ from checkvalue import *
 # The types of meshes - distance (1D), area (2D) or volume (3D)
 spacing_types = ['1D', '2D']    # Add 3D later
 
-# The types of intervals between mesh cells
-interval_types = ['linear', 'logarithmic']
-
 
 class Mesh(object):
 
@@ -21,7 +18,6 @@ class Mesh(object):
     # Initialize Mesh class attributes
     self._cell = None
     self._spacing_type = '1D'
-    self._interval_type = 'linear'
 
     if not cell is None:
       self.setCell(cell)
@@ -35,9 +31,6 @@ class Mesh(object):
     return self._spacing_type
 
 
-  def getIntervalType(self):
-    return self._interval_type
-
 
   def setCell(self, cell):
 
@@ -46,19 +39,6 @@ class Mesh(object):
            'a Cell' % str(cell))
 
     self._cell = cell
-
-
-  def setIntervalType(self, interval_type='linear'):
-
-    if not is_string(interval_type):
-      exit('Unable to set the interval type for Mesh to %s since it '
-           'is not a string' % str(interval_type))
-
-    if not interval_type in interval_types:
-      exit('Unable to set the interval type for Mesh to %s since it '
-           'is not a supported type' % interval_type)
-
-    self._interval_type = interval_type
 
 
   def setSpacingType(self, spacing_type='1D'):
@@ -175,7 +155,7 @@ class RadialMesh(Mesh):
     self._with_inner = with_inner
 
 
-  def subdivideCell(self):
+  def subdivideCell(self, universe=None):
 
     super(RadialMesh, self).subdivideCell()
 
@@ -193,10 +173,6 @@ class RadialMesh(Mesh):
 
     # Create ZCylinders
     cylinders = list()
-
-    if self._interval_type == 'logarithmic':
-      exit('Unable to subdivide Cells using a Radial mesh with '
-           'logarithmically spaced radii since that feature is not supported')
 
     if self._spacing_type is '1D':
 
@@ -224,8 +200,8 @@ class RadialMesh(Mesh):
 
     # Create ZCylinders for each radius
     for radius in radii:
-      if radius != 0.:
-        cylinders.append(ZCylinder(x0=0., y0=0., R=radius))
+#      if radius != 0.:
+      cylinders.append(ZCylinder(x0=0., y0=0., R=radius))
 
     # Initialize an empty list of the new subdivided cells
     new_cells = list()
@@ -242,7 +218,7 @@ class RadialMesh(Mesh):
       clone.addSurface(surface=cylinders[i], halfspace=-1)
 
       # Add non-trivial inner bounding Surface to the clone
-      if min_radius != 0.:
+      if abs(min_radius) > 1e-5:
         clone.addSurface(surface=cylinders[i+1], halfspace=+1)
 
       # Add this clone to the new_cells list
@@ -261,15 +237,22 @@ class RadialMesh(Mesh):
 
 
     # MUST REMOVE SURFACES IF AN EQUIVALENT ALREADY EXISTS IN THE CELL!
+    for cell in new_cells:
+      cell.findBoundingBox()
+      cell.removeRedundantSurfaces()
+
+    if isinstance(universe, Universe):
+      universe.removeCell(self._cell)
+      universe.addCells(new_cells)
 
     return new_cells
 
 
 class SectorMesh(Mesh):
 
-  def __init__(self, universe=None, cell=None, num_sectors=None):
+  def __init__(self, cell=None, num_sectors=None):
 
-    super(SectorMesh, self).__init__(universe=universe, cell=cell)
+    super(SectorMesh, self).__init__(cell=cell)
 
     # Initialize SectorMesh class attributes
     self._num_sectors = 0.
@@ -293,11 +276,6 @@ class SectorMesh(Mesh):
            'since it is a negative integer' % str(num_sectors))
 
     self._num_sectors = num_sectors
-
-
-  def subdivideUniverse(self):
-
-    super(RadialMesh, self).subdivideUniverse()
 
 
   def subdivdeCell(self):

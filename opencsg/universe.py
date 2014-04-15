@@ -332,7 +332,7 @@ class Universe(object):
 
 
     # If we have already called this routine, return the total number of regions
-    if not self._num_regions is None:
+    if not self._num_regions == 0:
       return self._num_regions
 
     # The cell offsets have not yet been initialized
@@ -1220,10 +1220,30 @@ class Cell(object):
       exit('Unable to add a Surface to Cell ID=%d with halfspace %s since '
            'it is not +/-1' % (self._id, str(halfspace)))
 
-    surf_id = surface.getId()
+    # Only add the Surface if the Cell does not already contain another
+    # Surface of the same type and coefficients (a redundant Surface)
+    for surface_id in self._surfaces.keys():
 
-    if not surf_id in self._surfaces.keys():
-      self._surfaces[surf_id] = (surface, halfspace)
+      test_surface = self._surfaces[surface_id][0]
+      test_halfspace = self._surfaces[surface_id][1]
+
+      if halfspace == test_halfspace:
+
+        if surface.getType() == test_surface.getType():
+          coeffs = surface.getCoeffs()
+          test_coeffs = test_surface.getCoeffs()
+
+          for key in coeffs.keys():
+            coeff = coeffs[key]
+            test_coeff = test_coeffs[key]
+
+          if abs(coeff-test_coeff) < 1e-10:
+            return
+
+    surface_id = surface.getId()
+
+    if not surface_id in self._surfaces.keys():
+      self._surfaces[surface_id] = (surface, halfspace)
 
     self.findBoundingBox()
 
@@ -1259,6 +1279,63 @@ class Cell(object):
       del self._surfaces[surf_id]
 
     self.findBoundingBox()
+
+
+  def removeRedundantSurfaces(self):
+
+    for surface_id in self._surfaces.keys():
+      surface = self._surfaces[surface_id][0]
+      halfspace = self._surfaces[surface_id][1]
+
+      max_x = surface.getMaxX(halfspace=halfspace)
+      max_y = surface.getMaxY(halfspace=halfspace)
+      max_z = surface.getMaxZ(halfspace=halfspace)
+
+      min_x = surface.getMinX(halfspace=halfspace)
+      min_y = surface.getMinY(halfspace=halfspace)
+      min_z = surface.getMinZ(halfspace=halfspace)
+
+      delta_box = np.zeros(6)
+
+      if abs(max_x) == np.float("inf") and abs(self._max_x) == np.float("inf"):
+        delta_box[0] = np.float("nan")
+      else:
+        delta_box[0] = max_x - self._max_x
+
+      if abs(min_x) == np.float("inf") and abs(self._min_x) == np.float("inf"):
+        delta_box[1] = np.float("nan")
+      else:
+        delta_box[1] = self._min_x - min_x
+
+      if abs(max_y) == np.float("inf") and abs(self._max_y) == np.float("inf"):
+        delta_box[2] = np.float("nan")
+      else:
+        delta_box[2] = max_y - self._max_y
+
+      if abs(min_y) == np.float("inf") and abs(self._min_y) == np.float("inf"):
+        delta_box[3] = np.float("nan")
+      else:
+        delta_box[3] = self._min_y - min_y
+
+      if abs(max_z) == np.float("inf") and abs(self._max_z) == np.float("inf"):
+        delta_box[4] = np.float("nan")
+      else:
+        delta_box[4] = max_z - self._max_z
+
+      if abs(min_z) == np.float("inf") and abs(self._min_z) == np.float("inf"):
+        delta_box[5] = np.float("nan")
+      else:
+        delta_box[5] = self._min_z - min_z
+
+      to_remove = True
+
+      for delta in delta_box:
+        if delta in [np.float("inf"), 0.]:
+          to_remove = False
+
+
+      if to_remove:
+        del self._surfaces[surface_id]
 
 
   def setVolumeFraction(self, volume_fraction):
@@ -1302,12 +1379,12 @@ class Cell(object):
 
   def findBoundingBox(self):
 
-    self.setMaxX(-np.float64("inf"))
-    self.setMaxY(-np.float64("inf"))
-    self.setMaxZ(-np.float64("inf"))
-    self.setMinX(np.float64("inf"))
-    self.setMinY(np.float64("inf"))
-    self.setMinZ(np.float64("inf"))
+    self.setMaxX(np.float64("inf"))
+    self.setMaxY(np.float64("inf"))
+    self.setMaxZ(np.float64("inf"))
+    self.setMinX(-np.float64("inf"))
+    self.setMinY(-np.float64("inf"))
+    self.setMinZ(-np.float64("inf"))
 
     for surface_id in self._surfaces:
       surface = self._surfaces[surface_id][0]
@@ -1321,19 +1398,19 @@ class Cell(object):
       min_y = surface.getMinY(halfspace=halfspace)
       min_z = surface.getMinZ(halfspace=halfspace)
 
-      if max_x != np.float64("inf") and self._max_x < max_x:
-        self.setMaxX(surface.getMaxX(halfspace=halfspace))
-      if max_y != np.float64("inf") and self._max_y < max_y:
-        self.setMaxY(surface.getMaxY(halfspace=halfspace))
-      if max_x != np.float64("inf") and self._max_z < max_z:
-        self.setMaxZ(surface.getMaxZ(halfspace=halfspace))
+      if max_x != np.float64("inf") and max_x < self._max_x:
+        self.setMaxX(max_x)
+      if max_y != np.float64("inf") and max_y < self._max_y:
+        self.setMaxY(max_y)
+      if max_x != np.float64("inf") and max_z < self._max_z:
+        self.setMaxZ(max_z)
 
-      if min_x != -np.float64("inf") and self._min_x > min_x:
-        self.setMinX(surface.getMinX(halfspace=halfspace))
-      if min_y != -np.float64("inf") and self._min_y > min_y:
-        self.setMinY(surface.getMinY(halfspace=halfspace))
-      if min_z != -np.float64("inf") and self._min_z > min_z:
-        self.setMinZ(surface.getMinZ(halfspace=halfspace))
+      if min_x != -np.float64("inf") and min_x > self._min_x:
+        self.setMinX(min_x)
+      if min_y != -np.float64("inf") and min_y > self._min_y:
+        self.setMinY(min_y)
+      if min_z != -np.float64("inf") and min_z > self._min_z:
+        self.setMinZ(min_z)
 
     # If we could not find a bounds for any dimension, readjust
     # it to +/- infinity
@@ -1484,6 +1561,10 @@ class Cell(object):
     volume_fraction = '{0: <16}'.format('\tVolume Fraction') + '=\t'
     volume_fraction += str(self._volume_fraction)
     string += volume_fraction + '\n'
+
+    volume = '{0: <16}'.format('\tVolume') + '=\t'
+    volume += str(self._volume)
+    string += volume + '\n'
 
     fill = '{0: <16}'.format('\tFill') + '=\t'
 

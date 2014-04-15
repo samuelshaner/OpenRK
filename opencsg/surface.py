@@ -959,7 +959,7 @@ class ZCylinder(Cylinder):
     else:
 
       if not is_integer(halfspace):
-        exit('Unable to get the maximum x-coordinate for ZClinder ID=%d since '
+        exit('Unable to get the maximum x-coordinate for ZCylinder ID=%d since '
              'the halfspace is a non-integer value %s',
              self._id, str(halfspace))
 
