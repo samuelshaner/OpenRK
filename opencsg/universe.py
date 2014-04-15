@@ -1402,7 +1402,7 @@ class Cell(object):
         self.setMaxX(max_x)
       if max_y != np.float64("inf") and max_y < self._max_y:
         self.setMaxY(max_y)
-      if max_x != np.float64("inf") and max_z < self._max_z:
+      if max_z != np.float64("inf") and max_z < self._max_z:
         self.setMaxZ(max_z)
 
       if min_x != -np.float64("inf") and min_x > self._min_x:

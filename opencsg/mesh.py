@@ -17,7 +17,7 @@ class Mesh(object):
 
     # Initialize Mesh class attributes
     self._cell = None
-    self._spacing_type = '1D'
+    self._spacing_type = '2D'
 
     if not cell is None:
       self.setCell(cell)
@@ -31,7 +31,6 @@ class Mesh(object):
     return self._spacing_type
 
 
-
   def setCell(self, cell):
 
     if not isinstance(cell, Cell):
@@ -39,9 +38,10 @@ class Mesh(object):
            'a Cell' % str(cell))
 
     self._cell = cell
+    self._cell.findBoundingBox()
 
 
-  def setSpacingType(self, spacing_type='1D'):
+  def setSpacingType(self, spacing_type='2D'):
 
     if not is_string(spacing_type):
       exit('Unable to set the spacing type for Mesh to %s since it '
@@ -63,16 +63,19 @@ class Mesh(object):
 
 class RadialMesh(Mesh):
 
-  def __init__(self, cell=None):
+  def __init__(self, cell=None, num_rings=None):
 
     super(RadialMesh, self).__init__(cell=cell)
 
     # Initialize RadialMesh class attributes
     self._num_rings = 0.
     self._max_radius = -np.float("inf")
-    self._min_radius = np.float("inf")
+    self._min_radius = 0.
     self._with_outer = False
     self._with_inner = False
+
+    if not num_rings is None:
+      self.setNumRings(num_rings)
 
     if not cell is None:
       self.setCell(cell)
@@ -164,12 +167,7 @@ class RadialMesh(Mesh):
            'been set')
 
     if self._max_radius == -np.float("inf"):
-      exit('Unable to subdivide Cell ID=%s with RadialMesh since the '
-           'maximum radius has not been set' % str(self._cell.getId()))
-
-    if self._min_radius == np.float("inf"):
-      exit('Unable to subdivide Cell ID=%s with RadialMesh since the '
-           'minimum radius has not been set' % str(self._cell.getId()))
+      self._max_radius = self._cell.getMaxX()
 
     # Create ZCylinders
     cylinders = list()
@@ -200,7 +198,6 @@ class RadialMesh(Mesh):
 
     # Create ZCylinders for each radius
     for radius in radii:
-#      if radius != 0.:
       cylinders.append(ZCylinder(x0=0., y0=0., R=radius))
 
     # Initialize an empty list of the new subdivided cells
@@ -235,8 +232,6 @@ class RadialMesh(Mesh):
       clone.addSurface(surface=cylinders[-1], halfspace=-1)
       new_cells.append(clone)
 
-
-    # MUST REMOVE SURFACES IF AN EQUIVALENT ALREADY EXISTS IN THE CELL!
     for cell in new_cells:
       cell.findBoundingBox()
       cell.removeRedundantSurfaces()

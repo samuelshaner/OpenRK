@@ -515,7 +515,7 @@ class ZPlane(Plane):
         return np.float64("inf")
 
 
-  def getMinX(self, halfspace=None):
+  def getMinZ(self, halfspace=None):
 
     if halfspace is None:
       return self._min_z
