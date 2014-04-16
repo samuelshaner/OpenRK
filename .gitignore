@@ -66,3 +66,5 @@ simulation-state/*
 */*.ppm
 *.out
 */*.out
+*.pyc
+*/*.pyc
