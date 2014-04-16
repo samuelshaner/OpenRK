@@ -69,20 +69,18 @@ universes[1].addCell(cells[2])
 
 print('Meshing the Cells...')
 
-mesh = RadialMesh(cell=cells[0])
-mesh.setSpacingType('2D')
+mesh = RadialMesh()
 mesh.setNumRings(3)
 mesh.setMaxRadius(1.0)
 mesh.setMinRadius(0.0)
-new_cells = mesh.subdivideCell(universe=universes[0])
+new_cells = mesh.subdivideCell(cell=cells[0], universe=universes[0])
 
-mesh = RadialMesh(cell=cells[1])
-mesh.setSpacingType('1D')
+mesh = RadialMesh()
 mesh.setNumRings(3)
 mesh.setMaxRadius(2.3)
 mesh.setMinRadius(1.0)
 mesh.setWithOuter(True)
-new_cells = mesh.subdivideCell(universe=universes[0])
+new_cells = mesh.subdivideCell(cell=cells[1], universe=universes[0])
 
 
 ###############################################################################

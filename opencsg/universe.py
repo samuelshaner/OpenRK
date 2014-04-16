@@ -54,6 +54,22 @@ class Universe(object):
     return self._cells
 
 
+  def getAllCells(self):
+
+    cells = dict()
+
+    for cell_id in self._cells:
+
+      # Add this Cell to the dictionary
+      cell = self._cells[cell_id]
+      cells[cell_id] = cell
+
+      # Append all Cells in this Cell to the dictionary
+      cells.update(cell)
+
+    return cells
+
+
   def getCellOffset(self, cell):
 
     if not isinstance(cell, Cell):
@@ -588,6 +604,41 @@ class Lattice(Universe):
     return self._lower_left[1]
 
 
+  def getUniqueUniverses(self):
+
+    if self._universes is None:
+      exit('Unable to get unique Universes for Lattice ID=%d since '
+           'the universes array has not been set' % self._id)
+
+    universes = dict()
+
+    for i in range(len(self._universes)):
+      for j in range(len(self._universes[i])):
+
+        universe = self._universes[i][j]
+        universe_id = universe.getId()
+        universes[universe_id] = universe
+
+    return universe
+
+
+  def getAllCells(self):
+
+    if self._universes is None:
+      exit('Unable to get all Cells for Lattice ID=%d since the '
+           'universes array has not been set' % self._id)
+
+    cells = dict()
+
+    universes = self.getUniverses()
+
+    for universe_id in universes:
+      universe = universes[universe_id]
+      cells.update(universe.getAllCells())
+
+    return cells
+
+
   def setId(self, lattice_id=None):
 
     global universe_ids
@@ -1083,6 +1134,20 @@ class Cell(object):
 
   def getMinZ(self):
     return self._min_z
+
+
+  def getAllCells(self):
+
+    if self._fill is None:
+      exit('Unable to get all Cells from Cell ID=%d since the fill '
+           'has not been set' % self._id)
+
+    cells = dict()
+
+    if self._type == 'universe' or self._type == 'lattice':
+      cells.update(self._fill.getAllCells())
+
+    return cells
 
 
   def setId(self, cell_id=None):

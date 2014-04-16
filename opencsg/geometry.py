@@ -84,6 +84,15 @@ class Geometry(object):
     return self._root_universe.getMinZ()
 
 
+  def getAllCells(self):
+
+    if self._root_universe is None:
+      exit('Unable to get all Cells since the Geometry does not '
+           'contain the base Universe ID=0')
+
+    return self._root_universe.getAllCells()
+
+
   def setRootUniverse(self, root_universe):
 
     if not isinstance(root_universe, Universe):
