@@ -169,7 +169,7 @@ class RadialMesh(Mesh):
     if self._max_radius == -np.float("inf"):
       self._max_radius = self._cell.getMaxX()
 
-    # Create ZCylinders
+    # Create container for ZCylinders
     cylinders = list()
 
     if self._spacing_type is '1D':
@@ -273,6 +273,54 @@ class SectorMesh(Mesh):
     self._num_sectors = num_sectors
 
 
-  def subdivdeCell(self):
+  def subdivideCell(self, universe=None):
 
-    super(RadialMesh, self).subdivideCell()
+    super(SectorMesh, self).subdivideCell()
+
+    # Initialize an empty list of the new subdivided cells
+    new_cells = list()
+
+    if self._num_sectors == 0:
+      return new_cells
+
+    # Initialize an empty list for Planes
+    planes = list()
+
+    delta_azim = 2. * np.pi / self._num_sectors
+
+    # Create each of the bounding planes for the sector Cells
+    for i in range(self._num_sectors):
+
+      # Compute the angle for this plane
+      azim_angle = i * delta_azim
+
+      # Instantiate the plane
+      A = np.cos(azim_angle)
+      B = np.sin(azim_angle)
+      planes.append(Plane(A=A, B=B, C=0., D=0.))
+
+
+    # Create sectors using disjoint halfspaces of pairing Planes
+    for i in range(self._num_sectors):
+
+      # Create new Cell clone for this sector Cell
+      sector = self._cell.clone()
+
+      # Add new bounding planar Surfaces to the clone
+      sector.addSurface(surface=planes[i], halfspace=+1)
+
+      if self._num_sectors != 2:
+
+        if (i+1) < self._num_sectors:
+          sector.addSurface(surface=planes[i+1], halfspace=-1)
+
+        else:
+          sector.addSurface(surface=planes[0], halfspace=-1)
+
+      # Store the clone in the container of new sector Cells
+      new_cells.append(sector)
+
+    if isinstance(universe, Universe):
+      universe.removeCell(self._cell)
+      universe.addCells(new_cells)
+

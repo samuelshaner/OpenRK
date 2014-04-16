@@ -92,6 +92,9 @@ mesh.setMaxRadius(cells[0].getMaxX())
 mesh.setMinRadius(0.0)
 new_cells = mesh.subdivideCell(universe=universes[0])
 
+mesh = SectorMesh(universes[0].getCells()[10008], num_sectors=4)
+mesh.subdivideCell(universe=universes[0])
+
 mesh = RadialMesh(cell=cells[2])
 mesh.setSpacingType('2D')
 mesh.setNumRings(3)
@@ -143,7 +146,7 @@ geometry = Geometry()
 geometry.setRootUniverse(universes[3])
 
 geometry.initializeCellOffsets()
-geometry.setVolume(16., tolerance=1e-1)
+#geometry.setVolume(16., tolerance=1e-1)
 
 
 ###############################################################################
