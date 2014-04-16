@@ -6,6 +6,7 @@ from openmc.input.opencsg_compatible import create_geometry_xml
 import opencsg
 from datasets.BEAVRS.materials import openmc_materials
 from datasets.BEAVRS.lattices import *
+import numpy as np
 
 
 ###############################################################################
@@ -26,7 +27,7 @@ slice_height = 10.
 # OpenMC simulation parameters
 batches = 25
 inactive = 10
-particles = 10000
+particles = 1000
 
 # Plotting parameters
 pixels = 1000
@@ -141,3 +142,21 @@ plot.setPixels([pixels, pixels])
 plot_file = PlotsFile()
 plot_file.addPlot(plot)
 plot_file.exportToXML()
+
+# tallies.xml
+cells = geometry.getAllCells()
+tallies_file = TalliesFile()
+scores = ['flux']
+bins = np.array([0.0, 0.625, 10000000.])
+
+for cell_id in cells.keys():
+  tally = Tally()
+  tally.addFilter(type='distribcell', bins=cell_id)
+  tally.addFilter(type='energy', bins=bins)
+
+  for score in scores:
+    tally.addScore(score=score)
+
+  tallies_file.addTally(tally)
+
+tallies_file.exportToXML()
