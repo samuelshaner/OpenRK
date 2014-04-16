@@ -271,8 +271,8 @@ class Universe(object):
   def addCell(self, cell):
 
     if not isinstance(cell, Cell):
-      exit('Unable to add a Cell to Universe ID=%d since %s is not a Cell',
-            self._id, str(cell))
+      exit('Unable to add a Cell to Universe ID=%d since %s is not a Cell' %
+           (self._id, str(cell)))
 
     cell_id = cell.getId()
 

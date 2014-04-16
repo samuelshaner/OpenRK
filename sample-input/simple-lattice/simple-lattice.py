@@ -85,29 +85,32 @@ universes[3].addCell(cells[6])
 
 print('Meshing the Cells...')
 
-mesh = RadialMesh(cell=cells[0])
-mesh.setSpacingType('2D')
+mesh = RadialMesh()
 mesh.setNumRings(3)
 mesh.setMaxRadius(cells[0].getMaxX())
 mesh.setMinRadius(0.0)
-new_cells = mesh.subdivideCell(universe=universes[0])
+new_cells = mesh.subdivideCell(cell=cells[0], universe=universes[0])
 
-mesh = SectorMesh(universes[0].getCells()[10008], num_sectors=4)
-mesh.subdivideCell(universe=universes[0])
-
-mesh = RadialMesh(cell=cells[2])
-mesh.setSpacingType('2D')
+mesh = RadialMesh()
 mesh.setNumRings(3)
 mesh.setMaxRadius(cells[2].getMaxX())
 mesh.setMinRadius(0.0)
-new_cells = mesh.subdivideCell(universe=universes[1])
+new_cells = mesh.subdivideCell(cell=cells[2], universe=universes[1])
 
-mesh = RadialMesh(cell=cells[4])
-mesh.setSpacingType('2D')
+mesh = RadialMesh()
 mesh.setNumRings(3)
 mesh.setMaxRadius(cells[4].getMaxX())
 mesh.setMinRadius(0.0)
-new_cells = mesh.subdivideCell(universe=universes[2])
+new_cells = mesh.subdivideCell(cell=cells[4], universe=universes[2])
+
+mesh = SectorMesh(num_sectors=8)
+mesh.subdivideUniverse(universe=universes[0])
+
+mesh = SectorMesh(num_sectors=8)
+mesh.subdivideUniverse(universe=universes[1])
+
+mesh = SectorMesh(num_sectors=8)
+mesh.subdivideUniverse(universe=universes[2])
 
 
 ###############################################################################

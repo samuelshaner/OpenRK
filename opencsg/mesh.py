@@ -7,65 +7,12 @@ from surface import *
 from checkvalue import *
 
 
-# The types of meshes - distance (1D), area (2D) or volume (3D)
-spacing_types = ['1D', '2D']    # Add 3D later
 
+class RadialMesh(object):
 
-class Mesh(object):
+  def __init__(self, num_rings=None):
 
-  def __init__(self, cell=None):
-
-    # Initialize Mesh class attributes
-    self._cell = None
-    self._spacing_type = '2D'
-
-    if not cell is None:
-      self.setCell(cell)
-
-
-  def getCell(self):
-    return self._cell
-
-
-  def getSpacingType(self):
-    return self._spacing_type
-
-
-  def setCell(self, cell):
-
-    if not isinstance(cell, Cell):
-      exit('Unable to set the cell for mesh since %s is not '
-           'a Cell' % str(cell))
-
-    self._cell = cell
-    self._cell.findBoundingBox()
-
-
-  def setSpacingType(self, spacing_type='2D'):
-
-    if not is_string(spacing_type):
-      exit('Unable to set the spacing type for Mesh to %s since it '
-           'is not a string' % str(spacing_type))
-
-    if not spacing_type in spacing_types:
-      exit('Unable to set the spacing type for Mesh to %s since it '
-           'is not a supported type' % spacing_type)
-
-    self._spacing_type = spacing_type
-
-
-  def subdivideCell(self):
-
-    if self._cell is None:
-      exit('Unable to subdivide Mesh cell since it has not been set')
-
-
-
-class RadialMesh(Mesh):
-
-  def __init__(self, cell=None, num_rings=None):
-
-    super(RadialMesh, self).__init__(cell=cell)
+    super(RadialMesh, self).__init__()
 
     # Initialize RadialMesh class attributes
     self._num_rings = 0.
@@ -76,9 +23,6 @@ class RadialMesh(Mesh):
 
     if not num_rings is None:
       self.setNumRings(num_rings)
-
-    if not cell is None:
-      self.setCell(cell)
 
 
   def getNumRings(self):
@@ -158,43 +102,35 @@ class RadialMesh(Mesh):
     self._with_inner = with_inner
 
 
-  def subdivideCell(self, universe=None):
+  def subdivideCell(self, cell, universe=None):
 
-    super(RadialMesh, self).subdivideCell()
+    if not isinstance(cell, Cell):
+      exit('Unable to subdivide Cell with RadialMesh since %s is not '
+           'a Cell' % str(cell))
 
-    if self._cell is None:
-      exit('Unable to subdivide Cell with RadialMesh since no Cell has '
-           'been set')
+    cell.findBoundingBox()
 
     if self._max_radius == -np.float("inf"):
-      self._max_radius = self._cell.getMaxX()
+      self._max_radius = cell.getMaxX()
 
     # Create container for ZCylinders
     cylinders = list()
 
-    if self._spacing_type is '1D':
+    # Equal area radii
+    radii = list()
+    area = (self._max_radius**2 - self._min_radius**2) / self._num_rings
 
-      # Equally spaced radii
-      radii = np.linspace(self._max_radius, self._min_radius, self._num_rings+1)
+    # Initialize successively smaller rings
+    radii.append(self._max_radius)
 
-    elif self._spacing_type is '2D':
+    for i in range(self._num_rings):
+      delta_area = radii[-1]**2 - area
 
-      # Equal area radii
-      radii = list()
-      area = (self._max_radius**2 - self._min_radius**2) / self._num_rings
+      if delta_area <= 0.:
+        radii.append(0.)
 
-      # Initialize successively smaller rings
-      radii.append(self._max_radius)
-
-      for i in range(self._num_rings):
-        delta_area = radii[-1]**2 - area
-
-        if delta_area <= 0.:
-          radii.append(0.)
-
-        else:
-          radii.append(np.sqrt(delta_area))
-
+      else:
+        radii.append(np.sqrt(delta_area))
 
     # Create ZCylinders for each radius
     for radius in radii:
@@ -209,7 +145,7 @@ class RadialMesh(Mesh):
       min_radius = radii[i+1]
 
       # Create a clone of this cell for this ring
-      clone = self._cell.clone()
+      clone = cell.clone()
 
       # Add outer bounding Surface to the clone
       clone.addSurface(surface=cylinders[i], halfspace=-1)
@@ -223,31 +159,31 @@ class RadialMesh(Mesh):
 
 
     if self._with_outer:
-      clone = self._cell.clone()
+      clone = cell.clone()
       clone.addSurface(surface=cylinders[0], halfspace=+1)
       new_cells.append(clone)
 
     if self._with_inner:
-      clone = self._cell.clone()
+      clone = cell.clone()
       clone.addSurface(surface=cylinders[-1], halfspace=-1)
       new_cells.append(clone)
 
-    for cell in new_cells:
-      cell.findBoundingBox()
-      cell.removeRedundantSurfaces()
+    for new_cell in new_cells:
+      new_cell.findBoundingBox()
+      new_cell.removeRedundantSurfaces()
 
     if isinstance(universe, Universe):
-      universe.removeCell(self._cell)
+      universe.removeCell(cell)
       universe.addCells(new_cells)
 
     return new_cells
 
 
-class SectorMesh(Mesh):
+class SectorMesh(object):
 
-  def __init__(self, cell=None, num_sectors=None):
+  def __init__(self, num_sectors=None):
 
-    super(SectorMesh, self).__init__(cell=cell)
+    super(SectorMesh, self).__init__()
 
     # Initialize SectorMesh class attributes
     self._num_sectors = 0.
@@ -273,9 +209,13 @@ class SectorMesh(Mesh):
     self._num_sectors = num_sectors
 
 
-  def subdivideCell(self, universe=None):
+  def subdivideCell(self, cell, universe=None):
 
-    super(SectorMesh, self).subdivideCell()
+    if not isinstance(cell, Cell):
+      exit('Unable to subdivide Cell with RadialMesh since %s is not '
+           'a Cell' % str(cell))
+
+    cell.findBoundingBox()
 
     # Initialize an empty list of the new subdivided cells
     new_cells = list()
@@ -304,7 +244,7 @@ class SectorMesh(Mesh):
     for i in range(self._num_sectors):
 
       # Create new Cell clone for this sector Cell
-      sector = self._cell.clone()
+      sector = cell.clone()
 
       # Add new bounding planar Surfaces to the clone
       sector.addSurface(surface=planes[i], halfspace=+1)
@@ -321,6 +261,38 @@ class SectorMesh(Mesh):
       new_cells.append(sector)
 
     if isinstance(universe, Universe):
-      universe.removeCell(self._cell)
+      universe.removeCell(cell)
       universe.addCells(new_cells)
 
+    return new_cells
+
+
+  def subdivideCells(self, cells, universe=None):
+
+    if not isinstance(cells, (tuple, list, np.ndarray)):
+      exit('Unable to subdivide cells with a SectorMesh since %s is not '
+           'a Python tuple/list or NumPy array' % str(cells))
+
+    # Initialize an empty list of new Cells
+    new_cells = list()
+
+    for cell in cells:
+      new_cells.extend(self.subdivideCell(cell=cell))
+
+      if isinstance(universe, Universe):
+        universe.removeCell(cell)
+
+    universe.addCells(new_cells)
+
+    return new_cells
+
+
+  def subdivideUniverse(self, universe):
+
+    if not isinstance(universe, Universe):
+      exit('Unable to subdivide Universe with a SectorMesh since %s is not '
+           'a Universe' % str(universe))
+
+    cells = universe.getCells().values()
+    new_cells = self.subdivideCells(cells, universe=universe)
+    return new_cells
