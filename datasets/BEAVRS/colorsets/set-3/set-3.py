@@ -61,20 +61,21 @@ for index in boundaries.keys():
 
 print('Discretizing the Cells...')
 
+sectormesh = opencsg.SectorMesh(num_sectors=sectors)
+radialmesh = opencsg.RadialMesh(num_rings=fuel_rings)
+
 # Loop over all pin types
 for pin in pin_cells.keys():
 
   universe = pin_cells[pin]
+  sectormesh.subdivideUniverse(universe=universe)
   cells = universe.getCells()
 
   for cell_id in cells.keys():
-
     cell = cells[cell_id]
 
     if 'Fuel' in cell.getName():
-
-      mesh = opencsg.RadialMesh(cell=cell, num_rings=fuel_rings)
-      mesh.subdivideCell(universe=universe)
+      radialmesh.subdivideCell(cell=cell, universe=universe)
 
 
 ###############################################################################
