@@ -1,21 +1,10 @@
-from openmc.input.settings import SettingsFile
-from openmc.input.tallies import TalliesFile, Tally
-from openmc.input.plots import PlotsFile, Plot
-from openmc.input.material import MaterialsFile
-from openmc.input.opencsg_compatible import create_geometry_xml
 import opencsg
-from datasets.BEAVRS.materials import openmc_materials
 from datasets.BEAVRS.lattices import *
-import numpy as np
 
 
 ###############################################################################
-###################   Simulation Input File Parameters   ######################
+##################   Geometry Discretization Parameters   #####################
 ###############################################################################
-
-# Get the appropriate lattice from the lattices module
-lattice1 = lattices['2.4% Fuel - 0BA']
-lattice2 = lattices['3.1% Fuel - 0BA']
 
 # Discretization of pin cells
 fuel_rings = 3
@@ -24,14 +13,6 @@ sectors = 4
 
 # Height of the axial slice
 slice_height = 10.
-
-# OpenMC simulation parameters
-batches = 20
-inactive = 10
-particles = 1000
-
-# Plotting parameters
-pixels = 1000
 
 
 ###############################################################################
@@ -82,6 +63,10 @@ for pin in pin_cells.keys():
 #####################   Creating Colorset Lattice   ###########################
 ###############################################################################
 
+# Get the appropriate lattice from the lattices module
+lattice1 = lattices['1.6% Fuel - 0BA']
+lattice2 = lattices['3.1% Fuel - 16BA']
+
 cell1 = opencsg.Cell(name=lattice1.getName(), fill=lattice1)
 cell2 = opencsg.Cell(name=lattice2.getName(), fill=lattice2)
 
@@ -128,63 +113,3 @@ print('Creating the Geometry...')
 
 geometry = opencsg.Geometry()
 geometry.setRootUniverse(root_universe)
-
-
-###############################################################################
-###################   Exporting to OpenMC XML Input Files  ####################
-###############################################################################
-
-print('Exporting to OpenMC XML Files...')
-
-# geometry.xml
-create_geometry_xml(geometry)
-
-# material.xml
-materials_file = MaterialsFile()
-materials_file.addMaterials(openmc_materials.values())
-materials_file.exportToXML()
-
-# settings.xml
-settings_file = SettingsFile()
-settings_file.setBatches(batches)
-settings_file.setInactive(inactive)
-settings_file.setParticles(particles)
-settings_file.setStatepointInterval(5)
-
-source = [-width/2., -width/2., -slice_height/2.,
-          width/2., width/2., slice_height/2.]
-settings_file.setSourceSpace(type='box', params=source)
-
-settings_file.exportToXML()
-
-# plots.xml
-plot = Plot(plot_id=1)
-plot.setWidth(width=[geometry.getMaxX()-geometry.getMinX(),
-                     geometry.getMaxY()-geometry.getMinY()])
-plot.setOrigin([0., 0., 0.])
-plot.setPixels([pixels, pixels])
-
-plot_file = PlotsFile()
-plot_file.addPlot(plot)
-plot_file.exportToXML()
-
-# tallies.xml
-cells = geometry.getAllCells()
-tallies_file = TalliesFile()
-scores = ['flux']
-bins = np.array([0.0, 0.625, 10000000.])
-
-for cell_id in cells.keys():
-  cell = cells[cell_id]
-
-  if cell.getType() == 'material':
-    tally = Tally()
-    tally.addFilter(type='distribcell', bins=cell_id)
-    tally.addFilter(type='energy', bins=bins)
-
-    for score in scores:
-      tally.addScore(score=score)
-
-    tallies_file.addTally(tally)
-
-tallies_file.exportToXML()
