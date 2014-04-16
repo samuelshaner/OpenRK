@@ -87,3 +87,5 @@ print('Creating the Geometry...')
 
 geometry = opencsg.Geometry()
 geometry.setRootUniverse(root_universe)
+
+geometry.initializeCellOffsets()

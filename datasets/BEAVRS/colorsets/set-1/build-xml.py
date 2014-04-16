@@ -15,7 +15,7 @@ import numpy as np
 # OpenMC simulation parameters
 batches = 25
 inactive = 10
-particles = 1000
+particles = 10000
 
 # Plotting parameters
 pixels = 1000

@@ -1,8 +1,12 @@
+from statepoint import StatePoint
+import glob
+from geometry import geometry
+import infermc.plotter as plotter
 
-#from statepoint import StatePoint
-#import openmoc.compatible.plotter.plotter as plot
+# Get statepoint files
+files = glob.glob('statepoint.*.h5')
 
-#sp = StatePoint('statepoint.25.h5')
-#sp.read_results()
-
-#plot.plot_fluxes(geometry, sp, energies=[0,1], gridsize=250)
+for file in files:
+  sp = StatePoint(file)
+  sp.read_results()
+  plotter.plot_fluxes(geometry, sp, energies=[0, 1], gridsize=200)
