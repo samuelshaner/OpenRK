@@ -150,14 +150,18 @@ scores = ['flux']
 bins = np.array([0.0, 0.625, 10000000.])
 
 for cell_id in cells.keys():
-  tally = Tally()
-  tally.addFilter(type='distribcell', bins=cell_id)
-  tally.addFilter(type='energy', bins=bins)
+  cell = cells[cell_id]
 
-  for score in scores:
-    tally.addScore(score=score)
+  if cell.getType() == 'material':
+    tally = Tally()
+    tally.addFilter(type='distribcell', bins=cell_id)
+    tally.addFilter(type='energy', bins=bins)
 
-  tallies_file.addTally(tally)
+    for score in scores:
+      tally.addScore(score=score)
+
+    tallies_file.addTally(tally)
+
 
 tallies_file.exportToXML()
 
