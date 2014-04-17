@@ -1,4 +1,4 @@
-import opencsg
+from infermc.process import *
 from opencsg.checkvalue import *
 from statepoint import StatePoint
 import os
@@ -17,54 +17,6 @@ num_colors = 50
 color_map = np.random.random_sample((num_colors,))
 
 
-def get_path(coords):
-
-  if not isinstance(coords, opencsg.LocalCoords):
-    print('Unable to get the path with %s which is not an '
-          'OpenCSG LocalCoords object' % str(coords))
-
-  # Build "path" from LocalCoords
-  path = list()
-
-  while coords is not None:
-
-    # If the LocalCoords is at a Universe
-    if coords.getType() == 'universe':
-      path.append(coords.getUniverse().getId())
-      path.append(coords.getCell().getId())
-
-    # If the LocalCoords is at a Lattice
-    else:
-      # Add 1 for Fortran indexing
-      lat_x = coords.getLatticeX()+1
-      lat_y = coords.getLatticeY()+1
-
-      # Use z=1 for 3D lattices
-      path.append((coords.getLattice().getId(), lat_x, lat_y, 1))
-
-    # Traverse LocalCoords linked list to next lowest nested universe
-    coords = coords.getNext()
-
-  return path
-
-
-def get_cells_to_tallies(statepoint):
-
-  cells_to_tallies = dict()
-
-  for tally in statepoint.tallies:
-
-    filters = tally.filters
-
-    if 'distribcell' in filters.keys():
-      filter = filters['distribcell']
-      index = statepoint.geom.cellList.index(filter.bins[0])
-      cell_id = statepoint.geom.cell[index].userID
-      cells_to_tallies[cell_id] = tally.id
-
-  return cells_to_tallies
-
-
 def plot_fluxes(geometry, statepoint, energies=[0], gridsize=250):
 
   global directory
@@ -73,7 +25,6 @@ def plot_fluxes(geometry, statepoint, energies=[0], gridsize=250):
   if not os.path.exists(directory):
     os.makedirs(directory)
 
-  # Error checking
   if not isinstance(geometry, opencsg.Geometry):
     print('Unable to plot the scalar flux since % is not an OpenCSG Geometry '
           'class object' % str(geometry))
@@ -130,7 +81,8 @@ def plot_fluxes(geometry, statepoint, energies=[0], gridsize=250):
   xcoords = np.linspace(xmin, xmax, gridsize)
   ycoords = np.linspace(ymin, ymax, gridsize)
 
-  cells_to_tallies = get_cells_to_tallies(statepoint)
+  tally_extractor = TallyExtractor(statepoint=statepoint, geometry=geometry)
+  cells_to_tallies = tally_extractor.getCellsToTallies()
 
   for i in range(gridsize):
     for j in range(gridsize):

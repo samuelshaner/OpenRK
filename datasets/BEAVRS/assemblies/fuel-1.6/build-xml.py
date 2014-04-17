@@ -75,7 +75,7 @@ plot_file.exportToXML()
 
 cells = geometry.getAllCells()
 tallies_file = TalliesFile()
-scores = ['flux']
+scores = ['flux', 'absorption']
 bins = np.array([0.0, 0.625, 10000000.])
 
 for cell_id in cells.keys():

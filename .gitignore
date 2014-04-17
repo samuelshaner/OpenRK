@@ -68,3 +68,5 @@ simulation-state/*
 */*.out
 *.pyc
 */*.pyc
+*.png
+*/*.png

@@ -2,6 +2,9 @@ from statepoint import StatePoint
 import glob
 from geometry import geometry
 import infermc.plotter as plotter
+from infermc.process import TallyExtractor
+import numpy as np
+import matplotlib.pyplot as plt
 
 # Get statepoint files
 files = glob.glob('statepoint.*.h5')
@@ -9,27 +12,34 @@ files = glob.glob('statepoint.*.h5')
 for file in files:
   sp = StatePoint(file)
   sp.read_results()
-  plotter.plot_fluxes(geometry, sp, energies=[0, 1], gridsize=200)
+#  plotter.plot_fluxes(geometry, sp, energies=[0, 1], gridsize=200)
 
-  #  num_regions = geometry.getNumRegions()
-#  print('The Geometry contains %d regions' % num_regions)
-#  cells_to_tallies = plotter.get_cells_to_tallies(sp)
+  tally_extractor = TallyExtractor(statepoint=sp, geometry=geometry)
 
-#  fluxes = np.zeros((num_regions, 2))
+  num_regions = geometry.getNumRegions()
+  flux = np.zeros((num_regions, 2))
+  absorb = np.zeros((num_regions, 2))
 
-#  for i in range(num_regions):
-#    coords = geometry.findRegion(i)
-#    path = plotter.get_path(coords)
+  for region in range(num_regions):
 
-#    cell_id = path[-1]
-#    tally_id = cells_to_tallies[cell_id]
-#    filters = [('distribcell', path)]
+    flux_data = tally_extractor.getDistribcellTallyData(region, 'flux')
+    flux[region, :] = flux_data
 
-#    try:
-#      flux = sp.get_value(tally_id, filters, 0)
-#    except:
-#      print i, cell_id, tally_id, path
-#      flux = [0., 0.]
+    absorb_data = tally_extractor.getDistribcellTallyData(region, 'absorption')
+    absorb[region, :] = absorb_data
 
-#    fluxes[i,:] = flux
-#    print fluxes
+  print flux
+  print absorb
+
+  absorb_xs = absorb / flux
+  print absorb_xs
+
+  fig = plt.figure()
+  plt.scatter(absorb_xs[:,0], absorb_xs[:,1])
+  plt.title('Absorption XS')
+  plt.xlabel('Thermal Group $\Sigma_{abs}$ [cm$^{-1}$]')
+  plt.ylabel('Fast Group $\Sigma_{abs}$ [cm$^{-1}$]')
+  plt.grid()
+  plt.savefig('abs-xs.png', bbox_inches='tight')
+
+
