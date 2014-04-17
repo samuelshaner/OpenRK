@@ -29,6 +29,9 @@ surf_types = ['plane',
               'z-cylinder',
               'sphere']
 
+max_float = np.finfo(np.float64).max
+min_float = np.finfo(np.float64).min
+
 
 class Surface(object):
 
@@ -46,12 +49,12 @@ class Surface(object):
     self._coeffs = dict()
 
     # Max/min values
-    self._max_x = np.float64("inf")
-    self._max_y = np.float64("inf")
-    self._max_z = np.float64("inf")
-    self._min_x = -np.float64("inf")
-    self._min_y = -np.float64("inf")
-    self._min_z = -np.float64("inf")
+    self._max_x = np.finfo(np.float64).max
+    self._max_y = np.finfo(np.float64).max
+    self._max_z = np.finfo(np.float64).max
+    self._min_x = np.finfo(np.float64).min
+    self._min_y = np.finfo(np.float64).min
+    self._min_z = np.finfo(np.float64).min
 
     self.setId(surface_id)
     self.setName(name)
@@ -356,7 +359,7 @@ class XPlane(Plane):
         return self._max_x
 
       else:
-        return np.float64("inf")
+        return np.finfo(np.float64).max
 
 
   def getMinX(self, halfspace=None):
@@ -376,7 +379,7 @@ class XPlane(Plane):
              'the halfspace is %s which is not +/-1', self._id, str(halfspace))
 
       if halfspace == -1:
-        return -np.float64("inf")
+        return np.finfo(np.float64).min
 
       else:
         return self._min_x
@@ -434,7 +437,7 @@ class YPlane(Plane):
         return self._max_y
 
       else:
-        return np.float64("inf")
+        return np.finfo(np.float64).max
 
 
   def getMinY(self, halfspace=None):
@@ -454,7 +457,7 @@ class YPlane(Plane):
              'the halfspace is %s which is not +/-1', self._id, str(halfspace))
 
       if halfspace == -1:
-        return -np.float64("inf")
+        return np.finfo(np.float64).min
 
       else:
         return self._min_y
@@ -512,7 +515,7 @@ class ZPlane(Plane):
         return self._max_z
 
       else:
-        return np.float64("inf")
+        return np.finfo(np.float64).max
 
 
   def getMinZ(self, halfspace=None):
@@ -532,7 +535,7 @@ class ZPlane(Plane):
              'the halfspace is %s which is not +/-1', self._id, str(halfspace))
 
       if halfspace == -1:
-        return -np.float64("inf")
+        return np.finfo(np.float64).min
 
       else:
         return self._min_z
@@ -626,7 +629,7 @@ class XCylinder(Cylinder):
         return self._max_y
 
       else:
-        return np.float64("inf")
+        return np.finfo(np.float64).max
 
 
   def getMinY(self, halfspace=None):
@@ -649,7 +652,7 @@ class XCylinder(Cylinder):
         return self._min_y
 
       else:
-        return -np.float64("inf")
+        return np.finfo(np.float64).min
 
 
   def getMaxZ(self, halfspace=None):
@@ -672,7 +675,7 @@ class XCylinder(Cylinder):
         return self._max_z
 
       else:
-        return np.float64("inf")
+        return np.finfo(np.float64).max
 
 
   def getMinZ(self, halfspace=None):
@@ -695,7 +698,7 @@ class XCylinder(Cylinder):
         return self._min_z
 
       else:
-        return -np.float64("inf")
+        return np.finfo(np.float64).min
 
 
   def setY0(self, y0):
@@ -745,8 +748,7 @@ class XCylinder(Cylinder):
     r2 = (coords[1] - self._coeffs['y0'])**2 + \
         (coords[2] - self._coeffs['z0'])**2
     r = np.sqrt(r2)
-    halfspace = np.sign(r - self._coeffs['R'])
-    return halfspace * r
+    return (r - self._coeffs['R'])
 
 
 class YCylinder(Cylinder):
@@ -799,7 +801,7 @@ class YCylinder(Cylinder):
         return self._max_x
 
       else:
-        return np.float64("inf")
+        return np.finfo(np.float64).max
 
 
   def getMinX(self, halfspace=None):
@@ -822,7 +824,7 @@ class YCylinder(Cylinder):
         return self._min_x
 
       else:
-        return -np.float64("inf")
+        return np.finfo(np.float64).min
 
 
   def getMaxZ(self, halfspace=None):
@@ -845,7 +847,7 @@ class YCylinder(Cylinder):
         return self._max_z
 
       else:
-        return np.float64("inf")
+        return np.finfo(np.float64).max
 
 
   def getMinZ(self, halfspace=None):
@@ -868,7 +870,7 @@ class YCylinder(Cylinder):
         return self._min_z
 
       else:
-        return -np.float64("inf")
+        return np.finfo(np.float64).min
 
 
   def setX0(self, x0):
@@ -918,8 +920,7 @@ class YCylinder(Cylinder):
     r2 = (coords[0] - self._coeffs['x0'])**2 + \
         (coords[2] - self._coeffs['z0'])**2
     r = np.sqrt(r2)
-    halfspace = np.sign(r - self._coeffs['R'])
-    return halfspace * r
+    return (r - self._coeffs['R'])
 
 
 class ZCylinder(Cylinder):
@@ -971,7 +972,7 @@ class ZCylinder(Cylinder):
         return self._max_x
 
       else:
-        return np.float64("inf")
+        return np.finfo(np.float64).max
 
 
   def getMinX(self, halfspace=None):
@@ -994,7 +995,7 @@ class ZCylinder(Cylinder):
         return self._min_x
 
       else:
-        return -np.float64("inf")
+        return np.finfo(np.float64).min
 
 
   def getMaxY(self, halfspace=None):
@@ -1017,7 +1018,7 @@ class ZCylinder(Cylinder):
         return self._max_y
 
       else:
-        return np.float64("inf")
+        return np.finfo(np.float64).max
 
 
   def getMinY(self, halfspace=None):
@@ -1040,7 +1041,7 @@ class ZCylinder(Cylinder):
         return self._min_y
 
       else:
-        return -np.float64("inf")
+        return np.finfo(np.float64).min
 
 
   def setX0(self, x0):
@@ -1090,8 +1091,7 @@ class ZCylinder(Cylinder):
     r2 = (coords[0] - self._coeffs['x0'])**2 + \
         (coords[1] - self._coeffs['y0'])**2
     r = np.sqrt(r2)
-    halfspace = np.sign(r - self._coeffs['R'])
-    return halfspace * r
+    return (r - self._coeffs['R'])
 
 
 
@@ -1158,7 +1158,7 @@ class Sphere(Surface):
         return self._max_x
 
       else:
-        return np.float64("inf")
+        return np.finfo(np.float64).max
 
 
   def getMinX(self, halfspace=None):
@@ -1181,7 +1181,7 @@ class Sphere(Surface):
         return self._min_x
 
       else:
-        return -np.float64("inf")
+        return np.finfo(np.float64).min
 
 
   def getMaxY(self, halfspace=None):
@@ -1204,7 +1204,7 @@ class Sphere(Surface):
         return self._max_y
 
       else:
-        return np.float64("inf")
+        return np.finfo(np.float64).max
 
 
   def getMinY(self, halfspace=None):
@@ -1227,7 +1227,7 @@ class Sphere(Surface):
         return self._min_y
 
       else:
-        return -np.float64("inf")
+        return np.finfo(np.float64).min
 
 
   def getMaxZ(self, halfspace=None):
@@ -1250,7 +1250,7 @@ class Sphere(Surface):
         return self._max_z
 
       else:
-        return np.float64("inf")
+        return np.finfo(np.float64).max
 
 
   def getMinZ(self, halfspace=None):
@@ -1273,7 +1273,7 @@ class Sphere(Surface):
         return self._min_z
 
       else:
-        return -np.float64("inf")
+        return np.finfo(np.float64).min
 
 
   def setX0(self, x0):
@@ -1346,6 +1346,4 @@ class Sphere(Surface):
          (self._coeffs['y0'] - coords[1])**2 + \
          (self._coeffs['z0'] - coords[2])**2
     R = np.sqrt(R2)
-    halfspace = np.sign(R - self._coeffs['R'])
-
-    return halfspace * R
+    return (R - self._coeffs['R'])

@@ -8,6 +8,7 @@ from point import Point
 from checkvalue import *
 import numpy as np
 import math
+from collections import OrderedDict
 
 
 # Error threshold for determining how close to the boundary of a Lattice cell
@@ -19,6 +20,9 @@ universe_ids = list()
 
 # A static variable for auto-generated Universe IDs
 auto_universe_id = 10000
+
+max_float = np.finfo(np.float64).max
+min_float = np.finfo(np.float64).min
 
 
 class Universe(object):
@@ -35,9 +39,9 @@ class Universe(object):
 
     # Keys   - Cell IDs
     # Values - Offsets
-    self._cell_offsets = dict()
+    self._cell_offsets = OrderedDict()
     self._num_regions = 0
-    self._volume = np.float("inf")
+    self._volume = np.finfo(np.float64)
 
     self.setId(universe_id)
     self.setName(name)
@@ -99,7 +103,7 @@ class Universe(object):
 
   def getMaxX(self):
 
-    max_x = -np.float64("inf")
+    max_x = min_float
 
     for cell_id in self._cells:
 
@@ -112,7 +116,7 @@ class Universe(object):
 
   def getMaxY(self):
 
-    max_y = -np.float64("inf")
+    max_y = min_float
 
     for cell_id in self._cells:
 
@@ -125,7 +129,7 @@ class Universe(object):
 
   def getMaxZ(self):
 
-    max_z = -np.float64("inf")
+    max_z = min_float
 
     for cell_id in self._cells:
 
@@ -138,7 +142,7 @@ class Universe(object):
 
   def getMinX(self):
 
-    min_x = np.float64("inf")
+    min_x = max_float
 
     for cell_id in self._cells:
 
@@ -151,7 +155,7 @@ class Universe(object):
 
   def getMinY(self):
 
-    min_y = np.float64("inf")
+    min_y = max_float
 
     for cell_id in self._cells:
 
@@ -164,7 +168,7 @@ class Universe(object):
 
   def getMinZ(self):
 
-    min_z = np.float64("inf")
+    min_z = max_float
 
     for cell_id in self._cells:
 
@@ -330,9 +334,24 @@ class Universe(object):
 
     self._volume = volume
 
+    max_x = self.getMaxX()
+    max_y = self.getMaxY()
+    max_z = self.getMaxZ()
+    min_x = self.getMinX()
+    min_y = self.getMinY()
+    min_z = self.getMinZ()
+
     for cell_id in self._cells:
 
       cell = self._cells[cell_id]
+
+      cell.setMaxX(max_x)
+      cell.setMaxY(max_y)
+      cell.setMaxZ(max_z)
+      cell.setMinX(min_x)
+      cell.setMinY(min_y)
+      cell.setMinZ(min_z)
+
       cell.computeVolumeFraction(volume=self._volume, tolerance=tolerance)
 
       # Recursively compute volume fractions below this Universe
@@ -425,13 +444,13 @@ class Universe(object):
     # an offset larger than region_id - return the one prior
     for cell_id in self._cells.keys():
 
-      cell = self._cells[cell_id]
+      if self._cell_offsets[cell_id] > region_id:
+        break
 
-      if self._cell_offsets[cell_id] <= region_id:
+      elif self._cell_offsets[cell_id] <= region_id:
+        cell = self._cells[cell_id]
         offset = self._cell_offsets[cell_id]
 
-      elif self._cell_offsets[cell_id] > region_id:
-        break
 
     if cell is None:
       exit('Unable to find region_id=%d in Universe '
@@ -1073,12 +1092,13 @@ class Cell(object):
 
     self.setId(cell_id)
     self.setName(name)
-    self.setMaxX(np.float64("inf"))
-    self.setMaxY(np.float64("inf"))
-    self.setMaxZ(np.float64("inf"))
-    self.setMinX(-np.float64("inf"))
-    self.setMinY(-np.float64("inf"))
-    self.setMinZ(-np.float64("inf"))
+
+    self.setMaxX(max_float)
+    self.setMaxY(max_float)
+    self.setMaxZ(max_float)
+    self.setMinX(min_float)
+    self.setMinX(min_float)
+    self.setMinX(min_float)
 
     if not fill is None:
       self.setFill(fill)
@@ -1444,12 +1464,12 @@ class Cell(object):
 
   def findBoundingBox(self):
 
-    self.setMaxX(np.float64("inf"))
-    self.setMaxY(np.float64("inf"))
-    self.setMaxZ(np.float64("inf"))
-    self.setMinX(-np.float64("inf"))
-    self.setMinY(-np.float64("inf"))
-    self.setMinZ(-np.float64("inf"))
+    self.setMaxX(max_float)
+    self.setMaxY(max_float)
+    self.setMaxZ(max_float)
+    self.setMinX(min_float)
+    self.setMinY(min_float)
+    self.setMinZ(min_float)
 
     for surface_id in self._surfaces:
       surface = self._surfaces[surface_id][0]
@@ -1463,35 +1483,35 @@ class Cell(object):
       min_y = surface.getMinY(halfspace=halfspace)
       min_z = surface.getMinZ(halfspace=halfspace)
 
-      if max_x != np.float64("inf") and max_x < self._max_x:
+      if max_x != max_float and max_x < self._max_x:
         self.setMaxX(max_x)
-      if max_y != np.float64("inf") and max_y < self._max_y:
+      if max_y != max_float and max_y < self._max_y:
         self.setMaxY(max_y)
-      if max_z != np.float64("inf") and max_z < self._max_z:
+      if max_z != max_float and max_z < self._max_z:
         self.setMaxZ(max_z)
 
-      if min_x != -np.float64("inf") and min_x > self._min_x:
+      if min_x != min_float and min_x > self._min_x:
         self.setMinX(min_x)
-      if min_y != -np.float64("inf") and min_y > self._min_y:
+      if min_y != min_float and min_y > self._min_y:
         self.setMinY(min_y)
-      if min_z != -np.float64("inf") and min_z > self._min_z:
+      if min_z != min_float and min_z > self._min_z:
         self.setMinZ(min_z)
 
     # If we could not find a bounds for any dimension, readjust
     # it to +/- infinity
-    if self._max_x == -np.float64("inf"):
-      self.setMaxX(np.float64("inf"))
-    if self._max_y == -np.float64("inf"):
-      self.setMaxY(np.float64("inf"))
-    if self._max_z == -np.float64("inf"):
-      self.setMaxZ(np.float64("inf"))
+    if self._max_x == min_float:
+      self.setMaxX(max_float)
+    if self._max_y == min_float:
+      self.setMaxY(max_float)
+    if self._max_z == min_float:
+      self.setMaxZ(max_float)
 
-    if self._min_x == np.float64("inf"):
-      self.setMinX(-np.float64("inf"))
-    if self._min_y == np.float64("inf"):
-      self.setMinY(-np.float64("inf"))
-    if self._min_z == np.float64("inf"):
-      self.setMinZ(-np.float64("inf"))
+    if self._min_x == max_float:
+      self.setMinX(min_float)
+    if self._min_y == max_float:
+      self.setMinY(min_float)
+    if self._min_z == max_float:
+      self.setMinZ(min_float)
 
 
   def containsPoint(self, point):
@@ -1506,7 +1526,7 @@ class Cell(object):
       surface = self._surfaces[surface_id][0]
 
       # Return false if the Point is not in the correct Surface halfspace
-      if (surface.evaluate(point) * halfspace) < -on_surface_thresh:
+      if (halfspace * surface.evaluate(point)) < 0.:
         return False
 
     # Return true if the Point is in the correct halfspace for each Surface
@@ -1543,17 +1563,17 @@ class Cell(object):
     # Compute the volume/area of the bounding box we sample from
     box_volume = np.float64(1.)
 
-    if self._min_x > -np.float64("inf") and self._max_x < np.float64("inf"):
+    if self._min_x > min_float and self._max_x < max_float:
       box_volume *= (self._max_x - self._min_x)
-    if self._min_y > -np.float64("inf") and self._max_y < np.float64("inf"):
+    if self._min_y > min_float and self._max_y < max_float:
       box_volume *= (self._max_y - self._min_y)
-    if self._min_z > -np.float64("inf") and self._max_z < np.float64("inf"):
+    if self._min_z > min_float and self._max_z < max_float:
       box_volume *= (self._max_z - self._min_z)
 
     # Initialize variables
     counter = 0.
     tot_samples = 0.
-    uncertainty = np.float64("inf")
+    uncertainty = max_float
 
     while (uncertainty > tolerance):
 
@@ -1565,6 +1585,11 @@ class Cell(object):
       y = uniform(low=self._min_y, high=self._max_y, size=num_samples)
       z = uniform(low=self._min_z, high=self._max_z, size=num_samples)
 
+      # Must replace all NaNs with zeros
+      x = np.nan_to_num(x)
+      y = np.nan_to_num(y)
+      z = np.nan_to_num(z)
+
       for i in range(num_samples):
 
         point.setX(x[i])
@@ -1573,6 +1598,7 @@ class Cell(object):
 
         if self.containsPoint(point):
           counter += 1.
+
 
       fraction = np.float64(counter / tot_samples)
 

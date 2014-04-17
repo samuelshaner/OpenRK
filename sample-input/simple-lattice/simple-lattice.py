@@ -103,14 +103,14 @@ mesh.setMaxRadius(cells[4].getMaxX())
 mesh.setMinRadius(0.0)
 new_cells = mesh.subdivideCell(cell=cells[4], universe=universes[2])
 
-mesh = SectorMesh(num_sectors=8)
-mesh.subdivideUniverse(universe=universes[0])
+#mesh = SectorMesh(num_sectors=8)
+#mesh.subdivideUniverse(universe=universes[0])
 
-mesh = SectorMesh(num_sectors=8)
-mesh.subdivideUniverse(universe=universes[1])
+#mesh = SectorMesh(num_sectors=8)
+#mesh.subdivideUniverse(universe=universes[1])
 
-mesh = SectorMesh(num_sectors=8)
-mesh.subdivideUniverse(universe=universes[2])
+#mesh = SectorMesh(num_sectors=8)
+#mesh.subdivideUniverse(universe=universes[2])
 
 
 ###############################################################################
@@ -149,8 +149,22 @@ geometry = Geometry()
 geometry.setRootUniverse(universes[3])
 
 geometry.initializeCellOffsets()
-#geometry.setVolume(16., tolerance=1e-1)
+geometry.setVolume(16., tolerance=1e-1)
 
+num_regions = geometry.getNumRegions()
+print('The Geometry contains %d regions' % num_regions)
+
+tot_volume = 0.
+for region in range(num_regions):
+  coords = geometry.findRegion(region)
+  coords = coords.getTailNode()
+  cell = coords.getCell()
+  volume = cell.getVolume()
+  tot_volume += volume
+  print('region = %d, volume = %f, tot volume = %f' %
+        (region, volume, tot_volume))
+
+print('Total volume = %f' % tot_volume)
 
 ###############################################################################
 ##########################   Plotting the Geometry   ##########################

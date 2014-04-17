@@ -82,6 +82,9 @@ mesh.setMinRadius(1.0)
 mesh.setWithOuter(True)
 new_cells = mesh.subdivideCell(cell=cells[1], universe=universes[0])
 
+mesh = SectorMesh(num_sectors=8)
+mesh.subdivideUniverse(universe=universes[0])
+
 
 ###############################################################################
 ###########################   Creating Lattices   #############################
@@ -108,7 +111,23 @@ geometry = Geometry()
 geometry.setRootUniverse(universes[1])
 
 geometry.initializeCellOffsets()
-geometry.setVolume(volume=16., tolerance=5e-2)
+
+num_regions = geometry.getNumRegions()
+print('The Geometry contains %d regions' % num_regions)
+
+geometry.setVolume(volume=16., tolerance=1e-1)
+
+
+tot_volume = 0.
+for region in range(num_regions):
+  coords = geometry.findRegion(region)
+  coords = coords.getTailNode()
+  cell = coords.getCell()
+
+  volume = cell.getVolume()
+  tot_volume += volume
+
+print('Total volume = %f' % tot_volume)
 
 
 ###############################################################################
@@ -117,6 +136,6 @@ geometry.setVolume(volume=16., tolerance=5e-2)
 
 print('Plotting Geometry...')
 
-plotter.plot_cells(geometry)
+#plotter.plot_cells(geometry)
 #plotter.plot_materials(geometry)
 #plotter.plot_regions(geometry)
