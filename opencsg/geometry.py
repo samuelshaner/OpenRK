@@ -11,11 +11,12 @@ class Geometry(object):
   def __init__(self, root_universe=None):
 
     # Initialize Geometry class attributes
-#    self._universes = dict()
-#    self._lattices = dict()
     self._root_universe = None
     self._num_regions = 0
     self._volume = np.float64(0.)
+
+    # A NumPy array of volumes for each region, indexed by Region ID
+    self._region_volumes = None
 
 
   def getRootUniverse(self):
@@ -28,6 +29,10 @@ class Geometry(object):
 
   def getVolume(self):
     return self._volume
+
+
+  def getRegionVolumes(self):
+    return self._region_volumes
 
 
   def getMaxX(self):
@@ -125,6 +130,22 @@ class Geometry(object):
 
     self._root_universe.computeVolumeFractions(volume=self._volume,
                                                tolerance=tolerance)
+
+    # Initialize an array for the region volumes
+    self._region_volumes = np.zeros(self._num_regions)
+
+    # Get the region volumes
+    for region in range(self._num_regions):
+
+      coords = self.findRegion(region)
+      coords.getTailNode()
+
+      cell = coords.getCell()
+      volume = cell.getVolume()
+
+      self._region_volumes[region] = volume
+
+
 
 
   def initializeCellOffsets(self):
