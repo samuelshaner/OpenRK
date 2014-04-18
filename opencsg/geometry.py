@@ -138,7 +138,7 @@ class Geometry(object):
     for region in range(self._num_regions):
 
       coords = self.findRegion(region)
-      coords.getTailNode()
+      coords = coords.getTailNode()
 
       cell = coords.getCell()
       volume = cell.getVolume()
