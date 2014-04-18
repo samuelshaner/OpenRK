@@ -111,23 +111,7 @@ geometry = Geometry()
 geometry.setRootUniverse(universes[1])
 
 geometry.initializeCellOffsets()
-
-num_regions = geometry.getNumRegions()
-print('The Geometry contains %d regions' % num_regions)
-
 geometry.setVolume(volume=16., tolerance=1e-1)
-
-
-tot_volume = 0.
-for region in range(num_regions):
-  coords = geometry.findRegion(region)
-  coords = coords.getTailNode()
-  cell = coords.getCell()
-
-  volume = cell.getVolume()
-  tot_volume += volume
-
-print('Total volume = %f' % tot_volume)
 
 
 ###############################################################################

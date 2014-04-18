@@ -444,17 +444,17 @@ class Universe(object):
     # an offset larger than region_id - return the one prior
     for cell_id in self._cells.keys():
 
-      if self._cell_offsets[cell_id] > region_id:
-        break
-
-      elif self._cell_offsets[cell_id] <= region_id:
+      if self._cell_offsets[cell_id] <= region_id:
         cell = self._cells[cell_id]
         offset = self._cell_offsets[cell_id]
+
+      else:
+        break
 
 
     if cell is None:
       exit('Unable to find region_id=%d in Universe '
-           'ID=%d' % (self._id, region_id))
+           'ID=%d' % (region_id, self._id))
 
     region_id -= offset
     univ_coords.setCell(cell)
@@ -481,7 +481,7 @@ class Universe(object):
     # We were unable to find the cell
     else:
       exit('Unable to find cell for region_id=%d in Universe '
-           'ID=%d' % (self._id, region_id))
+           'ID=%d' % (region_id, self._id))
 
 
   def toString(self):
@@ -962,10 +962,9 @@ class Lattice(Universe):
     for i in range(len(self._cell_offsets)):
       for j in range(len(self._cell_offsets[i])):
 
-        universe = self._universes[i][j]
-
         if self._cell_offsets[i][j] <= region_id:
           offset = self._cell_offsets[i][j]
+          universe = self._universes[i][j]
           lat_x = i
           lat_y = j
 
@@ -1097,8 +1096,8 @@ class Cell(object):
     self.setMaxY(max_float)
     self.setMaxZ(max_float)
     self.setMinX(min_float)
-    self.setMinX(min_float)
-    self.setMinX(min_float)
+    self.setMinY(min_float)
+    self.setMinZ(min_float)
 
     if not fill is None:
       self.setFill(fill)
@@ -1290,7 +1289,7 @@ class Cell(object):
 
     if not is_float(min_z):
       exit('Unable to set the minimum z-coordinate for Cell ID=%d to %s '
-           'since it is not a floating point value', self._id, str(min_z))
+           'since it is not a floating point value' % (self._id, str(min_z)))
 
     self._min_z = min_z
 

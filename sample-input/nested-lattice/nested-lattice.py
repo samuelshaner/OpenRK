@@ -105,6 +105,15 @@ mesh.setMaxRadius(cells[4].getMaxX())
 mesh.setMinRadius(0.0)
 new_cells = mesh.subdivideCell(cell=cells[4], universe=universes[2])
 
+mesh = SectorMesh(num_sectors=8)
+mesh.subdivideUniverse(universe=universes[0])
+
+mesh = SectorMesh(num_sectors=8)
+mesh.subdivideUniverse(universe=universes[1])
+
+mesh = SectorMesh(num_sectors=8)
+mesh.subdivideUniverse(universe=universes[2])
+
 
 ###############################################################################
 ###########################   Creating Lattices   #############################
@@ -154,7 +163,7 @@ geometry = Geometry()
 geometry.setRootUniverse(universes[4])
 
 geometry.initializeCellOffsets()
-geometry.setVolume(16., tolerance=1e-1)
+geometry.setVolume(volume=16., tolerance=1e-1)
 
 
 ###############################################################################
