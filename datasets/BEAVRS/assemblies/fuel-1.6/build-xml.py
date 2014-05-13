@@ -46,6 +46,7 @@ settings_file.setBatches(batches)
 settings_file.setInactive(inactive)
 settings_file.setParticles(particles)
 settings_file.setStatepointInterval(5)
+settings_file.setOutput({'tallies': False})
 
 source = [-pin_pitch/2., -pin_pitch/2., -slice_height/2.,
           pin_pitch/2., pin_pitch/2., slice_height/2.]
@@ -81,20 +82,23 @@ plot_file.exportToXML()
 
 cells = geometry.getAllCells()
 tallies_file = TalliesFile()
-scores = ['flux', 'total', 'fission', 'absorption', 'scatter']
+scores = ['flux', 'nu-fission']
+filters = ['energy', 'energyout']
 bins = np.array([0.0, 0.625, 10000000.])
 
 for cell_id in cells.keys():
   cell = cells[cell_id]
 
   if cell.getType() == 'material':
-    tally = Tally()
-    tally.addFilter(type='distribcell', bins=cell_id)
-    tally.addFilter(type='energy', bins=bins)
 
-    for score in scores:
-      tally.addScore(score=score)
+    for filter in filters:
+        tally = Tally()
+        tally.addFilter(type=filter, bins=bins)
+        tally.addFilter(type='distribcell', bins=cell_id)
 
-    tallies_file.addTally(tally)
+        for score in scores:
+          tally.addScore(score=score)
+
+        tallies_file.addTally(tally)
 
 tallies_file.exportToXML()
