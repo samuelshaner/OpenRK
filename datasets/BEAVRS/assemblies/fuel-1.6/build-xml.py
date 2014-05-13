@@ -15,7 +15,7 @@ import numpy as np
 # OpenMC simulation parameters
 batches = 25
 inactive = 10
-particles = 1000
+particles = 10000
 
 # Plotting parameters
 pixels = 1000
@@ -75,7 +75,7 @@ plot_file.exportToXML()
 
 cells = geometry.getAllCells()
 tallies_file = TalliesFile()
-scores = ['flux', 'absorption']
+scores = ['flux', 'total', 'fission', 'absorption', 'scatter']
 bins = np.array([0.0, 0.625, 10000000.])
 
 for cell_id in cells.keys():

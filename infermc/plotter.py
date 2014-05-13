@@ -84,6 +84,21 @@ def plot_fluxes(geometry, statepoint, energies=[0], gridsize=250):
   tally_extractor = TallyExtractor(statepoint=statepoint, geometry=geometry)
   cells_to_tallies = tally_extractor.getCellsToTallies()
 
+  num_regions = geometry.getNumRegions()
+  region_fluxes = np.zeros((num_regions, 2))
+
+#  volumes = geometry.getRegionVolumes()
+#  print volumes
+#  print volumes.sum()
+
+  for region in range(num_regions):
+    region_fluxes[region, :] = \
+      tally_extractor.getDistribcellTallyData(region, 'flux')
+
+  # Normalize the flux to the volume
+#  region_fluxes[:, 0] /= volumes
+#  region_fluxes[:, 1] /= volumes
+
   for i in range(gridsize):
     for j in range(gridsize):
 
@@ -91,13 +106,13 @@ def plot_fluxes(geometry, statepoint, energies=[0], gridsize=250):
       x = xcoords[i]
       y = ycoords[j]
 
-      coords = geometry.findCoords(x=x, y=y)
-      path = get_path(coords)
+      region = geometry.getRegionId(x=x, y=y)
+      flux = region_fluxes[region, :]
 
-      cell_id = path[-1]
-      tally_id = cells_to_tallies[cell_id]
-      filters = [('distribcell', path)]
-      flux = statepoint.get_value(tally_id, filters, 0)
+#      cell_id = path[-1]
+#      tally_id = cells_to_tallies[cell_id]
+#      filters = [('distribcell', path)]
+#      flux = statepoint.get_value(tally_id, filters, 0)
 
       # Get the scalar flux for each energy
       for index, energy in enumerate(energies):

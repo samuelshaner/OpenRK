@@ -123,11 +123,28 @@ class TallyExtractor(object):
 
     self._geometry = geometry
 
+    num_regions = self._geometry.getNumRegions()
+
     # Create a list of "paths" for each unique region in the Geometry
     self._geometry.initializeCellOffsets()
 
-    num_regions = self._geometry.getNumRegions()
-    print('The Geometry has %d regions' % num_regions)
+    # Compute the volumes for each region in the Geometry
+    # First, compute the volume of the bounding box surrounding
+    # the Geometry to use as a scaling factor for each subregion
+    max_x = self._geometry.getMaxX()
+    max_y = self._geometry.getMaxY()
+    max_z = self._geometry.getMaxZ()
+    min_x = self._geometry.getMinX()
+    min_y = self._geometry.getMinY()
+    min_z = self._geometry.getMinZ()
+
+    delta_x = max_x - min_x
+    delta_y = max_y - min_y
+    delta_z = max_z - min_z
+
+    volume = delta_x * delta_y * delta_z
+
+#    self._geometry.setVolume(volume, tolerance=1e-1)
 
     for region in range(num_regions):
       coord = geometry.findRegion(region)
@@ -156,8 +173,14 @@ class TallyExtractor(object):
 
     if score is 'flux':
       tally_data = self._statepoint.get_value(tally_id, filters, 0)
-    elif score is 'absorption':
+    elif score is 'total':
       tally_data = self._statepoint.get_value(tally_id, filters, 1)
+    elif score is 'fission':
+      tally_data = self._statepoint.get_value(tally_id, filters, 2)
+    elif score is 'absorption':
+      tally_data = self._statepoint.get_value(tally_id, filters, 3)
+    elif score is 'scatter':
+      tally_data = self._statepoint.get_value(tally_id, filters, 4)
 
     return tally_data
 
