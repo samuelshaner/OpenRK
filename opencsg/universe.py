@@ -69,7 +69,7 @@ class Universe(object):
       cells[cell_id] = cell
 
       # Append all Cells in this Cell to the dictionary
-      cells.update(cell)
+      cells.update(cell.getAllCells())
 
     return cells
 
@@ -649,11 +649,10 @@ class Lattice(Universe):
 
     cells = dict()
 
-    universes = self.getUniverses()
-
-    for universe_id in universes:
-      universe = universes[universe_id]
-      cells.update(universe.getAllCells())
+    for i in range(self._dimension[0]):
+      for j in range(self._dimension[1]):
+        universe = self._universes[i][j]
+        cells.update(universe.getAllCells())
 
     return cells
 
@@ -1533,7 +1532,7 @@ class Cell(object):
 
 
   def computeVolumeFraction(self, volume=np.float(1.),
-                            num_samples=10000, tolerance=1e-3):
+                            num_samples=1000, tolerance=1e-3):
 
     # Do not recompute the volume fraction if it was already computed
     if self._volume_fraction != 0.:

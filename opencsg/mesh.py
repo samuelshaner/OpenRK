@@ -108,13 +108,16 @@ class RadialMesh(object):
       exit('Unable to subdivide Cell with RadialMesh since %s is not '
            'a Cell' % str(cell))
 
+    # Create container for ZCylinders
+    cylinders = list()
+
+    if self._num_rings == 0:
+      return cylinders
+
     cell.findBoundingBox()
 
     if self._max_radius == -np.float("inf"):
       self._max_radius = cell.getMaxX()
-
-    # Create container for ZCylinders
-    cylinders = list()
 
     # Equal area radii
     radii = list()
@@ -220,7 +223,7 @@ class SectorMesh(object):
     # Initialize an empty list of the new subdivided cells
     new_cells = list()
 
-    if self._num_sectors == 0:
+    if self._num_sectors == 0 or self._num_sectors == 1:
       return new_cells
 
     # Initialize an empty list for Planes
@@ -275,6 +278,9 @@ class SectorMesh(object):
 
     # Initialize an empty list of new Cells
     new_cells = list()
+
+    if self._num_sectors == 0 or self._num_sectors == 1:
+      return new_cells
 
     for cell in cells:
       new_cells.extend(self.subdivideCell(cell=cell))
