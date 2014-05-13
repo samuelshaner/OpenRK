@@ -15,6 +15,7 @@ pin_cells = dict()
 ##########################  1.6% Enriched Fuel Pin  ############################
 ################################################################################
 
+
 universe = Universe(name='1.6% Fuel Pin')
 pin_cells[universe.getName()] = universe
 
@@ -74,7 +75,7 @@ cell = Cell(name='Fuel', fill=opencsg_materials['3.1% Fuel'])
 cell.addSurface(surface=surfaces['Fuel Radius-1'], halfspace=-1)
 universe.addCell(cell)
 
-cell = Cell(name='Gap', fill=opencsg_materials['Helium'].getId())
+cell = Cell(name='Gap', fill=opencsg_materials['Helium'])
 cell.addSurface(surface=surfaces['Fuel Radius-1'], halfspace=+1)
 cell.addSurface(surface=surfaces['Fuel Radius-2'], halfspace=-1)
 universe.addCell(cell)
@@ -147,7 +148,7 @@ cell.addSurface(surface=surfaces['BA Radius-1'], halfspace=+1)
 cell.addSurface(surface=surfaces['BA Radius-2'], halfspace=-1)
 universe.addCell(cell)
 
-cell = Cell(name='Region-3', fil=opencsg_materials['Air'])
+cell = Cell(name='Region-3', fill=opencsg_materials['Air'])
 cell.addSurface(surface=surfaces['BA Radius-2'], halfspace=+1)
 cell.addSurface(surface=surfaces['BA Radius-3'], halfspace=-1)
 universe.addCell(cell)
@@ -177,6 +178,6 @@ cell.addSurface(surface=surfaces['BA Radius-7'], halfspace=+1)
 cell.addSurface(surface=surfaces['BA Radius-8'], halfspace=-1)
 universe.addCell(cell)
 
-cell = Cell('Region-9', fill=opencsg_materials['Borated Water'])
+cell = Cell(name='Region-9', fill=opencsg_materials['Borated Water'])
 cell.addSurface(surface=surfaces['BA Radius-8'], halfspace=+1)
 universe.addCell(cell)
