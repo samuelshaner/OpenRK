@@ -91,6 +91,5 @@ geometry.setRootUniverse(root_universe)
 geometry.initializeCellOffsets()
 
 num_regions = geometry.getNumRegions()
-print num_regions
 
 print('# regions = %d' % num_regions)

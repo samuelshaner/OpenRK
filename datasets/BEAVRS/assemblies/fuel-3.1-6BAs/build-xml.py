@@ -51,6 +51,12 @@ source = [-pin_pitch/2., -pin_pitch/2., -slice_height/2.,
           pin_pitch/2., pin_pitch/2., slice_height/2.]
 settings_file.setSourceSpace(type='box', params=source)
 
+settings_file.setEntropyDimension([17,17,1])
+lower_left = [geometry.getMinX(), geometry.getMinY(), geometry.getMinZ()]
+upper_right = [geometry.getMaxX(), geometry.getMaxY(), geometry.getMaxZ()]
+settings_file.setEntropyLowerLeft(lower_left)
+settings_file.setEntropyUpperRight(upper_right)
+
 settings_file.exportToXML()
 
 
