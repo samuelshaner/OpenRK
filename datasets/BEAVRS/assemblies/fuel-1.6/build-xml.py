@@ -6,6 +6,8 @@ from openmc.input.opencsg_compatible import create_geometry_xml
 from datasets.BEAVRS.materials import openmc_materials
 from geometry import geometry, slice_height, pin_pitch
 import numpy as np
+from infermc.build import *
+from sets import Set
 
 
 ###############################################################################
@@ -15,7 +17,7 @@ import numpy as np
 # OpenMC simulation parameters
 batches = 25
 inactive = 10
-particles = 100
+particles = 10000
 
 # Plotting parameters
 pixels = 1000
@@ -82,23 +84,43 @@ plot_file.exportToXML()
 
 cells = geometry.getAllCells()
 tallies_file = TalliesFile()
-scores = ['flux', 'nu-fission']
-filters = ['energy', 'energyout']
-bins = np.array([0.0, 0.625, 10000000.])
+
+energy_groups = EnergyGroups()
+energy_groups.setGroupEdges(np.array([0.0, 0.625, 10000000.]))
 
 for cell_id in cells.keys():
+
   cell = cells[cell_id]
 
   if cell.getType() == 'material':
 
-    for filter in filters:
-        tally = Tally()
-        tally.addFilter(type=filter, bins=bins)
-        tally.addFilter(type='distribcell', bins=cell_id)
+    total_xs = TotalXS()
+    abs_xs = AbsorptionXS()
+    nufiss_xs = NuFissionXS()
+    scat_xs = ScatterMatrixXS()
+    chi = Chi()
 
-        for score in scores:
-          tally.addScore(score=score)
+    total_xs.setEnergyGroups(energy_groups)
+    abs_xs.setEnergyGroups(energy_groups)
+    nufiss_xs.setEnergyGroups(energy_groups)
+    scat_xs.setEnergyGroups(energy_groups)
+    chi.setEnergyGroups(energy_groups)
 
-        tallies_file.addTally(tally)
+    total_xs.createTallies()
+    abs_xs.createTallies()
+    nufiss_xs.createTallies()
+    scat_xs.createTallies()
+    chi.createTallies()
+
+    tallies = Set()
+    tallies.union_update(Set(total_xs.getTallies()))
+    tallies.union_update(Set(abs_xs.getTallies()))
+    tallies.union_update(Set(nufiss_xs.getTallies()))
+    tallies.union_update(Set(scat_xs.getTallies()))
+    tallies.union_update(Set(chi.getTallies()))
+
+    for tally in tallies:
+      tally.addFilter(type='distribcell', bins=cell_id)
+      tallies_file.addTally(tally)
 
 tallies_file.exportToXML()

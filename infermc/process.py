@@ -1,6 +1,6 @@
 import opencsg
 from opencsg.checkvalue import *
-from statepoint import StatePoint
+from statepoint import StatePoint, filter_types, score_types
 
 
 def get_path(coords):
@@ -34,7 +34,8 @@ def get_path(coords):
   return path
 
 
-class TallyExtractor(object):
+
+class XSTallyExtractor(object):
 
   def __init__(self, statepoint=None, geometry=None):
 
