@@ -1,5 +1,18 @@
+from opencsg import Cell
 from opencsg.checkvalue import *
-from openmc.input.tallies import Tally
+from openmc.input.tallies import Tally, TalliesFile
+from sets import Set
+
+
+xs_types = ['total',
+            'absorption',
+            'scatter',
+            'scatter matrix',
+            'fission',
+            'nu-fission',
+            'chi']
+#            'diffusion',
+#            'transport']
 
 
 class EnergyGroups(object):
@@ -199,25 +212,6 @@ class AbsorptionXS(MultiGroupXS):
     self._tallies.append(rxn_rate)
 
 
-class CaptureXS(MultiGroupXS):
-
-  def __init__(self):
-    self._type = 'capture'
-    super(CaptureXS, self).__init__()
-
-
-  def createTallies(self):
-
-    super(CaptureXS, self).createTallies()
-
-    group_edges = self._energy_groups.getGroupEdges()
-
-    rxn_rate = Tally()
-    rxn_rate.addScore(score='capture')
-    rxn_rate.addFilter(type='energy', bins=group_edges)
-    self._tallies.append(rxn_rate)
-
-
 class FissionXS(MultiGroupXS):
 
   def __init__(self):
@@ -365,5 +359,85 @@ class XSTallyBuilder(object):
 
   def __init__(self):
 
-    self._xs = list()
+    self._all_xs = list()
+    self._tallies_file = TalliesFile()
 
+
+  def getTalliesFile(self):
+    return self._tallies_file
+
+
+  def createXS(self, xs_type, energy_groups, cell):
+
+    global xs_types
+
+    if not is_string(xs_type):
+      exit('The XSTallyBuilder is unable to create cross-section type %s '
+           'which is not a string value' % str(xs_type))
+
+    if not isinstance(energy_groups, EnergyGroups):
+      exit('The XSTallyBuilder is unable to create cross-section type %s '
+           'with energy groups %s which is not an EnergyGroups object' %
+           (xs_type, str(energy_groups)))
+
+    if not isinstance(cell, Cell):
+      exit('The XSTallyBuilder is unable to create cross-section type %s '
+           'with cell %s which is not an OpenCSG Cell object' %
+           (xs_type, str(cell)))
+
+    if xs_type == 'total':
+      xs = TotalXS()
+    elif xs_type == 'absorption':
+      xs = AbsorptionXS()
+    elif xs_type == 'fission':
+      xs = FissionXS()
+    elif xs_type == 'nu-fission':
+      xs = NuFissionXS()
+    elif xs_type == 'scatter':
+      xs = ScatterXS()
+    elif xs_type == 'nu-scatter':
+      xs = NuScatterXS()
+    elif xs_type == 'scatter matrix':
+      xs = ScatterMatrixXS()
+    elif xs_type == 'diffusion':
+      xs = DiffusionCoeff()
+    elif xs_type == 'transport':
+      xs = TransportXS()
+    elif xs_type == 'chi':
+      xs = Chi()
+    else:
+      exit('The XSTallyBuilder is unable to create cross-section type %s '
+           'which is not one of the supported types' % xs_type)
+
+    xs.setEnergyGroups(energy_groups)
+    xs.createTallies()
+
+    for tally in xs.getTallies():
+      tally.addFilter(type='distribcell', bins=cell.getId())
+
+    self._all_xs.append(xs)
+
+
+  def createAllXS(self, energy_groups, cells):
+
+    global xs_types
+
+    if not isinstance(cells, (tuple, list, np.ndarray)):
+      cells = [cells]
+
+    for cell in cells:
+      for xs_type in xs_types:
+        self.createXS(xs_type, energy_groups, cell)
+
+
+  def createTalliesFile(self):
+
+    tallies = Set()
+
+    for xs in self._all_xs:
+      tallies.union_update(Set(xs.getTallies()))
+
+    for tally in tallies:
+      self._tallies_file.addTally(tally)
+
+    self._tallies_file.exportToXML()

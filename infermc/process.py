@@ -34,7 +34,6 @@ def get_path(coords):
   return path
 
 
-
 class XSTallyExtractor(object):
 
   def __init__(self, statepoint=None, geometry=None):

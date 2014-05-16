@@ -83,44 +83,15 @@ plot_file.exportToXML()
 ###############################################################################
 
 cells = geometry.getAllCells()
+
 tallies_file = TalliesFile()
+tally_builder = XSTallyBuilder()
 
 energy_groups = EnergyGroups()
 energy_groups.setGroupEdges(np.array([0.0, 0.625, 10000000.]))
 
-for cell_id in cells.keys():
-
-  cell = cells[cell_id]
-
+for cell in cells:
   if cell.getType() == 'material':
+    tally_builder.createAllXS(energy_groups, cell)
 
-    total_xs = TotalXS()
-    abs_xs = AbsorptionXS()
-    nufiss_xs = NuFissionXS()
-    scat_xs = ScatterMatrixXS()
-    chi = Chi()
-
-    total_xs.setEnergyGroups(energy_groups)
-    abs_xs.setEnergyGroups(energy_groups)
-    nufiss_xs.setEnergyGroups(energy_groups)
-    scat_xs.setEnergyGroups(energy_groups)
-    chi.setEnergyGroups(energy_groups)
-
-    total_xs.createTallies()
-    abs_xs.createTallies()
-    nufiss_xs.createTallies()
-    scat_xs.createTallies()
-    chi.createTallies()
-
-    tallies = Set()
-    tallies.union_update(Set(total_xs.getTallies()))
-    tallies.union_update(Set(abs_xs.getTallies()))
-    tallies.union_update(Set(nufiss_xs.getTallies()))
-    tallies.union_update(Set(scat_xs.getTallies()))
-    tallies.union_update(Set(chi.getTallies()))
-
-    for tally in tallies:
-      tally.addFilter(type='distribcell', bins=cell_id)
-      tallies_file.addTally(tally)
-
-tallies_file.exportToXML()
+tally_builder.createTalliesFile()
