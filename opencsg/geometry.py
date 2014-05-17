@@ -98,6 +98,18 @@ class Geometry(object):
     return self._root_universe.getAllCells()
 
 
+  def getAllMaterialCells(self):
+
+    all_cells = self.getAllCells()
+    material_cells = list()
+
+    for cell_id in all_cells.keys():
+      if all_cells[cell_id].getType() == 'material':
+        material_cells.append(all_cells[cell_id])
+
+    return material_cells
+
+
   def setRootUniverse(self, root_universe):
 
     if not isinstance(root_universe, Universe):
