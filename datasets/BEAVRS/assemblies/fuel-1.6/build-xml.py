@@ -1,13 +1,10 @@
 from openmc.input.settings import SettingsFile
-from openmc.input.tallies import TalliesFile, Tally
 from openmc.input.plots import PlotsFile, Plot
 from openmc.input.material import MaterialsFile
 from openmc.input.opencsg_compatible import create_geometry_xml
 from datasets.BEAVRS.materials import openmc_materials
 from geometry import geometry, slice_height, pin_pitch
-import numpy as np
 from infermc.build import *
-from sets import Set
 
 
 ###############################################################################
@@ -88,10 +85,9 @@ tallies_file = TalliesFile()
 tally_builder = XSTallyBuilder()
 
 energy_groups = EnergyGroups()
-energy_groups.setGroupEdges(np.array([0.0, 0.625, 10000000.]))
+energy_groups.setGroupEdges([0.0, 0.625, 1e7])
 
-for cell in cells:
-  if cell.getType() == 'material':
-    tally_builder.createAllXS(energy_groups, cell)
+cells = geometry.getAllMaterialCells()
+tally_builder.createAllXS(energy_groups, cells)
 
 tally_builder.createTalliesFile()
