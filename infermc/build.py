@@ -9,8 +9,9 @@ xs_types = ['total',
             'scatter',
             'scatter matrix',
             'fission',
-            'nu-fission',
-            'chi']
+            'nu-fission']
+
+#            'chi']
 #            'diffusion',
 #            'transport']
 
@@ -169,6 +170,7 @@ class MultiGroupXS(object):
     flux = Tally()
     flux.addScore(score='flux')
     flux.addFilter(type='energy', bins=group_edges)
+    flux.setLabel(label='%d groups' % self._energy_groups.getNumGroups())
     self._tallies.append(flux)
 
     return
@@ -190,6 +192,7 @@ class TotalXS(MultiGroupXS):
     rxn_rate = Tally()
     rxn_rate.addScore(score='total')
     rxn_rate.addFilter(type='energy', bins=group_edges)
+    rxn_rate.setLabel(label='%d groups' % self._energy_groups.getNumGroups())
     self._tallies.append(rxn_rate)
 
 
@@ -209,6 +212,7 @@ class AbsorptionXS(MultiGroupXS):
     rxn_rate = Tally()
     rxn_rate.addScore(score='absorption')
     rxn_rate.addFilter(type='energy', bins=group_edges)
+    rxn_rate.setLabel(label='%d groups' % self._energy_groups.getNumGroups())
     self._tallies.append(rxn_rate)
 
 
@@ -228,6 +232,7 @@ class FissionXS(MultiGroupXS):
     rxn_rate = Tally()
     rxn_rate.addScore(score='fission')
     rxn_rate.addFilter(type='energy', bins=group_edges)
+    rxn_rate.setLabel(label='%d groups' % self._energy_groups.getNumGroups())
     self._tallies.append(rxn_rate)
 
 
@@ -247,6 +252,7 @@ class NuFissionXS(MultiGroupXS):
     rxn_rate = Tally()
     rxn_rate.addScore(score='nu-fission')
     rxn_rate.addFilter(type='energy', bins=group_edges)
+    rxn_rate.setLabel(label='%d groups' % self._energy_groups.getNumGroups())
     self._tallies.append(rxn_rate)
 
 
@@ -265,6 +271,7 @@ class ScatterXS(MultiGroupXS):
     rxn_rate = Tally()
     rxn_rate.addScore(score='scatter')
     rxn_rate.addFilter(type='energy', bins=group_edges)
+    rxn_rate.setLabel(label='%d groups' % self._energy_groups.getNumGroups())
     self._tallies.append(rxn_rate)
 
 
@@ -283,6 +290,7 @@ class NuScatterXS(MultiGroupXS):
     rxn_rate = Tally()
     rxn_rate.addScore(score='nu-scatter')
     rxn_rate.addFilter(type='energy', bins=group_edges)
+    rxn_rate.setLabel(label='%d groups' % self._energy_groups.getNumGroups())
     self._tallies.append(rxn_rate)
 
 
@@ -302,6 +310,7 @@ class ScatterMatrixXS(MultiGroupXS):
     rxn_rate.addScore(score='nu-scatter')
     rxn_rate.addFilter(type='energy', bins=group_edges)
     rxn_rate.addFilter(type='energyout', bins=group_edges)
+    rxn_rate.setLabel(label='%d groups' % self._energy_groups.getNumGroups())
     self._tallies.append(rxn_rate)
 
 
@@ -346,10 +355,12 @@ class Chi(MultiGroupXS):
     rxn_rate = Tally()
     rxn_rate.addScore(score='nu-fission')
     rxn_rate.addFilter(type='energy', bins=group_edges)
+    rxn_rate.setLabel(label='%d groups' % self._energy_groups.getNumGroups())
 
     emit_rate = Tally()
     emit_rate.addScore(score='nu-fission')
     emit_rate.addFilter(type='energyout', bins=group_edges)
+    emit_rate.setLabel(label='%d groups' % self._energy_groups.getNumGroups())
 
     self._tallies.append(rxn_rate)
     self._tallies.append(emit_rate)

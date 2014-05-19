@@ -81,7 +81,7 @@ def plot_fluxes(geometry, statepoint, energies=[0], gridsize=250):
   xcoords = np.linspace(xmin, xmax, gridsize)
   ycoords = np.linspace(ymin, ymax, gridsize)
 
-  tally_extractor = TallyExtractor(statepoint=statepoint, geometry=geometry)
+  tally_extractor = XSTallyExtractor(statepoint=statepoint, geometry=geometry)
   cells_to_tallies = tally_extractor.getCellsToTallies()
 
   num_regions = geometry.getNumRegions()
