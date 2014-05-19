@@ -9,7 +9,8 @@ xs_types = ['total',
             'scatter',
             'scatter matrix',
             'fission',
-            'nu-fission']
+            'nu-fission',
+            'chi']
 
 #            'chi']
 #            'diffusion',

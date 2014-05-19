@@ -8,7 +8,7 @@ from datasets.BEAVRS.lattices import pin_pitch
 ###############################################################################
 
 # Discretization of pin cells
-fuel_rings = 4
+fuel_rings = 3
 mod_rings = 0
 sectors = 4
 

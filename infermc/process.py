@@ -223,6 +223,27 @@ class XSTallyExtractor(object):
       self._all_paths.append(get_path(coord))
 
 
+  def tallyContainsFilter(self, filter, tally):
+
+    # Expect filter as a tuple: (filter type, bins)
+    # Expect tally as an statepoint.Tally object
+
+    contains_filter = False
+
+    # Iterate over all of Tally's filters
+    for filter_type in tally.filters.keys():
+
+      test_filter = tally.filters[filter_type]
+
+      # Check if the test filter is the same type of filter as
+      # the query filter and contains the same bins
+      if filter[0] == filter_type and filter[1] == test_filter.bins:
+        contains_filter = True
+        break
+
+    return contains_filter
+
+
   def getTallyScoreIndex(self, score, tally):
 
     global score_types
@@ -238,7 +259,7 @@ class XSTallyExtractor(object):
     return tally.scores.index(score)
 
 
-  def getTally(self, score, domain_id, domain='distribcell', label=''):
+  def getTally(self, score, filters, domain_id, domain='distribcell', label=''):
 
     global score_types, domain_types
 
@@ -273,23 +294,37 @@ class XSTallyExtractor(object):
 
     if domain == 'distribcell':
       tallies = self._distribcells_to_tallies
-    if domain == 'cell':
+    elif domain == 'cell':
       tallies = self._cells_to_tallies
-    if domain == 'universe':
+    elif domain == 'universe':
       tallies = self._universes_to_tallies
-    if domain == 'material':
+    elif domain == 'material':
       tallies = self._materials_to_tallies
 
-    # If we reached this point then we did not find the Tally
-    if tallies is None:
-      exit('Unable to get Tally in %s %d' %
-           (score, domain, domain_id))
-
+    # Iterate over all tallies to find the appropriate one
     for tally_id in tallies[domain_id]:
-      if score in self._tallies_to_scores[tally_id]:
-        tally = self._statepoint.tallies[self._statepoint.tallyID[tally_id]]
 
-    # If we reached this point then we did not find the Tally
+      # Determine if the queried Tally score is associated with this Tally
+      if score in self._tallies_to_scores[tally_id]:
+        internal_id = self._statepoint.tallyID[tally_id]
+        test_tally = self._statepoint.tallies[internal_id]
+
+        contains_filters = True
+
+        # Iterate over the filters requested by the user
+        for filter in filters:
+
+          # If the test Tally does not contains this filter, break
+          if not self.tallyContainsFilter(filter, test_tally):
+            contains_filters = False
+            break
+
+        # If the Tally contained all of the filters, then we can return this Tally
+        if contains_filters:
+          tally = test_tally
+          break
+
+    # If we did not find the Tally, return an error messsage
     if tally is None:
       exit('Unable to get Tally for score %s in %s %d' %
            (score, domain, domain_id))
@@ -297,7 +332,7 @@ class XSTallyExtractor(object):
     return tally
 
 
-  def getXS(self, xs_type, num_groups, domain_id, domain='distribcell'):
+  def getXS(self, xs_type, group_edges, domain_id, domain='distribcell'):
 
     global xs_types, domain_types
 
@@ -313,15 +348,13 @@ class XSTallyExtractor(object):
       exit('Unable to get %s cross-sections since it is not a '
            'valid cross-section type' % str(xs_type))
 
-    if not is_integer(num_groups):
+    if not isinstance(group_edges, (tuple, list, np.ndarray)):
       exit('Unable to get %s group cross-sections for %s %s since '
-           'the number of groups is not an integer value' %
-           (str(num_groups), str(domain), str(domain_id)))
+           'the group edges is not a Python tuple, list or NumPy array' %
+           (str(group_edges), str(domain), str(domain_id)))
 
-    if num_groups < 0:
-      exit('Unable to get %s group cross-sections for %s %s since '
-           'the number of groups is a negative integer' %
-           (num_groups, str(domain), str(domain_id)))
+    # Determine the number of groups
+    num_groups = group_edges.size-1
 
     if not is_integer(domain_id):
       exit('Unable to get %s group cross-sections for %s %s since the domain '
@@ -336,8 +369,8 @@ class XSTallyExtractor(object):
            'type is not supported' % (num_groups, str(domain), domain_id))
 
 
-    #FIXME: Must deal with diffusion coeff, transport xs, and chi here
-    #FIXME: Must deal with nuclides here
+    #FIXME: Deal with diffusion coeff, transport xs, and chi
+    #FIXME: Deal with nuclides
 
 
     # Determine the reaction rate score type for this cross-section type
@@ -370,9 +403,11 @@ class XSTallyExtractor(object):
       domain_filter = (domain, domain_id)
 
 
+    filters = [('energyin', list(group_edges))]
+
     # Get the Tally IDs for the flux and reaction rate needed to compute the xs
-    flux_tally = self.getTally('flux', domain_id, domain)                       #FIXME: label='%d groups' % num_groups
-    rxn_rate_tally = self.getTally(rxn_rate_score, domain_id, domain)           #FIXME: label='%d groups' % num_groups
+    flux_tally = self.getTally('flux', filters, domain_id, domain)                       #FIXME: label='%d groups' % num_groups
+    rxn_rate_tally = self.getTally(rxn_rate_score, filters, domain_id, domain)           #FIXME: label='%d groups' % num_groups
 
     # Initialize empty arrays for the flux and reaction rate data
     flux_data = np.zeros(num_groups)
