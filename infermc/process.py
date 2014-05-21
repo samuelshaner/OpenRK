@@ -411,12 +411,19 @@ class XSTallyExtractor(object):
 
     # Initialize empty arrays for the flux and reaction rate data
     flux_data = np.zeros(num_groups)
-    rxn_rate_data = np.zeros(num_groups)                                        #FIXME: Doesn't work for chi, scatter matrix
+    rxn_rate_data = np.zeros(num_groups)                                      #FIXME: Doesn't work for chi, scatter matrix
+
+    if xs_type == 'chi':
+      rxn_rate_data2 = np.zeros(num_groups)
+
+      #FIXME: Might need to use a collection of rxn rate tallies?
+      filters = [('energyout', list(group_edges))]
+      rxn_rate_tally2 = self.getTally(rxn_rate_score, filters, domain_id, domain)
+      rxn_rate_index2 = self.getTallyScoreIndex(rxn_rate_score, rxn_rate_tally2)
 
     # Compute the index for flux and reaction rate Tally scores
     flux_index = self.getTallyScoreIndex('flux', flux_tally)
     rxn_rate_index = self.getTallyScoreIndex(rxn_rate_score, rxn_rate_tally)
-
 
     # Extract the flux and reaction rate tally averages for each energy group
     for group in range(num_groups):
@@ -431,8 +438,25 @@ class XSTallyExtractor(object):
       data = self._statepoint.get_value(rxn_rate_tally.id, filters, rxn_rate_index)
       rxn_rate_data[group] = data[0]
 
+      if xs_type == 'chi':
+        filters = [domain_filter, ('energyout', group)]
+        data = self._statepoint.get_value(rxn_rate_tally2.id, filters, rxn_rate_index2)
+        rxn_rate_data2[group] = data[0]
+
 
     # Compute the cross-section for this location and return it
     xs = rxn_rate_data / flux_data
+
+
+    if xs_type == 'chi':
+      xs = np.zeros(num_groups)
+
+      for group in range(num_groups):
+        xs[group] = rxn_rate_data2[group] / rxn_rate_data[:].sum()
+        print group, flux_data[group], rxn_rate_data[group], rxn_rate_data2[group], xs[group]
+
+      # For non-fissionable regions, convert chi to all zeros
+      xs = np.nan_to_num(xs)
+
 
     return xs

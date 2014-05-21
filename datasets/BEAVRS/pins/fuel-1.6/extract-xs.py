@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 files = ['statepoint.10.h5', 'statepoint.15.h5']
 
 energy_groups = EnergyGroups()
-energy_groups.setGroupEdges([0.0, 0.625, 1e7])
+energy_groups.setGroupEdges([0.0, 0.625, 2e7])
 edges = energy_groups.getGroupEdges()
 
 
@@ -31,9 +31,6 @@ for file in files:
   scat_xs = np.zeros((num_regions, 2))
   chi = np.zeros((num_regions, 2))
 
-
-  print chi
-
   for region in range(num_regions):
 
     tot_xs[region, :] = extractor.getXS('total', edges, domain_id=region)
@@ -43,6 +40,8 @@ for file in files:
     scat_xs[region, :] = extractor.getXS('scatter', edges, domain_id=region)
     chi[region, :] = extractor.getXS('chi', edges, domain_id=region)
 
+
+  print chi
 
   # Create scatter plot of the total cross-sections in each region, group
   fig = plt.figure()

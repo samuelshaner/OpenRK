@@ -12,7 +12,6 @@ xs_types = ['total',
             'nu-fission',
             'chi']
 
-#            'chi']
 #            'diffusion',
 #            'transport']
 
