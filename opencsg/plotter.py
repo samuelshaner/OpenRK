@@ -81,6 +81,7 @@ def plot_cells(geometry, gridsize=250):
   plt.title('Cells')
   filename = subdirectory + 'cells.png'
   fig.savefig(filename, bbox_inches='tight')
+  plt.close(fig)
 
 
 
@@ -133,6 +134,7 @@ def plot_materials(geometry, gridsize=250):
   plt.title('Materials')
   filename = subdirectory + 'materials.png'
   fig.savefig(filename, bbox_inches='tight')
+  plt.close(fig)
 
 
 def plot_regions(geometry, gridsize=250):
@@ -187,3 +189,4 @@ def plot_regions(geometry, gridsize=250):
   plt.title('Regions')
   filename = subdirectory + 'regions.png'
   fig.savefig(filename, bbox_inches='tight')
+  plt.close(fig)
