@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 files = ['statepoint.10.h5', 'statepoint.15.h5']
 
 energy_groups = EnergyGroups()
-energy_groups.setGroupEdges([0.0, 0.625, 2e7])
+energy_groups.setGroupEdges([0.0, 0.625e-6, 20.])
 edges = energy_groups.getGroupEdges()
 
 
@@ -29,19 +29,19 @@ for file in files:
   fiss_xs = np.zeros((num_regions, 2))
   nufiss_xs = np.zeros((num_regions, 2))
   scat_xs = np.zeros((num_regions, 2))
+  scat_matrix = np.zeros((num_regions, 2, 2))
   chi = np.zeros((num_regions, 2))
 
   for region in range(num_regions):
 
-    tot_xs[region, :] = extractor.getXS('total', edges, domain_id=region)
-    abs_xs[region, :] = extractor.getXS('absorption', edges, domain_id=region)
-    fiss_xs[region, :] = extractor.getXS('fission', edges, domain_id=region)
-    nufiss_xs[region, :] = extractor.getXS('nu-fission', edges, domain_id=region)
-    scat_xs[region, :] = extractor.getXS('scatter', edges, domain_id=region)
-    chi[region, :] = extractor.getXS('chi', edges, domain_id=region)
+    tot_xs[region, :] = extractor.getXS('total', edges, region)
+    abs_xs[region, :] = extractor.getXS('absorption', edges, region)
+    fiss_xs[region, :] = extractor.getXS('fission', edges, region)
+    nufiss_xs[region, :] = extractor.getXS('nu-fission', edges, region)
+    scat_xs[region, :] = extractor.getXS('nu-scatter', edges, region)
+    scat_matrix[region, :, :] = extractor.getXS('scatter matrix', edges, region)
+    chi[region, :] = extractor.getXS('chi', edges, region)
 
-
-  print chi
 
   # Create scatter plot of the total cross-sections in each region, group
   fig = plt.figure()
@@ -55,6 +55,7 @@ for file in files:
   plt.savefig(filename, bbox_inches='tight')
   ax.text(3, 8, 'boxed italics text in data coords', style='italic',
           bbox={'facecolor':'red', 'alpha':0.5, 'pad':10})
+  plt.close(fig)
 
   fig = plt.figure()
   ax = fig.add_subplot(111)
@@ -67,6 +68,7 @@ for file in files:
   plt.savefig(filename, bbox_inches='tight')
   ax.text(3, 8, 'boxed italics text in data coords', style='italic',
           bbox={'facecolor':'red', 'alpha':0.5, 'pad':10})
+  plt.close(fig)
 
   fig = plt.figure()
   ax = fig.add_subplot(111)
@@ -79,6 +81,7 @@ for file in files:
   plt.savefig(filename, bbox_inches='tight')
   ax.text(3, 8, 'boxed italics text in data coords', style='italic',
           bbox={'facecolor':'red', 'alpha':0.5, 'pad':10})
+  plt.close(fig)
 
   fig = plt.figure()
   ax = fig.add_subplot(111)
@@ -91,6 +94,7 @@ for file in files:
   plt.savefig(filename, bbox_inches='tight')
   ax.text(3, 8, 'boxed italics text in data coords', style='italic',
           bbox={'facecolor':'red', 'alpha':0.5, 'pad':10})
+  plt.close(fig)
 
   fig = plt.figure()
   ax = fig.add_subplot(111)
@@ -103,6 +107,7 @@ for file in files:
   plt.savefig(filename, bbox_inches='tight')
   ax.text(3, 8, 'boxed italics text in data coords', style='italic',
           bbox={'facecolor':'red', 'alpha':0.5, 'pad':10})
+  plt.close(fig)
 
   fig = plt.figure()
   ax = fig.add_subplot(111)
@@ -115,3 +120,4 @@ for file in files:
   plt.savefig(filename, bbox_inches='tight')
   ax.text(3, 8, 'boxed italics text in data coords', style='italic',
           bbox={'facecolor':'red', 'alpha':0.5, 'pad':10})
+  plt.close(fig)

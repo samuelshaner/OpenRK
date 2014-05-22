@@ -2,13 +2,16 @@ import opencsg
 from opencsg.checkvalue import *
 from statepoint import StatePoint, Tally, score_types           # filter_types
 
+
 xs_types = ['total',
             'absorption',
             'scatter',
+            'nu-scatter',
             'scatter matrix',
             'fission',
             'nu-fission',
             'chi']
+
 #            'diffusion',
 #            'transport']
 
@@ -259,7 +262,7 @@ class XSTallyExtractor(object):
     return tally.scores.index(score)
 
 
-  def getTally(self, score, filters, domain_id, domain='distribcell', label=''):
+  def getTally(self, score, filters, domain_id, domain='distribcell', estimator=None, label=''):
 
     global score_types, domain_types
 
@@ -308,6 +311,14 @@ class XSTallyExtractor(object):
       if score in self._tallies_to_scores[tally_id]:
         internal_id = self._statepoint.tallyID[tally_id]
         test_tally = self._statepoint.tallies[internal_id]
+
+        #FIXME: Check tally estimator here!!!
+
+        # If the length of the filters container doesn't match the requested
+        # filters, continue to next Tally. Subtract one for the Tally domain
+        # (e.g., material, cell, distribcell)
+        if len(filters) != len(test_tally.filters) - 1:
+          continue
 
         contains_filters = True
 
@@ -369,23 +380,6 @@ class XSTallyExtractor(object):
            'type is not supported' % (num_groups, str(domain), domain_id))
 
 
-    #FIXME: Deal with diffusion coeff, transport xs, and chi
-    #FIXME: Deal with nuclides
-
-
-    # Determine the reaction rate score type for this cross-section type
-    rxn_rate_score = xs_type
-
-    if xs_type == 'scatter matrix':
-      rxn_rate_score = 'nu-scatter'
-    elif xs_type == 'chi':
-      rxn_rate_score = 'nu-fission'
-    elif xs_type == 'diffusion':
-      exit('Unable to get diffusion coefficient')
-    elif xs_type == 'transport':
-      exit('Unable to get transport xs')
-
-
     # Determine the filter for the tally domain
     if domain == 'distribcell':
 
@@ -403,60 +397,152 @@ class XSTallyExtractor(object):
       domain_filter = (domain, domain_id)
 
 
-    filters = [('energyin', list(group_edges))]
+    #FIXME: Deal with scatter xs, diffusion coeff, transport xs
+    #FIXME: Deal with nuclides
 
-    # Get the Tally IDs for the flux and reaction rate needed to compute the xs
-    flux_tally = self.getTally('flux', filters, domain_id, domain)                       #FIXME: label='%d groups' % num_groups
-    rxn_rate_tally = self.getTally(rxn_rate_score, filters, domain_id, domain)           #FIXME: label='%d groups' % num_groups
+    # Determine the reaction rate score type for this cross-section type
+    rxn_rate_score = xs_type
 
-    # Initialize empty arrays for the flux and reaction rate data
-    flux_data = np.zeros(num_groups)
-    rxn_rate_data = np.zeros(num_groups)                                      #FIXME: Doesn't work for chi, scatter matrix
+    tallies = dict()
+    data = dict()
+    scores = dict()
 
-    if xs_type == 'chi':
-      rxn_rate_data2 = np.zeros(num_groups)
+    if xs_type == 'scatter matrix':
 
-      #FIXME: Might need to use a collection of rxn rate tallies?
+      #FIXME: Use analog tallies
+      #FIXME: label='%d groups' % num_groups
+
+      # Get the Tally IDs for the flux and reaction rate needed to compute the xs
+      filters = [('energyin', list(group_edges))]
+      tallies['flux'] = self.getTally('flux', filters, domain_id, domain)
+
+      filters.append(('energyout', list(group_edges)))
+      tallies['rxn-1'] = self.getTally('nu-scatter', filters, domain_id, domain)
+
+      # Initialize empty arrays for the flux and reaction rate data
+      data['flux'] = np.zeros(num_groups)
+      data['rxn-1'] = np.zeros((num_groups, num_groups))
+
+
+    elif xs_type == 'chi':
+
+      #FIXME: Use analog tallies
+      #FIXME: label='%d groups' % num_groups
+
+      # Get the Tally IDs for the flux and reaction rate needed to compute the xs
+      filters = [('energyin', list(group_edges))]
+      tallies['flux'] = self.getTally('flux', filters, domain_id, domain)
+      tallies['rxn-1'] = self.getTally('nu-fission', filters, domain_id, domain)
+
       filters = [('energyout', list(group_edges))]
-      rxn_rate_tally2 = self.getTally(rxn_rate_score, filters, domain_id, domain)
-      rxn_rate_index2 = self.getTallyScoreIndex(rxn_rate_score, rxn_rate_tally2)
+      tallies['rxn-2'] = self.getTally('nu-fission', filters, domain_id, domain)
 
-    # Compute the index for flux and reaction rate Tally scores
-    flux_index = self.getTallyScoreIndex('flux', flux_tally)
-    rxn_rate_index = self.getTallyScoreIndex(rxn_rate_score, rxn_rate_tally)
+      # Initialize empty arrays for the flux and reaction rate data
+      data['flux'] = np.zeros(num_groups)
+      data['rxn-1'] = np.zeros(num_groups)
+      data['rxn-2'] = np.zeros(num_groups)
+
+
+    elif xs_type == 'diffusion':
+      exit('Unable to get diffusion coefficient')
+
+    elif xs_type == 'transport':
+      exit('Unable to get transport xs')
+
+
+    else:
+
+      #FIXME: Do not use analog flux
+      #FIXME: label='%d groups' % num_groups
+
+      filters = [('energyin', list(group_edges))]
+
+      # Get the Tallies for the flux and reaction rate needed to compute the xs
+      tallies['flux'] = self.getTally('flux', filters, domain_id, domain)
+      tallies['rxn-1'] = self.getTally(xs_type, filters, domain_id, domain)
+
+      # Initialize empty arrays for the flux and reaction rate data
+      data['flux'] = np.zeros(num_groups)
+      data['rxn-1'] = np.zeros(num_groups)
+
+
+    # Get the indices for each of the Tally scores
+    for tally_name, tally in tallies.iteritems():
+      score = tally.scores[0]
+      scores[tally_name] = self.getTallyScoreIndex(score, tally)
+
 
     # Extract the flux and reaction rate tally averages for each energy group
-    for group in range(num_groups):
-
-      filters = [domain_filter, ('energyin', group)]
+    for in_group in range(num_groups):
 
       # Get the flux at this energy group
-      data = self._statepoint.get_value(flux_tally.id, filters, flux_index)
-      flux_data[group] = data[0]
+      flux = tallies['flux']
+      filters = [domain_filter, ('energyin', in_group)]
+      value = self._statepoint.get_value(flux.id, filters, scores['flux'])
+      data['flux'][in_group] = value[0]
 
-      # Get the reaction rate at this energy group
-      data = self._statepoint.get_value(rxn_rate_tally.id, filters, rxn_rate_index)
-      rxn_rate_data[group] = data[0]
 
       if xs_type == 'chi':
-        filters = [domain_filter, ('energyout', group)]
-        data = self._statepoint.get_value(rxn_rate_tally2.id, filters, rxn_rate_index2)
-        rxn_rate_data2[group] = data[0]
+
+        # Get the nufission reaction rate at this energy group
+        rxn_rate = tallies['rxn-1']
+        filters = [domain_filter, ('energyin', in_group)]
+        value = self._statepoint.get_value(rxn_rate.id, filters, scores['rxn-1'])
+        data['rxn-1'][in_group] = value[0]
+
+        # Get the nufission reaction rate into this energy group
+        rxn_rate = tallies['rxn-2']
+        filters = [domain_filter, ('energyout', in_group)]
+        value = self._statepoint.get_value(rxn_rate.id, filters, scores['rxn-2'])
+        data['rxn-2'][in_group] = value[0]
 
 
-    # Compute the cross-section for this location and return it
-    xs = rxn_rate_data / flux_data
+      elif xs_type == 'scatter matrix':
+
+        # Need to loop over inner and outer energy groups
+        for out_group in range(num_groups):
+
+          filters = [domain_filter, ('energyin', in_group),
+                     ('energyout', out_group)]
+          rxn_rate = tallies['rxn-1']
+          value = self._statepoint.get_value(rxn_rate.id, filters, scores['rxn-1'])
+          data['rxn-1'][in_group, out_group] = value[0]
 
 
+      else:
+
+        # Get the reaction rate at this energy group
+        rxn_rate = tallies['rxn-1']
+        filters = [domain_filter, ('energyin', in_group)]
+        value = self._statepoint.get_value(rxn_rate.id, filters, scores['rxn-1'])
+        data['rxn-1'][in_group] = value[0]
+
+
+    # Compute the cross-section for each energy group and return it
     if xs_type == 'chi':
-      xs = np.zeros(num_groups)
 
-      for group in range(num_groups):
-        xs[group] = rxn_rate_data2[group] / rxn_rate_data[:].sum()
-        print group, flux_data[group], rxn_rate_data[group], rxn_rate_data2[group], xs[group]
+      norm = data['rxn-1'][:].sum()
+
+      if norm == 0.:
+        xs = np.zeros(num_groups)
+
+      else:
+        xs = data['rxn-2'] / data['rxn-1'][:].sum()
+
+        # Normalize chi to 1.0
+        xs /= xs.sum()
 
       # For non-fissionable regions, convert chi to all zeros
-      xs = np.nan_to_num(xs)
+#      xs = np.nan_to_num(xs)
 
+    elif xs_type == 'scatter matrix':
+      xs = np.transpose(np.transpose(data['rxn-1']) / data['flux'])
+
+    else:
+      xs = data['rxn-1'] / data['flux']
+
+
+    # For any region without flux, convert nan value to zero
+    xs = np.nan_to_num(xs)
 
     return xs
