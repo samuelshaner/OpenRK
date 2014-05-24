@@ -14,7 +14,7 @@ from infermc.build import *
 # OpenMC simulation parameters
 batches = 15
 inactive = 5
-particles = 2500
+particles = 1000
 
 # Plotting parameters
 pixels = 1000
