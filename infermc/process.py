@@ -4,6 +4,7 @@ from statepoint import StatePoint, Tally, score_types           # filter_types
 
 
 xs_types = ['total',
+            'transport',
             'absorption',
             'scatter',
             'nu-scatter',
@@ -12,8 +13,7 @@ xs_types = ['total',
             'nu-fission',
             'chi']
 
-#            'diffusion',
-#            'transport']
+#            'diffusion'
 
 domain_types = ['cell',
                 'distribcell',
@@ -397,17 +397,33 @@ class XSTallyExtractor(object):
       domain_filter = (domain, domain_id)
 
 
-    #FIXME: Deal with scatter xs, diffusion coeff, transport xs
+    #FIXME: Deal with diffusion coeff
     #FIXME: Deal with nuclides
+    #FIXME: Deal with tracklength vs. analog tallies
 
-    # Determine the reaction rate score type for this cross-section type
-    rxn_rate_score = xs_type
 
     tallies = dict()
     data = dict()
     scores = dict()
 
-    if xs_type == 'scatter matrix':
+    if xs_type == 'transport':
+
+      #FIXME: Use analog tallies
+      #FIXME: label='%d groups' % num_groups
+
+      # Get the Tally IDs for the flux and reaction rate needed to compute the xs
+      filters = [('energyin', list(group_edges))]
+      tallies['flux'] = self.getTally('flux', filters, domain_id, domain)
+      tallies['rxn-1'] = self.getTally('total', filters, domain_id, domain)
+      tallies['rxn-2'] = self.getTally('scatter-pn', filters, domain_id, domain)
+
+      # Initialize empty arrays for the flux and reaction rate data
+      data['flux'] = np.zeros(num_groups)
+      data['rxn-1'] = np.zeros(num_groups)
+      data['rxn-2'] = np.zeros(num_groups)
+
+
+    elif xs_type == 'scatter matrix':
 
       #FIXME: Use analog tallies
       #FIXME: label='%d groups' % num_groups
@@ -446,9 +462,6 @@ class XSTallyExtractor(object):
     elif xs_type == 'diffusion':
       exit('Unable to get diffusion coefficient')
 
-    elif xs_type == 'transport':
-      exit('Unable to get transport xs')
-
 
     else:
 
@@ -468,7 +481,7 @@ class XSTallyExtractor(object):
 
     # Get the indices for each of the Tally scores
     for tally_name, tally in tallies.iteritems():
-      score = tally.scores[0]
+      score = tally.scores[0]                                     #FIXME: Is this safe?? What if a user defines several scores together in the same Tally
       scores[tally_name] = self.getTallyScoreIndex(score, tally)
 
 
@@ -480,6 +493,32 @@ class XSTallyExtractor(object):
       filters = [domain_filter, ('energyin', in_group)]
       value = self._statepoint.get_value(flux.id, filters, scores['flux'])
       data['flux'][in_group] = value[0]
+
+
+      if xs_type == 'transport':
+
+        # Get the total reaction rate at this energy group
+        rxn_rate = tallies['rxn-1']
+        filters = [domain_filter, ('energyin', in_group)]
+        value = self._statepoint.get_value(rxn_rate.id, filters, scores['rxn-1'])
+        data['rxn-1'][in_group] = value[0]
+
+        # Get the scatter-P1 reaction rate at this energy group
+        rxn_rate = tallies['rxn-2']
+        value = self._statepoint.get_value(rxn_rate.id, filters, scores['rxn-2'])
+        data['rxn-2'][in_group] = value[0]
+
+
+      elif xs_type == 'scatter matrix':
+
+        # Need to loop over inner and outer energy groups
+        for out_group in range(num_groups):
+
+          filters = [domain_filter, ('energyin', in_group),
+                     ('energyout', out_group)]
+          rxn_rate = tallies['rxn-1']
+          value = self._statepoint.get_value(rxn_rate.id, filters, scores['rxn-1'])
+          data['rxn-1'][in_group, out_group] = value[0]
 
 
       if xs_type == 'chi':
@@ -497,18 +536,6 @@ class XSTallyExtractor(object):
         data['rxn-2'][in_group] = value[0]
 
 
-      elif xs_type == 'scatter matrix':
-
-        # Need to loop over inner and outer energy groups
-        for out_group in range(num_groups):
-
-          filters = [domain_filter, ('energyin', in_group),
-                     ('energyout', out_group)]
-          rxn_rate = tallies['rxn-1']
-          value = self._statepoint.get_value(rxn_rate.id, filters, scores['rxn-1'])
-          data['rxn-1'][in_group, out_group] = value[0]
-
-
       else:
 
         # Get the reaction rate at this energy group
@@ -519,7 +546,16 @@ class XSTallyExtractor(object):
 
 
     # Compute the cross-section for each energy group and return it
-    if xs_type == 'chi':
+    if xs_type == 'transport':
+
+      xs = (data['rxn-1'] - data['rxn-2']) / data['flux']
+
+      # Replace any negative values with 0.
+      #FIXME: This may not be safe!!!
+      xs = np.where(xs > 0., xs, 0.)
+
+
+    elif xs_type == 'chi':
 
       norm = data['rxn-1'][:].sum()
 
@@ -532,11 +568,10 @@ class XSTallyExtractor(object):
         # Normalize chi to 1.0
         xs /= xs.sum()
 
-      # For non-fissionable regions, convert chi to all zeros
-#      xs = np.nan_to_num(xs)
 
     elif xs_type == 'scatter matrix':
       xs = np.transpose(np.transpose(data['rxn-1']) / data['flux'])
+
 
     else:
       xs = data['rxn-1'] / data['flux']

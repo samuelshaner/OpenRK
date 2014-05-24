@@ -4,6 +4,7 @@ from openmc.input.tallies import Tally, TalliesFile
 from sets import Set
 
 xs_types = ['total',
+            'transport',
             'absorption',
             'scatter',
             'nu-scatter',
@@ -12,8 +13,7 @@ xs_types = ['total',
             'nu-fission',
             'chi']
 
-#            'diffusion',
-#            'transport']
+#            'diffusion'
 
 
 class EnergyGroups(object):
@@ -196,6 +196,31 @@ class TotalXS(MultiGroupXS):
     self._tallies.append(rxn_rate)
 
 
+class TransportXS(MultiGroupXS):
+
+  def __init__(self):
+    self._type = 'transport'
+    super(TransportXS, self).__init__()
+
+  def createTallies(self):
+
+    super(TransportXS, self).createTallies()
+
+    group_edges = self._energy_groups.getGroupEdges()
+
+    rxn_rate = Tally()
+    rxn_rate.addScore(score='total')
+    rxn_rate.addFilter(type='energy', bins=group_edges)
+    rxn_rate.setLabel(label='%d groups' % self._energy_groups.getNumGroups())
+    self._tallies.append(rxn_rate)
+
+    rxn_rate = Tally()
+    rxn_rate.addScore(score='scatter-P1')
+    rxn_rate.addFilter(type='energy', bins=group_edges)
+    rxn_rate.setLabel(label='%d groups' % self._energy_groups.getNumGroups())
+    self._tallies.append(rxn_rate)
+
+
 class AbsorptionXS(MultiGroupXS):
 
   def __init__(self):
@@ -330,19 +355,6 @@ class ScatterMatrixXS(MultiGroupXS):
     self._tallies.append(rxn_rate)
 
 
-class TransportXS(MultiGroupXS):
-
-  def __init__(self):
-    self._type = 'transport'
-    super(TransportXS, self).__init__()
-
-  def createTallies(self):
-
-    super(TransportXS, self).createTallies()
-
-    exit('TransportXS is not yet able to build tallies')
-
-
 class DiffusionCoeff(MultiGroupXS):
 
   def __init__(self):
@@ -416,6 +428,8 @@ class XSTallyBuilder(object):
 
     if xs_type == 'total':
       xs = TotalXS()
+    elif xs_type == 'transport':
+      xs = TransportXS()
     elif xs_type == 'absorption':
       xs = AbsorptionXS()
     elif xs_type == 'fission':
@@ -430,8 +444,6 @@ class XSTallyBuilder(object):
       xs = ScatterMatrixXS()
     elif xs_type == 'diffusion':
       xs = DiffusionCoeff()
-    elif xs_type == 'transport':
-      xs = TransportXS()
     elif xs_type == 'chi':
       xs = Chi()
     else:

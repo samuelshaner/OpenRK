@@ -24,29 +24,31 @@ for file in files:
   num_regions = geometry.getNumRegions()
 
   # Initialize empty arrays of
-  tot_xs = np.zeros((num_regions, 2))
-  abs_xs = np.zeros((num_regions, 2))
-  fiss_xs = np.zeros((num_regions, 2))
-  nufiss_xs = np.zeros((num_regions, 2))
-  scat_xs = np.zeros((num_regions, 2))
-  scat_matrix = np.zeros((num_regions, 2, 2))
+  total_xs = np.zeros((num_regions, 2))
+  transport_xs = np.zeros((num_regions, 2))
+  absorb_xs = np.zeros((num_regions, 2))
+  fission_xs = np.zeros((num_regions, 2))
+  nufission_xs = np.zeros((num_regions, 2))
+  scatter_xs = np.zeros((num_regions, 2))
+  scatter_matrix = np.zeros((num_regions, 2, 2))
   chi = np.zeros((num_regions, 2))
 
   for region in range(num_regions):
 
-    tot_xs[region, :] = extractor.getXS('total', edges, region)
-    abs_xs[region, :] = extractor.getXS('absorption', edges, region)
-    fiss_xs[region, :] = extractor.getXS('fission', edges, region)
-    nufiss_xs[region, :] = extractor.getXS('nu-fission', edges, region)
-    scat_xs[region, :] = extractor.getXS('nu-scatter', edges, region)
-    scat_matrix[region, :, :] = extractor.getXS('scatter matrix', edges, region)
+    total_xs[region, :] = extractor.getXS('total', edges, region)
+    transport_xs[region, :] = extractor.getXS('transport', edges, region)
+    absorb_xs[region, :] = extractor.getXS('absorption', edges, region)
+    fission_xs[region, :] = extractor.getXS('fission', edges, region)
+    nufission_xs[region, :] = extractor.getXS('nu-fission', edges, region)
+    scatter_xs[region, :] = extractor.getXS('nu-scatter', edges, region)
+    scatter_matrix[region, :, :] = extractor.getXS('scatter matrix', edges, region)
     chi[region, :] = extractor.getXS('chi', edges, region)
 
 
   # Create scatter plot of the total cross-sections in each region, group
   fig = plt.figure()
   ax = fig.add_subplot(111)
-  plt.scatter(tot_xs[:,0], tot_xs[:,1])
+  plt.scatter(total_xs[:,0], total_xs[:,1])
   plt.title('Total XS')
   plt.xlabel('Thermal Group $\Sigma_{tot}$ [cm$^{-1}$]')
   plt.ylabel('Fast Group $\Sigma_{tot}$ [cm$^{-1}$]')
@@ -59,7 +61,20 @@ for file in files:
 
   fig = plt.figure()
   ax = fig.add_subplot(111)
-  plt.scatter(abs_xs[:,0], abs_xs[:,1])
+  plt.scatter(transport_xs[:,0], transport_xs[:,1])
+  plt.title('Transport XS')
+  plt.xlabel('Thermal Group $\Sigma_{tr}$ [cm$^{-1}$]')
+  plt.ylabel('Fast Group $\Sigma_{tr}$ [cm$^{-1}$]')
+  plt.grid()
+  filename = 'trans-xs-' + str(statepoint.current_batch) + '.png'
+  plt.savefig(filename, bbox_inches='tight')
+  ax.text(3, 8, 'boxed italics text in data coords', style='italic',
+          bbox={'facecolor':'red', 'alpha':0.5, 'pad':10})
+  plt.close(fig)
+
+  fig = plt.figure()
+  ax = fig.add_subplot(111)
+  plt.scatter(absorb_xs[:,0], absorb_xs[:,1])
   plt.title('Absorption XS')
   plt.xlabel('Thermal Group $\Sigma_{abs}$ [cm$^{-1}$]')
   plt.ylabel('Fast Group $\Sigma_{abs}$ [cm$^{-1}$]')
@@ -72,7 +87,7 @@ for file in files:
 
   fig = plt.figure()
   ax = fig.add_subplot(111)
-  plt.scatter(fiss_xs[:,0], fiss_xs[:,1])
+  plt.scatter(fission_xs[:,0], fission_xs[:,1])
   plt.title('Fission XS')
   plt.xlabel('Thermal Group $\Sigma_{fiss}$ [cm$^{-1}$]')
   plt.ylabel('Fast Group $\Sigma_{fis}$ [cm$^{-1}$]')
@@ -85,7 +100,7 @@ for file in files:
 
   fig = plt.figure()
   ax = fig.add_subplot(111)
-  plt.scatter(nufiss_xs[:,0], nufiss_xs[:,1])
+  plt.scatter(nufission_xs[:,0], nufission_xs[:,1])
   plt.title('NuFission XS')
   plt.xlabel('Thermal Group $\nu\Sigma_{fiss}$ [cm$^{-1}$]')
   plt.ylabel('Fast Group $\nu\Sigma_{fiss}$ [cm$^{-1}$]')
@@ -98,7 +113,7 @@ for file in files:
 
   fig = plt.figure()
   ax = fig.add_subplot(111)
-  plt.scatter(scat_xs[:,0], scat_xs[:,1])
+  plt.scatter(scatter_xs[:,0], scatter_xs[:,1])
   plt.title('Scatter XS')
   plt.xlabel('Thermal Group $\Sigma_{scat}$ [cm$^{-1}$]')
   plt.ylabel('Fast Group $\Sigma_{scat}$ [cm$^{-1}$]')
