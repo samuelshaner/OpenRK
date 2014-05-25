@@ -571,6 +571,7 @@ class XSTallyExtractor(object):
 
     elif xs_type == 'scatter matrix':
       xs = np.transpose(np.transpose(data['rxn-1']) / data['flux'])
+      xs = np.ravel(xs)
 
 
     else:
@@ -579,5 +580,9 @@ class XSTallyExtractor(object):
 
     # For any region without flux, convert nan value to zero
     xs = np.nan_to_num(xs)
+
+    # Reverse array so that it is ordered intuitively from high to low energy
+    # Codes such as OpenMOC expect cross-sections ordered in this way
+    xs = np.flipud(xs)
 
     return xs

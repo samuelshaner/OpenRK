@@ -32,7 +32,7 @@ for file in files:
   sigma_a = np.zeros((num_regions, num_groups))
   sigma_f = np.zeros((num_regions, num_groups))
   nusigma_f = np.zeros((num_regions, num_groups))
-  sigma_s = np.zeros((num_regions, num_groups, num_groups))
+  sigma_s = np.zeros((num_regions, num_groups**2))
   chi = np.zeros((num_regions, num_groups))
 
   # Initialize empty dictionary of OpenMOC Materials
@@ -45,7 +45,7 @@ for file in files:
     sigma_a[region,:] = extractor.getXS('absorption', edges, region)
     sigma_f[region,:] = extractor.getXS('fission', edges, region)
     nusigma_f[region,:] = extractor.getXS('nu-fission', edges, region)
-    sigma_s[region,:,:] = extractor.getXS('scatter matrix', edges, region)
+    sigma_s[region,:] = extractor.getXS('scatter matrix', edges, region)
     chi[region,:] = extractor.getXS('chi', edges, region)
 
     #FIXME: Must reorder arrays in energy groups!!!
@@ -57,10 +57,10 @@ for file in files:
     materials[name].setSigmaA(sigma_a[region,:])
     materials[name].setSigmaF(sigma_f[region,:])
     materials[name].setNuSigmaF(nusigma_f[region,:])
-    materials[name].setSigmaS(np.ravel(sigma_s[region,:,:]))
+    materials[name].setSigmaS(sigma_s[region,:])
     materials[name].setChi(chi[region,:])
 
-  print sigma_s[0,:,:]
+  print sigma_s[0,:]
 
   export_materials(materials, use_hdf5=True)
 
