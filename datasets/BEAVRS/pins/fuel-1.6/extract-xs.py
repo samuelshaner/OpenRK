@@ -20,10 +20,12 @@ num_regions = geometry.getNumRegions()
 
 for file in files:
 
+  # Initialize a handle on the OpenMC statepoint file
   statepoint = StatePoint(file)
   statepoint.read_results()
   statepoint.generate_stdev()
 
+  # Initialize an InferMC XSTallyExtractor object to compute cross-sections
   extractor = XSTallyExtractor(statepoint=statepoint, geometry=geometry)
 
   # Initialize empty arrays of cross-sections for each region, group
@@ -37,9 +39,10 @@ for file in files:
   # Initialize empty dictionary of OpenMOC Materials
   materials = dict()
 
-
+  # Iterate over each region in the geometry
   for region in range(num_regions):
 
+    # Extract the Tally data and compute cross-sections for this region
     sigma_t[region,:] = extractor.getXS('transport', energy_groups, region)
     sigma_a[region,:] = extractor.getXS('absorption', energy_groups, region)
     sigma_f[region,:] = extractor.getXS('fission', energy_groups, region)
@@ -47,8 +50,7 @@ for file in files:
     sigma_s[region,:] = extractor.getXS('scatter matrix', energy_groups, region)
     chi[region,:] = extractor.getXS('chi', energy_groups, region)
 
-    #FIXME: Must reorder arrays in energy groups!!!
-    #FIXME: sigma_s must be raveled!!
+    # Initialize an OpenMOC Material and store the cross-sections in it
     name = 'FSR-%d' % region
     materials[name] = Material(material_id())
     materials[name].setNumEnergyGroups(num_groups)
@@ -59,8 +61,7 @@ for file in files:
     materials[name].setSigmaS(sigma_s[region,:])
     materials[name].setChi(chi[region,:])
 
-  print sigma_s[0,:]
-
+  # Export the dictionary of OpenMOC Materials to HDF5
   export_materials(materials, use_hdf5=True)
 
 

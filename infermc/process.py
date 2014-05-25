@@ -523,7 +523,7 @@ class XSTallyExtractor(object):
           data['rxn-1'][in_group, out_group] = value[0]
 
 
-      if xs_type == 'chi':
+      elif xs_type == 'chi':
 
         # Get the nufission reaction rate at this energy group
         rxn_rate = tallies['rxn-1']
