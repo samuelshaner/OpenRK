@@ -208,16 +208,25 @@ class TransportXS(MultiGroupXS):
 
     group_edges = self._energy_groups.getGroupEdges()
 
+    flux = Tally()
+    flux.addScore(score='flux')
+    flux.addFilter(type='energy', bins=group_edges)
+    flux.setLabel(label='%d groups' % self._energy_groups.getNumGroups())
+    flux.setEstimator(estimator='analog')
+    self._tallies.append(flux)
+
     rxn_rate = Tally()
     rxn_rate.addScore(score='total')
     rxn_rate.addFilter(type='energy', bins=group_edges)
     rxn_rate.setLabel(label='%d groups' % self._energy_groups.getNumGroups())
+    rxn_rate.setEstimator(estimator='analog')
     self._tallies.append(rxn_rate)
 
     rxn_rate = Tally()
     rxn_rate.addScore(score='scatter-P1')
     rxn_rate.addFilter(type='energy', bins=group_edges)
     rxn_rate.setLabel(label='%d groups' % self._energy_groups.getNumGroups())
+    rxn_rate.setEstimator(estimator='analog')
     self._tallies.append(rxn_rate)
 
 

@@ -5,6 +5,7 @@ from infermc.build import EnergyGroups
 import numpy as np
 import matplotlib.pyplot as plt
 from openmoc import Material, material_id
+from openmoc.materialize import export_materials
 
 
 # Get statepoint files
@@ -34,8 +35,8 @@ for file in files:
   sigma_s = np.zeros((num_regions, num_groups, num_groups))
   chi = np.zeros((num_regions, num_groups))
 
-  # Initialize empty array of OpenMOC Materials
-  materials = np.empty(num_regions, dtype=Material)
+  # Initialize empty dictionary of OpenMOC Materials
+  materials = dict()
 
 
   for region in range(num_regions):
@@ -49,14 +50,19 @@ for file in files:
 
     #FIXME: Must reorder arrays in energy groups!!!
     #FIXME: sigma_s must be raveled!!
-    materials[region] = Material(material_id())
-    materials[region].setNumEnergyGroups(num_groups)
-    materials[region].setSigmaT(sigma_t[region,:])
-    materials[region].setSigmaA(sigma_a[region,:])
-    materials[region].setSigmaF(sigma_f[region,:])
-    materials[region].setNuSigmaF(nusigma_f[region,:])
-    materials[region].setSigmaS(np.ravel(sigma_s[region,:,:]))
-    materials[region].setChi(chi[region,:])
+    name = 'FSR-%d' % region
+    materials[name] = Material(material_id())
+    materials[name].setNumEnergyGroups(num_groups)
+    materials[name].setSigmaT(sigma_t[region,:])
+    materials[name].setSigmaA(sigma_a[region,:])
+    materials[name].setSigmaF(sigma_f[region,:])
+    materials[name].setNuSigmaF(nusigma_f[region,:])
+    materials[name].setSigmaS(np.ravel(sigma_s[region,:,:]))
+    materials[name].setChi(chi[region,:])
+
+  print sigma_s[0,:,:]
+
+  export_materials(materials, use_hdf5=True)
 
 
   fig = plt.figure()
