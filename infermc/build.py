@@ -1,4 +1,4 @@
-from opencsg import Cell, Geometry
+from opencsg import Material, Cell, Universe, Geometry
 from opencsg.checkvalue import *
 from openmc.input.tallies import Tally, TalliesFile
 from sets import Set
@@ -439,7 +439,7 @@ class XSTallyBuilder(object):
     self._geometry = geometry
 
 
-  def createXS(self, xs_type, energy_groups, domain_id, domain='distribcell'):
+  def createXS(self, xs_type, energy_groups, domain, domain_type='distribcell'):
 
     global xs_types, domain_types
 
@@ -452,20 +452,15 @@ class XSTallyBuilder(object):
            'with energy groups %s which is not an EnergyGroups object' %
            (xs_type, str(energy_groups)))
 
-    if not is_integer(domain_id):
+    if not isinstance(domain, (Material, Cell, Universe)):
       exit('The XSTallyBuilder is unable to create cross-section type %s '
-           'in %s %s since the domain ID is not an integer value' %
-           (xs_type, str(domain), str(domain_id)))
+           'in %s %s since the domain is not a Material, Cell or Universe' %
+           (xs_type, str(domain_type), str(domain)))
 
-    if domain_id < 0:
+    if not domain_type in domain_types:
       exit('The XSTallyBuilder is unable to create cross-section type %s '
-           'in %s %s since the domain ID is a negative integer' %
-           (xs_type, str(domain), str(domain_id)))
-
-    if not domain in domain_types:
-      exit('The XSTallyBuilder is unable to create cross-section type %s '
-           'in %s %s since it is not a supported domain type' %
-           (xs_type, str(domain), str(domain_id)))
+           'in %s %d since it is not a supported domain type' %
+           (xs_type, str(domain_type), domain.getId()))
 
     if xs_type == 'total':
       xs = TotalXS()
@@ -495,7 +490,7 @@ class XSTallyBuilder(object):
     xs.createTallies()
 
     for tally in xs.getTallies():
-      tally.addFilter(type=domain, bins=domain_id)
+      tally.addFilter(type=domain_type, bins=domain.getId())
 
     self._all_xs.append(xs)
 
@@ -511,13 +506,13 @@ class XSTallyBuilder(object):
     if domain_type == 'distribcell' or domain_type == 'cell':
       domains = self._geometry.getAllMaterialCells()
     elif domain_type == 'universe':
-      domains = self._geometry.getAllUniverses()
+      domains = self._geometry.getAllMaterialUniverses()
     elif domain_type == 'material':
       domains = self._geometry.getAllMaterials()
 
     for domain in domains:
       for xs_type in xs_types:
-        self.createXS(xs_type, energy_groups, domain.getId(), domain_type)
+        self.createXS(xs_type, energy_groups, domain, domain_type)
 
 
   def createTalliesFile(self):

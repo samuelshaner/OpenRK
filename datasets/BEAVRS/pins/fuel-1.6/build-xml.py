@@ -87,11 +87,9 @@ energy_groups.setGroupEdges([0.0, 0.625e-6, 20.])
 
 tally_builder.createAllXS(energy_groups, domain_type='distribcell')
 tally_builder.createAllXS(energy_groups, domain_type='material')
+tally_builder.createAllXS(energy_groups, domain_type='cell')
+tally_builder.createAllXS(energy_groups, domain_type='universe')
 
-#FIXME: tally_builder.createAllXS(energy_groups, domain_type='cell')
-#FIXME: tally_builder.createAllXS(energy_groups, domain_type='universe')
 #FIXME: tally_builder.createAllXS(energy_group, domain_type='mesh')
-
-
 
 tally_builder.createTalliesFile()
