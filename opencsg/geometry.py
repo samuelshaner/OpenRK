@@ -4,6 +4,7 @@ __email__ = 'wboyd@mit.edu'
 
 from universe import *
 from point import Point
+from sets import Set
 
 
 class Geometry(object):
@@ -108,6 +109,16 @@ class Geometry(object):
         material_cells.append(all_cells[cell_id])
 
     return material_cells
+
+
+  def getAllMaterials(self):
+    material_cells = self.getAllMaterialCells()
+    materials = Set()
+
+    for cell in material_cells:
+      materials.add(cell.getFill())
+
+    return materials
 
 
   def setRootUniverse(self, root_universe):
