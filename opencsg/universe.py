@@ -62,16 +62,28 @@ class Universe(object):
 
     cells = dict()
 
-    for cell_id in self._cells:
+    # Add this Universe's cells to the dictionary
+    cells.update(self._cells)
 
-      # Add this Cell to the dictionary
-      cell = self._cells[cell_id]
-      cells[cell_id] = cell
-
-      # Append all Cells in this Cell to the dictionary
+    # Append all Cells in each Cell in the Universe to the dictionary
+    for cell_id, cell in self._cells.iteritems():
       cells.update(cell.getAllCells())
 
     return cells
+
+
+  def getAllUniverses(self):
+
+    # Get all Cells in this Universe
+    cells = self.getAllCells()
+
+    universes = dict()
+
+    # Append all Universes containing each Cell to the dictionary
+    for cell_id, cell in cells.iteritems():
+      universes.update(cell.getAllUniverses())
+
+    return universes
 
 
   def getCellOffset(self, cell):
@@ -638,7 +650,7 @@ class Lattice(Universe):
         universe_id = universe.getId()
         universes[universe_id] = universe
 
-    return universe
+    return universes
 
 
   def getAllCells(self):
@@ -655,6 +667,18 @@ class Lattice(Universe):
         cells.update(universe.getAllCells())
 
     return cells
+
+
+  def getAllUniverses(self):
+
+    # Get all unique Universes contained in each of the lattice cells
+    universes = self.getUniqueUniverses()
+
+    # Append all Universes containing each Cell to the dictionary
+    for universe_id, universe in universes.iteritems():
+      universes.update(universe.getAllUniverses())
+
+    return universes
 
 
   def setId(self, lattice_id=None):
@@ -1166,6 +1190,21 @@ class Cell(object):
       cells.update(self._fill.getAllCells())
 
     return cells
+
+
+  def getAllUniverses(self):
+
+    if self._fill is None:
+      exit('Unable to get all Universes from Cell ID=%d since the fill '
+           'has not been set' % self._id)
+
+    universes = dict()
+
+    if self._type == 'universe' or self._type == 'lattice':
+      universes[self._fill.getId()] = self._fill
+      universes.update(self._fill.getAllUniverses())
+
+    return universes
 
 
   def setId(self, cell_id=None):

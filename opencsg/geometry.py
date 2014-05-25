@@ -99,26 +99,52 @@ class Geometry(object):
     return self._root_universe.getAllCells()
 
 
-  def getAllMaterialCells(self):
+  def getAllUniverses(self):
 
-    all_cells = self.getAllCells()
-    material_cells = list()
+    if self._root_universe is None:
+      exit('Unable to get all Universes since the Geometry does not '
+           'contain the base Universe ID=0')
 
-    for cell_id in all_cells.keys():
-      if all_cells[cell_id].getType() == 'material':
-        material_cells.append(all_cells[cell_id])
-
-    return material_cells
+    return self._root_universe.getAllUniverses()
 
 
   def getAllMaterials(self):
+
     material_cells = self.getAllMaterialCells()
     materials = Set()
 
     for cell in material_cells:
       materials.add(cell.getFill())
 
-    return materials
+    return list(materials)
+
+
+  def getAllMaterialCells(self):
+
+    all_cells = self.getAllCells()
+    material_cells = Set()
+
+    for cell_id, cell in all_cells.iteritems():
+      if cell.getType() == 'material':
+        material_cells.add(cell)
+
+    return list(material_cells)
+
+
+  def getAllMaterialUniverses(self):
+
+    all_universes = self.getAllUniverses()
+    material_universes = Set()
+
+    for universe_id, universe in all_universes.iteritems():
+
+      cells = universe.getAllCells()
+
+      for cell_id, cell in cells.iteritems():
+        if cell.getType() == 'material':
+          material_universes.add(universe)
+
+    return list(material_universes)
 
 
   def setRootUniverse(self, root_universe):
@@ -216,13 +242,6 @@ class Geometry(object):
     localcoords.setUniverse(self._root_universe)
 
     return self._root_universe.findCell(localcoords=localcoords)
-
-
-
-
-  #def findCell(self, region_id):
-
-
 
 
   def findRegion(self, region_id=0):
