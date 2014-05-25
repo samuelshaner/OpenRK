@@ -1,5 +1,6 @@
 import opencsg
 from opencsg.checkvalue import *
+from infermc.build import EnergyGroups
 from statepoint import StatePoint, Tally, score_types           # filter_types
 
 
@@ -343,7 +344,7 @@ class XSTallyExtractor(object):
     return tally
 
 
-  def getXS(self, xs_type, group_edges, domain_id, domain='distribcell'):
+  def getXS(self, xs_type, energy_groups, domain_id, domain='distribcell'):
 
     global xs_types, domain_types
 
@@ -359,13 +360,14 @@ class XSTallyExtractor(object):
       exit('Unable to get %s cross-sections since it is not a '
            'valid cross-section type' % str(xs_type))
 
-    if not isinstance(group_edges, (tuple, list, np.ndarray)):
-      exit('Unable to get %s group cross-sections for %s %s since '
-           'the group edges is not a Python tuple, list or NumPy array' %
-           (str(group_edges), str(domain), str(domain_id)))
+    if not isinstance(energy_groups, EnergyGroups):
+      exit('Unable to get group cross-sections for %s %s since %s '
+           'is not an EnergyGroups object' % (str(type(energy_groups)),
+           str(domain), str(domain_id)))
 
     # Determine the number of groups
-    num_groups = group_edges.size-1
+    num_groups = energy_groups.getNumGroups()
+    group_edges = energy_groups.getGroupEdges()
 
     if not is_integer(domain_id):
       exit('Unable to get %s group cross-sections for %s %s since the domain '

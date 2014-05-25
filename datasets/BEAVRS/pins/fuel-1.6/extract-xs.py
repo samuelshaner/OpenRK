@@ -14,7 +14,6 @@ files = ['statepoint.10.h5']
 energy_groups = EnergyGroups()
 energy_groups.setGroupEdges([0.0, 0.625e-6, 20.])
 
-edges = energy_groups.getGroupEdges()
 num_groups = energy_groups.getNumGroups()
 num_regions = geometry.getNumRegions()
 
@@ -41,12 +40,12 @@ for file in files:
 
   for region in range(num_regions):
 
-    sigma_t[region,:] = extractor.getXS('transport', edges, region)
-    sigma_a[region,:] = extractor.getXS('absorption', edges, region)
-    sigma_f[region,:] = extractor.getXS('fission', edges, region)
-    nusigma_f[region,:] = extractor.getXS('nu-fission', edges, region)
-    sigma_s[region,:] = extractor.getXS('scatter matrix', edges, region)
-    chi[region,:] = extractor.getXS('chi', edges, region)
+    sigma_t[region,:] = extractor.getXS('transport', energy_groups, region)
+    sigma_a[region,:] = extractor.getXS('absorption', energy_groups, region)
+    sigma_f[region,:] = extractor.getXS('fission', energy_groups, region)
+    nusigma_f[region,:] = extractor.getXS('nu-fission', energy_groups, region)
+    sigma_s[region,:] = extractor.getXS('scatter matrix', energy_groups, region)
+    chi[region,:] = extractor.getXS('chi', energy_groups, region)
 
     #FIXME: Must reorder arrays in energy groups!!!
     #FIXME: sigma_s must be raveled!!
