@@ -80,12 +80,18 @@ plot_file.exportToXML()
 ###############################################################################
 
 tallies_file = TalliesFile()
-tally_builder = XSTallyBuilder()
+tally_builder = XSTallyBuilder(geometry)
 
 energy_groups = EnergyGroups()
 energy_groups.setGroupEdges([0.0, 0.625e-6, 20.])
 
-cells = geometry.getAllMaterialCells()
-tally_builder.createAllXS(energy_groups, cells)
+tally_builder.createAllXS(energy_groups, domain_type='distribcell')
+tally_builder.createAllXS(energy_groups, domain_type='material')
+
+#FIXME: tally_builder.createAllXS(energy_groups, domain_type='cell')
+#FIXME: tally_builder.createAllXS(energy_groups, domain_type='universe')
+#FIXME: tally_builder.createAllXS(energy_group, domain_type='mesh')
+
+
 
 tally_builder.createTalliesFile()

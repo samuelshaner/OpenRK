@@ -65,6 +65,8 @@ for file in files:
   export_materials(materials, use_hdf5=True)
 
 
+  #FIXME: With OO structure, the plotting should be built in as a class method
+
   fig = plt.figure()
   ax = fig.add_subplot(111)
   plt.scatter(sigma_t[:,0], sigma_t[:,1])

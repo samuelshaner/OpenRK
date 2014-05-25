@@ -263,7 +263,8 @@ class XSTallyExtractor(object):
     return tally.scores.index(score)
 
 
-  def getTally(self, score, filters, domain_id, domain='distribcell', estimator=None, label=''):
+  def getTally(self, score, filters, domain_id, domain='distribcell',
+               estimator=None, label=''):
 
     global score_types, domain_types
 
