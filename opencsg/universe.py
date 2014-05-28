@@ -29,7 +29,7 @@ class Universe(object):
 
   def __init__(self, universe_id=None, name=''):
 
-    # Initialize Cell class attributes
+    # Initialize Universe class attributes
     self._id = None
     self._name = None
 
@@ -45,6 +45,7 @@ class Universe(object):
 
     self.setId(universe_id)
     self.setName(name)
+
 
   def getId(self):
     return self._id
@@ -270,7 +271,7 @@ class Universe(object):
     # Check that the ID is an integer and wasn't already used
     elif is_integer(universe_id):
 
-      # If the Cell already has an ID, remove it from global list
+      # If the Universe already has an ID, remove it from global list
       if not self._id is None:
         universe_ids.remove(self._id)
 
