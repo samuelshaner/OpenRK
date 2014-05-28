@@ -1,4 +1,4 @@
-from openmc.input.material import Nuclide
+from openmc.nuclide import Nuclide
 
 # Keys are Nuclide string names and values are OpenMC nuclides.
 nuclides = dict()

@@ -1,7 +1,4 @@
-from openmc.input.settings import SettingsFile
-from openmc.input.plots import PlotsFile, Plot
-from openmc.input.material import MaterialsFile
-from openmc.input.opencsg_compatible import create_geometry_xml
+from openmc import *
 from datasets.BEAVRS.materials import openmc_materials
 from geometry import geometry, slice_height, pin_pitch
 from infermc.build import *
@@ -79,6 +76,7 @@ plot_file.exportToXML()
 ##################   Exporting to OpenMC tallies.xml File  ####################
 ###############################################################################
 
+'''
 tallies_file = TalliesFile()
 tally_builder = XSTallyBuilder()
 
@@ -89,3 +87,4 @@ cells = geometry.getAllMaterialCells()
 tally_builder.createAllXS(energy_groups, cells)
 
 tally_builder.createTalliesFile()
+'''

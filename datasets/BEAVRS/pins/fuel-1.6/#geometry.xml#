@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='utf-8'?>
+<geometry>
+  <surface boundary="transmission" coeffs="0.0 0.0 0.39218" id="10000" type="z-cylinder" />
+<cell id="10000" material="10000" surfaces="-10000" universe="10000" />
+<surface boundary="transmission" coeffs="0.0 0.0 0.40005" id="10001" type="z-cylinder" />
+<cell id="10001" material="10004" surfaces="10000 -10001" universe="10000" />
+<surface boundary="transmission" coeffs="0.0 0.0 0.4572" id="10002" type="z-cylinder" />
+<cell id="10002" material="10005" surfaces="10001 -10002" universe="10000" />
+<cell id="10003" material="10003" surfaces="10002" universe="10000" />
+<surface boundary="reflective" coeffs="0.62992" id="10016" type="x-plane" />
+<surface boundary="reflective" coeffs="-0.62992" id="10017" type="y-plane" />
+<surface boundary="reflective" coeffs="0.62992" id="10018" type="y-plane" />
+<surface boundary="reflective" coeffs="-5.0" id="10019" type="z-plane" />
+<surface boundary="reflective" coeffs="5.0" id="10020" type="z-plane" />
+<surface boundary="reflective" coeffs="-0.62992" id="10015" type="x-plane" />
+<cell fill="10000" id="10027" surfaces="-10016 10017 -10018 10019 -10020 10015" universe="0" />
+</geometry>

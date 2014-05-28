@@ -1,8 +1,4 @@
-from openmc.input.settings import SettingsFile
-from openmc.input.tallies import TalliesFile, Tally
-from openmc.input.plots import PlotsFile, Plot
-from openmc.input.material import MaterialsFile
-from openmc.input.opencsg_compatible import create_geometry_xml
+from openmc import *
 from datasets.BEAVRS.materials import openmc_materials
 from geometry import geometry, slice_height, pin_pitch
 import numpy as np
@@ -80,6 +76,7 @@ plot_file.exportToXML()
 ##################   Exporting to OpenMC tallies.xml File  ####################
 ###############################################################################
 
+'''
 cells = geometry.getAllCells()
 tallies_file = TalliesFile()
 scores = ['flux']
@@ -99,3 +96,4 @@ for cell_id in cells.keys():
     tallies_file.addTally(tally)
 
 tallies_file.exportToXML()
+'''

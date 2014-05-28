@@ -1,5 +1,5 @@
-from openmc.input.material import Material
-from openmc.input.opencsg_compatible import get_opencsg_material
+from openmc.material import Material
+from openmc.opencsg_compatible import get_opencsg_material
 from datasets.BEAVRS import nuclides
 
 

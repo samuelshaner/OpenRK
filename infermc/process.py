@@ -1,25 +1,7 @@
 import opencsg
-from opencsg.checkvalue import *
-from infermc.build import EnergyGroups
-from statepoint import StatePoint, Tally, score_types           # filter_types
+from infermc.multigroupxs import *
+from statepoint import StatePoint, Tally, score_types # filter_types
 
-
-xs_types = ['total',
-            'transport',
-            'absorption',
-            'scatter',
-            'nu-scatter',
-            'scatter matrix',
-            'fission',
-            'nu-fission',
-            'chi']
-
-#            'diffusion'
-
-domain_types = ['cell',
-                'distribcell',
-                'universe',
-                'material']
 
 #FIXME: mesh domain types
 
