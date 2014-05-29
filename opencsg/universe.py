@@ -47,18 +47,6 @@ class Universe(object):
     self.setName(name)
 
 
-  def getId(self):
-    return self._id
-
-
-  def getName(self):
-    return self._name
-
-
-  def getCells(self):
-    return self._cells
-
-
   def getAllCells(self):
 
     cells = dict()
@@ -90,28 +78,18 @@ class Universe(object):
   def getCellOffset(self, cell):
 
     if not isinstance(cell, Cell):
-      exit('Unable to get cell offset from Universe ID=%d for %s which '
-           'is not a Cell' % (self._id, str(cell)))
+      msg = 'Unable to get cell offset from Universe ID={0} for {1} which ' \
+            'is not a Cell'.format(self._id, cell)
+      raise ValueError(msg)
 
-    cell_id = cell.getId()
+    cell_id = cell._id
 
     if not cell_id in self._cell_offsets.keys():
-      exit('Unable to get cell offset from Universe ID=%d for Cell ID=%d '
-           'which is not in the Universe' % (self._id, cell_id))
+      msg = 'Unable to get cell offset from Universe ID={0} for Cell ID={1} ' \
+            'which is not in the Universe'.format(self._id, cell_id)
+      raise ValueError(msg)
 
     return self._cell_offsets[cell_id]
-
-
-  def getCellOffsets(self):
-    return self._cell_offsets
-
-
-  def getNumRegions(self):
-    return self._num_regions
-
-
-  def getVolume(self):
-    return self._volume
 
 
   def getMaxX(self):
@@ -195,8 +173,9 @@ class Universe(object):
   def setMaxX(self, max_x):
 
     if not is_float(max_x) and not is_integer(max_x):
-      exit('Unable to set the maximum x for Universe ID=%d to %s since it '
-           'is not an integer or floating point value' % (self._id, str(max_x)))
+      msg = 'Unable to set the maximum x for Universe ID={0} to {1} since it ' \
+            'is not an integer or floating point value'.format(self._id, max_x)
+      raise ValueError(msg)
 
     for cell_id in self._cells.keys():
       cell = self._cells[cell_id]
@@ -206,8 +185,9 @@ class Universe(object):
   def setMaxY(self, max_y):
 
     if not is_float(max_y) and not is_integer(max_y):
-      exit('Unable to set the maximum y for Universe ID=%d to %s since it '
-           'is not an integer or floating point value' % (self._id, str(max_y)))
+      msg = 'Unable to set the maximum y for Universe ID={1} to {0} since it ' \
+           'is not an integer or floating point value'.format(self._id, max_y)
+      raise ValueError(msg)
 
     for cell_id in self._cells.keys():
       cell = self._cells[cell_id]
@@ -217,8 +197,9 @@ class Universe(object):
   def setMaxZ(self, max_z):
 
     if not is_float(max_z) and not is_integer(max_z):
-      exit('Unable to set the maximum z for Universe ID=%d to %s since it '
-           'is not an integer or floating point value' % (self._id, str(max_z)))
+      msg = 'Unable to set the maximum z for Universe ID={0} to {1} since it ' \
+            'is not an integer or floating point value'.format(self._id, max_z)
+      raise ValueError(msg)
 
     for cell_id in self._cells.keys():
       cell = self._cells[cell_id]
@@ -228,8 +209,9 @@ class Universe(object):
   def setMinX(self, min_x):
 
     if not is_float(min_x) and not is_integer(min_x):
-      exit('Unable to set the minimum x for Universe ID=%d to %s since it '
-           'is not an integer or floating point value' % (self._id, str(min_x)))
+      msg = 'Unable to set the minimum x for Universe ID={0} to {1} since it ' \
+            'is not an integer or floating point value'.format(self._id, min_x)
+      raise ValueError(msg)
 
     for cell_id in self._cells.keys():
       cell = self._cells[cell_id]
@@ -239,8 +221,9 @@ class Universe(object):
   def setMinY(self, min_y):
 
     if not is_float(min_y) and not is_integer(min_y):
-      exit('Unable to set the minimum y for Universe ID=%d to %s since it '
-           'is not an integer or floating point value' % (self._id, str(min_y)))
+      msg = 'Unable to set the minimum y for Universe ID={0} to {1} since it ' \
+            'is not an integer or floating point value'.format(self._id, min_y)
+      raise ValueError(msg)
 
     for cell_id in self._cells.keys():
       cell = self._cells[cell_id]
@@ -250,8 +233,9 @@ class Universe(object):
   def setMinZ(self, min_z):
 
     if not is_float(min_z) and not is_integer(min_z):
-      exit('Unable to set the minimum z for Universe ID=%d to %s since it '
-           'is not an integer or floating point value' % (self._id, str(min_z)))
+      msg = 'Unable to set the minimum z for Universe ID={0} to {1} since it ' \
+            'is not an integer or floating point value'.format(self._id, min_z)
+      raise ValueError(msg)
 
     for cell_id in self._cells.keys():
       cell = self._cells[cell_id]
@@ -276,26 +260,30 @@ class Universe(object):
         universe_ids.remove(self._id)
 
       if universe_id in universe_ids:
-        exit('Unable to set Universe ID to %s since a Universe with this ID '
-             'was already initialized' % str(universe_id))
+        msg = 'Unable to set Universe ID to {0} since a Universe with this ' \
+              'ID was already initialized'.format(universe_id)
+        raise ValueError(msg)
 
       if universe_id < 0:
-        exit('Unable to set Univeres ID to %d since it must be a '
-             'non-negative integer' % universe_id)
+        msg = 'Unable to set Univeres ID to {0} since it must be a ' \
+              'non-negative integer'.format(universe_id)
+        raise ValueError(msg)
 
       else:
         self._id = universe_id
         universe_ids.append(universe_id)
 
     else:
-      exit('Unable to set Universe ID to a non-integer %s' % str(universe_id))
+      msg = 'Unable to set Universe ID to a non-integer {0}'.format(universe_id)
+      raise ValueError(msg)
 
 
   def setName(self, name):
 
     if not is_string(name):
-      exit('Unable to set name for Universe ID=%d with a non-string value %s',
-           self._id, str(name))
+      msg = 'Unable to set name for Universe ID={0} with a non-string ' \
+            'value {1}'.format(self._id, name)
+      raise ValueError(msg)
 
     else:
       self._name = name
@@ -304,10 +292,11 @@ class Universe(object):
   def addCell(self, cell):
 
     if not isinstance(cell, Cell):
-      exit('Unable to add a Cell to Universe ID=%d since %s is not a Cell' %
-           (self._id, str(cell)))
+      msg = 'Unable to add a Cell to Universe ID={0} since {1} is ' \
+            'not a Cell'.format(self._id, cell)
+      raise ValueError(msg)
 
-    cell_id = cell.getId()
+    cell_id = cell._id
 
     if not cell_id in self._cells.keys():
       self._cells[cell_id] = cell
@@ -316,8 +305,9 @@ class Universe(object):
   def addCells(self, cells):
 
     if not isinstance(cells, (list, tuple, np.ndarray)):
-      exit('Unable to add Cells to Universe ID=%d since %s is not a Python '
-           'tuple/list or NumPy array' % (self._id, str(cells)))
+      msg = 'Unable to add Cells to Universe ID={0} since {1} is ' \
+            'not a Python tuple/list or NumPy array'.format(self._id, cells)
+      raise ValueError(msg)
 
     for i in range(len(cells)):
       self.addCell(cells[i])
@@ -326,10 +316,11 @@ class Universe(object):
   def removeCell(self, cell):
 
     if not isinstance(cell, Cell):
-      exit('Unable to remove a Cell from Universe ID=%d since %s is not a '
-           'Cell' % (self._id, str(cell)))
+      msg = 'Unable to remove a Cell from Universe ID={0} since {1} is not a ' \
+            'Cell'.format(self._id, cell)
+      raise ValueError(msg)
 
-    cell_id = cell.getId()
+    cell_id = cell._id
 
     if cell_id in self._cells.keys():
       del self._cells[cell_id]
@@ -342,8 +333,9 @@ class Universe(object):
   def computeVolumeFractions(self, volume=np.float64(1.), tolerance=1e-3):
 
     if not is_float(volume):
-      exit('Unable to compute volume fractions for Universe ID=%d since '
-           'volume=%s is not a floating point value' % (self._id, str(volume)))
+      msg = 'Unable to compute volume fractions for Universe ID={0} since ' \
+            'volume={1} is not a floating point value'.format(self._id, volume)
+      raise ValueError(msg)
 
     self._volume = volume
 
@@ -368,10 +360,10 @@ class Universe(object):
       cell.computeVolumeFraction(volume=self._volume, tolerance=tolerance)
 
       # Recursively compute volume fractions below this Universe
-      fill = cell.getFill()
+      fill = cell._fill
 
       if isinstance(fill, Universe):
-        volume_fraction = cell.getVolumeFraction()
+        volume_fraction = cell._volume_fraction
         fill.computeVolumeFractions(volume=volume*volume_fraction,
                                     tolerance=tolerance)
 
@@ -397,38 +389,40 @@ class Universe(object):
   def findCell(self, localcoords):
 
     if not isinstance(localcoords, LocalCoords):
-      exit('Unable to find cell in Universe ID=%d since localcoords %s is not '
-           'a LocalCoords' % (self._id, str(localcoords)))
+      msg = 'Unable to find cell in Universe ID={0} since localcoords ' \
+            '{1} is not a LocalCoords'.format(self._id, localcoords)
+      raise ValueError(msg)
 
     for cell_id in self._cells:
 
       cell = self._cells[cell_id]
 
-      if cell.containsPoint(localcoords.getPoint()):
+      if cell.containsPoint(localcoords._point):
         localcoords.setCell(cell)
 
         # 'material' type Cell - lowest level, terminate search for Cell
-        if cell.getType() == 'material':
+        if cell._type == 'material':
             return cell
 
         # 'fill' type Cell - Cell contains a Universe at a lower level
         # Update coords to next level and continue search
         else:
 
-          fill = cell.getFill()
+          fill = cell._fill
 
           if isinstance(fill, Lattice):
-            next_coords = LatCoords(localcoords.getPoint())
+            next_coords = LatCoords(localcoords._point)
             next_coords.setLattice(fill)
 
           elif isinstance(fill, Universe):
-            next_coords = UnivCoords(localcoords.getPoint())
+            next_coords = UnivCoords(localcoords._point)
             next_coords.setUniverse(fill)
 
           else:
-            exit('Unable to find cell since in Universe ID=%d since Cell ID=%d '
-                 'is not filled by a Material, Universe or Lattice' %
-                 (self._id, cell.getId()))
+            msg = 'Unable to find cell since in Universe ID={0} ' \
+                  'since Cell ID={1} is not filled by a Material, ' \
+                  'Universe or Lattice'.format(self._id, cell._id)
+            raise ValueError(msg)
 
           localcoords.setNext(next_coords)
           next_coords.setPrev(localcoords)
@@ -442,12 +436,14 @@ class Universe(object):
   def findRegion(self, region_id, univ_coords):
 
     if not is_integer(region_id):
-      exit('Unable to find region_id in Universe ID=%d since %s is '
-           'not an integer value' % (self._id, str(region_id)))
+      msg = 'Unable to find region_id in Universe ID={0} since {1} is ' \
+            'not an integer value'.format(self._id, region_id)
+      raise ValueError(msg)
 
     if not isinstance(univ_coords, UnivCoords):
-      exit('Unable to find region_id in Universe ID=%d since %s is '
-           'not a UnivCoords' % (self._id, str(univ_coords)))
+      msg = 'Unable to find region_id in Universe ID={0} since {1} is ' \
+            'not a UnivCoords'.format(self._id, univ_coords)
+      raise ValueError(msg)
 
     # Initialize cell and offset
     cell = None
@@ -466,12 +462,14 @@ class Universe(object):
 
 
     if cell is None:
-      exit('Unable to find region_id=%d in Universe '
-           'ID=%d' % (region_id, self._id))
+      msg = 'Unable to find region_id={0} in ' \
+            'Universe ID={1}'.format(region_id, self._id)
+      raise ValueError(msg)
+
 
     region_id -= offset
     univ_coords.setCell(cell)
-    fill = cell.getFill()
+    fill = cell._fill
 
     # The next nested level is at a Lattice
     if region_id >= 0 and isinstance(fill, Lattice):
@@ -493,35 +491,19 @@ class Universe(object):
 
     # We were unable to find the cell
     else:
-      exit('Unable to find cell for region_id=%d in Universe '
-           'ID=%d' % (region_id, self._id))
+      msg = 'Unable to find cell for region_id={0} in Universe ' \
+            'ID={1}'.format(region_id, self._id)
+      raise ValueError(msg)
 
 
-  def toString(self):
+  def __repr__(self):
 
-    string = ''
-
-    string += 'Universe\n'
-
-    universe_id = '{0: <16}'.format('\tID') + '=\t' + str(self._id)
-    string += universe_id + '\n'
-
-    name = '{0: <16}'.format('\tName') + '=\t' + self._name
-    string += name + '\n'
-
-    num_regions = '{0: <16}'.format('\t# Regions') + '=\t'
-    num_regions += str(self._num_regions)
-    string += num_regions + '\n'
-
-    cells = '{0: <16}'.format('\tCells') + '=\t'
-    cells += str(self._cells.keys())
-    string += cells + '\n'
-
+    string = 'Universe\n'
+    string += '{0: <16}{1}{2}\n'.format('\tID', '=\t', self._id)
+    string += '{0: <16}{1}{2}\n'.format('\tName', '=\t', self._name)
+    string += '{0: <16}{1}{2}\n'.format('\t# Regions', '=\t', self._num_regions)
+    string += '{0: <16}{1}{2}\n'.format('\tCells', '=\t', self._cells.keys())
     return string
-
-
-  def printString(self):
-    print(self.toString())
 
 
 
@@ -550,72 +532,52 @@ class Lattice(Universe):
     self.setType(type)
 
 
-  def getId(self):
-    return self._id
-
-
-  def getName(self):
-    return self._name
-
-
-  def getType(self):
-    return self._type
-
-
-  def getDimension(self):
-    return self._dimension
-
-
-  def getLowerLeft(self):
-    return self._lower_left
-
-
-  def getWidth(self):
-    return self._width
-
-
   def getUniverse(self, lat_x, lat_y):
 
     if not is_integer(lat_x):
-      exit('Unable to get Universe from Lattice ID=%d since x=%s is not '
-           'a lattice cell' % self._id, str(lat_x))
+      msg = 'Unable to get Universe from Lattice ID={0} since x={1} is not ' \
+            'a lattice cell'.format(self._id, lat_x)
+      raise ValueError(msg)
 
     if not is_integer(lat_y):
-      exit('Unable to get Universe from Lattice ID=%d since y=%s is not '
-           'a lattice cell' % self._id, str(lat_y))
+      msg = 'Unable to get Universe from Lattice ID={0} since y={1} is not ' \
+           'a lattice cell'.format(self._id, lat_y)
+      raise ValueError(msg)
 
     if lat_x < 0 or lat_x > self._dimension[0]:
-      exit('Unable to get Universe from Lattice ID=%d since x=%s is '
-           'outside the bounds of the lattice cells', self._id, lat_x)
+      msg = 'Unable to get Universe from Lattice ID={0} since x={1} is ' \
+            'outside the bounds of the lattice cells'.format(self._id, lat_x)
+      raise ValueError(msg)
 
     if lat_y < 0 or lat_y > self._dimension[1]:
-      exit('Unable to get Universe from Lattice ID=%d since y=%s is '
-           'outside the bounds of the lattice cells', self._id, lat_y)
+      msg = 'Unable to get Universe from Lattice ID={0} since y={1} is ' \
+            'outside the bounds of the lattice cells'.format(self._id, lat_y)
+      raise ValueError(msg)
 
     return self._universes[lat_x][lat_y]
-
-
-  def getUniverses(self):
-    return self._universes
 
 
   def getCellOffset(self, lat_x, lat_y):
 
     if not is_integer(lat_x):
-      exit('Unable to get cell offset from Lattice ID=%d since lat_x=%s is '
-           'not a lattice cell' % self._id, str(lat_x))
+      msg = 'Unable to get cell offset from Lattice ID={0} since ' \
+            'lat_x={1} is not a lattice cell'.format(self._id, lat_x)
+      raise ValueError(msg)
 
     if not is_integer(lat_y):
-      exit('Unable to get cell offset from Lattice ID=%d since lat_y=%s is '
-           'not a lattice cell' % self._id, str(lat_y))
+      msg = 'Unable to get cell offset from Lattice ID={0} since ' \
+            'lat_y={1} is not a lattice cell'.format(self._id, lat_y)
+      raise ValueError(msg)
 
     if lat_x < 0 or lat_x > self._dimension[0]:
-      exit('Unable to get Universe from Lattice ID=%d since lat_x=%s is '
-           'outside the bounds of the lattice cells', self._id, lat_x)
+      msg = 'Unable to get Universe from Lattice ID={0} since lat_x={1}' \
+           'is outside the bounds of the lattice cells'.format(self._id, lat_x)
+      raise ValueError(msg)
 
     if lat_y < 0 or lat_y > self._dimension[1]:
-      exit('Unable to get Universe from Lattice ID=%d since lat_y=%s is '
-           'outside the bounds of the lattice cells', self._id, lat_y)
+      msg = 'Unable to get Universe from Lattice ID={0} since lat_y={1} is ' \
+            'outside the bounds of the lattice cells'.format(self._id, lat_y)
+      raise ValueError(msg)
 
     return self._cell_offsets[lat_x][lat_y]
 
@@ -639,8 +601,9 @@ class Lattice(Universe):
   def getUniqueUniverses(self):
 
     if self._universes is None:
-      exit('Unable to get unique Universes for Lattice ID=%d since '
-           'the universes array has not been set' % self._id)
+      msg = 'Unable to get unique Universes for Lattice ID={0} since ' \
+            'the universes array has not been set'.format(self._id)
+      raise ValueError(msg)
 
     universes = dict()
 
@@ -648,7 +611,7 @@ class Lattice(Universe):
       for j in range(len(self._universes[i])):
 
         universe = self._universes[i][j]
-        universe_id = universe.getId()
+        universe_id = universe._id
         universes[universe_id] = universe
 
     return universes
@@ -657,8 +620,9 @@ class Lattice(Universe):
   def getAllCells(self):
 
     if self._universes is None:
-      exit('Unable to get all Cells for Lattice ID=%d since the '
-           'universes array has not been set' % self._id)
+      msg = 'Unable to get all Cells for Lattice ID={0} since the ' \
+            'universes array has not been set'.format(self._id)
+      raise ValueError(msg)
 
     cells = dict()
 
@@ -700,26 +664,30 @@ class Lattice(Universe):
         universe_ids.remove(self._id)
 
       if lattice_id in universe_ids:
-        exit('Unable to set Lattice ID to %s since a Lattice '
-             'with this ID was already initialized.' % str(lattice_id))
+        msg = 'Unable to set Lattice ID to {0} since a Lattice ' \
+              'with this ID was already initialized'.format(lattice_id)
+        raise ValueError(msg)
 
       if lattice_id < 0:
-        exit('Unable to set Lattice ID to %d since it must be a '
-             'non-negative integer' % lattice_id)
+        msg = 'Unable to set Lattice ID to {0} since it must be a ' \
+              'non-negative integer'.format(lattice_id)
+        raise ValueError(msg)
 
       else:
         self._id = lattice_id
         universe_ids.append(lattice_id)
 
     else:
-      exit('Unable to set a non-integer Lattice ID %s' % str(lattice_id))
+      msg = 'Unable to set a non-integer Lattice ID {0}'.format(lattice_id)
+      raise ValueError(msg)
 
 
   def setName(self, name):
 
     if not is_string(name):
-      exit('Unable to set name for Lattice ID=%d with a non-string value %s' %
-           (self._id, str(name)))
+      msg = 'Unable to set name for Lattice ID={0} with a ' \
+            'non-string value {1}'.format(self._id, name)
+      raise ValueError(msg)
 
     else:
       self._name = name
@@ -728,12 +696,14 @@ class Lattice(Universe):
   def setType(self, type):
 
     if not is_string(type):
-      exit('Unable to set the type for Lattice ID=%d with a non-string '
-           'value %s' % (self._id, str(type)))
+      msg = 'Unable to set the type for Lattice ID={0} with a non-string ' \
+            'value {1}'.format(self._id, type)
+      raise ValueError(msg)
 
     if not type in ['rectangular']:
-      exit('Unable to set the type for Lattice ID=%d to %s since it is not '
-           'rectangular' % (self._id, type))
+      msg = 'Unable to set the type for Lattice ID={0} to {1} since it ' \
+            'is not rectangular'.format(self._id, type)
+      raise ValueError(msg)
 
     self._type = type
 
@@ -741,22 +711,26 @@ class Lattice(Universe):
   def setDimension(self, dimension):
 
     if not isinstance(dimension, (tuple, list, np.ndarray)):
-      exit('Unable to set Lattice ID=%d dimension to %s since it is not '
-           'a Python tuple/list or NumPy array' % (self._id, str(dimension)))
+      msg = 'Unable to set Lattice ID={0} dimension to {1} since it is not ' \
+            'a Python tuple/list or NumPy array'.format(self._id, dimension)
+      raise ValueError(msg)
 
     if len(dimension) != 2 and len(dimension) != 3:
-      exit('Unable to set Lattice ID=%d dimension to %s since it does '
-           'not contain 2 or 3 coordinates' % (self._id, str(dimension)))
+      msg = 'Unable to set Lattice ID={0} dimension to {1} since it does ' \
+            'not contain 2 or 3 coordinates'.format(self._id, dimension)
+      raise ValueError(msg)
 
     for dim in dimension:
 
       if not isinstance(dim, (int, np.int32, np.int64)):
-        exit('Unable to set the dimension for Lattice ID=%d to %s since it '
-             'is not an integer' % (self._id, str(dim)))
+        msg = 'Unable to set the dimension for Lattice ID={0} to {1} ' \
+              'since it is not an integer'.format(self._id, dim)
+        raise ValueError(msg)
 
       if dim < 0:
-        exit('Unable to set Lattice ID=%d dimension to %s since it '
-             'is a negative value' % (self._id, dim))
+        msg = 'Unable to set Lattice ID={0} dimension to {1} since it ' \
+              'is a negative value'.format(self._id, dim)
+        raise ValueError(msg)
 
     self._dimension = np.zeros(len(dimension), dtype=np.int64)
 
@@ -767,19 +741,24 @@ class Lattice(Universe):
   def setLowerLeft(self, lower_left):
 
     if not isinstance(lower_left, (tuple, list, np.ndarray)):
-      exit('Unable to set the lower_left for Lattice ID=%d to %s since it is '
-           'not a Python tuple/list or NumPy array' % (self._id, str(lower_left)))
+      msg = 'Unable to set the lower_left for Lattice ID={0} to ' \
+            '{1} since it is not a Python tuple/list or ' \
+            'NumPy array'.format(self._id, lower_left)
+      raise ValueError(msg)
 
     if len(lower_left) != 2 and len(lower_left) != 3:
-      exit('Unable to set the lower_left for Lattice ID=%d to %s since it does '
-           'not contain 2 or 3 coordinates' % (self._id, str(lower_left)))
+      msg = 'Unable to set the lower_left for Lattice ID={0} to ' \
+            '{1} since it does not contain 2 or 3 ' \
+            'coordinates'.format(self._id, lower_left)
+      raise ValueError(msg)
 
     for dim in lower_left:
 
-      if not isinstance(dim, (int, np.int32, np.int64)) \
-        and not isinstance(dim, (float, np.float32, np.float64)):
-        exit('Unable to set the lower_left for Lattice ID=%d to %s since it '
-             'is not an integer or floating point value' % (self._id, str(dim)))
+      if not is_integer(dim) and not is_float(dim):
+        msg = 'Unable to set the lower_left for Lattice ID={0} to ' \
+              '{1} since it is not an integer or floating ' \
+              'point value'.format(self._id, dim)
+        raise ValueError(msg)
 
     self._lower_left = np.zeros(len(lower_left), dtype=np.float64)
 
@@ -790,25 +769,27 @@ class Lattice(Universe):
   def setWidth(self, width):
 
     if not isinstance(width, (tuple, list, np.ndarray)):
-      exit('Unable to set the width for Lattice ID=%d to %s since it is not '
-           'a Python tuple/list or NumPy array' % (self._id, str(width)))
+      msg = 'Unable to set the width for Lattice ID={0} to {1} since ' \
+            'it is not a Python tuple/list or NumPy ' \
+            'array'.format(self._id, width)
+      raise ValueError(msg)
 
     if len(width) != 2 and len(width) != 3:
-      exit('Unable to set the width for Lattice ID=%d to %s since it does '
-           'not contain 2 or 3 coordinates' % (self._id, str(width)))
+      msg = 'Unable to set the width for Lattice ID={0} to {1} since it does ' \
+            'not contain 2 or 3 coordinates'.format(self._id, width)
+      raise ValueError(msg)
 
     for dim in width:
 
-      if not isinstance(dim, (int, np.int32, np.int64)) \
-        and not isinstance(dim, (float, np.float32, np.float64)):
-        exit('Unable to set the width for Lattice ID=%d to %s since it is '
-             'not an integer or floating point value' % (self._id, str(dim)))
+      if not is_integer(dim) and not is_float(dim):
+        msg = 'Unable to set the width for Lattice ID={0} to {1} since it is ' \
+              'not an integer or floating point value'.format(self._id, dim)
+        raise ValueError(msg)
 
       if dim < 0:
-        exit('Unable to set the width for Lattice ID=%d to %s since it '
-             'is a negative value' % (self._id, dim))
-
-    self._width = width
+        msg = 'Unable to set the width for Lattice ID={0} to {1} since it ' \
+              'is a negative value'.format(self._id, dim)
+        raise ValueError(msg)
 
     self._width = np.zeros(len(width), dtype=np.float64)
 
@@ -819,8 +800,10 @@ class Lattice(Universe):
   def setUniverses(self, universes):
 
     if not isinstance(universes, (tuple, list, np.ndarray)):
-      exit('Unable to set the universes for Lattice ID=%d to %s since it is '
-           'not a Python tuple/list or NumPy array' % (self._id, str(universes)))
+      msg = 'Unable to set the universes for Lattice ID={0} to {1} ' \
+            'since it is not a Python tuple/list or ' \
+            'NumPy array'.format(self._id, universes)
+      raise ValueError(msg)
 
     self._universes = universes
 
@@ -842,8 +825,9 @@ class Lattice(Universe):
   def computeVolumeFractions(self, volume=np.float64(1.), tolerance=1e-3):
 
     if not is_float(volume):
-      exit('Unable to compute volume fractions for Lattice ID=%d since '
-           'volume=%s is not a floating point value' % (self._id, str(volume)))
+      msg = 'Unable to compute volume fractions for Lattice ID={0} since ' \
+            'volume={1} is not a floating point value'.format(self._id, volume)
+      raise ValueError(msg)
 
     volume_fraction = np.float64(1. / (self._dimension[0] * self._dimension[1]))
 
@@ -875,7 +859,7 @@ class Lattice(Universe):
         for j in range(self._dimension[1]):
           self._cell_offsets[i][j] = count
           self._universes[i][j].initializeCellOffsets()
-          count += self._universes[i][j].getNumRegions()
+          count += self._universes[i][j]._num_regions
 
     if num_dims == 3:
 
@@ -884,7 +868,7 @@ class Lattice(Universe):
           for k in range(self._dimension[2]):
             self._cell_offsets[i,j,k] = count
             self._universes[i,j,k].initializeCellOffsets()
-            count += self._universes[i,j,k].getNumRegions()
+            count += self._universes[i,j,k]._num_regions
 
 
     self._num_regions = count
@@ -893,13 +877,14 @@ class Lattice(Universe):
   def findCell(self, localcoords):
 
     if not isinstance(localcoords, LocalCoords):
-      exit('Unable to find cell in Lattice ID=%d since localcoords %s is not '
-           'a LocalCoords' % (self._id, str(localcoords)))
+      msg = 'Unable to find cell in Lattice ID={0} since localcoords ' \
+            '{1} is not a LocalCoords'.format(self._id, localcoords)
+      raise ValueError(msg)
 
     # Compute the x and y indices for the Lattice cell this coord is in
-    point = localcoords.getPoint()
-    x = point.getX()
-    y = point.getY()
+    point = localcoords._point
+    x = point._coords[0]
+    y = point._coords[1]
 
     # Compute the Lattice cell indices
     lat_x = math.floor((x - self._lower_left[0]) / self._width[0])
@@ -927,8 +912,9 @@ class Lattice(Universe):
     # If the indices are outside the bound of the Lattice
     if (lat_x < 0 or lat_x >= self._dimension[0]) or \
       (lat_y < 0 or lat_y >= self._dimension[0]):
-      exit('Unable to find cell since the lattice indices (%d,%d) are '
-           'outside of Lattice ID=%d' % (lat_x, lat_y, self._id))
+      msg = 'Unable to find cell since the lattice indices ({0},{1}) are ' \
+            'outside of Lattice ID={1}'.format(lat_x, lat_y, self._id)
+      raise ValueError(msg)
 
     # Cast the Lattice indices as integers
     lat_x = int(lat_x)
@@ -955,9 +941,10 @@ class Lattice(Universe):
       next_coords.setLattice(universe)
 
     else:
-      exit('Unable to find Cell since Lattice ID=%d does not contain a '
-           'Universe or Lattice in lattice cell (%d, %d)' %
-           (self._id, lat_x, lat_y))
+      msg = 'Unable to find Cell since Lattice ID={0} does ' \
+            'not contain a Universe or Lattice in lattice ' \
+            'cell ({1}, {2})'.format(self._id, lat_x, lat_y)
+      raise ValueError(msg)
 
     localcoords.setNext(next_coords)
     next_coords.setPrev(localcoords)
@@ -968,12 +955,14 @@ class Lattice(Universe):
   def findRegion(self, region_id, lat_coords):
 
     if not is_integer(region_id):
-      exit('Unable to find region_id=%d in Lattice ID=%d since %s is '
-           'not an integer value' % (region_id, self._id, str(region_id)))
+      msg = 'Unable to find region_id={0} in Lattice ID={1} since {2} is ' \
+            'not an integer value'.format(region_id, self._id, region_id)
+      raise ValueError(msg)
 
     if not isinstance(lat_coords, LatCoords):
-      exit('Unable to find region_id=%d in Lattice ID=%d since %s is '
-           'not a LatCoords' % (region_id, self._id, str(lat_coords)))
+      msg = 'Unable to find region_id={0} in Lattice ID={1} since {2} is ' \
+            'not a LatCoords'.format(region_id, self._id, lat_coords)
+      raise ValueError(msg)
 
     # Initialize cell and offset
     universe = None
@@ -997,8 +986,9 @@ class Lattice(Universe):
 
 
     if universe is None:
-      exit('Unable to find region_id=%d for FSR ID=%d in Lattice '
-           'ID=%d' % (region_id, self._id))
+      msg = 'Unable to find region_id={0} for FSR ID={1} in Lattice ' \
+            'ID={2}'.format(region_id, self._id)
+      raise ValueError(msg)
 
     region_id -= offset
     lat_coords.setLatticeX(lat_x)
@@ -1020,59 +1010,33 @@ class Lattice(Universe):
 
     # We were unable to find the Cell
     else:
-      exit('Unable to find region_id=%d in Lattice '
-           'ID=%d' % (region_id, self._id))
+      msg = 'Unable to find region_id={0} in Lattice ' \
+            'ID={1}'.format(region_id, self._id)
+      raise ValueError(msg)
 
 
-  def toString(self):
+  def __repr__(self):
 
-    string = ''
+    string = 'Lattice\n'
+    string += '{0: <16}{1}{2}\n'.format('\tID', '=\t', self._id)
+    string += '{0: <16}{1}{2}\n'.format('\tName', '=\t', self._name)
+    string += '{0: <16}{1}{2}\n'.format('\tType', '=\t', self._type)
+    string += '{0: <16}{1}{2}\n'.format('\tDimension', '=\t', self._dimension)
+    string += '{0: <16}{1}{2}\n'.format('\tLower Left', '=\t', self._lower_left)
+    string += '{0: <16}{1}{2}\n'.format('\tWidth', '=\t', self._width)
+    string += '{0: <16}{1}{2}\n'.format('\t# Regions', '=\t', self._num_regions)
 
-    string += 'Lattice\n'
-
-    cell_id = '{0: <16}'.format('\tID') + '=\t' + str(self._id)
-    string += cell_id + '\n'
-
-    name = '{0: <16}'.format('\tName') + '=\t' + self._name
-    string += name + '\n'
-
-    type = '{0: <16}'.format('\tType') + '=\t'
-    type += str(self._type)
-    string += type + '\n'
-
-    dimension = '{0: <16}'.format('\tDimension') + '=\t'
-    dimension += str(self._dimension)
-    string += dimension + '\n'
-
-    lower_left = '{0: <16}'.format('\tLower Left') + '=\t'
-    lower_left += str(self._lower_left)
-    string += lower_left + '\n'
-
-    width = '{0: <16}'.format('\tWidth') + '=\t'
-    width += str(self._width)
-    string += width + '\n'
-
-    num_regions = '{0: <16}'.format('\t# Regions') + '=\t'
-    num_regions += str(self._num_regions)
-    string += num_regions + '\n'
-
-    universes = '{0: <16}'.format('\tUniverses') + '\n'
+    string += '{0: <16}{1}'.format('\tUniverses', '\n')
 
     for i in range(len(self._universes)):
-      universes += '\t'
+      string += '\t'
 
       for j in range(len(self._universes[0])):
-        universes += '%s ' % str(self._universes[i][j].getId())
+        string += '{0} '.format(self._universes[i][j]._id)
 
-      universes += '\n'
-
-    string += universes.rstrip('\n')
+      string += '\n'
 
     return string
-
-
-  def printString(self):
-    print(self.toString())
 
 
 
@@ -1127,34 +1091,6 @@ class Cell(object):
       self.setFill(fill)
 
 
-  def getId(self):
-    return self._id
-
-
-  def getName(self):
-    return self._name
-
-
-  def getFill(self):
-    return self._fill
-
-
-  def getType(self):
-    return self._type
-
-
-  def getVolumeFraction(self):
-    return self._volume_fraction
-
-
-  def getVolume(self):
-    return self._volume
-
-
-  def getSurfaces(self):
-    return self._surfaces
-
-
   def getMaxX(self):
     return self._max_x
 
@@ -1182,8 +1118,9 @@ class Cell(object):
   def getAllCells(self):
 
     if self._fill is None:
-      exit('Unable to get all Cells from Cell ID=%d since the fill '
-           'has not been set' % self._id)
+      msg = 'Unable to get all Cells from Cell ID={0} since the fill ' \
+            'has not been set'.format(self._id)
+      raise ValueError(msg)
 
     cells = dict()
 
@@ -1196,13 +1133,14 @@ class Cell(object):
   def getAllUniverses(self):
 
     if self._fill is None:
-      exit('Unable to get all Universes from Cell ID=%d since the fill '
-           'has not been set' % self._id)
+      msg = 'Unable to get all Universes from Cell ID={0} since the fill ' \
+            'has not been set'.format(self._id)
+      raise ValueError(msg)
 
     universes = dict()
 
     if self._type == 'universe' or self._type == 'lattice':
-      universes[self._fill.getId()] = self._fill
+      universes[self._fill._id] = self._fill
       universes.update(self._fill.getAllUniverses())
 
     return universes
@@ -1226,26 +1164,30 @@ class Cell(object):
         cell_ids.remove(self._id)
 
       if cell_id in cell_ids:
-        exit('Unable to set Cell ID to %s since a Cell with this ID was '
-             'already initialized.' % str(cell_id))
+        msg = 'Unable to set Cell ID to {0} since a Cell with this ID was ' \
+              'already initialized'.format(cell_id)
+        raise ValueError(msg)
 
       if cell_id < 0:
-        exit('Unable to set Cell ID to %d since it must be a '
-             'non-negative integer', cell_id)
+        msg = 'Unable to set Cell ID to {0} since it must be a ' \
+              'non-negative integer'.format(cell_id)
+        raise ValueError(msg)
 
       else:
         self._id = cell_id
         cell_ids.append(cell_id)
 
     else:
-      exit('Unable to set Cell ID to a non-integer %s' % str(cell_id))
+      msg = 'Unable to set Cell ID to a non-integer {0}'.format(cell_id)
+      raise ValueError(msg)
 
 
   def setName(self, name):
 
     if not is_string(name):
-      exit('Unable to set name for Cell ID=%d with a non-string value %s' %
-           (self._id, str(name)))
+      msg = 'Unable to set name for Cell ID={0} with a ' \
+            'non-string value {1}'.format(self._id, name)
+      raise ValueError(msg)
 
     else:
       self._name = name
@@ -1260,8 +1202,9 @@ class Cell(object):
     elif isinstance(fill, Material):
       self.setType('material')
     else:
-      exit('Unable to set fill for Cell ID=%d to %s since it is not a '
-           'Universe, Lattice or a Material' % (self._id, str(fill)))
+      msg = 'Unable to set fill for Cell ID={0} to {1} since it is not a ' \
+            'Universe, Lattice or a Material'.format(self._id, fill)
+      raise ValueError(msg)
 
     self._fill = fill
 
@@ -1269,12 +1212,14 @@ class Cell(object):
   def setType(self, type):
 
     if not is_string(type):
-      exit('Unable to set the type for Cell ID=%d to %s since it is not '
-           'a string' % (self._id, str(type)))
+      msg = 'Unable to set the type for Cell ID={0} to {1} since it is not ' \
+            'a string'.format(self._id, type)
+      raise ValueError(msg)
 
     if not type.lower() in ['universe', 'lattice', 'material']:
-      exit('Unable to set the type for Cell ID=%d to %s since it is not '
-           'universe, lattice or material' % (self._id, type))
+      msg = 'Unable to set the type for Cell ID={0} to {1} since it is not ' \
+            'universe, lattice or material'.format(self._id, type)
+      raise ValueError(msg)
 
     self._type = type.lower()
 
@@ -1282,8 +1227,9 @@ class Cell(object):
   def setMaxX(self, max_x):
 
     if not is_float(max_x):
-      exit('Unable to set the maximum x-coordinate for Cell ID=%d to %s '
-           'since it is not a floating point value', self._id, str(max_x))
+      msg = 'Unable to set the maximum x-coordinate for Cell ID={0} to {1} ' \
+            'since it is not a floating point value'.format(self._id, max_x)
+      raise ValueError(msg)
 
     self._max_x = max_x
 
@@ -1291,8 +1237,9 @@ class Cell(object):
   def setMaxY(self, max_y):
 
     if not is_float(max_y):
-      exit('Unable to set the maximum y-coordinate for Cell ID=%d to %s '
-           'since it is not a floating point value', self._id, str(max_y))
+      msg = 'Unable to set the maximum y-coordinate for Cell ID={0} to {1} ' \
+            'since it is not a floating point value'.format(self._id, max_y)
+      raise ValueError(msg)
 
     self._max_y = max_y
 
@@ -1300,8 +1247,9 @@ class Cell(object):
   def setMaxZ(self, max_z):
 
     if not is_float(max_z):
-      exit('Unable to set the maximum z-coordinate for Cell ID=%d to %s '
-           'since it is not a floating point value', self._id, str(max_z))
+      msg = 'Unable to set the maximum z-coordinate for Cell ID={0} to {1} ' \
+            'since it is not a floating point value'.format(self._id, max_z)
+      raise ValueError(msg)
 
     self._max_z = max_z
 
@@ -1309,8 +1257,9 @@ class Cell(object):
   def setMinX(self, min_x):
 
     if not is_float(min_x):
-      exit('Unable to set the minimum x-coordinate for Cell ID=%d to %s '
-           'since it is not a floating point value', self._id, str(min_x))
+      msg = 'Unable to set the minimum x-coordinate for Cell ID={0} to {1} ' \
+            'since it is not a floating point value'.format(self._id, min_x)
+      raise ValueError(msg)
 
     self._min_x = min_x
 
@@ -1318,8 +1267,9 @@ class Cell(object):
   def setMinY(self, min_y):
 
     if not is_float(min_y):
-      exit('Unable to set the minimum y-coordinate for Cell ID=%d to %s '
-           'since it is not a floating point value', self._id, str(min_y))
+      msg = 'Unable to set the minimum y-coordinate for Cell ID={0} to {1} ' \
+           'since it is not a floating point value'.format(self._id, min_y)
+      raise ValueError(msg)
 
     self._min_y = min_y
 
@@ -1327,8 +1277,9 @@ class Cell(object):
   def setMinZ(self, min_z):
 
     if not is_float(min_z):
-      exit('Unable to set the minimum z-coordinate for Cell ID=%d to %s '
-           'since it is not a floating point value' % (self._id, str(min_z)))
+      msg = 'Unable to set the minimum z-coordinate for Cell ID={0} to {1} ' \
+           'since it is not a floating point value'.format(self._id, min_z)
+      raise ValueError(msg)
 
     self._min_z = min_z
 
@@ -1336,12 +1287,14 @@ class Cell(object):
   def addSurface(self, surface, halfspace):
 
     if not isinstance(surface, Surface):
-      exit('Unable to add a Surface to Cell ID=%d since %s is not a Surface' %
-           (self._id, str(surface)))
+      msg = 'Unable to add a Surface to Cell ID={0} since {1} is ' \
+            'not a Surface'.format(self._id, surface)
+      raise ValueError(msg)
 
     if not halfspace in [-1, +1]:
-      exit('Unable to add a Surface to Cell ID=%d with halfspace %s since '
-           'it is not +/-1' % (self._id, str(halfspace)))
+      msg = 'Unable to add a Surface to Cell ID={0} with halfspace {1} ' \
+            'since it is not +/-1'.format(self._id, halfspace)
+      raise ValueError(msg)
 
     # Only add the Surface if the Cell does not already contain another
     # Surface of the same type and coefficients (a redundant Surface)
@@ -1352,9 +1305,9 @@ class Cell(object):
 
       if halfspace == test_halfspace:
 
-        if surface.getType() == test_surface.getType():
-          coeffs = surface.getCoeffs()
-          test_coeffs = test_surface.getCoeffs()
+        if surface._type == test_surface._type:
+          coeffs = surface._coeffs
+          test_coeffs = test_surface._coeffs
 
           for key in coeffs.keys():
             coeff = coeffs[key]
@@ -1363,7 +1316,7 @@ class Cell(object):
           if abs(coeff-test_coeff) < 1e-10:
             return
 
-    surface_id = surface.getId()
+    surface_id = surface._id
 
     if not surface_id in self._surfaces.keys():
       self._surfaces[surface_id] = (surface, halfspace)
@@ -1374,17 +1327,20 @@ class Cell(object):
   def addSurfaces(self, surfaces, halfspaces):
 
     if not isinstance(surfaces, (list, tuple, np.ndarray)):
-      exit('Unable to add Surfaces to Cell ID=%d since %s is not a Python '
-           'tuple/list or NumPy array' % (self._id, str(surfaces)))
+      msg = 'Unable to add Surfaces to Cell ID={0} since {1} is not a Python ' \
+            'tuple/list or NumPy array'.format(self._id, surfaces)
+      raise ValueError(msg)
 
     if not isinstance(halfspaces, (list, tuple, np.ndarray)):
-      exit('Unable to add Surfaces to Cell ID=%d since %s is not a Python '
-           'tuple/list or NumPy array' % (self._id, str(halfspaces)))
+      msg = 'Unable to add Surfaces to Cell ID={0} since {1} is not a Python ' \
+            'tuple/list or NumPy array'.format(self._id, halfspaces)
+      raise ValueError(msg)
 
     if len(surfaces) != len(halfspaces):
-      exit('Unable to add Surfaces to Cell ID=%d since the number of '
-           'Surfaces (%d) and halfspaces (%d) are not equal' %
-           (self._id, len(surfaces), len(halfspaces)))
+      msg = 'Unable to add Surfaces to Cell ID={0} since the number ' \
+            'of Surfaces ({1}) and halfspaces ({2}) are not ' \
+            'equal'.format(self._id, len(surfaces), len(halfspaces))
+      raise ValueError(msg)
 
     for i in range(len(surfaces)):
       self.addSurface(surfaces[i], halfspaces[i])
@@ -1393,10 +1349,11 @@ class Cell(object):
   def removeSurface(self, surface):
 
     if not isinstance(surface, Surface):
-      exit('Unable to remove a surface from Cell ID=%d since %s is not a '
-           'Surface' % (self._id, str(surface)))
+      msg = 'Unable to remove a surface from Cell ID={0} since {1} is not a ' \
+            'Surface'.format(self._id, surface)
+      raise ValueError(msg)
 
-    surf_id = surface.getId()
+    surf_id = surface._id
 
     if surf_id in self._surfaces.keys():
       del self._surfaces[surf_id]
@@ -1464,8 +1421,9 @@ class Cell(object):
   def setVolumeFraction(self, volume_fraction):
 
     if not is_float(volume_fraction):
-      exit('Unable to set the volume fraction for Cell ID=%s to %s since it '
-           'is not a floating point value' % str(volume_fraction))
+      msg = 'Unable to set the volume fraction for Cell ID={0} to {1} since ' \
+            'it is not a floating point value'.format(self._id, volume_fraction)
+      raise ValueError(msg)
 
     self._volume_fraction = volume_fraction
 
@@ -1473,8 +1431,9 @@ class Cell(object):
   def setVolume(self, volume):
 
     if not is_float(volume):
-      exit('Unable to set the volume for Cell ID=%s to %s since it '
-           'is not a floating point value' % str(volume))
+      msg = 'Unable to set the volume for Cell ID={0} to {1} since it ' \
+            'is not a floating point value'.format(self._id, volume)
+      raise ValueError(msg)
 
     self._volume = volume
 
@@ -1491,11 +1450,13 @@ class Cell(object):
 
     elif isinstance(self._fill, (Universe, Lattice)):
       self._fill.initializeCellOffsets()
-      self._num_subcells = self._fill.getNumRegions()
+      self._num_subcells = self._fill._num_regions
 
     else:
-      exit('Unable to compute the number of subcells for Cell ID=%d since '
-           'it is not filled by a Material, Universe or Lattice' % (self._id))
+      msg = 'Unable to compute the number of subcells for ' \
+            'Cell ID={0} since it is not filled by a Material, ' \
+            'Universe or Lattice'.format(self._id)
+      raise ValueError(msg)
 
     return self._num_subcells
 
@@ -1555,8 +1516,9 @@ class Cell(object):
   def containsPoint(self, point):
 
     if not isinstance(point, Point):
-      exit('Unable to determine if point is in Cell ID=%d since %s is not '
-           'a Point' % (self._id, str(point)))
+      msg = 'Unable to determine if point is in Cell ID={1} since {0} is not ' \
+            'a Point'.format(self._id, point)
+      raise ValueError(msg)
 
     for surface_id in self._surfaces:
 
@@ -1579,19 +1541,22 @@ class Cell(object):
       return
 
     if not is_float(volume):
-      exit('Unable to compute the volume fraction for Cell '
-           'ID=%d since volume=%s is not a floating point '
-           'value' % (self._id, str(volume)))
+      msg = 'Unable to compute the volume fraction for Cell ' \
+            'ID={0} since volume={1} is not a floating point ' \
+            'value'.format(self._id, volume)
+      raise ValueError(msg)
 
     if not is_integer(num_samples):
-      exit('Unable to compute the volume fraction for Cell '
-           'ID=%d since num_samples=%s is not an integer '
-           'value' % (self._id, str(num_samples)))
+      msg = 'Unable to compute the volume fraction for Cell ' \
+            'ID={0} since num_samples={1} is not an integer ' \
+            'value'.format(self._id, num_samples)
+      raise ValueError(msg)
 
     if not is_float(tolerance):
-      exit('Unable to compute the volume fraction for Cell '
-           'ID=%d since tolerance=%s is not a floating point '
-           'value' % (self._id, str(tolerance)))
+      msg = 'Unable to compute the volume fraction for Cell ' \
+            'ID={0} since tolerance={1} is not a floating point ' \
+            'value'.format(self._id, tolerance)
+      raise ValueError(msg)
 
     from numpy.random import uniform
 
@@ -1671,62 +1636,41 @@ class Cell(object):
     return clone
 
 
-  def toString(self):
+  def __repr__(self):
 
-    string = ''
+    string = 'Cell\n'
+    string += '{0: <16}{1}{2}\n'.format('\tID', '=\t', self._id)
+    string += '{0: <16}{1}{2}\n'.format('\tName', '=\t', self._name)
+    string += '{0: <16}{1}{2}\n'.format('\tType', '=\t', self._type)
+    string += '{0: <16}{1}{2}\n'.format('\tVol. Frac.', '=\t', self._volume_fraction)
+    string += '{0: <16}{1}{2}\n'.format('\tVolume', '=\t', self._volume)
 
-    string += 'Cell\n'
-
-    cell_id = '{0: <16}'.format('\tID') + '=\t' + str(self._id)
-    string += cell_id + '\n'
-
-    name = '{0: <16}'.format('\tName') + '=\t' + self._name
-    string += name + '\n'
-
-    type = '{0: <16}'.format('\tType') + '=\t'
-    type += str(self._type)
-    string += type + '\n'
-
-    volume_fraction = '{0: <16}'.format('\tVolume Fraction') + '=\t'
-    volume_fraction += str(self._volume_fraction)
-    string += volume_fraction + '\n'
-
-    volume = '{0: <16}'.format('\tVolume') + '=\t'
-    volume += str(self._volume)
-    string += volume + '\n'
-
-    fill = '{0: <16}'.format('\tFill') + '=\t'
+    string += '{0: <16}{1}'.format('\tFill', '=\t')
 
     if not self._fill is None:
 
       if self._type is 'material':
-        fill += 'Material ID='
+        string += 'Material ID='
       elif self._type is 'universe':
-        fill += 'Universe ID='
+        string += 'Universe ID='
       else:
-        fill += 'Lattice ID='
+        string += 'Lattice ID='
 
-      fill += str(self._fill.getId())
+      string += str(self._fill._id)
 
-    string += fill + '\n'
+    string += '\n'
 
-    num_subcells = '{0: <16}'.format('\t# Regions') + '=\t'
-    num_subcells += str(self._num_subcells)
-    string += num_subcells + '\n'
+    string += '{0: <16}{1}{2}\n'.format('\t# Regions', '=\t', self._num_subcells)
 
-    surfaces = '{0: <16}'.format('\tSurfaces') + '=\t'
+    string += '{0: <16}{1}'.format('\tSurfaces', '=\t')
 
     for surface_id in self._surfaces.keys():
       halfspace = self._surfaces[surface_id][1]
-      surfaces += str(surface_id*halfspace) + ', '
+      string += str(surface_id * halfspace) + ', '
 
-    string += surfaces.rstrip(', ') + '\n'
+    string = string.rstrip(', ') + '\n'
 
     return string
-
-
-  def printString(self):
-    print(self.toString())
 
 
 
@@ -1754,27 +1698,12 @@ class LocalCoords(object):
       self.setPrev(prev)
 
 
-  def getPoint(self):
-    return self._point
-
-
-  def getType(self):
-    return self._type
-
-
-  def getNext(self):
-    return self._next
-
-
-  def getPrev(self):
-    return self._prev
-
-
   def setPoint(self, point):
 
     if not isinstance(point, Point):
-      exit('Unable to set the point %s for LocalCoords since it is not '
-           'a Point object' % str(point))
+      msg = 'Unable to set the point {0} for LocalCoords since it is not ' \
+            'a Point object'.format(point)
+      raise ValueError(msg)
 
     self._point = point
 
@@ -1782,8 +1711,9 @@ class LocalCoords(object):
   def setNext(self, next):
 
     if not isinstance(next, LocalCoords) and not next is None:
-      exit('Unable to set the next to %s for LocalCoords since it is not '
-           'a LocalCoords object' % str(next))
+      msg = 'Unable to set the next to {0} for LocalCoords since it is not ' \
+            'a LocalCoords object'.format(next)
+      raise ValueError(msg)
 
     self._next = next
 
@@ -1791,8 +1721,9 @@ class LocalCoords(object):
   def setPrev(self, prev):
 
     if not isinstance(prev, LocalCoords) and not prev is None:
-      exit('Unable to set the prev to %s for LocalCoords since it is not '
-           'a LocalCoords object' % str(prev))
+      msg = 'Unable to set the prev to {0} for LocalCoords since it is not ' \
+            'a LocalCoords object'.format(prev)
+      raise ValueError(msg)
 
     self._prev = prev
 
@@ -1800,11 +1731,11 @@ class LocalCoords(object):
   def getHeadNode(self):
 
     curr = self
-    prev = self.getPrev()
+    prev = self._prev
 
     while not prev is None:
       curr = prev
-      prev = curr.getPrev()
+      prev = curr._prev
 
     return curr
 
@@ -1812,11 +1743,11 @@ class LocalCoords(object):
   def getTailNode(self):
 
     curr = self
-    next = self.getNext()
+    next = self._next
 
     while not next is None:
       curr = next
-      next = curr.getNext()
+      next = curr._next
 
     return curr
 
@@ -1824,11 +1755,11 @@ class LocalCoords(object):
   def prune(self):
 
     curr = self.getTailNode()
-    next = curr.getPrev()
+    next = curr._prev
 
     # Iterate over LocalCoords beneath this one in the linked list
     while curr != self:
-      next = curr.getPrev()
+      next = curr._prev
       del curr
       curr = next
 
@@ -1836,27 +1767,19 @@ class LocalCoords(object):
     self.setNext(None)
 
 
-  def toString(self):
+  def __repr__(self):
 
-    string = ''
+    string = 'LocalCoords\n'
+    string += '{0: <16}{1}{2}\n'.format('\tType', '=\t', self._type)
 
-    string += 'LocalCoords\n'
-
-    type = '{0: <16}'.format('\tType') + '=\t' + str(self._type)
-    string += type + '\n'
-
-    point = '{0: <16}'.format('\tPoint') + '=\t'
+    string += '{0: <16}{1}'.format('\tPoint', '=\t')
 
     if not self._point is None:
-        point += str(self._point.getCoords())
+      string += '{0}'.format(self._point._coords)
 
-    string += point + '\n'
+    string += '\n'
 
     return string
-
-
-  def printString(self):
-    print(self.toString())
 
 
 
@@ -1878,19 +1801,12 @@ class UnivCoords(LocalCoords):
       self.setCell(cell)
 
 
-  def getUniverse(self):
-    return self._universe
-
-
-  def getCell(self):
-    return self._cell
-
-
   def setUniverse(self, universe):
 
     if not isinstance(universe, Universe):
-      exit('Unable to set the Universe to %s for LocalCoords since it '
-           'is not a Universe' % str(universe))
+      msg = 'Unable to set the Universe to {0} for LocalCoords since it ' \
+            'is not a Universe'.format(universe)
+      raise ValueError(msg)
 
     self._universe = universe
 
@@ -1898,26 +1814,23 @@ class UnivCoords(LocalCoords):
   def setCell(self, cell):
 
     if not isinstance(cell, Cell):
-      exit('Unable to set the Cell to %s for LocalCoords since it '
-           'is not a Cell' % str(cell))
+      msg = 'Unable to set the Cell to {0} for LocalCoords since it ' \
+            'is not a Cell'.format(cell)
+      raise ValueError(msg)
 
     self._cell = cell
 
 
-  def toString(self):
+  def __repr__(self):
 
-    string = super(UnivCoords, self).toString()
+    string = super(UnivCoords, self).__repr__()
 
-    universe_id = '{0: <16}'.format('\tUniverse') + '=\t'
-    universe_id += str(self._universe.getId()) + '\n'
-    string += universe_id
+    string += '{0: <16}{1}{2}\n'.format('\tUniverse', '=\t', self._universe._id)
 
-    cell_id = '{0: <16}'.format('\tCell') + '=\t'\
+    string += '{0: <16}{1}'.format('\tCell', '=\t')
 
     if not self._cell is None:
-      cell_id += str(self._cell.getId())
-
-    string += cell_id
+      string += '{0}'.format(self._cell._id)
 
     return string
 
@@ -1945,23 +1858,12 @@ class LatCoords(LocalCoords):
       self.setLatticeY(lattice_y)
 
 
-  def getLattice(self):
-    return self._lattice
-
-
-  def getLatticeX(self):
-    return self._lattice_x
-
-
-  def getLatticeY(self):
-    return self._lattice_y
-
-
   def setLattice(self, lattice):
 
     if not isinstance(lattice, Lattice):
-      exit('Unable to set the Lattice to %s for LocalCoords since it '
-           'is not a Lattice' % str(lattice))
+      msg = 'Unable to set the Lattice to {0} for LocalCoords since it ' \
+            'is not a Lattice'.format(lattice)
+      raise ValueError(msg)
 
     self._lattice = lattice
 
@@ -1969,8 +1871,9 @@ class LatCoords(LocalCoords):
   def setLatticeX(self, lattice_x):
 
     if not is_integer(lattice_x):
-      exit('Unable to set the Lattice X to %s for LocalCoords since it '
-           'is not an integer' % str(lattice_x))
+      msg = 'Unable to set the Lattice X to {0} for LocalCoords since it ' \
+            'is not an integer'.format(lattice_x)
+      raise ValueError(msg)
 
     self._lattice_x = lattice_x
 
@@ -1978,26 +1881,19 @@ class LatCoords(LocalCoords):
   def setLatticeY(self, lattice_y):
 
     if not is_integer(lattice_y):
-      exit('Unable to set the Lattice Y to %s for LocalCoords since it '
-           'is not an integer' % str(lattice_y))
+      msg = 'Unable to set the Lattice Y to {0} for LocalCoords since it ' \
+            'is not an integer'.format(lattice_y)
+      raise ValueError(msg)
 
     self._lattice_y = lattice_y
 
 
-  def toString(self):
+  def __repr__(self):
 
-    string = super(LatCoords, self).toString()
+    string = super(LatCoords, self).__repr__()
 
-    lattice_id = '{0: <16}'.format('\tLattice') + '=\t'
-    lattice_id += str(self._lattice.getId()) + '\n'
-    string += lattice_id
-
-    lattice_x = '{0: <16}'.format('\tLattice X') + '=\t'
-    lattice_x += str(self._lattice_x) + '\n'
-    string += lattice_x
-
-    lattice_y = '{0: <16}'.format('\tLattice Y') + '=\t'
-    lattice_y += str(self._lattice_y)
-    string += lattice_y
+    string += '{0: <16}{1}{2}\n'.format('\tLattice', '=\t', self._lattice._id)
+    string += '{0: <16}{1}{2}\n'.format('\tLattice X', '=\t', self._lattice_x)
+    string += '{0: <16}{1}{2}\n'.format('\tLattice Y', '=\t', self._lattice_y)
 
     return string

@@ -25,35 +25,17 @@ class RadialMesh(object):
       self.setNumRings(num_rings)
 
 
-  def getNumRings(self):
-    return self._num_rings
-
-
-  def getMaxRadius(self):
-    return self._max_radius
-
-
-  def getMinRadius(self):
-    return self._min_radius
-
-
-  def getWithOuter(self):
-    return self._with_outer
-
-
-  def getWithInner(self):
-    return self._with_inner
-
-
   def setNumRings(self, num_rings):
 
     if not is_integer(num_rings):
-      exit('Unable to set the number of rings for RadialMesh to %s '
-           'since it is not an integer' % str(num_rings))
+      msg = 'Unable to set the number of rings for RadialMesh to {0} ' \
+            'since it is not an integer'.format(num_rings)
+      raise ValueError(msg)
 
     if num_rings < 0:
-      exit('Unable to set the number of rings for RadialMesh to %d '
-           'since it is a negative integer' % str(num_rings))
+      msg = 'Unable to set the number of rings for RadialMesh to {0} ' \
+            'since it is a negative integer'.format(num_rings)
+      raise ValueError(msg)
 
     self._num_rings = num_rings
 
@@ -61,12 +43,14 @@ class RadialMesh(object):
   def setMaxRadius(self, max_radius):
 
     if not is_float(max_radius) and not is_integer(max_radius):
-      exit('Unable to set the max radius for RadialMesh to %s since '
-           'it is not an integer or floating point value' % str(max_radius))
+      msg = 'Unable to set the max radius for RadialMesh to {0} since ' \
+            'it is not an integer or floating point value'.format(max_radius)
+      raise ValueError(msg)
 
     if max_radius < 0.:
-      exit('Unable to set the max radius for RadialMesh to %s since '
-           'it is a negative value' % str(max_radius))
+      msg = 'Unable to set the max radius for RadialMesh to {0} since ' \
+            'it is a negative value'.format(max_radius)
+      raise ValueError(msg)
 
     self._max_radius = np.float64(max_radius)
 
@@ -74,12 +58,14 @@ class RadialMesh(object):
   def setMinRadius(self, min_radius):
 
     if not is_float(min_radius) and not is_integer(min_radius):
-      exit('Unable to set the min radius for RadialMesh to %s since '
-           'it is not an integer or floating point value' % str(min_radius))
+      msg = 'Unable to set the min radius for RadialMesh to {0} since ' \
+            'it is not an integer or floating point value'.format(min_radius)
+      raise ValueError(msg)
 
     if min_radius < 0.:
-      exit('Unable to set the min radius for RadialMesh to %s since '
-           'it is a negative value' % str(min_radius))
+      msg = 'Unable to set the min radius for RadialMesh to {0} since ' \
+            'it is a negative value'.format(min_radius)
+      raise ValueError(msg)
 
     self._min_radius = np.float64(min_radius)
 
@@ -87,8 +73,9 @@ class RadialMesh(object):
   def setWithOuter(self, with_outer):
 
     if not isinstance(with_outer, bool):
-      exit('Unable to set with outer for RadialMesh to %s since '
-           'it is not a boolean value' % str(with_outer))
+      msg = 'Unable to set with outer for RadialMesh to {0} since ' \
+            'it is not a boolean value'.format(with_outer)
+      raise ValueError(msg)
 
     self._with_outer = with_outer
 
@@ -96,8 +83,9 @@ class RadialMesh(object):
   def setWithInner(self, with_inner):
 
     if not isinstance(with_inner, bool):
-      exit('Unable to set with inner for RadialMesh to %s since '
-           'it is not a boolean value' % str(with_inner))
+      msg = 'Unable to set with inner for RadialMesh to {0} since ' \
+            'it is not a boolean value'.format(with_inner)
+      raise ValueError(msg)
 
     self._with_inner = with_inner
 
@@ -105,8 +93,9 @@ class RadialMesh(object):
   def subdivideCell(self, cell, universe=None):
 
     if not isinstance(cell, Cell):
-      exit('Unable to subdivide Cell with RadialMesh since %s is not '
-           'a Cell' % str(cell))
+      msg = 'Unable to subdivide Cell with RadialMesh since {0} is not ' \
+            'a Cell'.format(cell)
+      raise ValueError(msg)
 
     # Create container for ZCylinders
     cylinders = list()
@@ -195,19 +184,17 @@ class SectorMesh(object):
       self.setNumSectors(num_sectors)
 
 
-  def getNumSectors(self):
-    return self._num_sectors
-
-
   def setNumSectors(self, num_sectors):
 
     if not is_integer(num_sectors):
-      exit('Unable to set the number of sectors for SectorMesh to %s '
-           'since it is not an integer' % str(num_sectors))
+      msg = 'Unable to set the number of sectors for SectorMesh to {0} ' \
+            'since it is not an integer'.format(num_sectors)
+      raise ValueError(msg)
 
     if num_sectors < 0:
-      exit('Unable to set the number of rings for SectorMesh to %d '
-           'since it is a negative integer' % str(num_sectors))
+      msg = 'Unable to set the number of rings for SectorMesh to {0} ' \
+            'since it is a negative integer'.format(num_sectors)
+      raise ValueError(msg)
 
     self._num_sectors = num_sectors
 
@@ -215,8 +202,9 @@ class SectorMesh(object):
   def subdivideCell(self, cell, universe=None):
 
     if not isinstance(cell, Cell):
-      exit('Unable to subdivide Cell with RadialMesh since %s is not '
-           'a Cell' % str(cell))
+      msg = 'Unable to subdivide Cell with RadialMesh since {0} ' \
+            'is not a Cell'.format(cell)
+      raise ValueError(msg)
 
     cell.findBoundingBox()
 
@@ -273,8 +261,9 @@ class SectorMesh(object):
   def subdivideCells(self, cells, universe=None):
 
     if not isinstance(cells, (tuple, list, np.ndarray)):
-      exit('Unable to subdivide cells with a SectorMesh since %s is not '
-           'a Python tuple/list or NumPy array' % str(cells))
+      msg = 'Unable to subdivide cells with a SectorMesh since {0} ' \
+            'is not a Python tuple/list or NumPy array'.format(cells)
+      raise ValueError(msg)
 
     # Initialize an empty list of new Cells
     new_cells = list()
@@ -296,9 +285,10 @@ class SectorMesh(object):
   def subdivideUniverse(self, universe):
 
     if not isinstance(universe, Universe):
-      exit('Unable to subdivide Universe with a SectorMesh since %s is not '
-           'a Universe' % str(universe))
+      msg = 'Unable to subdivide Universe with a SectorMesh since {0} ' \
+            'is not a Universe'.format(universe)
+      raise ValueError(msg)
 
-    cells = universe.getCells().values()
+    cells = universe._cells.values()
     new_cells = self.subdivideCells(cells, universe=universe)
     return new_cells

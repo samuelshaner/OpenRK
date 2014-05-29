@@ -42,16 +42,19 @@ def plot_cells(geometry, gridsize=250):
 
   # Error checking
   if not isinstance(geometry, Geometry):
-    exit('Unable to plot the cells since input was ' + \
-         'not a Geometry class object')
+    msg = 'Unable to plot the cells since input was not ' \
+          'a Geometry class object'
+    raise ValueError(msg)
 
   if not is_integer(gridsize):
-    exit('Unable to plot the cells since the gridsize is' + \
-         'is not an integer' % str(gridsize))
+    msg = 'Unable to plot the cells since the gridsize {0} is' \
+          'is not an integer'.format(gridsize)
+    raise ValueError(msg)
 
   if gridsize <= 0:
-    exit('Unable to plot the cells with a negative ' \
-         'gridsize (%d)' % gridsize)
+    msg = 'Unable to plot the cells with a negative ' \
+          'gridsize {0}'.format(gridsize)
+    raise ValueError(msg)
 
   print('Plotting the Cells...')
 
@@ -73,7 +76,7 @@ def plot_cells(geometry, gridsize=250):
     for j in range(gridsize):
 
       cell = geometry.findCell(x=xcoords[i], y=ycoords[j])
-      surface[i][j] = color_map[cell.getId() % num_colors]
+      surface[i][j] = color_map[cell._id % num_colors]
 
   # Plot a 2D color map of the flat source regions
   fig = plt.figure()
@@ -95,16 +98,19 @@ def plot_materials(geometry, gridsize=250):
 
   # Error checking
   if not isinstance(geometry, Geometry):
-    exit('Unable to plot the materials since input was ' + \
-         'not a Geometry class object')
+    msg = 'Unable to plot the materials since input was not ' \
+          'a Geometry class object'
+    raise ValueError(msg)
 
   if not is_integer(gridsize):
-    exit('Unable to plot the materials since the gridsize is' + \
-         'is not an integer' % str(gridsize))
+    msg = 'Unable to plot the materials since the gridsize {0} is' \
+          'is not an integer'.format(gridsize)
+    raise ValueError(msg)
 
   if gridsize <= 0:
-    exit('Unable to plot the materials with a negative ' \
-         'gridsize (%d)' % gridsize)
+    msg = 'Unable to plot the materials with a negative ' \
+          'gridsize {0}'.format(gridsize)
+    raise ValueError(msg)
 
   print('Plotting the Materials...')
 
@@ -126,7 +132,7 @@ def plot_materials(geometry, gridsize=250):
     for j in range(gridsize):
 
       cell = geometry.findCell(x=xcoords[i], y=ycoords[j])
-      surface[i][j] = color_map[cell.getFill().getId() % num_colors]
+      surface[i][j] = color_map[cell._fill._id % num_colors]
 
   # Plot a 2D color map of the flat source regions
   fig = plt.figure()
@@ -147,16 +153,19 @@ def plot_regions(geometry, gridsize=250):
 
   # Error checking
   if not isinstance(geometry, Geometry):
-    exit('Unable to plot the regions since input was ' + \
-         'not a Geometry class object')
+    msg = 'Unable to plot the regions since input was not ' \
+          'a Geometry class object'
+    raise ValueError(msg)
 
   if not is_integer(gridsize):
-    exit('Unable to plot the regions since the gridsize is' + \
-         'is not an integer' % str(gridsize))
+    msg = 'Unable to plot the regions since the gridsize {0} is' \
+          'is not an integer'.format(gridsize)
+    raise ValueError(msg)
 
   if gridsize <= 0:
-    exit('Unable to plot the regions with a negative ' \
-         'gridsize (%d)' % gridsize)
+    msg = 'Unable to plot the regions with a negative ' \
+          'gridsize {0}'.format(gridsize)
+    raise ValueError(msg)
 
   print('Plotting the Regions...')
 
