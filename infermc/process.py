@@ -18,21 +18,21 @@ def get_path(coords):
   while coords is not None:
 
     # If the LocalCoords is at a Universe
-    if coords.getType() == 'universe':
-      path.append(coords.getUniverse().getId())
-      path.append(coords.getCell().getId())
+    if coords._type == 'universe':
+      path.append(coords._universe._id)
+      path.append(coords._cell._id)
 
     # If the LocalCoords is at a Lattice
     else:
       # Add 1 for Fortran indexing
-      lat_x = coords.getLatticeX()+1
-      lat_y = coords.getLatticeY()+1
+      lat_x = coords._lattice_x+1
+      lat_y = coords._lattice_y+1
 
       # Use z=1 for 3D lattices
-      path.append((coords.getLattice().getId(), lat_x, lat_y, 1))
+      path.append((coords._lattice._id, lat_x, lat_y, 1))
 
     # Traverse LocalCoords linked list to next lowest nested universe
-    coords = coords.getNext()
+    coords = coords._next
 
   return path
 
@@ -90,9 +90,9 @@ class XSTallyExtractor(object):
       exit('Unable to get path for region %d since the TallyExtractors '
            'geometry attribute has not been set' % region)
 
-    if region < len(self._geometry.getNumRegions()):
+    if region < len(self._geometry._num_regions):
       exit('Unable to get path for region %d since it the Geometry only '
-           'contains %d regions' % (region, self._geometry.getNumRegions()))
+           'contains %d regions' % (region, self._geometry._num_regions))
 
     return self._all_paths[region]
 
@@ -181,7 +181,7 @@ class XSTallyExtractor(object):
 
     self._geometry = geometry
 
-    num_regions = self._geometry.getNumRegions()
+    num_regions = self._geometry._num_regions
 
     # Create a list of "paths" for each unique region in the Geometry
     self._geometry.initializeCellOffsets()
@@ -349,8 +349,8 @@ class XSTallyExtractor(object):
            str(domain), str(domain_id)))
 
     # Determine the number of groups
-    num_groups = energy_groups.getNumGroups()
-    group_edges = energy_groups.getGroupEdges()
+    num_groups = energy_groups._num_groups
+    group_edges = energy_groups._group_edges
 
     if not is_integer(domain_id):
       exit('Unable to get %s group cross-sections for %s %s since the domain '

@@ -22,7 +22,7 @@ domain_types = ['cell',
 class EnergyGroups(object):
 
   def __init__(self):
-    self._groups_edges = None
+    self._group_edges = None
     self._num_groups = None
 
 
@@ -42,7 +42,7 @@ class EnergyGroups(object):
         exit('Unable to set energy group edges with %s for edge %d '
              'and %s for edge %d' % (str(edges[i], i, edges[i-1], i-1)))
 
-    self._groups_edges = np.array(edges)
+    self._group_edges = np.array(edges)
     self._num_groups = len(edges)-1
 
 
@@ -83,7 +83,7 @@ class EnergyGroups(object):
     self._num_groups = num_groups
 
     if type == 'linear':
-      self._groups_edges = np.linspace(start, stop, num_groups+1)
+      self._group_edges = np.linspace(start, stop, num_groups+1)
 
     else:
       self._group_edges = np.linspace(np.log(start), np.log(stop), num_groups+1)
@@ -91,15 +91,11 @@ class EnergyGroups(object):
 
   def getNumGroups(self):
 
-    if self._groups_edges is None:
+    if self._group_edges is None:
       exit('Unable to get the number of energy groups since '
            'the group edges have not yet been set')
 
     return self._num_groups
-
-
-  def getGroupEdges(self):
-    return self._groups_edges
 
 
   def getGroup(self, energy):
@@ -110,12 +106,12 @@ class EnergyGroups(object):
       exit('Unable to get energy group for energy %s since it is '
            'neither an integer or floating point value' % str(energy))
 
-    if self._groups_edges is None:
+    if self._group_edges is None:
       exit('Unable to get energy group for energy %s eV since '
            'the group edges have not yet been set' % str(energy))
 
     # Loop over all edges and search for the group for this energy
-    for i, edge in enumerate(self._groups_edges):
+    for i, edge in enumerate(self._group_edges):
 
       if energy <= edge:
         return self._num_groups - i
@@ -135,25 +131,13 @@ class MultiGroupXS(object):
     self._xs_uncertainty = None
 
 
-  def getType(self):
-    self._type
-
-
-  def getEnergyGroups(self):
-    return self._energy_groups
-
-
   def getNumGroups(self):
 
     if self._energy_groups is None:
       exit('Unable to get the number of energy groups for multi group xs'
            'since the energy groups has not yet been set')
 
-    return self._energy_groups.getNumGroups()
-
-
-  def getTallies(self):
-    return self._tallies
+    return self._energy_groups._num_groups
 
 
   def setEnergyGroups(self, energy_groups):
@@ -171,12 +155,12 @@ class MultiGroupXS(object):
       exit('Unable to create tallies for a MultiGroupXS since the '
            'energy groups has not been set')
 
-    group_edges = self._energy_groups.getGroupEdges()
+    group_edges = self._energy_groups._group_edges
 
     flux = Tally()
     flux.addScore(score='flux')
     flux.addFilter(type='energy', bins=group_edges)
-    flux.setLabel(label='%d groups' % self._energy_groups.getNumGroups())
+    flux.setLabel(label='%d groups' % self._energy_groups._num_groups)
     self._tallies.append(flux)
 
     return
@@ -193,12 +177,12 @@ class TotalXS(MultiGroupXS):
 
     super(TotalXS, self).createTallies()
 
-    group_edges = self._energy_groups.getGroupEdges()
+    group_edges = self._energy_groups._group_edges
 
     rxn_rate = Tally()
     rxn_rate.addScore(score='total')
     rxn_rate.addFilter(type='energy', bins=group_edges)
-    rxn_rate.setLabel(label='%d groups' % self._energy_groups.getNumGroups())
+    rxn_rate.setLabel(label='%d groups' % self._energy_groups._num_groups)
     self._tallies.append(rxn_rate)
 
 
@@ -212,26 +196,26 @@ class TransportXS(MultiGroupXS):
 
     super(TransportXS, self).createTallies()
 
-    group_edges = self._energy_groups.getGroupEdges()
+    group_edges = self._energy_groups._group_edges
 
     flux = Tally()
     flux.addScore(score='flux')
     flux.addFilter(type='energy', bins=group_edges)
-    flux.setLabel(label='%d groups' % self._energy_groups.getNumGroups())
+    flux.setLabel(label='%d groups' % self._energy_groups._num_groups)
     flux.setEstimator(estimator='analog')
     self._tallies.append(flux)
 
     rxn_rate = Tally()
     rxn_rate.addScore(score='total')
     rxn_rate.addFilter(type='energy', bins=group_edges)
-    rxn_rate.setLabel(label='%d groups' % self._energy_groups.getNumGroups())
+    rxn_rate.setLabel(label='%d groups' % self._energy_groups._num_groups)
     rxn_rate.setEstimator(estimator='analog')
     self._tallies.append(rxn_rate)
 
     rxn_rate = Tally()
     rxn_rate.addScore(score='scatter-P1')
     rxn_rate.addFilter(type='energy', bins=group_edges)
-    rxn_rate.setLabel(label='%d groups' % self._energy_groups.getNumGroups())
+    rxn_rate.setLabel(label='%d groups' % self._energy_groups._num_groups)
     rxn_rate.setEstimator(estimator='analog')
     self._tallies.append(rxn_rate)
 
@@ -247,12 +231,12 @@ class AbsorptionXS(MultiGroupXS):
 
     super(AbsorptionXS, self).createTallies()
 
-    group_edges = self._energy_groups.getGroupEdges()
+    group_edges = self._energy_groups._group_edges
 
     rxn_rate = Tally()
     rxn_rate.addScore(score='absorption')
     rxn_rate.addFilter(type='energy', bins=group_edges)
-    rxn_rate.setLabel(label='%d groups' % self._energy_groups.getNumGroups())
+    rxn_rate.setLabel(label='%d groups' % self._energy_groups._num_groups)
     self._tallies.append(rxn_rate)
 
 
@@ -267,12 +251,12 @@ class FissionXS(MultiGroupXS):
 
     super(FissionXS, self).createTallies()
 
-    group_edges = self._energy_groups.getGroupEdges()
+    group_edges = self._energy_groups._group_edges
 
     rxn_rate = Tally()
     rxn_rate.addScore(score='fission')
     rxn_rate.addFilter(type='energy', bins=group_edges)
-    rxn_rate.setLabel(label='%d groups' % self._energy_groups.getNumGroups())
+    rxn_rate.setLabel(label='%d groups' % self._energy_groups._num_groups)
     self._tallies.append(rxn_rate)
 
 
@@ -287,12 +271,12 @@ class NuFissionXS(MultiGroupXS):
 
     super(NuFissionXS, self).createTallies()
 
-    group_edges = self._energy_groups.getGroupEdges()
+    group_edges = self._energy_groups._group_edges
 
     rxn_rate = Tally()
     rxn_rate.addScore(score='nu-fission')
     rxn_rate.addFilter(type='energy', bins=group_edges)
-    rxn_rate.setLabel(label='%d groups' % self._energy_groups.getNumGroups())
+    rxn_rate.setLabel(label='%d groups' % self._energy_groups._num_groups)
     self._tallies.append(rxn_rate)
 
 
@@ -306,12 +290,12 @@ class ScatterXS(MultiGroupXS):
 
     super(ScatterXS, self).createTallies()
 
-    group_edges = self._energy_groups.getGroupEdges()
+    group_edges = self._energy_groups._group_edges
 
     rxn_rate = Tally()
     rxn_rate.addScore(score='scatter')
     rxn_rate.addFilter(type='energy', bins=group_edges)
-    rxn_rate.setLabel(label='%d groups' % self._energy_groups.getNumGroups())
+    rxn_rate.setLabel(label='%d groups' % self._energy_groups._num_groups)
     self._tallies.append(rxn_rate)
 
 
@@ -325,19 +309,19 @@ class NuScatterXS(MultiGroupXS):
 
     super(NuScatterXS, self).createTallies()
 
-    group_edges = self._energy_groups.getGroupEdges()
+    group_edges = self._energy_groups._group_edges
 
     flux = Tally()
     flux.addScore(score='flux')
     flux.addFilter(type='energy', bins=group_edges)
-    flux.setLabel(label='%d groups' % self._energy_groups.getNumGroups())
+    flux.setLabel(label='%d groups' % self._energy_groups._num_groups)
     flux.setEstimator(estimator='analog')
     self._tallies.append(flux)
 
     rxn_rate = Tally()
     rxn_rate.addScore(score='nu-scatter')
     rxn_rate.addFilter(type='energy', bins=group_edges)
-    rxn_rate.setLabel(label='%d groups' % self._energy_groups.getNumGroups())
+    rxn_rate.setLabel(label='%d groups' % self._energy_groups._num_groups)
     rxn_rate.setEstimator(estimator='analog')
     self._tallies.append(rxn_rate)
 
@@ -352,12 +336,12 @@ class ScatterMatrixXS(MultiGroupXS):
 
     super(ScatterMatrixXS, self).createTallies()
 
-    group_edges = self._energy_groups.getGroupEdges()
+    group_edges = self._energy_groups._group_edges
 
     flux = Tally()
     flux.addScore(score='flux')
     flux.addFilter(type='energy', bins=group_edges)
-    flux.setLabel(label='%d groups' % self._energy_groups.getNumGroups())
+    flux.setLabel(label='%d groups' % self._energy_groups._num_groups)
     flux.setEstimator(estimator='analog')
     self._tallies.append(flux)
 
@@ -365,7 +349,7 @@ class ScatterMatrixXS(MultiGroupXS):
     rxn_rate.addScore(score='nu-scatter')
     rxn_rate.addFilter(type='energy', bins=group_edges)
     rxn_rate.addFilter(type='energyout', bins=group_edges)
-    rxn_rate.setLabel(label='%d groups' % self._energy_groups.getNumGroups())
+    rxn_rate.setLabel(label='%d groups' % self._energy_groups._num_groups)
     rxn_rate.setEstimator(estimator='analog')
     self._tallies.append(rxn_rate)
 
@@ -393,19 +377,19 @@ class Chi(MultiGroupXS):
 
     super(Chi, self).createTallies()
 
-    group_edges = self._energy_groups.getGroupEdges()
+    group_edges = self._energy_groups._group_edges
 
     rxn_rate = Tally()
     rxn_rate.addScore(score='nu-fission')
     rxn_rate.addFilter(type='energy', bins=group_edges)
     rxn_rate.setEstimator(estimator='analog')
-    rxn_rate.setLabel(label='%d groups' % self._energy_groups.getNumGroups())
+    rxn_rate.setLabel(label='%d groups' % self._energy_groups._num_groups)
 
     emit_rate = Tally()
     emit_rate.addScore(score='nu-fission')
     emit_rate.addFilter(type='energyout', bins=group_edges)
     emit_rate.setEstimator(estimator='analog')
-    emit_rate.setLabel(label='%d groups' % self._energy_groups.getNumGroups())
+    emit_rate.setLabel(label='%d groups' % self._energy_groups._num_groups)
 
     self._tallies.append(rxn_rate)
     self._tallies.append(emit_rate)

@@ -1,5 +1,3 @@
-from sets import Set
-
 from opencsg import Material, Cell, Universe, Geometry
 from openmc.tallies import TalliesFile
 from infermc.multigroupxs import *
@@ -55,7 +53,7 @@ class XSTallyBuilder(object):
     if not domain_type in domain_types:
       exit('The XSTallyBuilder is unable to create cross-section type %s '
            'in %s %d since it is not a supported domain type' %
-           (xs_type, str(domain_type), domain.getId()))
+           (xs_type, str(domain_type), domain._id))
 
     if xs_type == 'total':
       xs = TotalXS()
@@ -84,8 +82,8 @@ class XSTallyBuilder(object):
     xs.setEnergyGroups(energy_groups)
     xs.createTallies()
 
-    for tally in xs.getTallies():
-      tally.addFilter(type=domain_type, bins=domain.getId())
+    for tally in xs._tallies:
+      tally.addFilter(type=domain_type, bins=domain._id)
 
     self._all_xs.append(xs)
 
@@ -112,10 +110,11 @@ class XSTallyBuilder(object):
 
   def createTalliesFile(self):
 
-    tallies = Set()
+    tallies = set()
 
     for xs in self._all_xs:
-      tallies.union_update(Set(xs.getTallies()))
+      tallies = tallies.union(set(xs._tallies))
+#      tallies.union_update(set(xs._tallies))
 
     for tally in tallies:
       self._tallies_file.addTally(tally)

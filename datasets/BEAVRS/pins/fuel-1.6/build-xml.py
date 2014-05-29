@@ -77,7 +77,6 @@ plot_file.exportToXML()
 ###############################################################################
 
 
-'''
 tallies_file = TalliesFile()
 tally_builder = XSTallyBuilder(geometry)
 
@@ -90,4 +89,3 @@ tally_builder.createAllXS(energy_groups, domain_type='cell')
 tally_builder.createAllXS(energy_groups, domain_type='universe')
 
 tally_builder.createTalliesFile()
-'''
