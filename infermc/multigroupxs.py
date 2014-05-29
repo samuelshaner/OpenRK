@@ -29,18 +29,21 @@ class EnergyGroups(object):
   def setGroupEdges(self, edges):
 
     if not isinstance(edges, (tuple, list, np.ndarray)):
-      exit('Unable to set energy group edges from %s which '
-           'is not a Python tuple/list or NumPy array' % str(edges))
+      msg = 'Unable to set energy group edges from {0} which ' \
+            'is not a Python tuple/list or NumPy array'.format(edges)
+      raise ValueError(msg)
 
     for i, edge in enumerate(edges):
 
       if not is_integer(edge) and not is_float(edge):
-        exit('Unable to set energy group edge = %s which is '
-             'not an integer or floating point value' % str(edge))
+        msg = 'Unable to set energy group edge = {0} which is ' \
+              'not an integer or floating point value'.format(edge)
+        raise ValueError(msg)
 
       if i > 0 and edges[i] <= edges[i-1]:
-        exit('Unable to set energy group edges with %s for edge %d '
-             'and %s for edge %d' % (str(edges[i], i, edges[i-1], i-1)))
+        msg = 'Unable to set energy group edges with {0} for edge {1} ' \
+              'and {2} for edge {3}'.format(edges[i], i, edges[i-1], i-1)
+        raise ValueError(msg)
 
     self._group_edges = np.array(edges)
     self._num_groups = len(edges)-1
@@ -49,36 +52,44 @@ class EnergyGroups(object):
   def generateBinEdges(self, start, stop, num_groups, type='linear'):
 
     if not is_integer(start) and not is_float(start):
-      exit('Unable to generate energy group edges with start = %s '
-           'which is not an integer or floating point value' % str(start))
+      msg = 'Unable to generate energy group edges with start = {0} ' \
+            'which is not an integer or floating point value'.format(start)
+      raise ValueError(msg)
 
     if not is_integer(stop) and not is_float(stop):
-      exit('Unable to generate energy group edges with stop = %s '
-           'which is not an integer or floating point value' % str(stop))
+      msg = 'Unable to generate energy group edges with stop = {0} ' \
+            'which is not an integer or floating point value'.format(stop)
+      raise ValueError(msg)
 
     if not is_integer(num_groups):
-      exit('Unable to generate energy group edges with num groups = %s '
-           'which is not an integer value' % str(num_groups))
+      msg = 'Unable to generate energy group edges with num groups = {0} ' \
+            'which is not an integer value'.format(num_groups)
+      raise ValueError(msg)
 
     if not type in ['linear', 'logarithmic']:
-      exit('Unable to generate energy group edges with type = %s which is '
-           'neither linear nor logarithmic' % str(type))
+      msg = 'Unable to generate energy group edges with type = {0} which is ' \
+            'neither linear nor logarithmic'.format(type)
+      raise ValueError(msg)
 
     if start < 0.:
-      exit('Unable to generate energy group edges with start = %s which is '
-           'a negative value' % str(start))
+      msg = 'Unable to generate energy group edges with start = {0} which is ' \
+           'a negative value'.format(start)
+      raise ValueError(msg)
 
     if stop < 0.:
-      exit('Unable to generate energy group edges with stop = %s which is '
-           'a negative value' % str(stop))
+      msg = 'Unable to generate energy group edges with stop = {0} which is ' \
+            'a negative value'.format(stop)
+      raise ValueError(msg)
 
     if start >= stop:
-      exit('Unable to generate energy group edges with start = %s which is '
-           'greater than stop = %s' % (str(start), str(stop)))
+      msg = 'Unable to generate energy group edges with start = {0} which is ' \
+           'greater than stop = {1}'.format(start, stop)
+      raise ValueError(msg)
 
     if num_groups < 0.:
-      exit('Unable to generate energy group edges with num groups %s '
-           'which is a negative value' % str(num_groups))
+      msg = 'Unable to generate energy group edges with num groups {0} ' \
+            'which is a negative value'.format(num_groups)
+      raise ValueError(msg)
 
     self._num_groups = num_groups
 
@@ -89,26 +100,19 @@ class EnergyGroups(object):
       self._group_edges = np.linspace(np.log(start), np.log(stop), num_groups+1)
 
 
-  def getNumGroups(self):
-
-    if self._group_edges is None:
-      exit('Unable to get the number of energy groups since '
-           'the group edges have not yet been set')
-
-    return self._num_groups
-
-
   def getGroup(self, energy):
 
     # Assumes energy is in eV
 
     if not is_integer(energy) and not is_float(energy):
-      exit('Unable to get energy group for energy %s since it is '
-           'neither an integer or floating point value' % str(energy))
+      msg = 'Unable to get energy group for energy {0} since it is ' \
+            'neither an integer or floating point value'.format(energy)
+      raise ValueError(msg)
 
     if self._group_edges is None:
-      exit('Unable to get energy group for energy %s eV since '
-           'the group edges have not yet been set' % str(energy))
+      msg = 'Unable to get energy group for energy {0} eV since ' \
+            'the group edges have not yet been set'.format(energy)
+      raise ValueError(msg)
 
     # Loop over all edges and search for the group for this energy
     for i, edge in enumerate(self._group_edges):
@@ -116,8 +120,9 @@ class EnergyGroups(object):
       if energy <= edge:
         return self._num_groups - i
 
-    exit('Unable to find energy group for energy %s eV since it does not '
-         'lie within the bounds of the energy group edges' % str(energy))
+    msg = 'Unable to find energy group for energy {0} eV since it does not ' \
+          'lie within the bounds of the energy group edges'.format(energy)
+    raise ValueError(msg)
 
 
 class MultiGroupXS(object):
@@ -131,20 +136,12 @@ class MultiGroupXS(object):
     self._xs_uncertainty = None
 
 
-  def getNumGroups(self):
-
-    if self._energy_groups is None:
-      exit('Unable to get the number of energy groups for multi group xs'
-           'since the energy groups has not yet been set')
-
-    return self._energy_groups._num_groups
-
-
   def setEnergyGroups(self, energy_groups):
 
     if not isinstance(energy_groups, EnergyGroups):
-      exit('Unable to set the energy groups to %s which is not an '
-           'EnergyGroups object' % str(energy_groups))
+      msg = 'Unable to set the energy groups to {0} which is not an ' \
+           'EnergyGroups object'.format(energy_groups)
+      raise ValueError(msg)
 
     self._energy_groups = energy_groups
 
@@ -152,8 +149,9 @@ class MultiGroupXS(object):
   def createTallies(self):
 
     if self._energy_groups is None:
-      exit('Unable to create tallies for a MultiGroupXS since the '
-           'energy groups has not been set')
+      msg = 'Unable to create tallies for a MultiGroupXS since the ' \
+            'energy groups has not been set'
+      raise ValueError(msg)
 
     group_edges = self._energy_groups._group_edges
 
@@ -364,7 +362,8 @@ class DiffusionCoeff(MultiGroupXS):
 
     super(DiffusionCoeff, self).createTallies()
 
-    exit('DiffusionCoeff is not yet able to build tallies')
+    msg = 'DiffusionCoeff is not yet able to build tallies'
+    raise ValueError(msg)
 
 
 class Chi(MultiGroupXS):

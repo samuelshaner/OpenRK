@@ -15,19 +15,12 @@ class XSTallyBuilder(object):
       self.setGeometry(geometry)
 
 
-  def getTalliesFile(self):
-    return self._tallies_file
-
-
-  def getGeometry(self):
-    return self._geometry
-
-
   def setGeometry(self, geometry):
 
     if not isinstance(geometry, Geometry):
-      exit('Unable to set the Geometry for XSTallyBuilder to %s since it is '
-           'not an OpenCSG Geometry object' % str(geometry))
+      msg = 'Unable to set the Geometry for XSTallyBuilder to {0} since ' \
+            'it is not an OpenCSG Geometry object'.format(geometry)
+      raise ValueError(msg)
 
     self._geometry = geometry
 
@@ -37,23 +30,27 @@ class XSTallyBuilder(object):
     global xs_types, domain_types
 
     if not is_string(xs_type):
-      exit('The XSTallyBuilder is unable to create cross-section type %s '
-           'which is not a string value' % str(xs_type))
+      msg = 'The XSTallyBuilder is unable to create cross-section type {0} ' \
+            'which is not a string value'.format(xs_type)
+      raise ValueError(msg)
 
     if not isinstance(energy_groups, EnergyGroups):
-      exit('The XSTallyBuilder is unable to create cross-section type %s '
-           'with energy groups %s which is not an EnergyGroups object' %
-           (xs_type, str(energy_groups)))
+      msg = 'The XSTallyBuilder is unable to create cross-section ' \
+            'type {0} with energy groups {1} which is not an EnergyGroups ' \
+            'object'.format(xs_type, energy_groups)
+      raise ValueError(msg)
 
     if not isinstance(domain, (Material, Cell, Universe)):
-      exit('The XSTallyBuilder is unable to create cross-section type %s '
-           'in %s %s since the domain is not a Material, Cell or Universe' %
-           (xs_type, str(domain_type), str(domain)))
+      msg = 'The XSTallyBuilder is unable to create cross-section ' \
+            'type {0} in {1} {2} since the domain is not a Material, ' \
+            'Cell or Universe'.format(xs_type, domain_type, domain)
+      raise ValueError(msg)
 
     if not domain_type in domain_types:
-      exit('The XSTallyBuilder is unable to create cross-section type %s '
-           'in %s %d since it is not a supported domain type' %
-           (xs_type, str(domain_type), domain._id))
+      msg = 'The XSTallyBuilder is unable to create cross-section ' \
+            'type {0} in {1} {2} since it is not a supported domain ' \
+            'type'.format(xs_type, domain_type, domain._id)
+      raise ValueError(msg)
 
     if xs_type == 'total':
       xs = TotalXS()
@@ -76,8 +73,9 @@ class XSTallyBuilder(object):
     elif xs_type == 'chi':
       xs = Chi()
     else:
-      exit('The XSTallyBuilder is unable to create cross-section type %s '
-           'which is not one of the supported types' % xs_type)
+      msg = 'The XSTallyBuilder is unable to create cross-section type {0} ' \
+            'which is not one of the supported types'.format(xs_type)
+      raise ValueError(msg)
 
     xs.setEnergyGroups(energy_groups)
     xs.createTallies()
@@ -93,8 +91,9 @@ class XSTallyBuilder(object):
     global xs_types, domain_types
 
     if not domain_type in domain_types:
-      exit('The XSTallyBuilder is unable to create all cross-sections for '
-           'domain %s since it is not a supported types' % str(domain_types))
+      msg = 'The XSTallyBuilder is unable to create all cross-sections for ' \
+            'domain {0} since it is not a supported types'.format(domain_types)
+      raise ValueError(msg)
 
     if domain_type == 'distribcell' or domain_type == 'cell':
       domains = self._geometry.getAllMaterialCells()
@@ -114,7 +113,6 @@ class XSTallyBuilder(object):
 
     for xs in self._all_xs:
       tallies = tallies.union(set(xs._tallies))
-#      tallies.union_update(set(xs._tallies))
 
     for tally in tallies:
       self._tallies_file.addTally(tally)

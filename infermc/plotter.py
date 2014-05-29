@@ -26,44 +26,52 @@ def plot_fluxes(geometry, statepoint, energies=[0], gridsize=250):
     os.makedirs(directory)
 
   if not isinstance(geometry, opencsg.Geometry):
-    print('Unable to plot the scalar flux since % is not an OpenCSG Geometry '
-          'class object' % str(geometry))
+    msg = 'Unable to plot the scalar flux since {0} is not an ' \
+          'OpenCSG Geometry class object'.format(geometry)
+    raise ValueError(msg)
 
   if not isinstance(statepoint, StatePoint):
-    print('Unable to plot the scalar flux since %s is not an OpenMC StatePoint'
-          'class object' % str(statepoint))
+    msg = 'Unable to plot the scalar flux since {0} is not an ' \
+          'OpenMC StatePoint class object'.format(statepoint)
+    raise ValueError(msg)
 
   if isinstance(energies, (list, tuple, np.array)):
 
     for energy in energies:
 
       if not is_integer(energy):
-        print('Unable to plot the scalar flux since the energies list '
-              'contains %s which is not an integer value' % str(energy))
+        msg ='Unable to plot the scalar flux since the energies list ' \
+             'contains {0} which is not an integer value'.format(energy)
+        raise ValueError(msg)
 
       elif energy < 0:
-        print('Unable to plot the scalar flux since the energies list '
-              'contains %d which is a negative value' % energies)
+        msg = 'Unable to plot the scalar flux since the energies list ' \
+              'contains {0} which is a negative value'.format(energies)
+        raise ValueError(msg)
 
   elif is_integer(energies):
 
     if energies < 0:
-      print('Unable to plot the scalar flux since the energies argument '
-            'is %d which is a negative value' % energies)
+      msg = 'Unable to plot the scalar flux since the energies argument ' \
+            'is {0} which is a negative value'.format(energies)
+      raise ValueError(msg)
 
     energies = [energies]
 
   else:
-    print('Unable to plot the scalar flux since the energies %s is not '
-          'an integer or Python list/tuple or NumPy array' % str(energies))
+    msg = 'Unable to plot the scalar flux since the energies {0} is not ' \
+          'an integer or Python list/tuple or NumPy array'.format(energies)
+    raise ValueError(msg)
 
   if not is_integer(gridsize):
-    print('Unable to plot the scalar flux since the gridsize %s is not '
-          'an integer' % str(gridsize))
+    msg = 'Unable to plot the scalar flux since the gridsize {0} is not ' \
+          'an integer'.format(gridsize)
+    raise ValueError(msg)
 
   if gridsize <= 0:
-    print('Unable to plot the scalar flux with a negative gridsize '
-          '%d' % gridsize)
+    msg = 'Unable to plot the scalar flux with a negative gridsize ' \
+          '{0}'.format(gridsize)
+    raise ValueError(msg)
 
   print('Plotting the scalar flux tallies...')
 
@@ -84,12 +92,10 @@ def plot_fluxes(geometry, statepoint, energies=[0], gridsize=250):
   tally_extractor = XSTallyExtractor(statepoint=statepoint, geometry=geometry)
   cells_to_tallies = tally_extractor.getCellsToTallies()
 
-  num_regions = geometry.getNumRegions()
+  num_regions = geometry._num_regions
   region_fluxes = np.zeros((num_regions, 2))
 
-#  volumes = geometry.getRegionVolumes()
-#  print volumes
-#  print volumes.sum()
+#  volumes = geometry._region_volumes
 
   for region in range(num_regions):
     region_fluxes[region, :] = \
@@ -125,6 +131,6 @@ def plot_fluxes(geometry, statepoint, energies=[0], gridsize=250):
     fig = plt.figure()
     plt.imshow(np.flipud(fluxes[index, :, :]), extent=[xmin, xmax, ymin, ymax])
     plt.colorbar()
-    plt.title('Scalar Flux in Energy ' + str(energy))
-    filename = directory + 'flux-energy-' + str(energy) + '.png'
+    plt.title('Scalar Flux in Energy {0}'.format(energy))
+    filename = '{0}flux-energy-{1}.png'.format(directory, energy)
     fig.savefig(filename, bbox_inches='tight')

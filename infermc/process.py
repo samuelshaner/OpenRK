@@ -9,8 +9,9 @@ from statepoint import StatePoint, Tally, score_types # filter_types
 def get_path(coords):
 
   if not isinstance(coords, opencsg.LocalCoords):
-    print('Unable to get the path with %s which is not an '
-          'OpenCSG LocalCoords object' % str(coords))
+    msg = 'Unable to get the path with {0} which is not an ' \
+          'OpenCSG LocalCoords object'.format(coords)
+    raise ValueError(msg)
 
   # Build "path" from LocalCoords
   path = list()
@@ -68,60 +69,36 @@ class XSTallyExtractor(object):
       self.setGeometry(geometry)
 
 
-  def getStatePoint(self):
-    return self._statepoint
-
-
-  def getGeometry(self):
-    return self._geometry
-
-
   def getPath(self, region):
 
     if not is_integer(region):
-      exit('Unable to get the path for region %s which is not an '
-           'integer' % str(region))
+      msg = 'Unable to get the path for region {0} which is not an ' \
+            'integer'.format(region)
+      raise ValueError(msg)
 
     if region < 0:
-      exit('Unable to get the path for region %d which is a negative '
-           'integer' % region)
+      msg = 'Unable to get the path for region {0} which is a negative ' \
+            'integer'.format(region)
+      raise ValueError(msg)
 
     if self._geometry is None:
-      exit('Unable to get path for region %d since the TallyExtractors '
-           'geometry attribute has not been set' % region)
+      msg = 'Unable to get path for region {0} since the TallyExtractors ' \
+            'geometry attribute has not been set'.format(region)
+      raise ValueError(msg)
 
     if region < len(self._geometry._num_regions):
-      exit('Unable to get path for region %d since it the Geometry only '
-           'contains %d regions' % (region, self._geometry._num_regions))
+      msg = 'Unable to get path for region {0} since it the Geometry only ' \
+            'contains {1} regions'.format(region, self._geometry._num_regions)
+      raise ValueError(msg)
 
     return self._all_paths[region]
-
-
-  def getAllPaths(self):
-    return self._all_paths
-
-
-  def getDistribcellsToTallies(self):
-    return self._distribcells_to_tallies
-
-
-  def getCellsToTallies(self):
-    return self._cells_to_tallies
-
-
-  def getUniversesToTallies(self):
-    return self._universes_to_tallies
-
-
-  def getMaterialsToTallies(self):
-    return self._materials_to_tallies
 
 
   def setStatePoint(self, statepoint):
 
     if not isinstance(statepoint, StatePoint):
-      exit('Unable to set the statepoint for a TallyExtractor to %s '
-           'since it is not a StatePoint class object' % str(statepoint))
+      msg = 'Unable to set the statepoint for a TallyExtractor to {0} ' \
+            'since it is not a StatePoint class object'.format(statepoint)
 
     self._statepoint = statepoint
     self._statepoint.read_results()
@@ -176,8 +153,9 @@ class XSTallyExtractor(object):
   def setGeometry(self, geometry):
 
     if not isinstance(geometry, opencsg.Geometry):
-      exit('Unable to set the geometry for a TallyExtractor to %s '
-           'since it is not an OpenCSG Geometry class object' % str(geometry))
+      msg = 'Unable to set the geometry for a TallyExtractor to {0} since ' \
+            'it is not an OpenCSG Geometry class object'.format(geometry)
+      raise ValueError(msg)
 
     self._geometry = geometry
 
@@ -235,12 +213,14 @@ class XSTallyExtractor(object):
     global score_types
 
     if not score in score_types.values():
-      exit('Unable to get the index for score %s since it is an '
-           'unsupported score type' % str(score))
+      msg = 'Unable to get the index for score {0} since it is an ' \
+            'unsupported score type'.format(score)
+      raise ValueError(msg)
 
     if not isinstance(tally, Tally):
-      exit('Unable to get the index for score %s for Tally %s '
-           'which is not a Tally object' % (str(score), str(tally)))
+      msg = 'Unable to get the index for score {0} for Tally {1} ' \
+            'which is not a Tally object'.format(score, tally)
+      raise ValueError(msg)
 
     return tally.scores.index(score)
 
@@ -251,29 +231,31 @@ class XSTallyExtractor(object):
     global score_types, domain_types
 
     if self._statepoint is None:
-      exit('Unable to get Tally for score %s in %s %s since '
-           'the TallyExtractors statepoint attribute has not been set' %
-           (str(score), str(domain), str(domain_id)))
+      msg = 'Unable to get Tally for score {0} in {1} {2} ' \
+            'since the TallyExtractors statepoint attribute has ' \
+            'not been set'.format(score, domain, domain_id)
+      raise ValueError(msg)
 
     if not score in score_types.values():
-      exit('Unable to get Tally for score %s in %s %s since the '
-           'score type is not supported' %
-           (str(score), str(domain), str(domain_id)))
+      msg = 'Unable to get Tally for score {0} in {1} {2} since the ' \
+            'score type is not supported'.format(score, domain, domain_id)
+      raise ValueError(msg)
 
     if not is_integer(domain_id):
-      exit('Unable to get Tally for score %s in %s %s since the '
-           'domain ID is not an integer value' %
-           (str(score), str(domain), str(domain_id)))
+      msg = 'Unable to get Tally for score {0} in {1} {2} ' \
+            'since the domain ID is not an integer' \
+            ' value'.format(score, domain, domain_id)
+      raise ValueError(msg)
 
     if domain_id < 0:
-      exit('Unable to get Tally for score %s in %s %s since the '
-           'domain ID is a negative integer' %
-           (str(score), str(domain), str(domain_id)))
+      msg = 'Unable to get Tally for score {0} in {1} {2} since the domain ' \
+            'ID is a negative integer'.format(score, domain, domain_id)
+      raise ValueError(msg)
 
     if not domain in domain_types:
-      exit('Unable to get Tally for score %s in %s %s since the '
-           'domain type is not supported' %
-           (str(score), str(domain), str(domain_id)))
+      msg = 'Unable to get Tally for score {0} in {1} {2} since the ' \
+            'domain type is not supported'.format(score, domain, domain_id)
+      raise ValueError(msg)
 
     # Loop over the domain-to-tallies mapping to find the Tally
     tally = None
@@ -321,8 +303,9 @@ class XSTallyExtractor(object):
 
     # If we did not find the Tally, return an error messsage
     if tally is None:
-      exit('Unable to get Tally for score %s in %s %d' %
-           (score, domain, domain_id))
+      msg = 'Unable to get Tally for score {0} ' \
+            'in {1} {2}'.format(score, domain, domain_id)
+      raise ValueError(msg)
 
     return tally
 
@@ -332,37 +315,44 @@ class XSTallyExtractor(object):
     global xs_types, domain_types
 
     if self._geometry is None:
-      exit('Unable to get cross-sections since the TallyExtractors '
-           'geometry attribute has not been set')
+      msg = 'Unable to get cross-sections since the TallyExtractors ' \
+            'geometry attribute has not been set'
+      raise ValueError(msg)
 
     if self._statepoint is None:
-      exit('Unable to get cross-sections since the TallyExtractors '
-           'statepoint attribute has not been set')
+      msg = 'Unable to get cross-sections since the TallyExtractors ' \
+            'statepoint attribute has not been set'
+      raise ValueError(msg)
 
     if not xs_type in xs_types:
-      exit('Unable to get %s cross-sections since it is not a '
-           'valid cross-section type' % str(xs_type))
+      msg = 'Unable to get {0} cross-sections since it is not a ' \
+            'valid cross-section type'.format(xs_type)
+      raise ValueError(msg)
 
     if not isinstance(energy_groups, EnergyGroups):
-      exit('Unable to get group cross-sections for %s %s since %s '
-           'is not an EnergyGroups object' % (str(type(energy_groups)),
-           str(domain), str(domain_id)))
+      msg = 'Unable to get group cross-sections for ' \
+            '{0} {1} since {2} is not an EnergyGroups ' \
+            'object'.format(type(energy_groups), domain, domain_id)
+      raise ValueError(msg)
 
     # Determine the number of groups
     num_groups = energy_groups._num_groups
     group_edges = energy_groups._group_edges
 
     if not is_integer(domain_id):
-      exit('Unable to get %s group cross-sections for %s %s since the domain '
-           'is not an integer' % (num_groups, str(domain), str(domain_id)))
+      msg = 'Unable to get {0} group cross-sections for {1} {2} since the ' \
+            'domain is not an integer'.format(num_groups, domain, domain_id)
+      raise ValueError(msg)
 
     if domain_id < 0:
-      exit('Unable to get %d group cross-sections for %s %d since the domain'
-           'is a negative integer' % (num_groups, str(domain), domain_id))
+      msg = 'Unable to get {0} group cross-sections for {1} {2} since the ' \
+            'domain is a negative integer'.format(num_groups, domain, domain_id)
+      raise ValueError(msg)
 
     if not domain in domain_types:
-      exit('Unable to get %d group cross-sections for %s %d since the domain '
-           'type is not supported' % (num_groups, str(domain), domain_id))
+      msg = 'Unable to get {0} group cross-sections for {1} {2} since the ' \
+            'domain type is not supported'.format(num_groups, domain, domain_id)
+      raise ValueError(msg)
 
 
     # Determine the filter for the tally domain
@@ -445,7 +435,8 @@ class XSTallyExtractor(object):
 
 
     elif xs_type == 'diffusion':
-      exit('Unable to get diffusion coefficient')
+      msg = 'Unable to get diffusion coefficient'
+      raise ValueError(msg)
 
 
     else:
