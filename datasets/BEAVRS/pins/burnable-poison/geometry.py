@@ -46,12 +46,12 @@ radialmesh = opencsg.RadialMesh(num_rings=fuel_rings)
 
 universe = pin_cells['Burnable Absorber']
 sectormesh.subdivideUniverse(universe=universe)
-cells = universe.getCells()
+cells = universe._cells
 
 for cell_id in cells.keys():
   cell = cells[cell_id]
 
-  if 'Fuel' in cell.getName():
+  if 'Fuel' in cell._name:
     radialmesh.subdivideCell(cell=cell, universe=universe)
 
 
@@ -86,6 +86,6 @@ geometry.setRootUniverse(root_universe)
 
 geometry.initializeCellOffsets()
 
-num_regions = geometry.getNumRegions()
+num_regions = geometry._num_regions
 
 print('# regions = %d' % num_regions)

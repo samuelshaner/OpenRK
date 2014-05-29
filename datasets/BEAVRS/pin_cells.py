@@ -17,7 +17,7 @@ pin_cells = dict()
 
 
 universe = Universe(name='1.6% Fuel Pin')
-pin_cells[universe.getName()] = universe
+pin_cells[universe._name] = universe
 
 cell = Cell(name='Fuel', fill=opencsg_materials['1.6% Fuel'])
 cell.addSurface(surface=surfaces['Fuel Radius-1'], halfspace=-1)
@@ -43,7 +43,7 @@ universe.addCell(cell)
 ################################################################################
 
 universe = Universe(name='2.4% Fuel Pin')
-pin_cells[universe.getName()] = universe
+pin_cells[universe._name] = universe
 
 cell = Cell(name='Fuel', fill=opencsg_materials['2.4% Fuel'])
 cell.addSurface(surface=surfaces['Fuel Radius-1'], halfspace=-1)
@@ -69,7 +69,7 @@ universe.addCell(cell)
 ################################################################################
 
 universe = Universe(name='3.1% Fuel Pin')
-pin_cells[universe.getName()] = universe
+pin_cells[universe._name] = universe
 
 cell = Cell(name='Fuel', fill=opencsg_materials['3.1% Fuel'])
 cell.addSurface(surface=surfaces['Fuel Radius-1'], halfspace=-1)
@@ -95,7 +95,7 @@ universe.addCell(cell)
 ################################################################################
 
 universe = Universe(name='Guide Tube')
-pin_cells[universe.getName()] = universe
+pin_cells[universe._name] = universe
 
 cell = Cell(name='Inner Water', fill=opencsg_materials['Borated Water'])
 cell.addSurface(surface=surfaces['GT Radius-1'], halfspace=-1)
@@ -116,7 +116,7 @@ universe.addCell(cell)
 ################################################################################
 
 universe = Universe(name='Instrument Tube')
-pin_cells[universe.getName()] = universe
+pin_cells[universe._name] = universe
 
 cell = Cell(name='Air', fill=opencsg_materials['Air'])
 cell.addSurface(surface=surfaces['IT Radius-1'], halfspace=-1)
@@ -137,7 +137,7 @@ universe.addCell(cell)
 ################################################################################
 
 universe = Universe(name='Burnable Absorber')
-pin_cells[universe.getName()] = universe
+pin_cells[universe._name] = universe
 
 cell = Cell(name='Region-1', fill=opencsg_materials['Air'])
 cell.addSurface(surface=surfaces['BA Radius-1'], halfspace=-1)

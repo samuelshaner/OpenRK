@@ -43,7 +43,7 @@ for i in range(len(cells)):
   cells[i] = row
 
 lattice = Lattice(name='1.6% Fuel - 0BA')
-lattices[lattice.getName()] = lattice
+lattices[lattice._name] = lattice
 
 lattice.setDimension((17, 17))
 lattice.setWidth((pin_pitch, pin_pitch))
@@ -77,7 +77,7 @@ for i in range(len(cells)):
   cells[i] = row
 
 lattice = Lattice(name='2.4% Fuel - 0BA')
-lattices[lattice.getName()] = lattice
+lattices[lattice._name] = lattice
 
 lattice.setDimension((17, 17))
 lattice.setWidth((pin_pitch, pin_pitch))
@@ -115,7 +115,7 @@ for i in range(len(cells)):
   cells[i] = row
 
 lattice = Lattice(name='2.4% Fuel - 12BA')
-lattices[lattice.getName()] = lattice
+lattices[lattice._name] = lattice
 
 lattice.setDimension((17, 17))
 lattice.setWidth((pin_pitch, pin_pitch))
@@ -153,7 +153,7 @@ for i in range(len(cells)):
   cells[i] = row
 
 lattice = Lattice(name='2.4% Fuel - 16BA')
-lattices[lattice.getName()] = lattice
+lattices[lattice._name] = lattice
 
 lattice.setDimension((17, 17))
 lattice.setWidth((pin_pitch, pin_pitch))
@@ -187,7 +187,7 @@ for i in range(len(cells)):
   cells[i] = row
 
 lattice = Lattice(name='3.1% Fuel - 0BA')
-lattices[lattice.getName()] = lattice
+lattices[lattice._name] = lattice
 
 lattice.setDimension((17, 17))
 lattice.setWidth((pin_pitch, pin_pitch))
@@ -225,7 +225,7 @@ for i in range(len(cells)):
   cells[i] = row
 
 lattice = Lattice(name='3.1% Fuel - 6BA')
-lattices[lattice.getName()] = lattice
+lattices[lattice._name] = lattice
 
 lattice.setDimension((17, 17))
 lattice.setWidth((pin_pitch, pin_pitch))
@@ -263,7 +263,7 @@ for i in range(len(cells)):
   cells[i] = row
 
 lattice = Lattice(name='3.1% Fuel - 15BA')
-lattices[lattice.getName()] = lattice
+lattices[lattice._name] = lattice
 
 lattice.setDimension((17, 17))
 lattice.setWidth((pin_pitch, pin_pitch))
@@ -301,7 +301,7 @@ for i in range(len(cells)):
   cells[i] = row
 
 lattice = Lattice(name='3.1% Fuel - 16BA')
-lattices[lattice.getName()] = lattice
+lattices[lattice._name] = lattice
 
 lattice.setDimension((17, 17))
 lattice.setWidth((pin_pitch, pin_pitch))
@@ -339,7 +339,7 @@ for i in range(len(cells)):
   cells[i] = row
 
 lattice = Lattice(name='3.1% Fuel - 20BA')
-lattices[lattice.getName()] = lattice
+lattices[lattice._name] = lattice
 
 lattice.setDimension((17, 17))
 lattice.setWidth((pin_pitch, pin_pitch))

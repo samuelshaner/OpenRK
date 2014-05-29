@@ -50,12 +50,12 @@ for pin in pin_cells.keys():
 
   universe = pin_cells[pin]
   sectormesh.subdivideUniverse(universe=universe)
-  cells = universe.getCells()
+  cells = universe._cells
 
   for cell_id in cells.keys():
     cell = cells[cell_id]
 
-    if 'Fuel' in cell.getName():
+    if 'Fuel' in cell._name:
       radialmesh.subdivideCell(cell=cell, universe=universe)
 
 
@@ -67,13 +67,13 @@ for pin in pin_cells.keys():
 lattice1 = lattices['2.4% Fuel - 0BA']
 lattice2 = lattices['3.1% Fuel - 0BA']
 
-cell1 = opencsg.Cell(name=lattice1.getName(), fill=lattice1)
-cell2 = opencsg.Cell(name=lattice2.getName(), fill=lattice2)
+cell1 = opencsg.Cell(name=lattice1._name, fill=lattice1)
+cell2 = opencsg.Cell(name=lattice2._name, fill=lattice2)
 
-universe1 = opencsg.Universe(name=cell1.getName())
+universe1 = opencsg.Universe(name=cell1._name)
 universe1.addCell(cell1)
 
-universe2 = opencsg.Universe(name=cell2.getName())
+universe2 = opencsg.Universe(name=cell2._name)
 universe2.addCell(cell2)
 
 lattice = opencsg.Lattice(name='3x3 Lattice')
@@ -115,5 +115,5 @@ geometry = opencsg.Geometry()
 geometry.setRootUniverse(root_universe)
 
 geometry.initializeCellOffsets()
-num_regions = geometry.getNumRegions()
+num_regions = geometry._num_regions
 print('# regions = %d' % num_regions)
