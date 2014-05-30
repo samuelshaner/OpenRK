@@ -3,7 +3,7 @@ from openmc.tallies import TalliesFile
 from infermc.multigroupxs import *
 
 
-class XSTallyBuilder(object):
+class XSTallyFactory(object):
 
   def __init__(self, geometry=None):
 
