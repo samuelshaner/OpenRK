@@ -8,14 +8,14 @@ from openmoc import Material, material_id
 from openmoc.materialize import export_materials
 
 
-# Get statepoint files
+# Retrieve statepoint files
 files = ['statepoint.10.h5']
 
 energy_groups = EnergyGroups()
 energy_groups.setGroupEdges([0.0, 0.625e-6, 20.])
 
-num_groups = energy_groups.getNumGroups()
-num_regions = geometry.getNumRegions()
+num_groups = energy_groups._num_groups
+num_regions = geometry._num_regions
 
 
 for file in files:

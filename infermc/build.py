@@ -80,8 +80,12 @@ class XSTallyFactory(object):
     xs.setEnergyGroups(energy_groups)
     xs.createTallies()
 
+    # Create a Filter for the Tally domain
+    filter = Filter(domain_type, domain._id)
+
+    # Add the Tally domain Filter to all Tallies in the cross-section
     for tally in xs._tallies:
-      tally.addFilter(type=domain_type, bins=domain._id)
+      tally.addFilter(filter)
 
     self._all_xs.append(xs)
 
