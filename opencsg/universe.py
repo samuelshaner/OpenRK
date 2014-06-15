@@ -636,14 +636,21 @@ class Lattice(Universe):
 
   def getAllUniverses(self):
 
+    # Initialize a dictionary of all Universes contained by the Lattice
+    # in each nested Universe level
+    all_universes = dict()
+
     # Get all unique Universes contained in each of the lattice cells
-    universes = self.getUniqueUniverses()
+    unique_universes = self.getUniqueUniverses()
 
-    # Append all Universes containing each Cell to the dictionary
-    for universe_id, universe in universes.iteritems():
-      universes.update(universe.getAllUniverses())
+    # Add the unique Universes filling each Lattice cell
+    all_universes.update(unique_universes)
 
-    return universes
+    # Append all Universes containing each cell to the dictionary
+    for universe_id, universe in unique_universes.iteritems():
+      all_universes.update(universe.getAllUniverses())
+
+    return all_universes
 
 
   def setId(self, lattice_id=None):
