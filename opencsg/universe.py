@@ -2067,6 +2067,6 @@ class LatCoords(LocalCoords):
     string += '{0: <16}{1}{2}\n'.format('\tLattice', '=\t', self._lattice._id)
     string += '{0: <16}{1}{2}\n'.format('\tLattice X', '=\t', self._lattice_x)
     string += '{0: <16}{1}{2}\n'.format('\tLattice Y', '=\t', self._lattice_y)
-    string += '{0: <16}{1}{2}\n'.format('\tLattice Z', '=\t', self._lattice_z)
+    string += '{0: <16}{1}{2}\n'.format('\tLattice ', '=\t', self._lattice_z)
 
     return string

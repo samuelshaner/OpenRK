@@ -129,7 +129,7 @@ class Geometry(object):
 
     for universe_id, universe in all_universes.iteritems():
 
-      cells = universe.getAllCells()
+      cells = universe._cells
 
       for cell_id, cell in cells.iteritems():
         if cell._type == 'material':
