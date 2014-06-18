@@ -76,15 +76,15 @@ plot_file.exportToXML()
 ##################   Exporting to OpenMC tallies.xml File  ####################
 ###############################################################################
 
-'''
 tallies_file = TalliesFile()
-tally_builder = XSTallyBuilder()
+tally_builder = XSTallyFactory(geometry)
 
 energy_groups = EnergyGroups()
-energy_groups.setGroupEdges([0.0, 0.625, 1e7])
+energy_groups.setGroupEdges([0.0, 0.625e-6, 10.])
 
-cells = geometry.getAllMaterialCells()
-tally_builder.createAllXS(energy_groups, cells)
+tally_builder.createAllXS(energy_groups, domain_type='distribcell')
+#tally_builder.createAllXS(energy_groups, domain_type='material')
+#tally_builder.createAllXS(energy_groups, domain_type='cell')
+#tally_builder.createAllXS(energy_groups, domain_type='universe')
 
 tally_builder.createTalliesFile()
-'''

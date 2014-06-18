@@ -81,7 +81,7 @@ tallies_file = TalliesFile()
 tally_builder = XSTallyBuilder()
 
 energy_groups = EnergyGroups()
-energy_groups.setGroupEdges([0.0, 0.625, 1e7])
+energy_groups.setGroupEdges([0.0, 0.625e6, 10.])
 
 cells = geometry.getAllMaterialCells()
 tally_builder.createAllXS(energy_groups, cells)

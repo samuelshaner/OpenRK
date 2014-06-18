@@ -1,7 +1,7 @@
 from openmc import *
 from datasets.BEAVRS.materials import openmc_materials
 from geometry import geometry, slice_height, pin_pitch
-import numpy as np
+from infermc.build import *
 
 
 
@@ -10,8 +10,8 @@ import numpy as np
 ###############################################################################
 
 # OpenMC simulation parameters
-batches = 25
-inactive = 10
+batches = 15
+inactive = 5
 particles = 1000
 
 
@@ -78,24 +78,15 @@ plot_file.exportToXML()
 ##################   Exporting to OpenMC tallies.xml File  ####################
 ###############################################################################
 
-'''
-cells = geometry.getAllCells()
 tallies_file = TalliesFile()
-scores = ['flux']
-bins = np.array([0.0, 0.625, 10000000.])
+tally_builder = XSTallyFactory(geometry)
 
-for cell_id in cells.keys():
-  cell = cells[cell_id]
+energy_groups = EnergyGroups()
+energy_groups.setGroupEdges([0.0, 0.625e-6, 10.])
 
-  if cell.getType() == 'material':
-    tally = Tally()
-    tally.addFilter(type='distribcell', bins=cell_id)
-    tally.addFilter(type='energy', bins=bins)
+tally_builder.createAllXS(energy_groups, domain_type='distribcell')
+tally_builder.createAllXS(energy_groups, domain_type='material')
+tally_builder.createAllXS(energy_groups, domain_type='cell')
+#tally_builder.createAllXS(energy_groups, domain_type='universe')
 
-    for score in scores:
-      tally.addScore(score=score)
-
-    tallies_file.addTally(tally)
-
-tallies_file.exportToXML()
-'''
+tally_builder.createTalliesFile()

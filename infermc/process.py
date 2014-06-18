@@ -29,8 +29,15 @@ def get_path(coords):
       lat_x = coords._lattice_x+1
       lat_y = coords._lattice_y+1
 
-      # Use z=1 for 3D lattices
-      path.append((coords._lattice._id, lat_x, lat_y, 1))
+      # 3D Lattices only
+      if coords._lattice_z != None:
+        lat_z = coords._lattice_z+1
+
+      # 2D Lattices
+      else:
+        lat_z = 1
+
+      path.append((coords._lattice._id, lat_x, lat_y, lat_z))
 
     # Traverse LocalCoords linked list to next lowest nested universe
     coords = coords._next

@@ -96,7 +96,7 @@ class XSTallyFactory(object):
 
     if not domain_type in domain_types:
       msg = 'The XSTallyBuilder is unable to create all cross-sections for ' \
-            'domain {0} since it is not a supported types'.format(domain_types)
+            'domain {0} since it is not a supported types'.format(domain_type)
       raise ValueError(msg)
 
     if domain_type == 'distribcell' or domain_type == 'cell':

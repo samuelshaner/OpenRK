@@ -81,7 +81,7 @@ plot_file.exportToXML()
 cells = geometry.getAllCells()
 tallies_file = TalliesFile()
 scores = ['flux']
-bins = np.array([0.0, 0.625, 10000000.])
+bins = np.array([0.0, 0.625e-6, 10.])
 
 for cell_id in cells.keys():
   cell = cells[cell_id]

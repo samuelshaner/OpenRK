@@ -7,9 +7,9 @@ from datasets.BEAVRS.lattices import *
 ###############################################################################
 
 # Discretization of pin cells
-fuel_rings = 3
-mod_rings = 3
-sectors = 4
+fuel_rings = 0
+mod_rings = 0
+sectors = 0
 
 # Height of the axial slice
 slice_height = 10.
