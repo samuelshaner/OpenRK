@@ -79,6 +79,24 @@ class Geometry(object):
     return self._root_universe.getMinZ()
 
 
+  def getBounds(self):
+
+    if self._root_universe is None:
+      msg = 'Unable to get the bounds since the Geometry does not ' \
+            'contain the base Universe ID=0'
+      raise ValueError(msg)
+
+    bounds = [self._root_universe.getMinX(),
+              self._root_universe.getMinY(),
+              self._root_universe.getMinZ(),
+              self._root_universe.getMaxX(),
+              self._root_universe.getMaxY(),
+              self._root_universe.getMaxZ()]
+
+    return bounds
+
+
+
   def getAllCells(self):
 
     if self._root_universe is None:
@@ -128,6 +146,9 @@ class Geometry(object):
     material_universes = set()
 
     for universe_id, universe in all_universes.iteritems():
+
+      if isinstance(universe, Lattice):
+        print 'wtf!!'
 
       cells = universe._cells
 
