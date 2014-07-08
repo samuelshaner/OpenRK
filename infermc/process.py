@@ -1,9 +1,7 @@
 import opencsg
+from openmc.opencsg_compatible import get_opencsg_geometry
 from infermc.multigroupxs import *
-from statepoint import StatePoint, Tally, score_types # filter_types
-
-
-#FIXME: mesh domain types
+import copy
 
 
 def get_path(coords):
@@ -45,16 +43,18 @@ def get_path(coords):
   return path
 
 
+
 class XSTallyExtractor(object):
 
-  def __init__(self, statepoint=None, geometry=None):
+  def __init__(self, statepoint=None):
 
     # Initialize TallyExtractor class attributes
     self._statepoint = None
-    self._geometry = None
+    self._openmc_geometry = None
+    self._opencsg_geometry = None
 
     # Dictionaries mapping cells/materials to Tallies
-    # Keys   - Location ID
+    # Keys   - Region ID
     # Values - Tally ID
     self._distribcells_to_tallies = dict()
     self._cells_to_tallies = dict()
@@ -66,14 +66,151 @@ class XSTallyExtractor(object):
     # Values - score list
     self._tallies_to_scores = dict()
 
-    # List of all "paths" to each region, indexed by region ID
-    self._all_paths = list()
+    # Dictionary mapping regions to "paths"
+    # Keys   - region ID
+    # Values - "path" string
+    self._all_paths = dict()
+
+    # Nested dictionary of MultiGroupXS objects
+    # Keys   - domain type (e.g, 'distribcell', 'material')
+    # Values - dictionary for each domain of that type
+    self._multigroup_xs = dict()
 
     if not statepoint is None:
       self.setStatePoint(statepoint)
 
-    if not geometry is None:
-      self.setGeometry(geometry)
+
+  def setStatePoint(self, statepoint):
+
+    if not isinstance(statepoint, openmc.statepoint.StatePoint):
+      msg = 'Unable to set the statepoint for a TallyExtractor to {0} ' \
+            'since it is not a StatePoint class object'.format(statepoint)
+      raise ValueError(msg)
+
+    self._statepoint = statepoint
+    self._statepoint.read_results()
+    self._statepoint.compute_ci()
+
+    # Retrieve the OpenMC Geometry from the statepoint and convert it
+    # into an OpenCSG geometry object using the compatibility module
+    self._openmc_geometry = self._statepoint._geometry
+    self._opencsg_geometry = get_opencsg_geometry(self._openmc_geometry)
+
+    # Build maps to optimize tally lookups
+    self._buildTallyMaps()
+
+
+  def _buildTallyMaps(self):
+
+    self._buildDistribcellTallyMaps()
+    self._buildCellTallyMaps()
+    self._buildUniverseTallyMaps()
+    self._buildMaterialTallyMaps()
+    self._buildAllPaths()
+
+
+  def _buildMaterialTallyMaps(self):
+
+    # Create a mapping of Tally locations to location IDs to Tally IDs to scores
+    for tally_id, tally in self._statepoint._tallies.iteritems():
+      filters = tally._filters
+
+      for filter in filters:
+
+        if filter._type == 'material':
+          material_ids = filter._bin_edges
+
+          # Build maps for all materials to this Tally
+          for material_id in material_ids:
+
+            # If this material_id is not already a key, create a list for it
+            if not material_id in self._materials_to_tallies.keys():
+              self._materials_to_tallies[material_id] = list()
+
+            # Add the Tally's ID to the list for this material
+            self._materials_to_tallies[material_id].append(tally._id)
+
+
+  def _buildUniverseTallyMaps(self):
+
+    # Create a mapping of Tally locations to location IDs to Tally IDs to scores
+    for tally_id, tally in self._statepoint._tallies.iteritems():
+      filters = tally._filters
+
+      for filter in filters:
+
+        if filter._type == 'universe':
+          universe_ids = filter._bin_edges
+
+          # Build maps for all universes to this Tally
+          for universe_id in universe_ids:
+
+            # If this universe_id is not already a key, create a list for it
+            if not universe_id in self._universes_to_tallies.keys():
+              self._universes_to_tallies[universe_id] = list()
+
+            # Add the Tally's ID to the list for this universe
+            self._universes_to_tallies[universe_id].append(tally._id)
+
+
+  def _buildCellTallyMaps(self):
+
+    # Create a mapping of Tally locations to location IDs to Tally IDs to scores
+    for tally_id, tally in self._statepoint._tallies.iteritems():
+      filters = tally._filters
+
+      for filter in filters:
+
+        if filter._type == 'cell':
+          cell_ids = filter._bin_edges
+
+          # Build maps for all cells to this Tally
+          for cell_id in cell_ids:
+
+            # If this distribcell_id is not already a key, create a list for it
+            if not cell_id in self._cells_to_tallies.keys():
+              self._cells_to_tallies[cell_id] = list()
+
+            # Add the Tally's ID to the list for this cell
+            self._cells_to_tallies[cell_id].append(tally._id)
+
+
+  def _buildDistribcellTallyMaps(self):
+
+    # Create a mapping of Tally locations to location IDs to Tally IDs to scores
+    for tally_id, tally in self._statepoint._tallies.iteritems():
+
+      # Store a list of the Tally scores
+      self._tallies_to_scores[tally._id] = tally._scores
+
+      filters = tally._filters
+
+      for filter in filters:
+
+        if filter._type == 'distribcell':
+          distribcell_ids = filter._bin_edges
+
+          # Build maps for all distribcells to this Tally
+          for distribcell_id in distribcell_ids:
+
+            # If this distribcell_id is not already a key, create a list for it
+            if not distribcell_id in self._distribcells_to_tallies.keys():
+              self._distribcells_to_tallies[distribcell_id] = list()
+
+            # Add the Tally's ID to the list for this distribcell
+            self._distribcells_to_tallies[distribcell_id].append(tally._id)
+
+
+  def _buildAllPaths(self):
+
+    # Create a list of "paths" for each unique region in the Geometry
+    self._opencsg_geometry.initializeCellOffsets()
+
+    num_regions = self._opencsg_geometry._num_regions
+
+    for region in range(num_regions):
+      coord = self._opencsg_geometry.findRegion(region)
+      self._all_paths[region] = get_path(coord)
 
 
   def getPath(self, region):
@@ -83,362 +220,289 @@ class XSTallyExtractor(object):
             'integer'.format(region)
       raise ValueError(msg)
 
-    if region < 0:
+    num_regions = self._opencsg_geometry._num_regions
+
+    if region > num_regions:
+      msg = 'Unable to get path for region {0} since it the Geometry only ' \
+            'contains {1} regions'.format(region, num_regions)
+      raise ValueError(msg)
+
+    elif region < 0:
       msg = 'Unable to get the path for region {0} which is a negative ' \
             'integer'.format(region)
-      raise ValueError(msg)
-
-    if self._geometry is None:
-      msg = 'Unable to get path for region {0} since the TallyExtractors ' \
-            'geometry attribute has not been set'.format(region)
-      raise ValueError(msg)
-
-    if region < len(self._geometry._num_regions):
-      msg = 'Unable to get path for region {0} since it the Geometry only ' \
-            'contains {1} regions'.format(region, self._geometry._num_regions)
       raise ValueError(msg)
 
     return self._all_paths[region]
 
 
-  def setStatePoint(self, statepoint):
-
-    if not isinstance(statepoint, StatePoint):
-      msg = 'Unable to set the statepoint for a TallyExtractor to {0} ' \
-            'since it is not a StatePoint class object'.format(statepoint)
-
-    self._statepoint = statepoint
-    self._statepoint.read_results()
-
-    # Create a mapping of Tally locations to location IDs to Tally IDs to scores
-    for tally in self._statepoint.tallies:
-
-      # Store a list of the Tally scores
-      self._tallies_to_scores[tally.id] = tally.scores
-
-      filters = tally.filters
-
-      if 'distribcell' in filters.keys():
-        filter = filters['distribcell']
-        index = statepoint.geom.cellList.index(filter.bins[0])
-        distribcell_id = statepoint.geom.cell[index].userID
-
-        if not distribcell_id in self._distribcells_to_tallies.keys():
-          self._distribcells_to_tallies[distribcell_id] = list()
-
-        self._distribcells_to_tallies[distribcell_id].append(tally.id)
-
-      if 'cell' in filters.keys():
-        filter = filters['cell']
-        index = statepoint.geom.cellList.index(filter.bins[0])
-        cell_id = statepoint.geom.cell[index].userID
-
-        if not cell_id in self._cells_to_tallies.keys():
-          self._cells_to_tallies[cell_id] = list()
-
-        self._cells_to_tallies[cell_id].append(tally.id)
-
-      if 'universe' in filters.keys():
-        filter = filters['universe']
-        universe_id = filter.bins[0]
-
-        if not universe_id in self.universes_to_tallies.keys():
-          self._universes_to_tallies[universe_id] = list()
-
-        self._universes_to_tallies[universe_id].append(tally.id)
-
-      if 'material' in filters.keys():
-        filter = filters['material']
-        material_id = filter.bins[0]
-
-        if not material_id in self._materials_to_tallies.keys():
-          self._materials_to_tallies[material_id] = list()
-
-        self._materials_to_tallies[material_id].append(tally.id)
-
-
-  def setGeometry(self, geometry):
-
-    if not isinstance(geometry, opencsg.Geometry):
-      msg = 'Unable to set the geometry for a TallyExtractor to {0} since ' \
-            'it is not an OpenCSG Geometry class object'.format(geometry)
-      raise ValueError(msg)
-
-    self._geometry = geometry
-
-    num_regions = self._geometry._num_regions
-
-    # Create a list of "paths" for each unique region in the Geometry
-    self._geometry.initializeCellOffsets()
-
-    # Compute the volumes for each region in the Geometry
-    # First, compute the volume of the bounding box surrounding
-    # the Geometry to use as a scaling factor for each subregion
-    max_x = self._geometry.getMaxX()
-    max_y = self._geometry.getMaxY()
-    max_z = self._geometry.getMaxZ()
-    min_x = self._geometry.getMinX()
-    min_y = self._geometry.getMinY()
-    min_z = self._geometry.getMinZ()
-
-    delta_x = max_x - min_x
-    delta_y = max_y - min_y
-    delta_z = max_z - min_z
-
-    volume = delta_x * delta_y * delta_z
-
-#    self._geometry.setVolume(volume, tolerance=1e-1)
-
-    for region in range(num_regions):
-      coord = geometry.findRegion(region)
-      self._all_paths.append(get_path(coord))
-
-
-  def tallyContainsFilter(self, filter, tally):
-
-    # Expect filter as a tuple: (filter type, bins)
-    # Expect tally as an statepoint.Tally object
-
-    contains_filter = False
-
-    # Iterate over all of Tally's filters
-    for filter_type in tally.filters.keys():
-
-      test_filter = tally.filters[filter_type]
-
-      # Check if the test filter is the same type of filter as
-      # the query filter and contains the same bins
-      if filter[0] == filter_type and filter[1] == test_filter.bins:
-        contains_filter = True
-        break
-
-    return contains_filter
-
-
-  def getTallyScoreIndex(self, score, tally):
-
-    global score_types
-
-    if not score in score_types.values():
-      msg = 'Unable to get the index for score {0} since it is an ' \
-            'unsupported score type'.format(score)
-      raise ValueError(msg)
-
-    if not isinstance(tally, Tally):
-      msg = 'Unable to get the index for score {0} for Tally {1} ' \
-            'which is not a Tally object'.format(score, tally)
-      raise ValueError(msg)
-
-    return tally.scores.index(score)
-
-
-  def getTally(self, score, filters, domain_id, domain='distribcell',
-               estimator=None, label=''):
-
-    global score_types, domain_types
+  def getTally(self, score, filters, estimator='tracklength', label=''):
 
     if self._statepoint is None:
-      msg = 'Unable to get Tally for score {0} in {1} {2} ' \
-            'since the TallyExtractors statepoint attribute has ' \
-            'not been set'.format(score, domain, domain_id)
-      raise ValueError(msg)
-
-    if not score in score_types.values():
-      msg = 'Unable to get Tally for score {0} in {1} {2} since the ' \
-            'score type is not supported'.format(score, domain, domain_id)
-      raise ValueError(msg)
-
-    if not is_integer(domain_id):
-      msg = 'Unable to get Tally for score {0} in {1} {2} ' \
-            'since the domain ID is not an integer' \
-            ' value'.format(score, domain, domain_id)
-      raise ValueError(msg)
-
-    if domain_id < 0:
-      msg = 'Unable to get Tally for score {0} in {1} {2} since the domain ' \
-            'ID is a negative integer'.format(score, domain, domain_id)
-      raise ValueError(msg)
-
-    if not domain in domain_types:
-      msg = 'Unable to get Tally for score {0} in {1} {2} since the ' \
-            'domain type is not supported'.format(score, domain, domain_id)
+      msg = 'Unable to get Tally since statepoint attribute has not been set'
       raise ValueError(msg)
 
     # Loop over the domain-to-tallies mapping to find the Tally
     tally = None
     tallies = None
 
-    if domain == 'distribcell':
-      tallies = self._distribcells_to_tallies
-    elif domain == 'cell':
-      tallies = self._cells_to_tallies
-    elif domain == 'universe':
-      tallies = self._universes_to_tallies
-    elif domain == 'material':
-      tallies = self._materials_to_tallies
+    # Determine the Tally domain (e.g, Material, Cell, etc.)
+    for filter in filters:
+
+      if filter._type == 'material':
+        tallies = self._materials_to_tallies
+        domain_id = filter._bin_edges[0]
+        break
+
+      elif filter._type == 'cell':
+        tallies = self._cells_to_tallies
+        domain_id = filter._bin_edges[0]
+        break
+
+      elif filter._type == 'distribcell':
+        tallies = self._distribcells_to_tallies
+        domain_id = filter._bin_edges[0]
+        break
+
+      elif filter._type == 'universe':
+        tallies = self._universes_to_tallies
+        domain_id = filter._bin_edges[0]
+        break
 
     # Iterate over all tallies to find the appropriate one
     for tally_id in tallies[domain_id]:
 
-      # Determine if the queried Tally score is associated with this Tally
-      if score in self._tallies_to_scores[tally_id]:
-        internal_id = self._statepoint.tallyID[tally_id]
-        test_tally = self._statepoint.tallies[internal_id]
+      # If the Tally score doesn't match
+      if not score in self._tallies_to_scores[tally_id]:
+        continue
 
-        #FIXME: Check tally estimator here!!!
+      # Get the Tally from the StatePoint
+      test_tally = self._statepoint._tallies[tally_id]
 
-        # If the length of the filters container doesn't match the requested
-        # filters, continue to next Tally. Subtract one for the Tally domain
-        # (e.g., material, cell, distribcell)
-        if len(filters) != len(test_tally.filters) - 1:
-          continue
+      # If the label parameter was set and doesn't match
+      if not label is '' and test_tally._label != label:
+        continue
 
-        contains_filters = True
+      # If the estimator type ('tracklength' or 'analog') doesn't match
+      if test_tally._estimator != estimator:
+        continue
 
-        # Iterate over the filters requested by the user
-        for filter in filters:
+      # If the length of the Filters container doesn't match
+      if len(filters) != len(test_tally._filters):
+        continue
 
-          # If the test Tally does not contains this filter, break
-          if not self.tallyContainsFilter(filter, test_tally):
-            contains_filters = False
-            break
+      contains_filters = True
 
-        # If the Tally contained all of the filters, then we can return this Tally
-        if contains_filters:
-          tally = test_tally
+      # Iterate over the Filters requested by the user
+      for filter in filters:
+
+        # If the test Tally does not contains this filter, break
+        if not filter in test_tally._filters:
+          contains_filters = False
           break
 
-    # If we did not find the Tally, return an error messsage
+      # If the Tally contained all of the filters, then return this Tally
+      if contains_filters:
+        tally = test_tally
+        break
+
+    # If we did not find the Tally, return an error message
     if tally is None:
-      msg = 'Unable to get Tally for score {0} ' \
-            'in {1} {2}'.format(score, domain, domain_id)
+      msg = 'Unable to get Tally for score {0}'.format(score)
       raise ValueError(msg)
 
     return tally
 
 
-  def getXS(self, xs_type, energy_groups, domain_id, domain='distribcell'):
+  def extractAllMultiGroupXS(self, energy_groups, domain_type='distribcell'):
 
-    global xs_types, domain_types
+    for xs_type in xs_types:
+      self.extractMultiGroupXS(xs_type, energy_groups, domain_type)
 
-    if self._geometry is None:
-      msg = 'Unable to get cross-sections since the TallyExtractors ' \
-            'geometry attribute has not been set'
-      raise ValueError(msg)
+
+  def extractMultiGroupXS(self, xs_type, energy_groups, domain_type='distribcell'):
+
+    # Add nested dictionary for this domain type if needed
+    if not domain_type in self._multigroup_xs.keys():
+      self._multigroup_xs[domain_type] = dict()
+
+    # Get a list of the domains for this domain type to iterate over
+    if domain_type == 'material':
+      domains = self._openmc_geometry.getAllMaterials()
+
+    elif domain_type == 'universe':
+      domains = self._openmc_geometry.getAllMaterialUniverses()
+
+    elif domain_type == 'cell' or domain_type == 'distribcell':
+      domains = self._openmc_geometry.getAllMaterialCells()
+
+    # Iterate and create the MultiGroupXS for each domain
+    for domain in domains:
+
+      # Add nested dictionary for this domain if needed
+      if not domain._id in self._multigroup_xs[domain_type].keys():
+        self._multigroup_xs[domain_type][domain._id] = dict()
+
+      # Build the MultiGroupXS for this domain
+      xs = self.createMultiGroupXS(xs_type, energy_groups, domain, domain_type)
+
+      # Store a handle to the MultiGroupXS object in the nested dictionary
+      self._multigroup_xs[domain_type][domain._id][xs_type] = xs
+
+
+
+  def createMultiGroupXS(self, xs_type, energy_groups,
+                         domain, domain_type='distribcell'):
 
     if self._statepoint is None:
-      msg = 'Unable to get cross-sections since the TallyExtractors ' \
+      msg = 'Unable to get cross-sections since the TallyExtractor ' \
             'statepoint attribute has not been set'
       raise ValueError(msg)
 
-    if not xs_type in xs_types:
+    elif not xs_type in xs_types:
       msg = 'Unable to get {0} cross-sections since it is not a ' \
             'valid cross-section type'.format(xs_type)
       raise ValueError(msg)
 
-    if not isinstance(energy_groups, EnergyGroups):
-      msg = 'Unable to get group cross-sections for ' \
-            '{0} {1} since {2} is not an EnergyGroups ' \
-            'object'.format(type(energy_groups), domain, domain_id)
+    elif not isinstance(energy_groups, EnergyGroups):
+      msg = 'Unable to get group cross-sections with energy groups ' \
+            '{0} since it is not an EnergyGroups object'.format(energy_groups)
       raise ValueError(msg)
 
-    # Determine the number of groups
-    num_groups = energy_groups._num_groups
+    elif not isinstance(domain, (openmc.Material, openmc.Cell,
+                                 openmc.Universe, openmc.Mesh)):
+      msg = 'Unable to get group cross-sections for domain ' \
+            '{0} since it is not a valid domain'.format(domain)
+      raise ValueError(msg)
+
+    elif not domain_type in domain_types:
+      msg = 'Unable to get group cross-sections for domain type ' \
+            '{0} since it is not a supported domain type'.format(domain_type)
+      raise ValueError(msg)
+
+
+    # Initialize a list of filters
+    filters = list()
+
+    # Create energy and domain filters to search for
     group_edges = energy_groups._group_edges
-
-    if not is_integer(domain_id):
-      msg = 'Unable to get {0} group cross-sections for {1} {2} since the ' \
-            'domain is not an integer'.format(num_groups, domain, domain_id)
-      raise ValueError(msg)
-
-    if domain_id < 0:
-      msg = 'Unable to get {0} group cross-sections for {1} {2} since the ' \
-            'domain is a negative integer'.format(num_groups, domain, domain_id)
-      raise ValueError(msg)
-
-    if not domain in domain_types:
-      msg = 'Unable to get {0} group cross-sections for {1} {2} since the ' \
-            'domain type is not supported'.format(num_groups, domain, domain_id)
-      raise ValueError(msg)
+    filters.append(openmc.Filter(type='energy', bin_edges=group_edges))
+    filters.append(openmc.Filter(type=domain_type, bin_edges=domain._id))
 
 
-    # Determine the filter for the tally domain
-    if domain == 'distribcell':
+    if xs_type == 'total':
 
-      # Get the path to the region in the geometry
-      coord = self._geometry.findRegion(domain_id)
-      path = get_path(coord)
+      # Get the Tally objects needed to compute the total xs
+      flux = self.getTally('flux', filters)
+      total = self.getTally('total', filters)
 
-      # Use cell ID for the domain - necessary for the getTally(...) routine
-      domain_id = path[-1]
-
-      # Create distribcell filter for the StatePoint object using the path
-      domain_filter = (domain, path)
-
-    else:
-      domain_filter = (domain, domain_id)
+      # Initialize a MultiGroupXS object
+      multigroup_xs = TotalXS(domain, domain_type, energy_groups)
+      multigroup_xs._tallies['flux'] = flux
+      multigroup_xs._tallies['total'] = total
 
 
-    #FIXME: Deal with diffusion coeff
-    #FIXME: Deal with nuclides
-    #FIXME: Deal with tracklength vs. analog tallies
+    elif xs_type == 'transport':
+
+      # Get the Tally objects needed to compute the transport xs
+      flux = self.getTally('flux', filters, estimator='analog')
+      total = self.getTally('total', filters, estimator='analog')
+      scatter1 = self.getTally('scatter-1', filters, estimator='analog')
+
+      # Initialize a MultiGroupXS object
+      multigroup_xs = TransportXS(domain, domain_type, energy_groups)
+      multigroup_xs._tallies['flux'] = flux
+      multigroup_xs._tallies['total'] = total
+      multigroup_xs._tallies['scatter-1'] = scatter1
 
 
-    tallies = dict()
-    data = dict()
-    scores = dict()
+    elif xs_type == 'absorption':
 
-    if xs_type == 'transport':
+      # Get the Tally objects needed to compute the absorption xs
+      flux = self.getTally('flux', filters)
+      absorption = self.getTally('absorption', filters)
 
-      #FIXME: Use analog tallies
-      #FIXME: label='%d groups' % num_groups
+      # Initialize a MultiGroupXS object
+      multigroup_xs = AbsorptionXS(domain, domain_type, energy_groups)
+      multigroup_xs._tallies['flux'] = flux
+      multigroup_xs._tallies['absorption'] = absorption
 
-      # Get the Tally IDs for the flux and reaction rate needed to compute the xs
-      filters = [('energyin', list(group_edges))]
-      tallies['flux'] = self.getTally('flux', filters, domain_id, domain)
-      tallies['rxn-1'] = self.getTally('total', filters, domain_id, domain)
-      tallies['rxn-2'] = self.getTally('scatter-pn', filters, domain_id, domain)
 
-      # Initialize empty arrays for the flux and reaction rate data
-      data['flux'] = np.zeros(num_groups)
-      data['rxn-1'] = np.zeros(num_groups)
-      data['rxn-2'] = np.zeros(num_groups)
+    elif xs_type == 'fission':
+
+      # Get the Tally objects needed to compute the fission xs
+      flux = self.getTally('flux', filters)
+      fission = self.getTally('fission', filters)
+
+      # Initialize a MultiGroupXS object
+      multigroup_xs = FissionXS(domain, domain_type, energy_groups)
+      multigroup_xs._tallies['flux'] = flux
+      multigroup_xs._tallies['fission'] = fission
+
+
+    elif xs_type == 'nu-fission':
+
+      # Get the Tally objects needed to compute the nu-fission xs
+      flux = self.getTally('flux', filters)
+      nu_fission = self.getTally('nu-fission', filters)
+
+      # Initialize a MultiGroupXS object
+      multigroup_xs = NuFissionXS(domain, domain_type, energy_groups)
+      multigroup_xs._tallies['flux'] = flux
+      multigroup_xs._tallies['nu-fission'] = nu_fission
+
+
+    elif xs_type == 'scatter':
+
+      # Get the Tally objects needed to compute the scatter xs
+      flux = self.getTally('flux', filters)
+      scatter = self.getTally('scatter', filters)
+
+      # Initialize a MultiGroupXS object
+      multigroup_xs = ScatterXS(domain, domain_type, energy_groups)
+      multigroup_xs._tallies['flux'] = flux
+      multigroup_xs._tallies['scatter'] = scatter
+
+
+    elif xs_type == 'nu-scatter':
+
+      # Get the Tally objects needed to compute the nu-scatter xs
+      flux = self.getTally('flux', filters, estimator='analog')
+      nu_scatter = self.getTally('nu-scatter', filters, estimator='analog')
+
+      # Initialize a MultiGroupXS object
+      multigroup_xs = NuScatterXS(domain, domain_type, energy_groups)
+      multigroup_xs._tallies['flux'] = flux
+      multigroup_xs._tallies['nu-scatter'] = nu_scatter
 
 
     elif xs_type == 'scatter matrix':
 
-      #FIXME: Use analog tallies
-      #FIXME: label='%d groups' % num_groups
+      # Get the Tally objects needed to compute the scatter matrix
+      flux = self.getTally('flux', filters, estimator='analog')
 
-      # Get the Tally IDs for the flux and reaction rate needed to compute the xs
-      filters = [('energyin', list(group_edges))]
-      tallies['flux'] = self.getTally('flux', filters, domain_id, domain)
+      filters.append(openmc.Filter(type='energyout', bin_edges=group_edges))
+      nu_scatter = self.getTally('nu-scatter', filters, estimator='analog')
 
-      filters.append(('energyout', list(group_edges)))
-      tallies['rxn-1'] = self.getTally('nu-scatter', filters, domain_id, domain)
-
-      # Initialize empty arrays for the flux and reaction rate data
-      data['flux'] = np.zeros(num_groups)
-      data['rxn-1'] = np.zeros((num_groups, num_groups))
+      # Initialize a MultiGroupXS object
+      multigroup_xs = ScatterMatrixXS(domain, domain_type, energy_groups)
+      multigroup_xs._tallies['flux'] = flux
+      multigroup_xs._tallies['nu-scatter'] = nu_scatter
 
 
     elif xs_type == 'chi':
 
-      #FIXME: Use analog tallies
-      #FIXME: label='%d groups' % num_groups
+      # Get the Tally objects needed to compute chi
+      nu_fission_in = self.getTally('nu-fission', filters, estimator='analog')
 
-      # Get the Tally IDs for the flux and reaction rate needed to compute the xs
-      filters = [('energyin', list(group_edges))]
-      tallies['flux'] = self.getTally('flux', filters, domain_id, domain)
-      tallies['rxn-1'] = self.getTally('nu-fission', filters, domain_id, domain)
+      energyout_filter = openmc.Filter(type='energyout', bin_edges=group_edges)
+      filters.pop(0)
+      filters.append(energyout_filter)
+      nu_fission_out = self.getTally('nu-fission', filters, estimator='analog')
 
-      filters = [('energyout', list(group_edges))]
-      tallies['rxn-2'] = self.getTally('nu-fission', filters, domain_id, domain)
-
-      # Initialize empty arrays for the flux and reaction rate data
-      data['flux'] = np.zeros(num_groups)
-      data['rxn-1'] = np.zeros(num_groups)
-      data['rxn-2'] = np.zeros(num_groups)
+      # Initialize a MultiGroupXS object
+      multigroup_xs = Chi(domain, domain_type, energy_groups)
+      multigroup_xs._tallies['nu-fission-in'] = nu_fission_in
+      multigroup_xs._tallies['nu-fission-out'] = nu_fission_out
 
 
     elif xs_type == 'diffusion':
@@ -446,126 +510,49 @@ class XSTallyExtractor(object):
       raise ValueError(msg)
 
 
-    else:
-
-      #FIXME: Do not use analog flux
-      #FIXME: label='%d groups' % num_groups
-
-      filters = [('energyin', list(group_edges))]
-
-      # Get the Tallies for the flux and reaction rate needed to compute the xs
-      tallies['flux'] = self.getTally('flux', filters, domain_id, domain)
-      tallies['rxn-1'] = self.getTally(xs_type, filters, domain_id, domain)
-
-      # Initialize empty arrays for the flux and reaction rate data
-      data['flux'] = np.zeros(num_groups)
-      data['rxn-1'] = np.zeros(num_groups)
+    # Compute the cross-section
+    multigroup_xs.computeXS()
 
 
-    # Get the indices for each of the Tally scores
-    for tally_name, tally in tallies.iteritems():
-      score = tally.scores[0]                                     #FIXME: Is this safe?? What if a user defines several scores together in the same Tally
-      scores[tally_name] = self.getTallyScoreIndex(score, tally)
+    # Build offsets such that a user can query the MultiGroupXS for any region
+    if domain_type == 'distribcell':
+
+      multigroup_xs.findDomainOffset()
+      domain_offset = multigroup_xs._offset
+
+      # "Cache" a dictionary of region IDs to offsets
+      num_regions = self._opencsg_geometry._num_regions
+
+      for region in range(num_regions):
+        path = copy.deepcopy(self.getPath(region))
+        cell_id = path[-1]
+
+        if cell_id == domain._id:
+          offset = self._openmc_geometry.getOffset(path, domain_offset)
+          multigroup_xs.setSubDomainOffset(region, offset)
+
+    return multigroup_xs
 
 
-    # Extract the flux and reaction rate tally averages for each energy group
-    for in_group in range(num_groups):
+  def getMultiGroupXS(self, xs_type, domain, domain_type):
 
-      # Get the flux at this energy group
-      flux = tallies['flux']
-      filters = [domain_filter, ('energyin', in_group)]
-      value = self._statepoint.get_value(flux.id, filters, scores['flux'])
-      data['flux'][in_group] = value[0]
+    # Check that MultiGroupXS for the input parameters has been created
 
+    if not domain_type in self._multigroup_xs.keys():
+      msg = 'Unable to get cross-section since no cross-sections for ' \
+            'domain type {0} have been created'.format(domain_type)
+      raise ValueError(msg)
 
-      if xs_type == 'transport':
+    # Check that the MultiGroupXS corresponding to this domain has been created
+    elif not domain in self._multigroup_xs[domain_type].keys():
+      msg = 'Unable to get cross-section since no cross-sections for ' \
+            'domain {0} {1} have been created'.format(domain_type, domain)
+      raise ValueError(msg)
 
-        # Get the total reaction rate at this energy group
-        rxn_rate = tallies['rxn-1']
-        filters = [domain_filter, ('energyin', in_group)]
-        value = self._statepoint.get_value(rxn_rate.id, filters, scores['rxn-1'])
-        data['rxn-1'][in_group] = value[0]
+    elif not xs_type in self._multigroup_xs[domain_type][domain].keys():
+      msg = 'Unable to get cross-section since no cross-sections of type {0} ' \
+            'for domain {1} {2} have been created'.format(xs_type,
+                                                          domain_type, domain)
+      raise ValueError(msg)
 
-        # Get the scatter-P1 reaction rate at this energy group
-        rxn_rate = tallies['rxn-2']
-        value = self._statepoint.get_value(rxn_rate.id, filters, scores['rxn-2'])
-        data['rxn-2'][in_group] = value[0]
-
-
-      elif xs_type == 'scatter matrix':
-
-        # Need to loop over inner and outer energy groups
-        for out_group in range(num_groups):
-
-          filters = [domain_filter, ('energyin', in_group),
-                     ('energyout', out_group)]
-          rxn_rate = tallies['rxn-1']
-          value = self._statepoint.get_value(rxn_rate.id, filters, scores['rxn-1'])
-          data['rxn-1'][in_group, out_group] = value[0]
-
-
-      elif xs_type == 'chi':
-
-        # Get the nufission reaction rate at this energy group
-        rxn_rate = tallies['rxn-1']
-        filters = [domain_filter, ('energyin', in_group)]
-        value = self._statepoint.get_value(rxn_rate.id, filters, scores['rxn-1'])
-        data['rxn-1'][in_group] = value[0]
-
-        # Get the nufission reaction rate into this energy group
-        rxn_rate = tallies['rxn-2']
-        filters = [domain_filter, ('energyout', in_group)]
-        value = self._statepoint.get_value(rxn_rate.id, filters, scores['rxn-2'])
-        data['rxn-2'][in_group] = value[0]
-
-
-      else:
-
-        # Get the reaction rate at this energy group
-        rxn_rate = tallies['rxn-1']
-        filters = [domain_filter, ('energyin', in_group)]
-        value = self._statepoint.get_value(rxn_rate.id, filters, scores['rxn-1'])
-        data['rxn-1'][in_group] = value[0]
-
-
-    # Compute the cross-section for each energy group and return it
-    if xs_type == 'transport':
-
-      xs = (data['rxn-1'] - data['rxn-2']) / data['flux']
-
-      # Replace any negative values with 0.
-      #FIXME: This may not be safe!!!
-      xs = np.where(xs > 0., xs, 0.)
-
-
-    elif xs_type == 'chi':
-
-      norm = data['rxn-1'][:].sum()
-
-      if norm == 0.:
-        xs = np.zeros(num_groups)
-
-      else:
-        xs = data['rxn-2'] / data['rxn-1'][:].sum()
-
-        # Normalize chi to 1.0
-        xs /= xs.sum()
-
-
-    elif xs_type == 'scatter matrix':
-      xs = np.transpose(np.transpose(data['rxn-1']) / data['flux'])
-      xs = np.ravel(xs)
-
-
-    else:
-      xs = data['rxn-1'] / data['flux']
-
-
-    # For any region without flux, convert nan value to zero
-    xs = np.nan_to_num(xs)
-
-    # Reverse array so that it is ordered intuitively from high to low energy
-    # Codes such as OpenMOC expect cross-sections ordered in this way
-    xs = np.flipud(xs)
-
-    return xs
+    return self._multigroup_xs[domain_type][domain][xs_type]

@@ -9,5 +9,6 @@ setup(name='InferMC',
       description='A package for inference of Monte Carlo tally data.',
       author='Will Boyd',
       author_email='wboyd@mit.edu',
-      packages=['infermc', 'datasets', 'datasets.BEAVRS']
+      packages=['infermc', 'datasets', 'datasets.BEAVRS',
+                'datasets.energy_groups']
      )

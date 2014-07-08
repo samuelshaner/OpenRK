@@ -1,6 +1,7 @@
 from openmc import *
 from datasets.BEAVRS.materials import openmc_materials
-from geometry import geometry, slice_height, pin_pitch
+from datasets.energy_groups import group_structures
+from geometry import geometry
 from infermc.build import *
 
 
@@ -13,15 +14,16 @@ batches = 15
 inactive = 5
 particles = 1000
 
-# Plotting parameters
-pixels = 1000
-
 
 ###############################################################################
 ##################   Exporting to OpenMC geometry.xml File  ###################
 ###############################################################################
 
-create_geometry_xml(geometry)
+# Create geometry.xml
+openmc_geometry = get_openmc_geometry(geometry)
+geometry_file = openmc.GeometryFile()
+geometry_file.setGeometry(openmc_geometry)
+geometry_file.exportToXML()
 
 
 ###############################################################################
@@ -43,17 +45,7 @@ settings_file.setInactive(inactive)
 settings_file.setParticles(particles)
 settings_file.setStatepointInterval(5)
 settings_file.setOutput({'tallies': False})
-
-source = [-pin_pitch/2., -pin_pitch/2., -slice_height/2.,
-          pin_pitch/2., pin_pitch/2., slice_height/2.]
-settings_file.setSourceSpace(type='box', params=source)
-
-settings_file.setEntropyDimension([17,17,1])
-lower_left = [geometry.getMinX(), geometry.getMinY(), geometry.getMinZ()]
-upper_right = [geometry.getMaxX(), geometry.getMaxY(), geometry.getMaxZ()]
-settings_file.setEntropyLowerLeft(lower_left)
-settings_file.setEntropyUpperRight(upper_right)
-
+settings_file.setSourceSpace('box', geometry.getBounds())
 settings_file.exportToXML()
 
 
@@ -64,9 +56,6 @@ settings_file.exportToXML()
 plot = Plot(plot_id=1)
 plot.setWidth(width=[geometry.getMaxX()-geometry.getMinX(),
                      geometry.getMaxY()-geometry.getMinY()])
-plot.setOrigin([0., 0., 0.])
-plot.setPixels([pixels, pixels])
-
 plot_file = PlotsFile()
 plot_file.addPlot(plot)
 plot_file.exportToXML()
@@ -76,15 +65,13 @@ plot_file.exportToXML()
 ##################   Exporting to OpenMC tallies.xml File  ####################
 ###############################################################################
 
-'''
-tallies_file = TalliesFile()
-tally_builder = XSTallyBuilder()
+tally_factory = XSTallyFactory(openmc_geometry)
 
-energy_groups = EnergyGroups()
-energy_groups.setGroupEdges([0.0, 0.625, 1e7])
+groups = group_structures['CASMO']['8-group']
 
-cells = geometry.getAllMaterialCells()
-tally_builder.createAllXS(energy_groups, cells)
+tally_factory.createAllXS(groups, domain_type='distribcell')
+tally_factory.createAllXS(groups, domain_type='material')
+tally_factory.createAllXS(groups, domain_type='cell')
+tally_factory.createAllXS(groups, domain_type='universe')
 
-tally_builder.createTalliesFile()
-'''
+tally_factory.createTalliesFile()
