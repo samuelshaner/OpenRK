@@ -532,7 +532,7 @@ class MultiGroupXS(object):
 
       if subdomain is None:
         caption = '\\caption{{{0} {1} {2}}}'.format(
-          self._domain_type.capitalize(), self._domain._id, greek[self._type])
+          self._domain_type.capitalize(), self._domain._id, greek[self._xs_type])
       else:
         caption = '\\caption{{{0} {1} (Region {2}) {3}}}'.format(
           self._domain_type.capitalize(), self._domain._id,

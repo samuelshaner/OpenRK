@@ -10,7 +10,7 @@ from infermc.build import *
 ###############################################################################
 
 # OpenMC simulation parameters
-batches = 50
+batches = 30
 inactive = 5
 particles = 1000
 
@@ -67,7 +67,7 @@ plot_file.exportToXML()
 
 tally_factory = XSTallyFactory(openmc_geometry)
 
-groups = group_structures['CASMO']['8-group']
+groups = group_structures['CASMO']['2-group']
 
 tally_factory.createAllXS(groups, domain_type='distribcell')
 tally_factory.createAllXS(groups, domain_type='material')

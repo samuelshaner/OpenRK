@@ -3,11 +3,12 @@ import openmc
 from openmc.statepoint import StatePoint
 from infermc.process import XSTallyExtractor
 from infermc.plotter import scatter_multigroup_xs
+from infermc.multigroupxs import xs_types
 
 
-groups = group_structures['CASMO']['8-group']
+groups = group_structures['CASMO']['2-group']
 
-batches = [10, 15, 20, 25, 30, 35, 40, 45, 50]
+batches = [50]
 
 for batch in batches:
 
@@ -23,6 +24,14 @@ for batch in batches:
 
   extractor.extractAllMultiGroupXS(groups, 'material')
   extractor.extractAllMultiGroupXS(groups, 'distribcell')
+
+  multigroup_xs = extractor._multigroup_xs['material']
+
+  for material in multigroup_xs.keys():
+    for xs_type in xs_types:
+      xs = multigroup_xs[material][xs_type]
+      xs.printPDF(filename='material-{0}-{1}'.format(material, xs_type),
+                  directory='validate', uncertainties=True)
 
   openmc.reset_auto_ids()
   del extractor, statepoint
