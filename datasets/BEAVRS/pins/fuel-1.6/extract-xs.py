@@ -8,7 +8,7 @@ from infermc.multigroupxs import xs_types
 
 groups = group_structures['CASMO']['2-group']
 
-batches = [50]
+batches = [30]
 
 for batch in batches:
 
@@ -24,14 +24,6 @@ for batch in batches:
 
   extractor.extractAllMultiGroupXS(groups, 'material')
   extractor.extractAllMultiGroupXS(groups, 'distribcell')
-
-  multigroup_xs = extractor._multigroup_xs['material']
-
-  for material in multigroup_xs.keys():
-    for xs_type in xs_types:
-      xs = multigroup_xs[material][xs_type]
-      xs.printPDF(filename='material-{0}-{1}'.format(material, xs_type),
-                  directory='validate', uncertainties=True)
 
   openmc.reset_auto_ids()
   del extractor, statepoint

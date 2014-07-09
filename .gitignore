@@ -70,3 +70,5 @@ simulation-state/*
 */*.pyc
 *.png
 */*.png
+*.pdf
+*/*.pdf
