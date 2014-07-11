@@ -261,7 +261,10 @@ class Geometry(object):
       intersect = surfaces[surface].getIntersectionPoint(point, angle)
 
       if not intersect == None:
-        points.append(intersect)
+        points.extend(intersect)
+
+    if points == []:
+      return None
 
     nearest_point = points[0]
     nearest_dist = point.distanceToPoint(points[0])
@@ -269,5 +272,6 @@ class Geometry(object):
     for intersect in points:
       if point.distanceToPoint(intersect) < nearest_dist:
         nearest_point = intersect
+        nearest_dist = point.distanceToPoint(intersect)
 
     return nearest_point
