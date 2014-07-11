@@ -25,14 +25,6 @@ class Material(object):
     self.setName(name)
 
 
-  def getId(self):
-    return self._id
-
-
-  def getName(self):
-    return self._name
-
-
   def setId(self, material_id=None):
 
     global material_ids
@@ -51,45 +43,39 @@ class Material(object):
         material_ids.remove(self._id)
 
       if material_id in material_ids:
-        exit('Unable to set Material ID to %s since a Material '
-             'with this ID was already initialized.' % str(material_id))
+        msg = 'Unable to set Material ID to {0} since a Material ' \
+              'with this ID was already initialized'.format(material_id)
+        raise ValueError(msg)
 
       if material_id < 0:
-        exit('Unable to set Material ID to %d since it must be a '
-             'non-negative integer' % material_id)
+        msg = 'Unable to set Material ID to {0} since it must be a ' \
+              'non-negative integer'.format(material_id)
+        raise ValueError(msg)
 
       else:
         self._id = material_id
         material_ids.append(material_id)
 
     else:
-      exit('Unable to set Material ID to a non-integer %s' % str(material_id))
+      msg = 'Unable to set Material ID to non-integer {0}'.format(material_id)
+      raise ValueError(msg)
 
 
   def setName(self, name):
 
     if not is_string(name):
-      exit('Unable to set name for Material ID=%d with a non-string '
-           'value %s' % (self._id, str(name)))
+      msg = 'Unable to set name for Material ID={0} with a non-string ' \
+            'value {1}'.format(self._id, (name))
+      raise ValueError(msg)
 
     else:
       self._name = name
 
 
-  def toString(self):
+  def __repr__(self):
 
-    string = ''
-
-    string += 'Material\n'
-
-    material_id = '{0: <16}'.format('\tID') + '=\t' + str(self._id)
-    string += material_id + '\n'
-
-    name = '{0: <16}'.format('\tName') + '=\t' + self._name
-    string += name + '\n'
+    string = 'Material\n'
+    string += '{0: <16}{1}{2}\n'.format('\tID', '=\t', self._id)
+    string += '{0: <16}{1}{2}\n'.format('\tName', '=\t', self._name)
 
     return string
-
-
-  def printString(self):
-    print(self.toString())
