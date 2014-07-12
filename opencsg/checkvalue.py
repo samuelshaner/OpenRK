@@ -10,8 +10,16 @@ def is_integer(val):
 
 def is_float(val):
   return isinstance(val, (float, np.float32, np.float64))
-
+  
 
 def is_string(val):
   return isinstance(val, (str, np.str))
 
+
+def dim_list(val):
+  dim = 0
+  while isinstance(val, list):
+    dim += 1
+    val = val[0]
+
+  return dim
