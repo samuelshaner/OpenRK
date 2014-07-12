@@ -15,11 +15,3 @@ def is_float(val):
 def is_string(val):
   return isinstance(val, (str, np.str))
 
-
-def dim_list(val):
-  dim = 0
-  while isinstance(val, list):
-    dim += 1
-    val = val[0]
-
-  return dim
