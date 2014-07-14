@@ -137,7 +137,7 @@ class Direction(object):
     u, v, w = self._comps
     r = np.sqrt(np.sum(self._comps**2))
     phi = np.arctan2(v, u)
-    theta = np.arcsin(np.sqrt(u**2 + v**2)/r)
+    theta = np.asin(np.sqrt(u**2 + v**2)/r)
     
     return np.array([r,phi,theta])
 

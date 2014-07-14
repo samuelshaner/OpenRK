@@ -2,7 +2,7 @@ __author__ = 'Will Boyd'
 __email__ = 'wboyd@mit.edu'
 
 
-from point import Point, Direction
+from point import Point
 from checkvalue import *
 import numpy as np
 
@@ -104,7 +104,7 @@ class Surface(object):
       return False
 
 
-  def getIntersectionPoint(self, point, direction):
+  def getIntersectionPoint(point, direction):
     if not isinstance(point, Point):
       msg = 'Unable to get intersection point with Surface ID={0} ' \
             'since the input is not a Point object'.format(self._id)
@@ -291,10 +291,10 @@ class Plane(Surface):
     numerator = self._coeffs['D'] - \
                 self._coeffs['A'] * x - \
                 self._coeffs['B'] * y - \
-                self._coeffs['C'] * z
+                self._coeffs['C'] * z - \
     denominator = self._coeffs['A'] * u + \
                   self._coeffs['B'] * v + \
-                  self._coeffs['C'] * w
+                  self._coeffs['C'] * w + \
     dist = numerator/denominator
     angle = direction.toPolar()
 

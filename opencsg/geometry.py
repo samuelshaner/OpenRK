@@ -301,7 +301,7 @@ class Geometry(object):
 
     return localcoords
 
-  def getNearestIntersection(self, point, angle):
+  def getNearestIntersection(self, point, direction):
 
     x, y, z = point.getX(), point.getY(), point.getZ()
     cell = self.findCoords(x=x, y=y, z=z).getTailNode().getCell()
@@ -310,7 +310,7 @@ class Geometry(object):
     points = list()
     for surface in surfaces.keys():
 
-      intersect = surfaces[surface].getIntersectionPoint(point, angle)
+      intersect = surfaces[surface].getIntersectionPoint(point, direction)
 
       if not intersect == None:
         points.extend(intersect)
