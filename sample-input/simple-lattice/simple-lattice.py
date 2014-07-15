@@ -122,7 +122,6 @@ print('Creating Lattices...')
 lattices = list()
 lattices.append(Lattice(name='4x4'))
 lattices[0].setWidth((1.0, 1.0))
-lattices[0].setLowerLeft((-2.0, -2.0))
 lattices[0].setDimension((4, 4))
 
 template = [[1, 2, 1, 2],
@@ -159,5 +158,5 @@ geometry.setVolume(16., tolerance=1e-1)
 print('Plotting Geometry...')
 
 plotter.plot_cells(geometry)
-#plotter.plot_materials(geometry)
-#plotter.plot_regions(geometry)
+plotter.plot_materials(geometry)
+plotter.plot_regions(geometry)
