@@ -1192,7 +1192,7 @@ class Cell(object):
 
 
 
-  def buildNeighborLists(self):
+#  def buildNeighborLists(self):
 
 
 
