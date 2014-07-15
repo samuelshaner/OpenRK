@@ -1288,6 +1288,12 @@ class Cell(object):
     return cells
 
 
+
+  def buildNeighborLists(self):
+
+
+
+
   def getAllUniverses(self):
 
     if self._fill is None:
