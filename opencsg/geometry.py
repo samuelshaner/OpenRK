@@ -87,10 +87,10 @@ class Geometry(object):
       raise ValueError(msg)
 
     bounds = [self._root_universe.getMinX(),
-              self._root_universe.getMinY(),
-              self._root_universe.getMinZ(),
               self._root_universe.getMaxX(),
+              self._root_universe.getMinY(),
               self._root_universe.getMaxY(),
+              self._root_universe.getMinZ(),
               self._root_universe.getMaxZ()]
 
     return bounds
@@ -202,7 +202,7 @@ class Geometry(object):
 
     # Get the region volumes
     for region in range(self._num_regions):
-
+      
       coords = self.findRegion(region)
       coords = coords.getTailNode()
 
@@ -210,8 +210,6 @@ class Geometry(object):
       volume = cell._volume
 
       self._region_volumes[region] = volume
-
-
 
 
   def initializeCellOffsets(self):
@@ -257,6 +255,7 @@ class Geometry(object):
       raise ValueError(msg)
 
     point = Point(x=x, y=y, z=z)
+    
     localcoords = UnivCoords(point=point)
     localcoords.setUniverse(self._root_universe)
 

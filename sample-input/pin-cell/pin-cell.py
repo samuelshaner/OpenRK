@@ -94,7 +94,6 @@ print('Creating Lattices...')
 
 lattice = Lattice(name='1x1')
 lattice.setWidth((4.0, 4.0))
-lattice.setLowerLeft((-2.0, -2.0))
 lattice.setDimension((1, 1))
 lattice.setUniverses([[universes[0]]])
 
@@ -120,6 +119,6 @@ geometry.setVolume(volume=16., tolerance=1e-1)
 
 print('Plotting Geometry...')
 
-#plotter.plot_cells(geometry)
-#plotter.plot_materials(geometry)
-#plotter.plot_regions(geometry)
+plotter.plot_cells(geometry)
+plotter.plot_materials(geometry)
+plotter.plot_regions(geometry)
