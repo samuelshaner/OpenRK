@@ -45,7 +45,9 @@ settings_file.setInactive(inactive)
 settings_file.setParticles(particles)
 settings_file.setStatepointInterval(5)
 settings_file.setOutput({'tallies': False, 'summary': True})
-settings_file.setSourceSpace('box', geometry.getBounds())
+source_bounds = [geometry.getMinX(), geometry.getMinY(), geometry.getMinZ(), \
+                 geometry.getMaxX(), geometry.getMaxY(), geometry.getMaxZ()]
+settings_file.setSourceSpace('box', source_bounds)
 settings_file.exportToXML()
 
 
@@ -64,6 +66,7 @@ plot_file.exportToXML()
 ###############################################################################
 ##################   Exporting to OpenMC tallies.xml File  ####################
 ###############################################################################
+
 
 tally_factory = XSTallyFactory(openmc_geometry)
 

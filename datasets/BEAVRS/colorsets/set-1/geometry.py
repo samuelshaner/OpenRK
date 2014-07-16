@@ -79,7 +79,6 @@ universe2.addCell(cell2)
 lattice = opencsg.Lattice(name='3x3 Lattice')
 lattice.setDimension((3, 3))
 lattice.setWidth((lattice_width, lattice_width))
-lattice.setLowerLeft((-width/2., -width/2.))
 lattice.setUniverses([[universe2, universe1, universe2],
                       [universe1, universe2, universe1],
                       [universe2, universe1, universe2]])

@@ -47,7 +47,6 @@ lattices[lattice._name] = lattice
 
 lattice.setDimension((17, 17))
 lattice.setWidth((pin_pitch, pin_pitch))
-lattice.setLowerLeft((-lattice_width/2., -lattice_width/2.))
 lattice.setUniverses(cells)
 
 
@@ -81,7 +80,6 @@ lattices[lattice._name] = lattice
 
 lattice.setDimension((17, 17))
 lattice.setWidth((pin_pitch, pin_pitch))
-lattice.setLowerLeft((-lattice_width/2., -lattice_width/2.))
 lattice.setUniverses(cells)
 
 
@@ -119,7 +117,6 @@ lattices[lattice._name] = lattice
 
 lattice.setDimension((17, 17))
 lattice.setWidth((pin_pitch, pin_pitch))
-lattice.setLowerLeft((-lattice_width/2., -lattice_width/2.))
 lattice.setUniverses(cells)
 
 
@@ -157,7 +154,6 @@ lattices[lattice._name] = lattice
 
 lattice.setDimension((17, 17))
 lattice.setWidth((pin_pitch, pin_pitch))
-lattice.setLowerLeft((-lattice_width/2., -lattice_width/2.))
 lattice.setUniverses(cells)
 
 
@@ -191,7 +187,6 @@ lattices[lattice._name] = lattice
 
 lattice.setDimension((17, 17))
 lattice.setWidth((pin_pitch, pin_pitch))
-lattice.setLowerLeft((-lattice_width/2., -lattice_width/2.))
 lattice.setUniverses(cells)
 
 
@@ -229,7 +224,6 @@ lattices[lattice._name] = lattice
 
 lattice.setDimension((17, 17))
 lattice.setWidth((pin_pitch, pin_pitch))
-lattice.setLowerLeft((-lattice_width/2., -lattice_width/2.))
 lattice.setUniverses(cells)
 
 
@@ -267,7 +261,6 @@ lattices[lattice._name] = lattice
 
 lattice.setDimension((17, 17))
 lattice.setWidth((pin_pitch, pin_pitch))
-lattice.setLowerLeft((-lattice_width/2., -lattice_width/2.))
 lattice.setUniverses(cells)
 
 
@@ -305,7 +298,6 @@ lattices[lattice._name] = lattice
 
 lattice.setDimension((17, 17))
 lattice.setWidth((pin_pitch, pin_pitch))
-lattice.setLowerLeft((-lattice_width/2., -lattice_width/2.))
 lattice.setUniverses(cells)
 
 
@@ -343,5 +335,4 @@ lattices[lattice._name] = lattice
 
 lattice.setDimension((17, 17))
 lattice.setWidth((pin_pitch, pin_pitch))
-lattice.setLowerLeft((-lattice_width/2., -lattice_width/2.))
 lattice.setUniverses(cells)
