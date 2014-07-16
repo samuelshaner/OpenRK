@@ -830,7 +830,9 @@ class Lattice(Universe):
               'is a negative value'.format(self._id, dim)
         raise ValueError(msg)
 
+    # Initialize width array to infinity by default
     self._width = np.zeros(3, dtype=np.float64)
+    self._width[:] = np.finfo(np.float64).max
 
     for i in range(len(width)):
       self._width[i] = width[i]
