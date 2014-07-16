@@ -19,15 +19,8 @@ water = Material(name='Water')
 print('Creating Surfaces...')
 
 cylinder = ZCylinder(x0=0.0, y0=0.0, R=1.0)
-left = XPlane(x0=-2.0)
-right = XPlane(x0=2.0)
-top = YPlane(y0=2.0)
-bottom = YPlane(y0=-2.0)
-
-left.setBoundaryType('reflective')
-right.setBoundaryType('reflective')
-top.setBoundaryType('reflective')
-bottom.setBoundaryType('reflective')
+square = Square(x0=0., y0=0., R=2.0)
+square.setBoundaryType('reflective')
 
 
 ###############################################################################
@@ -54,10 +47,7 @@ cells.append(Cell(name='Root Cell'))
 
 cells[0].addSurface(halfspace=-1, surface=cylinder)
 cells[1].addSurface(halfspace=+1, surface=cylinder)
-cells[2].addSurface(halfspace=+1, surface=left)
-cells[2].addSurface(halfspace=-1, surface=right)
-cells[2].addSurface(halfspace=+1, surface=bottom)
-cells[2].addSurface(halfspace=-1, surface=top)
+cells[2].addSurface(halfspace=-1, surface=square)
 
 universes[0].addCells(cells[0:2])
 universes[1].addCell(cells[2])

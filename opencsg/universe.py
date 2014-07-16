@@ -832,11 +832,10 @@ class Lattice(Universe):
 
     # Initialize width array to infinity by default
     self._width = np.zeros(3, dtype=np.float64)
-    self._width[:] = np.finfo(np.float64).max
+    self._width[:] = max_float
 
     for i in range(len(width)):
       self._width[i] = width[i]
-
 
   def setUniverses(self, universes):
 
@@ -856,15 +855,20 @@ class Lattice(Universe):
     for i in range(self._dimension[0]):
       for j in range(self._dimension[1]):
         for k in range(self._dimension[2]):
-          
+
           universe = self._universes[k][j][i]
-          
-          universe.setMaxX(self._width[0]/2.)
-          universe.setMinX(-self._width[0]/2.)
-          universe.setMaxY(self._width[1]/2.)
-          universe.setMinY(-self._width[1]/2.)
-          universe.setMaxZ(self._width[2]/2.)
-          universe.setMinZ(-self._width[2]/2.)
+
+          if self._width[0] != max_float:
+            universe.setMaxX(self._width[0]/2.)
+            universe.setMinX(-self._width[0]/2.)
+
+          if self._width[1] != max_float:
+            universe.setMaxY(self._width[1]/2.)
+            universe.setMinY(-self._width[1]/2.)
+
+          if self._width[2] != max_float:
+            universe.setMaxZ(self._width[2]/2.)
+            universe.setMinZ(-self._width[2]/2.)
 
 
   def computeVolumeFractions(self, volume=np.float64(1.), tolerance=1e-3):

@@ -147,9 +147,6 @@ class Geometry(object):
 
     for universe_id, universe in all_universes.iteritems():
 
-      if isinstance(universe, Lattice):
-        print 'wtf!!'
-
       cells = universe._cells
 
       for cell_id, cell in cells.iteritems():
