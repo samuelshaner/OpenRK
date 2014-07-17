@@ -1132,6 +1132,8 @@ class Cell(object):
     self._volume_fraction = np.float64(0.)
     self._volume = np.float64(0.)
 
+    self._neighbor_cells = list()
+
     # Keys   - Surface IDs
     # Values - (halfpsace, Surface) tuples
     self._surfaces = dict()

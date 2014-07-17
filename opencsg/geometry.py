@@ -19,6 +19,25 @@ class Geometry(object):
     self._region_volumes = None
 
 
+  def buildNeighbors(self):
+
+    # Allocate dictionaries for neighbor Cells for each Surface halfspace
+    surface_positive_neighbors = dict()
+    surface_negative_neighbors = dict()
+
+    cells = self.getAllCells()
+
+    # Determine the number of Cells sharing each Surface's halfspaces
+    for cell_id, cell in cells.iteritems():
+      surfaces = cell._surfaces
+
+      for surface_id in surfaces.keys():
+
+        surface = surfaces[surface_id][0]
+        halfspace = surfaces[surface_id][1]
+        surface.addNeighborCell(cell_id, halfspace)
+
+
   def getMaxX(self):
 
     if self._root_universe is None:

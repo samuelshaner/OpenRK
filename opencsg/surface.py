@@ -43,6 +43,9 @@ class Surface(object):
     self._name = ''
     self._type = ''
     self._boundary_type = ''
+    self._neighbor_cells = dict()
+    self._neighbor_cells[-1] = list()
+    self._neighbor_cells[+1] = list()
 
     # A dictionary of the quadratic surface coefficients
     # Key   - coefficient name
@@ -166,6 +169,21 @@ class Surface(object):
 
     else:
       self._boundary_type = boundary
+
+
+  def addNeighborCell(self, cell_id, halfspace):
+
+    if not is_integer(cell_id):
+      msg = 'Unable to add a neighbor Cell ID={0} to Surface ID={1} ' \
+            'since it is not an integer value'.format(cell_id, self._id)
+      raise ValueError(msg)
+
+    elif not halfspace in [-1, +1]:
+      msg = 'Unable to add a neighbor Cell to Surface ID={0} with ' \
+            'halfspace {1} since it is not an +/-1'.format(self._id, halfspace)
+      raise ValueError(msg)
+
+    self._neighbor_cells[halfspace].append(cell_id)
 
 
   def __repr__(self):
