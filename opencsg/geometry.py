@@ -19,6 +19,7 @@ class Geometry(object):
     self._region_volumes = None
 
 
+  #FIXME: Make this a recursive scheme
   def buildNeighbors(self):
 
     # Allocate dictionaries for neighbor Cells for each Surface halfspace

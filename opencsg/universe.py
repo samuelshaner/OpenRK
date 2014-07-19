@@ -7,6 +7,7 @@ from surface import Surface, on_surface_thresh
 from point import Point
 from checkvalue import *
 import numpy as np
+from numpy.lib.stride_tricks import as_strided
 import math
 from collections import OrderedDict
 
@@ -532,6 +533,69 @@ class Lattice(Universe):
     self.setType(type)
 
 
+  def getNeighborUniverses(self, lat_x, lat_y, lat_z=None, depth=1):
+    """Return d-th neighbors of cell (i, j)"""
+
+    if not is_integer(lat_x):
+      msg = 'Unable to get neighbor Universes from Lattice ID={0} since ' \
+            'x={1} is not a lattice cell'.format(self._id, lat_x)
+      raise ValueError(msg)
+
+    if not is_integer(lat_y):
+      msg = 'Unable to get neighbor Universes from Lattice ID={0} since ' \
+            'y={1} is not a lattice cell'.format(self._id, lat_y)
+      raise ValueError(msg)
+
+    if lat_z != None and not is_integer(lat_y):
+      msg = 'Unable to get neighbor Universes from Lattice ID={0} since ' \
+            'z={1} is not a lattice cell'.format(self._id, lat_z)
+      raise ValueError(msg)
+
+    if lat_x < 0 or lat_x > self._dimension[0]:
+      msg = 'Unable to get neighbor Universes from Lattice ID={0} since ' \
+            'x={1} is outside the bounds of the lattice'.format(self._id, lat_x)
+      raise ValueError(msg)
+
+    if lat_y < 0 or lat_y > self._dimension[1]:
+      msg = 'Unable to get neighbor Universes from Lattice ID={0} since ' \
+            'y={1} is outside the bounds of the lattice'.format(self._id, lat_y)
+      raise ValueError(msg)
+
+    if lat_z != None and (lat_y < 0 or lat_y > self._dimension[1]):
+      msg = 'Unable to get neighbor Universes from Lattice ID={0} since ' \
+            'z={1} is outside the bounds of the lattice'.format(self._id, lat_z)
+      raise ValueError(msg)
+
+    if lat_z is None:
+      lat_z = 0
+
+    neighbor_universes = sliding_window(self._universes, 2*depth+1)
+
+    # This is out of the (z,y,x) order
+    ix = np.clip(lat_z - depth, 0, neighbor_universes.shape[0]-1)
+    jx = np.clip(lat_y - depth, 0, neighbor_universes.shape[1]-1)
+    kx = np.clip(lat_x - depth, 0, neighbor_universes.shape[2]-1)
+
+    i0 = max(0, lat_z - depth - ix)
+    j0 = max(0, lat_y - depth - jx)
+    k0 = max(0, lat_x - depth - kx)
+
+    i1 = neighbor_universes.shape[3] - max(0, depth - lat_z + ix)
+    j1 = neighbor_universes.shape[4] - max(0, depth - lat_y + jx)
+    k1 = neighbor_universes.shape[5] - max(0, depth - lat_x + kx)
+
+    # Account for cases where the dimensions of the array may only be 1
+    if i0 == 0 and i1 == 0:
+      i1 = 1
+    if j0 == 0 and j1 == 0:
+      j1 = 1
+    if k0 == 0 and k1 == 0:
+      k1 = 1
+
+    hmm = neighbor_universes[ix, jx, kx][i0:i1, j0:j1, k0:k1].ravel()
+    return hmm
+
+
   def getUniverse(self, lat_x, lat_y, lat_z=None):
 
     if not is_integer(lat_x):
@@ -565,9 +629,9 @@ class Lattice(Universe):
       raise ValueError(msg)
 
     if lat_z is None:
-      return self._universes[0][lat_y][lat_x]
-    else:
-      return self._universes[lat_z][lat_y][lat_x]
+      lat_z = 0
+
+    return self._universes[lat_z][lat_y][lat_x]
 
 
   def getCellOffset(self, lat_x, lat_y, lat_z=None):
@@ -603,9 +667,9 @@ class Lattice(Universe):
       raise ValueError(msg)
 
     if lat_z is None:
-      return self._cell_offsets[0][lat_y][lat_x]
-    else:
-      return self._cell_offsets[lat_z][lat_y][lat_x]
+      lat_z = 0
+
+    return self._cell_offsets[lat_z][lat_y][lat_x]
 
 
   def getMaxX(self):
@@ -1158,6 +1222,18 @@ class Cell(object):
 
     if not fill is None:
       self.setFill(fill)
+
+
+  def getNeighborCells(self):
+
+    neighbor_cells = list()
+
+    for surface_id in self._surfaces:
+      surface = self._surfaces[surface_id][0]
+      halfspace = self._surfaces[surface_id][1]
+      neighbor_cells.extend(surface._neighbor_cells[halfspace])
+
+    return neighbor_cells
 
 
   def getMaxX(self):
@@ -1841,6 +1917,13 @@ class LocalCoords(object):
     # Set the next LocalCoord in the linked list to null
     self.setNext(None)
 
+  def getNeighbors(self):
+
+    msg = 'The abstract LocalCoords class does not have the ' \
+          'getNeighbors() method implemented. Try again wih UnivCoords ' \
+          'and LatCoords subclasses.'
+    raise ValueError(msg)
+
 
   def __repr__(self):
 
@@ -1874,6 +1957,19 @@ class UnivCoords(LocalCoords):
 
     if not cell is None:
       self.setCell(cell)
+
+
+  def getNeighbors(self, neighbors=list()):
+
+    neighbors.extend(self._cell.getNeighborCells())
+
+    print neighbors
+
+    # Make recursive call to next LocalCoords or return
+    if self._next is None:
+      return neighbors
+    else:
+      self._next.getNeighbors(neighbors)
 
 
   def setUniverse(self, universe):
@@ -1937,6 +2033,21 @@ class LatCoords(LocalCoords):
       self.setLatticeY(lattice_z)
 
 
+  def getNeighbors(self, neighbors=list()):
+
+    # Append the universes in the neighboring Lattice cells to the
+    # neighbors list
+    neighbors.extend(self._lattice.getNeighborUniverses(self._lattice_x,
+                                                        self._lattice_y,
+                                                        self._lattice_z))
+
+    # Make recursive call to next LocalCoords if it exists or return
+    if self._next is None:
+      return neighbors
+    else:
+      self._next.getNeighbors(neighbors)
+
+
   def setLattice(self, lattice):
 
     if not isinstance(lattice, Lattice):
@@ -1987,3 +2098,29 @@ class LatCoords(LocalCoords):
     string += '{0: <16}{1}{2}\n'.format('\tLattice ', '=\t', self._lattice_z)
 
     return string
+
+
+
+def sliding_window(arr, window_size):
+  """ Construct a sliding window view of the array"""
+
+  arr = np.asarray(arr)
+  window_size = int(window_size)
+
+  shape = (arr.shape[0] - window_size + 1,
+           arr.shape[1] - window_size + 1,
+           arr.shape[2] - window_size + 1,
+           window_size, window_size, window_size)
+
+  if shape[0] <= 0:
+    shape = (1, shape[1], shape[2], arr.shape[0], shape[4], shape[5])
+  if shape[1] <= 0:
+    shape = (shape[0], 1, shape[2], shape[3], arr.shape[1], shape[5])
+  if shape[2] <= 0:
+    shape = (shape[0], shape[1], 1, shape[3], shape[4], arr.shape[2])
+
+  strides = (arr.shape[2]*arr.itemsize, arr.itemsize,
+             arr.shape[2]*arr.itemsize, arr.itemsize,
+             arr.shape[2]*arr.itemsize, arr.itemsize)
+
+  return as_strided(arr, shape=shape, strides=strides)
