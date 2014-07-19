@@ -534,6 +534,7 @@ class Lattice(Universe):
     self._num_regions = None
     self._offset = np.zeros(3, dtype=np.float64)
     self._neighbor_universes = None
+    self._neighbor_depth = 1
 
     self.setId(lattice_id)
     self.setName(name)
@@ -616,7 +617,7 @@ class Lattice(Universe):
     return self._cell_offsets[lat_z][lat_y][lat_x]
 
 
-  def getNeighbors(self, lat_x, lat_y, lat_z=None, depth=1):
+  def getNeighbors(self, lat_x, lat_y, lat_z=None):
     """Return d-th neighbors of cell (i, j)"""
 
     if not is_integer(lat_x):
@@ -658,6 +659,8 @@ class Lattice(Universe):
     if lat_z is None:
       lat_z = 0
 
+    depth = self._neighbor_depth
+
     # Compute indices for Lattice cell entry in the neighbor universes array
     ix = np.clip(lat_z - depth, 0, self._neighbor_universes.shape[0]-1)
     jx = np.clip(lat_y - depth, 0, self._neighbor_universes.shape[1]-1)
@@ -681,8 +684,17 @@ class Lattice(Universe):
     if k0 == 0 and k1 == 0:
       k1 = 1
 
-    neighbor_universe = self._neighbor_universes[ix,jx,kx][i0:i1,j0:j1,k0:k1]
-    return neighbor_universe
+    neighbor_universes = self._neighbor_universes[ix,jx,kx][i0:i1,j0:j1,k0:k1]
+    return neighbor_universes
+
+
+  def getUniqueNeighbors(self, lat_x, lat_y, lat_z=None):
+
+    # Get the depth x depth x depth array of neighbors and
+    # convert to a 1D tuple containing only unique Universes
+    neighbor_universes = self.getNeighbors(lat_x, lat_y, lat_z)
+    unique_neighbors = set(neighbor_universes.ravel())
+    return tuple(unique_neighbors)
 
 
   def getMaxX(self):
@@ -999,7 +1011,10 @@ class Lattice(Universe):
       msg = 'Unable to build neighbor Universes for Lattice ID={0} to a ' \
             'depth of {1} which is not a positive integer'.format(depth)
 
-    # Create 3D array of 3x3 arrays of neighbor Universes for each Lattice cell
+    self._neighbor_depth = 1
+
+    # Create 3D depth x depth x depth array of neighbor
+    # Universes for each Lattice cell
     self._neighbor_universes = sliding_window(self._universes, 2*depth+1)
 
     # Iterate over each unique Universe in the Lattice and make recursive
@@ -1231,7 +1246,7 @@ class Cell(object):
     self._volume_fraction = np.float64(0.)
     self._volume = np.float64(0.)
 
-    self._neighbor_cells = set()
+    self._neighbor_cells = list()
 
     # Keys   - Surface IDs
     # Values - (halfpsace, Surface) tuples
@@ -1315,7 +1330,14 @@ class Cell(object):
 
 
   def getNeighbors(self):
-    return self._neighbor_cells
+    return tuple(self._neighbor_cells)
+
+
+  def getUniqueNeighbors(self):
+
+    # Select only unique Cells and return them as a tuple
+    unique_neighbors = set(self._neighbor_cells)
+    return tuple(self._neighbor_cells)
 
 
   def setId(self, cell_id=None):
@@ -1617,7 +1639,7 @@ class Cell(object):
             'since it {1} is not a Cell object'.format(self._id, cell)
       raise ValueError(msg)
 
-    self._neighbor_cells.add(cell)
+    self._neighbor_cells.append(cell)
 
 
   def getNumSubCells(self):
@@ -2006,16 +2028,34 @@ class UnivCoords(LocalCoords):
       self.setCell(cell)
 
 
-  def getNeighbors(self, neighbors=list()):
+  def getNeighbors(self, neighbors=None):
+
+    if neighbors is None:
+      neighbors = list()
 
     cells = self._cell.getNeighbors()
     neighbors.append(cells)
 
     # Make recursive call to next LocalCoords or return
     if self._next is None:
-      return neighbors
+      return tuple(neighbors)
     else:
-      return self._next.getNeighbors(neighbors)
+      return self._next.getNeighbors(neighbors=neighbors)
+
+
+  def getUniqueNeighbors(self, neighbors=None):
+
+    if neighbors is None:
+      neighbors = list()
+
+    cells = self._cell.getUniqueNeighbors()
+    neighbors.append(cells)
+
+    # Make recursive call to next LocalCoords or return
+    if self._next is None:
+      return tuple(neighbors)
+    else:
+      return self._next.getUniqueNeighbors(neighbors)
 
 
   def setUniverse(self, universe):
@@ -2077,7 +2117,10 @@ class LatCoords(LocalCoords):
       self.setLatticeY(lat_z)
 
 
-  def getNeighbors(self, neighbors=list()):
+  def getNeighbors(self, neighbors=None):
+
+    if neighbors is None:
+      neighbors = list()
 
     # Append the Universes in the neighboring Lattice cells to the
     # neighbors list
@@ -2086,9 +2129,27 @@ class LatCoords(LocalCoords):
 
     # Make recursive call to next LocalCoords if it exists or return
     if self._next is None:
-      return neighbors
+      return tuple(neighbors)
     else:
-      return self._next.getNeighbors(neighbors)
+      return self._next.getNeighbors(neighbors=neighbors)
+
+
+  def getUniqueNeighbors(self, neighbors=None):
+
+    if neighbors is None:
+      neighbors = list()
+
+    # Append the Universes in the neighboring Lattice cells to the
+    # neighbors list
+    universes = self._lattice.getUniqueNeighbors(self._lat_x,
+                                                 self._lat_y, self._lat_z)
+    neighbors.append(universes)
+
+    # Make recursive call to next LocalCoords if it exists or return
+    if self._next is None:
+      return tuple(neighbors)
+    else:
+      return self._next.getUniqueNeighbors(neighbors)
 
 
   def setLattice(self, lattice):
