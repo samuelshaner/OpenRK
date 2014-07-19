@@ -11,9 +11,9 @@ from datasets.BEAVRS.lattices import *
 ###############################################################################
 
 # Discretization of pin cells
-fuel_rings = 3
-mod_rings = 3
-sectors = 4
+fuel_rings = 0
+mod_rings = 0
+sectors = 0
 
 # Height of the axial slice
 slice_height = 10.
@@ -125,7 +125,6 @@ u10.addCell(cell10)
 lattice = Lattice(name='Quarter Core')
 lattice.setDimension((10, 10))
 lattice.setWidth((lattice_width, lattice_width))
-lattice.setLowerLeft((-width/2., -width/2.))
 lattice.setUniverses([[u1, u4, u1, u3, u1, u4, u1, u6, u10, u10],
                       [u4, u1, u3, u1, u3, u1, u9, u5, u10, u10],
                       [u1, u3, u1, u3, u1, u4, u1, u6, u10, u10],

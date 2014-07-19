@@ -1,4 +1,4 @@
-from datasets.energy_groups import energy_groups
+from datasets.energy_groups import group_structures
 from openmc import *
 from datasets.BEAVRS.materials import openmc_materials
 from geometry import geometry
@@ -70,7 +70,7 @@ plot_file.exportToXML()
 
 tally_factory = XSTallyFactory(openmc_geometry)
 
-groups = energy_groups['CASMO']['8-group']
+groups = group_structures['CASMO']['8-group']
 
 tally_factory.createAllXS(groups, domain_type='distribcell')
 tally_factory.createAllXS(groups, domain_type='material')

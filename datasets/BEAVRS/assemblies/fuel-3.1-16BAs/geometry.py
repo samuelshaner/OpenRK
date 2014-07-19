@@ -7,9 +7,9 @@ from datasets.BEAVRS.lattices import *
 ###############################################################################
 
 # Discretization of pin cells
-fuel_rings = 3
-mod_rings = 3
-sectors = 4
+fuel_rings = 0
+mod_rings = 0
+sectors = 0
 
 # Height of the axial slice
 slice_height = 10.
@@ -96,3 +96,7 @@ print('Creating the Geometry...')
 
 geometry = opencsg.Geometry()
 geometry.setRootUniverse(root_universe)
+
+geometry.initializeCellOffsets()
+num_regions = geometry._num_regions
+print('# regions = %d' % num_regions)

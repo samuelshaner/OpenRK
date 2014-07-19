@@ -6,11 +6,9 @@ from infermc.multigroupxs import xs_types
 from infermc.plotter import scatter_multigroup_xs
 
 
-batches = [45, 50]
+batches = [10]
 
 groups = group_structures['CASMO']['2-group']
-
-batches = [10, 15, 20, 25, 30, 35, 40, 45, 50]
 
 for batch in batches:
 
@@ -27,10 +25,10 @@ for batch in batches:
   extractor.extractAllMultiGroupXS(groups, 'material')
   extractor.extractAllMultiGroupXS(groups, 'distribcell')
 
-#  for xs_type in xs_types:
+  for xs_type in xs_types:
 
-#    if xs_type != 'scatter matrix':
-#      scatter_multigroup_xs(extractor, xs_type, ['distribcell', 'material'],
-#                            filename='{0}-{1}-batches'.format(xs_type,batch))
+    if xs_type != 'scatter matrix':
+      scatter_multigroup_xs(extractor, xs_type, ['distribcell', 'material'],
+                            filename='{0}-{1}-batches'.format(xs_type,batch))
 
   openmc.reset_auto_ids()

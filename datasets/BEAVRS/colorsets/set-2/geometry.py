@@ -7,9 +7,9 @@ from datasets.BEAVRS.lattices import *
 ###############################################################################
 
 # Discretization of pin cells
-fuel_rings = 3
-mod_rings = 3
-sectors = 4
+fuel_rings = 0
+mod_rings = 0
+sectors = 0
 
 # Height of the axial slice
 slice_height = 10.
@@ -79,7 +79,6 @@ universe2.addCell(cell2)
 lattice = opencsg.Lattice(name='3x3 Lattice')
 lattice.setDimension((3, 3))
 lattice.setWidth((lattice_width, lattice_width))
-lattice.setLowerLeft((-width/2., -width/2.))
 lattice.setUniverses([[universe2, universe1, universe2],
                       [universe1, universe2, universe1],
                       [universe2, universe1, universe2]])

@@ -20,6 +20,21 @@ particles = 100
 ##################   Exporting to OpenMC geometry.xml File  ###################
 ###############################################################################
 
+geometry.buildNeighbors()
+
+num_regions = geometry._num_regions
+neighbor_hashes = np.zeros(num_regions, dtype=np.int64)
+
+for region in range(num_regions):
+  print region, num_regions
+  coords = geometry.findRegion(region)
+  neighbors = coords.getUniqueNeighbors()
+  neighbor_hashes[region] = hash(neighbors)
+
+unique_hashes = set(neighbor_hashes)
+print len(unique_hashes)
+print len(geometry.getAllCells())
+
 # Create geometry.xml
 openmc_geometry = get_openmc_geometry(geometry)
 geometry_file = openmc.GeometryFile()
@@ -70,7 +85,7 @@ plot_file.exportToXML()
 
 tally_factory = XSTallyFactory(openmc_geometry)
 
-groups = group_structures['CASMO']['8-group']
+groups = group_structures['CASMO']['2-group']
 
 tally_factory.createAllXS(groups, domain_type='distribcell')
 tally_factory.createAllXS(groups, domain_type='material')

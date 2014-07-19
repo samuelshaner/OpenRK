@@ -1,12 +1,37 @@
-from statepoint import StatePoint
-import glob
-from geometry import geometry
-import infermc.plotter as plotter
+from datasets.energy_groups import group_structures
+import openmc
+from openmc.statepoint import StatePoint
+from infermc.process import XSTallyExtractor
+from infermc.plotter import scatter_multigroup_xs
+from infermc.multigroupxs import xs_types
 
-# Get statepoint files
-files = glob.glob('statepoint.*.h5')
 
-for file in files:
-  sp = StatePoint(file)
-  sp.read_results()
-  plotter.plot_fluxes(geometry, sp, energies=[0, 1], gridsize=200)
+groups = group_structures['CASMO']['2-group']
+
+batches = [15]
+
+for batch in batches:
+
+  print batch
+
+  filename = 'statepoint.{0}.h5'.format(batch)
+
+  # Initialize a handle on the OpenMC statepoint file
+  statepoint = openmc.statepoint.StatePoint(filename)
+
+  # Initialize an InferMC XSTallyExtractor object to compute cross-sections
+  extractor = XSTallyExtractor(statepoint)
+
+  extractor.extractAllMultiGroupXS(groups, 'material')
+  extractor.extractAllMultiGroupXS(groups, 'distribcell')
+
+  for xs_type in xs_types:
+
+    print xs_type
+
+    if xs_type != 'scatter matrix':
+      scatter_multigroup_xs(extractor, xs_type, ['distribcell', 'material'],
+                            filename='{0}-{1}-batches'.format(xs_type,batch))
+
+  openmc.reset_auto_ids()
+  del extractor, statepoint
