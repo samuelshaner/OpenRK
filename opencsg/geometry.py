@@ -19,26 +19,6 @@ class Geometry(object):
     self._region_volumes = None
 
 
-  #FIXME: Make this a recursive scheme
-  def buildNeighbors(self):
-
-    # Allocate dictionaries for neighbor Cells for each Surface halfspace
-    surface_positive_neighbors = dict()
-    surface_negative_neighbors = dict()
-
-    cells = self.getAllCells()
-
-    # Determine the number of Cells sharing each Surface's halfspaces
-    for cell_id, cell in cells.iteritems():
-      surfaces = cell._surfaces
-
-      for surface_id in surfaces.keys():
-
-        surface = surfaces[surface_id][0]
-        halfspace = surfaces[surface_id][1]
-        surface.addNeighborCell(cell_id, halfspace)
-
-
   def getMaxX(self):
 
     if self._root_universe is None:
@@ -240,6 +220,16 @@ class Geometry(object):
     self._num_regions = self._root_universe._num_regions
 
 
+  def buildNeighbors(self):
+
+    if self._root_universe is None:
+      msg = 'Unable to build neighbor Cells/Universes since the ' \
+            'root Universe for the Geometry has not yet been set'
+      raise ValueError(msg)
+
+    self._root_universe.buildNeighbors()
+
+
   def getRegionId(self, x=0., y=0., z=0.):
 
     coords = self.findCoords(x=x, y=y, z=z)
@@ -256,8 +246,8 @@ class Geometry(object):
       # The coords is a LatCoords object
       else:
         lattice = coords._lattice
-        lat_x, lat_y = coords._lattice_x, coords._lattice_y
-        region_id += lattice.getCellOffset(lat_x, lat_y)
+        lat_x, lat_y, lat_z = coords._lat_x, coords._lat_y, coords._lat_z
+        region_id += lattice.getCellOffset(lat_x, lat_y, lat_z)
 
       coords = coords._next
 
