@@ -24,12 +24,12 @@ def get_path(coords):
     # If the LocalCoords is at a Lattice
     else:
       # Add 1 for Fortran indexing
-      lat_x = coords._lattice_x+1
-      lat_y = coords._lattice_y+1
+      lat_x = coords._lat_x+1
+      lat_y = coords._lat_y+1
 
       # 3D Lattices only
-      if coords._lattice_z != None:
-        lat_z = coords._lattice_z+1
+      if coords._lat_z != None:
+        lat_z = coords._lat_z+1
 
       # 2D Lattices
       else:
