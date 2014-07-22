@@ -315,11 +315,9 @@ class Plane(Surface):
                   self._coeffs['B'] * v + \
                   self._coeffs['C'] * w
     dist = numerator/denominator
-    angle = direction.toPolar()
+
     intersect = Point()
-    intersect.setX(x+dist*u)
-    intersect.setY(y+dist*v)
-    intersect.setZ(z+dist*w)
+    intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
 
     return [intersect]
 
@@ -786,15 +784,12 @@ class XCylinder(Cylinder):
 
     dist1 = (-k + np.sqrt(k**2-a*c))/a
     dist2 = (-k - np.sqrt(k**2-a*c))/a
-    angle = direction.toPolar()
 
     intersects = []
 
     for dist in [dist1, dist2]:
       intersect = Point()
-      intersect.setX(x+dist*np.cos(angle[1]))
-      intersect.setY(y+dist*np.sin(angle[1]))
-      intersect.setZ(z+dist*np.cos(angle[2]))
+      intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
       intersects.append(intersect)
 
     return intersects
@@ -994,15 +989,12 @@ class YCylinder(Cylinder):
 
     dist1 = (-k + np.sqrt(k**2-a*c))/a
     dist2 = (-k - np.sqrt(k**2-a*c))/a
-    angle = direction.toPolar()
 
     intersects = []
 
     for dist in [dist1, dist2]:
       intersect = Point()
-      intersect.setX(x+dist*np.cos(angle[1]))
-      intersect.setY(y+dist*np.sin(angle[1]))
-      intersect.setZ(z+dist*np.cos(angle[2]))
+      intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
       intersects.append(intersect)
 
     return intersects
@@ -1203,15 +1195,12 @@ class ZCylinder(Cylinder):
 
     dist1 = (-k + np.sqrt(k**2-a*c))/a
     dist2 = (-k - np.sqrt(k**2-a*c))/a
-    angle = direction.toPolar()
 
     intersects = []
 
     for dist in [dist1, dist2]:
       intersect = Point()
-      intersect.setX(x+dist*np.cos(angle[1]))
-      intersect.setY(y+dist*np.sin(angle[1]))
-      intersect.setZ(z+dist*np.cos(angle[2]))
+      intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
       intersects.append(intersect)
 
     return intersects
@@ -1493,15 +1482,12 @@ class Sphere(Surface):
 
     dist1 = -k + np.sqrt(k**2-c)
     dist2 = -k - np.sqrt(k**2-c)
-    angle = direction.toPolar()
 
     intersects = []
 
     for dist in [dist1, dist2]:
       intersect = Point()
-      intersect.setX(x+dist*np.cos(angle[1]))
-      intersect.setY(y+dist*np.sin(angle[1]))
-      intersect.setZ(z+dist*np.cos(angle[2]))
+      intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
       intersects.append(intersect)
 
     return intersects
@@ -1689,3 +1675,17 @@ class Square(Surface):
     Ry = abs(self._coeffs['y0'] - y) - self._coeffs['R']
 
     return max(Rx, Ry)
+
+'''
+  def getIntersectionPoints(self, point, direction):
+
+    super(Square, self).getIntersectionPoints(point, direction)
+
+    x, y, z = point._coords
+    u, v, w = direction.normalize()
+
+    Dx_left = (self._coeffs['x0'] - self._coeffs['R'] - x)/u
+    Dx_right = (self._coeffs['x0'] + self._coeffs['R'] - x)/u
+    Dy_left = (self._coeffs['y0'] - self._coeffs['R'] - y)/u
+    Dy_right = (self._coeffs['y0'] - self._coeffs['R'] - y)/u
+'''
