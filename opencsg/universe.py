@@ -396,7 +396,7 @@ class Universe(object):
     for cell_id in self._cells:
 
       cell = self._cells[cell_id]
-
+      
       if cell.containsPoint(localcoords._point):
         localcoords.setCell(cell)
 
@@ -521,11 +521,11 @@ class Lattice(Universe):
     self._name = None
     self._type = ''
     self._dimension = None
-    self._lower_left = None
     self._width = None
     self._universes = None
     self._cell_offsets = None
     self._num_regions = None
+    self._offset = np.zeros(3, dtype=np.float64)
 
     self.setId(lattice_id)
     self.setName(name)
@@ -565,9 +565,9 @@ class Lattice(Universe):
       raise ValueError(msg)
 
     if lat_z is None:
-      return self._universes[lat_x][lat_y]
+      return self._universes[0][lat_y][lat_x]
     else:
-      return self._universes[lat_x][lat_y][lat_z]
+      return self._universes[lat_z][lat_y][lat_x]
 
 
   def getCellOffset(self, lat_x, lat_y, lat_z=None):
@@ -603,25 +603,33 @@ class Lattice(Universe):
       raise ValueError(msg)
 
     if lat_z is None:
-      return self._cell_offsets[lat_x][lat_y]
+      return self._cell_offsets[0][lat_y][lat_x]
     else:
-      return self._cell_offsets[lat_x][lat_y][lat_z]
+      return self._cell_offsets[lat_z][lat_y][lat_x]
 
 
   def getMaxX(self):
-    return self._lower_left[0] + self._dimension[0] * self._width[0]
+    return self._offset[0] + self._dimension[0] / 2.0 * self._width[0]
 
 
   def getMaxY(self):
-    return self._lower_left[1] + self._dimension[1] * self._width[1]
+    return self._offset[1] + self._dimension[1] / 2.0 * self._width[1]
+
+
+  def getMaxZ(self):
+    return self._offset[2] + self._dimension[2] / 2.0 * self._width[2]
 
 
   def getMinX(self):
-    return self._lower_left[0]
+    return self._offset[0] - self._dimension[0] / 2.0 * self._width[0]
 
 
   def getMinY(self):
-    return self._lower_left[1]
+    return self._offset[1] - self._dimension[1] / 2.0 * self._width[1]
+
+
+  def getMinZ(self):
+    return self._offset[2] - self._dimension[2] / 2.0 * self._width[2]
 
 
   def getUniqueUniverses(self):
@@ -635,18 +643,8 @@ class Lattice(Universe):
 
     for i in range(self._dimension[0]):
       for j in range(self._dimension[1]):
-
-        # 3D Lattices
-        if len(self._dimension) == 3:
-
-          for k in range(self._dimension[2]):
-            universe = self._universes[i][j][k]
-            universe_id = universe._id
-            universes[universe_id] = universe
-
-        # 2D Lattices
-        else:
-          universe = self._universes[i][j]
+        for k in range(self._dimension[2]):
+          universe = self._universes[k][j][i]
           universe_id = universe._id
           universes[universe_id] = universe
 
@@ -664,17 +662,8 @@ class Lattice(Universe):
 
     for i in range(self._dimension[0]):
       for j in range(self._dimension[1]):
-
-        # 3D Lattices
-        if len(self._dimension) == 3:
-
-          for k in range(self._dimension[2]):
-            universe = self._universes[i][j][k]
-            cells.update(universe.getAllCells())
-
-        # 2D Lattices
-        else:
-          universe = self._universes[i][j]
+        for k in range(self._dimension[2]):
+          universe = self._universes[k][j][i]
           cells.update(universe.getAllCells())
 
     return cells
@@ -761,6 +750,31 @@ class Lattice(Universe):
     self._type = type
 
 
+  def setOffset(self, offset):
+    
+    if not isinstance(offset, (tuple, list, np.ndarray)):
+      msg = 'Unable to set Lattice ID={0} offset to {1} since it ' \
+          'is not a Python tuple/list or NumPy array'.\
+          format(self._id, origin)
+      raise ValueError(msg)
+
+    if len(offset) != 3 and len(offset) != 2:
+      msg = 'Unable to set Lattice ID={0} offset to {1} since it ' \
+            'does not contain 2 or 3 coordinates'.\
+            format(self._id, offset)
+      raise ValueError(msg)
+
+    for val in offset:
+
+      if not is_float(val):
+        msg = 'Unable to set the offset for Lattice ID={0} to {1} ' \
+              'since it is not a float'.format(self._id, val)
+        raise ValueError(msg)
+
+    for i in range(len(offset)):
+      self._offset[i] = offset[i]
+
+
   def setDimension(self, dimension):
 
     if not isinstance(dimension, (tuple, list, np.ndarray)):
@@ -785,39 +799,11 @@ class Lattice(Universe):
               'is a negative value'.format(self._id, dim)
         raise ValueError(msg)
 
-    self._dimension = np.zeros(len(dimension), dtype=np.int64)
+    self._dimension = np.ones(3, dtype=np.int64)
 
     for i in range(len(dimension)):
       self._dimension[i] = dimension[i]
-
-
-  def setLowerLeft(self, lower_left):
-
-    if not isinstance(lower_left, (tuple, list, np.ndarray)):
-      msg = 'Unable to set the lower_left for Lattice ID={0} to ' \
-            '{1} since it is not a Python tuple/list or ' \
-            'NumPy array'.format(self._id, lower_left)
-      raise ValueError(msg)
-
-    if len(lower_left) != 2 and len(lower_left) != 3:
-      msg = 'Unable to set the lower_left for Lattice ID={0} to ' \
-            '{1} since it does not contain 2 or 3 ' \
-            'coordinates'.format(self._id, lower_left)
-      raise ValueError(msg)
-
-    for dim in lower_left:
-
-      if not is_integer(dim) and not is_float(dim):
-        msg = 'Unable to set the lower_left for Lattice ID={0} to ' \
-              '{1} since it is not an integer or floating ' \
-              'point value'.format(self._id, dim)
-        raise ValueError(msg)
-
-    self._lower_left = np.zeros(len(lower_left), dtype=np.float64)
-
-    for i in range(len(lower_left)):
-      self._lower_left[i] = lower_left[i]
-
+        
 
   def setWidth(self, width):
 
@@ -844,11 +830,12 @@ class Lattice(Universe):
               'is a negative value'.format(self._id, dim)
         raise ValueError(msg)
 
-    self._width = np.zeros(len(width), dtype=np.float64)
+    # Initialize width array to infinity by default
+    self._width = np.zeros(3, dtype=np.float64)
+    self._width[:] = max_float
 
     for i in range(len(width)):
       self._width[i] = width[i]
-
 
   def setUniverses(self, universes):
 
@@ -858,34 +845,30 @@ class Lattice(Universe):
             'NumPy array'.format(self._id, universes)
       raise ValueError(msg)
 
+    # if universes was input in 2D -> make 3D
+    shape = np.shape(universes)
+    if len(shape) == 2:
+      universes = [universes]
+    
     self._universes = universes
 
     for i in range(self._dimension[0]):
       for j in range(self._dimension[1]):
+        for k in range(self._dimension[2]):
 
-        # 3D Lattices
-        if len(self._dimension) == 3:
+          universe = self._universes[k][j][i]
 
-          for k in range(self._dimension[2]):
-
-            universe = self._universes[i][j][k]
-
+          if self._width[0] != max_float:
             universe.setMaxX(self._width[0]/2.)
             universe.setMinX(-self._width[0]/2.)
+
+          if self._width[1] != max_float:
             universe.setMaxY(self._width[1]/2.)
             universe.setMinY(-self._width[1]/2.)
+
+          if self._width[2] != max_float:
             universe.setMaxZ(self._width[2]/2.)
             universe.setMinZ(-self._width[2]/2.)
-
-        # 2D Lattices
-        else:
-
-          universe = self._universes[i][j]
-
-          universe.setMaxX(self._width[0]/2.)
-          universe.setMinX(-self._width[0]/2.)
-          universe.setMaxY(self._width[1]/2.)
-          universe.setMinY(-self._width[1]/2.)
 
 
   def computeVolumeFractions(self, volume=np.float64(1.), tolerance=1e-3):
@@ -895,22 +878,13 @@ class Lattice(Universe):
             'volume={1} is not a floating point value'.format(self._id, volume)
       raise ValueError(msg)
 
-    volume_fraction = np.float64(1. / (self._dimension[0] * self._dimension[1]))
+    volume_fraction = np.float64(1. / (self._dimension[0] * self._dimension[1] \
+                                         * self._dimension[2]))
 
     for i in range(self._dimension[0]):
       for j in range(self._dimension[1]):
-
-        # 3D Lattices
-        if len(self._dimension) == 3:
-
-          for k in range(self._dimension[2]):
-            universe = self._universes[i][j][k]
-            universe.computeVolumeFractions(volume=(volume * volume_fraction),
-                                            tolerance=tolerance)
-
-        # 2D Lattices
-        else:
-          universe = self._universes[i][j]
+        for k in range(self._dimension[2]):
+          universe = self._universes[k][j][i]
           universe.computeVolumeFractions(volume=(volume * volume_fraction),
                                           tolerance=tolerance)
 
@@ -921,32 +895,18 @@ class Lattice(Universe):
     if not self._num_regions is None:
       return self._num_regions
 
-    # First, determine how many dimensions is in the lattice
-    num_dims = len(self._dimension)
-
     # Initialize an array for the cell offsets
-    self._cell_offsets = np.zeros(tuple(self._dimension), dtype=np.int64)
+    self._cell_offsets = np.zeros(tuple(self._dimension[::-1]), dtype=np.int64)
 
     # The cell offsets have not yet been initialized
     count = 0
 
-    if num_dims == 2:
-
-      for i in range(self._dimension[0]):
-        for j in range(self._dimension[1]):
-          self._cell_offsets[i][j] = count
-          self._universes[i][j].initializeCellOffsets()
-          count += self._universes[i][j]._num_regions
-
-    if num_dims == 3:
-
-      for i in range(self._dimension[0]):
-        for j in range(self._dimension[1]):
-          for k in range(self._dimension[2]):
-            self._cell_offsets[i,j,k] = count
-            self._universes[i,j,k].initializeCellOffsets()
-            count += self._universes[i,j,k]._num_regions
-
+    for i in range(self._dimension[0]):
+      for j in range(self._dimension[1]):
+        for k in range(self._dimension[2]):
+          self._cell_offsets[k][j][i] = count
+          self._universes[k][j][i].initializeCellOffsets()
+          count += self._universes[k][j][i]._num_regions
 
     self._num_regions = count
 
@@ -962,17 +922,29 @@ class Lattice(Universe):
     point = localcoords._point
     x = point._coords[0]
     y = point._coords[1]
+    z = point._coords[2]
 
     # Compute the Lattice cell indices
-    lat_x = math.floor((x - self._lower_left[0]) / self._width[0])
-    lat_y = math.floor((y - self._lower_left[1]) / self._width[1])
+    lat_x = math.floor((x + self._dimension[0]*self._width[0]*0.5 \
+                          - self._offset[0]) / self._width[0])
+    lat_y = math.floor((self._dimension[1]*self._width[1]*0.5 \
+                          + self._offset[1] - y) / self._width[1])
+    if self._dimension[2] == 1:
+      lat_z = 0
+    else:
+      lat_z = math.floor((z + self._dimension[2]*self._width[2]*0.5 \
+                          - self._offset[2]) / self._width[2])
 
     # Check if the LocalCoord is on the Lattice boundaries
     # If so adjust x or y Lattice cell indices
 
     # Compute the distance to the Lattice cell boundaries
-    distance_x = math.fabs(math.fabs(x) - self._dimension[0]*self._width[0]*0.5)
-    distance_y = math.fabs(math.fabs(y) - self._dimension[1]*self._width[1]*0.5)
+    distance_x = math.fabs(math.fabs(x) - self._dimension[0]*self._width[0]*0.5\
+                             - self._offset[0])
+    distance_y = math.fabs(math.fabs(y) - self._dimension[1]*self._width[1]*0.5\
+                             - self._offset[1])
+    distance_z = math.fabs(math.fabs(z) - self._dimension[2]*self._width[2]*0.5\
+                             - self._offset[2])
 
     if distance_x < on_lattice_cell_thresh:
       if x > 0:
@@ -982,68 +954,43 @@ class Lattice(Universe):
 
     if distance_y < on_lattice_cell_thresh:
       if y > 0:
-        lat_y = self._dimension[1] - 1
-      else:
         lat_y = 0
-
-    # 3D Lattices only
-    if len(self._dimension) == 3:
-      z = point._coords[2]
-      lat_z = math.floor((y - self._lower_left[2]) / self._width[2])
-      distance_z = math.fabs(math.fabs(z)-self._dimension[2]*self._width[2]*0.5)
-
-      if distance_y < on_lattice_cell_thresh:
-        if z > 0:
-          lat_z = self._dimension[1] - 1
-        else:
-          lat_z = 0
-
-    # If the indices are outside the bound of the Lattice
-    # 2D Lattices
-    if len(self._dimension) == 2:
-      if (lat_x < 0 or lat_x >= self._dimension[0]) or \
-        (lat_y < 0 or lat_y >= self._dimension[1]):
-        msg = 'Unable to find cell since the lattice indices ({0},{1}) are ' \
-              'outside of Lattice ID={1}'.format(lat_x, lat_y, self._id)
-        raise ValueError(msg)
-
-    # 3D Lattices
-    else:
-      if (lat_x < 0 or lat_x >= self._dimension[0]) or \
-        (lat_y < 0 or lat_y >= self._dimension[1]) \
-        (lat_z < 0 or lat_z >= self._dimension[2]):
-        msg = 'Unable to find cell since the lattice indices ({0},{1}) are ' \
-              'outside of Lattice ID={1}'.format(lat_x, lat_y, self._id)
-        raise ValueError(msg)
+      else:
+        lat_y = self._dimension[1] - 1
+        
+    if distance_z < on_lattice_cell_thresh:
+      if z > 0:
+        lat_z = self._dimension[2] - 1
+      else:
+        lat_z = 0
 
     # Cast the Lattice indices as integers
     lat_x = int(lat_x)
     lat_y = int(lat_y)
+    lat_z = int(lat_z)
+
+    if (lat_x < 0 or lat_x >= self._dimension[0]) or \
+          (lat_y < 0 or lat_y >= self._dimension[1]) or \
+          (lat_z < 0 or lat_z >= self._dimension[2]):
+      msg = 'Unable to find cell since the lattice indices ({0},{1},{2}) are ' \
+          'outside of Lattice ID={3}'.format(lat_x, lat_y, lat_z, self._id)
+      raise ValueError(msg)
 
     # Set the Lattice cell indices for the LocalCoords
     localcoords.setLatticeX(lat_x)
     localcoords.setLatticeY(lat_y)
+    localcoords.setLatticeY(lat_z)
 
     # Compute local position of Point in the next level Universe
-    next_x = x - (self._lower_left[0] + (lat_x + 0.5) * self._width[0])
-    next_y = y - (self._lower_left[1] + (lat_y + 0.5) * self._width[1])
-    next_point = Point(x=next_x, y=next_y)
+    next_x = x - (-self._dimension[0]*self._width[0]*0.5 + self._offset[0] \
+                    + (lat_x + 0.5) * self._width[0])
+    next_y = y - (self._dimension[1]*self._width[1]*0.5 + self._offset[1] \
+                    - (lat_y + 0.5) * self._width[1])
+    next_z = z - (-self._dimension[2]*self._width[2]*0.5 + self._offset[2] \
+                    + (lat_z + 0.5) * self._width[2])
+    next_point = Point(x=next_x, y=next_y, z=next_z)
 
-    # 3D Lattices only
-    if len(self._dimension) == 3:
-      lat_z = int(lat_z)
-      localcoords.setLatticeZ(lat_z)
-      next_z = z - (self._lower_left[2] + (lat_z + 0.5) * self._width[2])
-      next_point.setZ(next_z)
-
-    # Get the Universe for this Lattice cell
-    # 3D Lattices
-    if len(self._dimension) == 3:
-      universe = self._universes[lat_x][lat_y][lat_z]
-
-    # 2D Lattices
-    else:
-      universe = self._universes[lat_x][lat_y]
+    universe = self._universes[lat_z][lat_y][lat_x]
 
     if isinstance(universe, Universe):
       next_coords = UnivCoords(next_point)
@@ -1054,20 +1001,11 @@ class Lattice(Universe):
       next_coords.setLattice(universe)
 
     else:
-
-      # 3D Lattices
-      if len(self._dimension) == 3:
-        msg = 'Unable to find Cell since Lattice ID={0} does ' \
-              'not contain a Universe or Lattice in lattice cell ' \
-              '({1}, {2}, {3})'.format(self._id, lat_x, lat_y, lat_z)
-        raise ValueError(msg)
-
-      # 2D Lattices
-      else:
-        msg = 'Unable to find Cell since Lattice ID={0} does ' \
-              'not contain a Universe or Lattice in lattice ' \
-              'cell ({1}, {2})'.format(self._id, lat_x, lat_y)
-        raise ValueError(msg)
+      
+      msg = 'Unable to find Cell since Lattice ID={0} does ' \
+          'not contain a Universe or Lattice in lattice cell ' \
+          '({1}, {2}, {3})'.format(self._id, lat_x, lat_y, lat_z)
+      raise ValueError(msg)
 
     localcoords.setNext(next_coords)
     next_coords.setPrev(localcoords)
@@ -1092,41 +1030,22 @@ class Lattice(Universe):
     offset = 0
     lat_x = 0
     lat_y = 0
-
-    # 3D Lattices only
-    if len(self._dimension) == 3:
-      lat_z = 0
+    lat_z = 0
 
     # Loop over cells until we reach the one the first one with
     # an offset larger than region_id - return the one prior
     for i in range(self._dimension[0]):
       for j in range(self._dimension[1]):
-
-        # 3D Lattices
-        if len(self._dimension) == 3:
-          for k in range(self._dimension[2]):
-
-            if self._cell_offsets[i][j][k] <= region_id:
-              offset = self._cell_offsets[i][j][k]
-              universe = self._universes[i][j][k]
-              lat_x = i
-              lat_y = j
-              lat_z = k
-
-            elif self._cell_offsets[i][j][k] > region_id:
-              break
-
-        # 2D Lattices
-        else:
-          if self._cell_offsets[i][j] <= region_id:
-            offset = self._cell_offsets[i][j]
-            universe = self._universes[i][j]
+        for k in range(self._dimension[2]):
+          if self._cell_offsets[k][j][i] <= region_id:
+            offset = self._cell_offsets[k][j][i]
+            universe = self._universes[k][j][i]
             lat_x = i
             lat_y = j
+            lat_z = k
 
-          elif self._cell_offsets[i][j] > region_id:
+          elif self._cell_offsets[k][j][i] > region_id:
             break
-
 
     if universe is None:
       msg = 'Unable to find region_id={0} for FSR ID={1} in Lattice ' \
@@ -1136,10 +1055,7 @@ class Lattice(Universe):
     region_id -= offset
     lat_coords.setLatticeX(lat_x)
     lat_coords.setLatticeY(lat_y)
-
-    # 3D Lattices
-    if len(self._dimension) == 3:
-      lat_coords.setLatticeZ(lat_z)
+    lat_coords.setLatticeZ(lat_z)
 
     # The next nested level is at a Lattice
     if region_id >= 0 and isinstance(universe, Lattice):
@@ -1169,7 +1085,7 @@ class Lattice(Universe):
     string += '{0: <16}{1}{2}\n'.format('\tName', '=\t', self._name)
     string += '{0: <16}{1}{2}\n'.format('\tType', '=\t', self._type)
     string += '{0: <16}{1}{2}\n'.format('\tDimension', '=\t', self._dimension)
-    string += '{0: <16}{1}{2}\n'.format('\tLower Left', '=\t', self._lower_left)
+    string += '{0: <16}{1}{2}\n'.format('\tOffset', '=\t', self._offset)
     string += '{0: <16}{1}{2}\n'.format('\tWidth', '=\t', self._width)
     string += '{0: <16}{1}{2}\n'.format('\t# Regions', '=\t', self._num_regions)
 
@@ -1180,17 +1096,10 @@ class Lattice(Universe):
 
       for j in range(self._dimension[1]):
 
-        # 3D Lattices
-        if len(self._dimension) == 3:
-
           for k in range(self._dimension[2]):
-            string += '{0} '.format(self._universes[i][j][k]._id)
+            string += '{0} '.format(self._universes[k][j][i]._id)
 
           string += '\n'
-
-        # 2D Lattices
-        else:
-          string += '{0} '.format(self._universes[i][j]._id)
 
       string += '\n'
 
@@ -1222,6 +1131,8 @@ class Cell(object):
     self._num_subcells = None
     self._volume_fraction = np.float64(0.)
     self._volume = np.float64(0.)
+
+    self._neighbor_cells = list()
 
     # Keys   - Surface IDs
     # Values - (halfpsace, Surface) tuples
@@ -1286,6 +1197,12 @@ class Cell(object):
       cells.update(self._fill.getAllCells())
 
     return cells
+
+
+
+#  def buildNeighborLists(self):
+
+
 
 
   def getAllUniverses(self):

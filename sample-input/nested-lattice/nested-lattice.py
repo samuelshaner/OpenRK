@@ -18,18 +18,13 @@ water = Material(name='Water')
 
 print('Creating Surfaces...')
 
-planes = list()
 cylinders = list()
-planes.append(XPlane(x0=-2.0))
-planes.append(XPlane(x0=2.0))
-planes.append(YPlane(y0=-2.0))
-planes.append(YPlane(y0=2.0))
-
 cylinders.append(ZCylinder(x0=0.0, y0=0.0, R=0.4))
 cylinders.append(ZCylinder(x0=0.0, y0=0.0, R=0.3))
 cylinders.append(ZCylinder(x0=0.0, y0=0.0, R=0.2))
 
-for plane in planes: plane.setBoundaryType('reflective')
+square = Square(x0=0., y0=0., R=2.)
+square.setBoundaryType('reflective')
 
 
 ###############################################################################
@@ -69,10 +64,7 @@ cells[3].addSurface(halfspace=+1, surface=cylinders[1])
 cells[4].addSurface(halfspace=-1, surface=cylinders[2])
 cells[5].addSurface(halfspace=+1, surface=cylinders[2])
 
-cells[7].addSurface(halfspace=+1, surface=planes[0])
-cells[7].addSurface(halfspace=-1, surface=planes[1])
-cells[7].addSurface(halfspace=+1, surface=planes[2])
-cells[7].addSurface(halfspace=-1, surface=planes[3])
+cells[7].addSurface(halfspace=-1, surface=square)
 
 universes[0].addCells(cells[0:2])
 universes[1].addCells(cells[2:4])
@@ -128,7 +120,6 @@ lattices.append(Lattice(name='2x2 core'))
 
 # 2x2 pin fuel assembly
 lattices[0].setWidth((1.0, 1.0))
-lattices[0].setLowerLeft((-1.0, -1.0))
 lattices[0].setDimension((2, 2))
 
 pin_template = [[1, 2], [1, 3]]
@@ -143,7 +134,6 @@ cells[6].setFill(lattices[0])
 
 # 2x2 fuel assembly core
 lattices[1].setWidth((2.0, 2.0))
-lattices[1].setLowerLeft((-2.0, -2.0))
 lattices[1].setDimension((2, 2))
 
 assembly_template = [[universes[3], universes[3]],
@@ -173,5 +163,5 @@ geometry.setVolume(volume=16., tolerance=1e-1)
 print('Plotting Geometry...')
 
 plotter.plot_cells(geometry)
-#plotter.plot_materials(geometry)
-#plotter.plot_regions(geometry)
+plotter.plot_materials(geometry)
+plotter.plot_regions(geometry)
