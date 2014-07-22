@@ -297,7 +297,6 @@ class Plane(Surface):
                   self._coeffs['C'] * w
     dist = numerator/denominator
     angle = direction.toPolar()
-    print dist
     intersect = Point()
     intersect.setX(x+dist*u)
     intersect.setY(y+dist*v)
