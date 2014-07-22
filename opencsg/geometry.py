@@ -147,6 +147,10 @@ class Geometry(object):
 
     for universe_id, universe in all_universes.iteritems():
 
+      # Do not consider Lattices since they are not at the Material level
+      if isinstance(universe, Lattice):
+        continue
+
       cells = universe._cells
 
       for cell_id, cell in cells.iteritems():
@@ -306,3 +310,13 @@ class Geometry(object):
     localcoords = localcoords.getHeadNode()
 
     return localcoords
+
+
+  def getNeighbors(self, region_id):
+    coords = self.findRegion(region_id)
+    return coords.getNeighbors()
+
+
+  def getUniqueNeighbors(self, region_id):
+    coords = self.findRegion(region_id)
+    return coords.getUniqueNeighbors()

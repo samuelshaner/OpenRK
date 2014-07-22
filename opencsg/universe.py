@@ -1337,7 +1337,7 @@ class Cell(object):
 
     # Select only unique Cells and return them as a tuple
     unique_neighbors = set(self._neighbor_cells)
-    return tuple(self._neighbor_cells)
+    return tuple(unique_neighbors)
 
 
   def setId(self, cell_id=None):
