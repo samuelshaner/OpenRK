@@ -2,7 +2,7 @@ __author__ = 'Will Boyd'
 __email__ = 'wboyd@mit.edu'
 
 
-from point import Point
+from point import Point, Direction
 from checkvalue import *
 import numpy as np
 
@@ -104,7 +104,7 @@ class Surface(object):
       return False
 
 
-  def getIntersectionPoint(point, direction):
+  def getIntersectionPoints(self, point, direction):
     if not isinstance(point, Point):
       msg = 'Unable to get intersection point with Surface ID={0} ' \
             'since the input is not a Point object'.format(self._id)
@@ -278,9 +278,9 @@ class Plane(Surface):
 
     return value
 
-  def getIntersectionPoint(self, point, direction):
+  def getIntersectionPoints(self, point, direction):
     
-    super(Plane, self).getIntersectionPoint(point, direction)
+    super(Plane, self).getIntersectionPoints(point, direction)
 
     if self.onSurface(point):
       return point
@@ -291,19 +291,19 @@ class Plane(Surface):
     numerator = self._coeffs['D'] - \
                 self._coeffs['A'] * x - \
                 self._coeffs['B'] * y - \
-                self._coeffs['C'] * z - \
+                self._coeffs['C'] * z
     denominator = self._coeffs['A'] * u + \
                   self._coeffs['B'] * v + \
-                  self._coeffs['C'] * w + \
+                  self._coeffs['C'] * w
     dist = numerator/denominator
     angle = direction.toPolar()
-
+    print angle
     intersect = Point()
-    intersect.setX(dist*np.cos(angle[2]))
-    intersect.setY(dist*np.sin(angle[2]))
-    intersect.setZ(dist*np.cos(angle[1]))
+    intersect.setX(x+dist*np.cos(angle[2]))
+    intersect.setY(y+dist*np.sin(angle[2]))
+    intersect.setZ(z+dist*np.cos(angle[1]))
 
-    return intersect
+    return [intersect]
 
 class XPlane(Plane):
 

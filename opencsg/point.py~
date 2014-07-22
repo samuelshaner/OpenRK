@@ -61,7 +61,7 @@ class Point(object):
 
 
   def distanceToPoint(self, point):
-    delta = self._coords - point._coords()
+    delta = self._coords - point._coords
     dist = np.sqrt(np.sum(delta**2))
     return dist
 
@@ -137,7 +137,8 @@ class Direction(object):
     u, v, w = self._comps
     r = np.sqrt(np.sum(self._comps**2))
     phi = np.arctan2(v, u)
-    theta = np.asin(np.sqrt(u**2 + v**2)/r)
+    print phi
+    theta = np.arcsin(np.sqrt(2)/r)
     
     return np.array([r,phi,theta])
 

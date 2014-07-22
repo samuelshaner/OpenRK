@@ -303,27 +303,27 @@ class Geometry(object):
 
   def getNearestIntersection(self, point, direction):
 
-    x, y, z = point.getX(), point.getY(), point.getZ()
-    cell = self.findCoords(x=x, y=y, z=z).getTailNode().getCell()
-    surfaces = cell.getSurfaces()
+    x, y, z = point._coords
+    cell = self.findCoords(x=x, y=y, z=z).getTailNode()._cell
+    surfaces = cell._surfaces
+    points = []
 
-    points = list()
     for surface in surfaces.keys():
 
-      intersect = surfaces[surface].getIntersectionPoint(point, direction)
+      intersect = surfaces[surface][0].getIntersectionPoints(point, direction)
 
-      if not intersect == None:
+      if intersect is not None:
         points.extend(intersect)
 
     if points == []:
       return None
 
-    nearest_point = points[0]
-    nearest_dist = point.distanceToPoint(points[0])
+    nearestpoint = points[0]
+    nearestdist = point.distanceToPoint(points[0])
 
     for intersect in points:
-      if point.distanceToPoint(intersect) < nearest_dist:
-        nearest_point = intersect
-        nearest_dist = point.distanceToPoint(intersect)
+      if point.distanceToPoint(intersect) < nearestdist:
+        nearestpoint = intersect
+        nearestdist = point.distanceToPoint(intersect)
 
-    return nearest_point
+    return nearestpoint

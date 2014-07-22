@@ -61,7 +61,7 @@ class Point(object):
 
 
   def distanceToPoint(self, point):
-    delta = self._coords - point._coords()
+    delta = self._coords - point._coords
     dist = np.sqrt(np.sum(delta**2))
     return dist
 
@@ -129,7 +129,7 @@ class Direction(object):
   def normalize(self):
 
     comps = self._comps
-    unit = comps**2/np.sum(comps**2)
+    unit = comps**2/np.sqrt(np.sum(comps**2))
     return unit
 
   def toPolar(self):
