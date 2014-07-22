@@ -320,6 +320,8 @@ class Geometry(object):
 
     x, y, z = point._coords
     cell = self.findCoords(x=x, y=y, z=z).getTailNode()._cell
+    print self.findCoords(x=x,y=y,z=z).getTailNode()
+    print cell
     surfaces = cell._surfaces
     points = []
 

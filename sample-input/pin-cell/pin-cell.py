@@ -21,8 +21,8 @@ water = Material(name='Water')
 print('Creating Surfaces...')
 
 cylinder = ZCylinder(x0=0.0, y0=0.0, R=1.0)
-#square = Square(x0=0., y0=0., R=2.0)
-#square.setBoundaryType('reflective')
+square = Square(x0=0., y0=0., R=2.0)
+square.setBoundaryType('reflective')
 
 
 ###############################################################################
@@ -49,10 +49,10 @@ cells.append(Cell(name='Root Cell'))
 
 cells[0].addSurface(halfspace=-1, surface=cylinder)
 cells[1].addSurface(halfspace=+1, surface=cylinder)
-#cells[2].addSurface(halfspace=-1, surface=square)
+cells[2].addSurface(halfspace=-1, surface=square)
 
 universes[0].addCells(cells[0:2])
-#universes[1].addCell(cells[2])
+universes[1].addCell(cells[2])
 
 
 ###############################################################################
@@ -106,7 +106,7 @@ geometry.setVolume(volume=16., tolerance=1e-1)
 
 
 ###############################################################################
-##############################   Ray Tracing   #############################
+###############################   Ray Tracing   ###############################
 ###############################################################################
 
 print('Tracing Sample Rays...')
@@ -115,8 +115,8 @@ rays = []
 
 for ray in xrange(50):
 
-  x, y, z = 4*np.random.rand(3)
-  u, v, w = 1e7*np.random.rand(3)
+  x, y, z = 4*np.random.rand(3)-2
+  u, v, w = np.random.rand(3)
   point = Point(x=x,y=y,z=z)
   direction = Direction(u=u,v=v,w=w)
   rays.append((point, direction))

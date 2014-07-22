@@ -21,8 +21,8 @@ water = Material(name='Water')
 print('Creating Surfaces...')
 
 cylinder = ZCylinder(x0=0.0, y0=0.0, R=1.0)
-#square = Square(x0=0., y0=0., R=2.0)
-#square.setBoundaryType('reflective')
+square = Square(x0=0., y0=0., R=2.0)
+square.setBoundaryType('reflective')
 
 
 ###############################################################################
@@ -106,7 +106,7 @@ geometry.setVolume(volume=16., tolerance=1e-1)
 
 
 ###############################################################################
-##############################   Ray Tracing   #############################
+###############################   Ray Tracing   ###############################
 ###############################################################################
 
 print('Tracing Sample Rays...')
@@ -115,8 +115,8 @@ rays = []
 
 for ray in xrange(50):
 
-  x, y, z = 4*np.random.rand(3)
-  u, v, w = 1e7*np.random.rand(3)
+  x, y, z = 4*np.random.rand(3)-2
+  u, v, w = np.random.rand(3)
   point = Point(x=x,y=y,z=z)
   direction = Direction(u=u,v=v,w=w)
   rays.append((point, direction))
@@ -126,7 +126,7 @@ colors = []
 
 for ray in rays:
   intersect = geometry.getNearestIntersection(ray[0], ray[1])
-  segments.append([ray[0]_coords, intersect_coords])
+  segments.append([ray[0]._coords, intersect._coords])
   if cylinder.evaluate(ray[0]) < 0:
     colors.append((1, 0, 0, 1))
   else:

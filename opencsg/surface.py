@@ -776,11 +776,11 @@ class XCylinder(Cylinder):
     x, y, z = point._coords
     u, v, w = direction.normalize()
 
-    ybar = y-self.coeffs['y0']
-    zbar = z-self.coeffs['z0']
+    ybar = y-self._coeffs['y0']
+    zbar = z-self._coeffs['z0']
     a = v**2 + w**2
     k = ybar*v + zbar*w
-    c = ybar**2 + zbar**2 - self.coeffs['R']**2
+    c = ybar**2 + zbar**2 - self._coeffs['R']**2
 
     dist1 = (-k + np.sqrt(k**2-a*c))/a
     dist2 = (-k - np.sqrt(k**2-a*c))/a
@@ -981,11 +981,11 @@ class YCylinder(Cylinder):
     x, y, z = point._coords
     u, v, w = direction.normalize()
 
-    xbar = x-self.coeffs['x0']
-    zbar = z-self.coeffs['z0']
+    xbar = x-self._coeffs['x0']
+    zbar = z-self._coeffs['z0']
     a = u**2 + w**2
     k = xbar*u + zbar*w
-    c = xbar**2 + zbar**2 - self.coeffs['R']**2
+    c = xbar**2 + zbar**2 - self._coeffs['R']**2
 
     dist1 = (-k + np.sqrt(k**2-a*c))/a
     dist2 = (-k - np.sqrt(k**2-a*c))/a
@@ -1187,11 +1187,11 @@ class ZCylinder(Cylinder):
     x, y, z = point._coords
     u, v, w = direction.normalize()
 
-    xbar = x-self.coeffs['x0']
-    ybar = y-self.coeffs['y0']
+    xbar = x-self._coeffs['x0']
+    ybar = y-self._coeffs['y0']
     a = u**2 + v**2
     k = xbar*u + ybar*v
-    c = xbar**2 + ybar**2 - self.coeffs['R']**2
+    c = xbar**2 + ybar**2 - self._coeffs['R']**2
 
     dist1 = (-k + np.sqrt(k**2-a*c))/a
     dist2 = (-k - np.sqrt(k**2-a*c))/a
@@ -1474,11 +1474,11 @@ class Sphere(Surface):
     x, y, z = point._coords
     u, v, w = direction.normalize()
 
-    xbar = x-self.coeffs['x0']
-    ybar = y-self.coeffs['y0']
-    zbar = z-self.coeffs['z0']
+    xbar = x-self._coeffs['x0']
+    ybar = y-self._coeffs['y0']
+    zbar = z-self._coeffs['z0']
     k = xbar*u + ybar*v + zbar*w
-    c = xbar**2 + ybar**2 + zbar**2 - self.coeffs['R']**2
+    c = xbar**2 + ybar**2 + zbar**2 - self._coeffs['R']**2
 
     dist1 = -k + np.sqrt(k**2-c)
     dist2 = -k - np.sqrt(k**2-c)
