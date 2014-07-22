@@ -15,8 +15,6 @@ import matplotlib.pyplot as plt
 # in your ~/.matplotlib/matplotlibrc
 plt.ioff()
 
-import matplotlib.colors as colors
-import matplotlib.cm as cmx
 import numpy as np
 import numpy.random
 import os, sys
@@ -90,7 +88,7 @@ def plot_cells(geometry, plane='xy', offset=0., gridsize=250):
   # Plot a 2D color map of the flat source regions
   fig = plt.figure()
   surface = np.flipud(surface)
-  plt.imshow(surface, extent=coords['bounds'])
+  plt.imshow(surface, extent=coords['bounds'], interpolation="nearest")
   plt.title('Cells ' + plane)
   filename = subdirectory + 'cells-' + plane + '.png'
   fig.savefig(filename, bbox_inches='tight')
@@ -156,7 +154,7 @@ def plot_materials(geometry, plane='xy', offset=0., gridsize=250):
   # Plot a 2D color map of the flat source regions
   fig = plt.figure()
   surface = np.flipud(surface)
-  plt.imshow(surface, extent=coords['bounds'])
+  plt.imshow(surface, extent=coords['bounds'], interpolation="nearest")
   plt.title('Materials ' + plane)
   filename = subdirectory + 'materials-' + plane + '.png'
   fig.savefig(filename, bbox_inches='tight')
@@ -224,9 +222,83 @@ def plot_regions(geometry, plane='xy', offset=0., gridsize=250):
   # Plot a 2D color map of the flat source regions
   fig = plt.figure()
   surface = np.flipud(surface)
-  plt.imshow(surface, extent=coords['bounds'])
+  plt.imshow(surface, extent=coords['bounds'], interpolation="nearest")
   plt.title('Regions ' + plane)
   filename = subdirectory + 'regions-' + plane + '.png'
+  fig.savefig(filename, bbox_inches='tight')
+  plt.close(fig)
+
+
+def plot_neighbor_cells(geometry, plane='xy', offset=0., gridsize=250):
+
+  global subdirectory
+
+  # Make directory if it does not exist
+  if not os.path.exists(subdirectory):
+    os.makedirs(subdirectory)
+
+  # Error checking
+  if not isinstance(geometry, Geometry):
+    msg = 'Unable to plot the neighbor cells since input was not ' \
+          'a Geometry class object'
+    raise ValueError(msg)
+
+  if not is_integer(gridsize):
+    msg = 'Unable to plot the neighbor cells since the gridsize {0} is' \
+          'is not an integer'.format(gridsize)
+    raise ValueError(msg)
+
+  if gridsize <= 0:
+    msg = 'Unable to plot the neighbor cells with a negative ' \
+          'gridsize {0}'.format(gridsize)
+    raise ValueError(msg)
+
+  if plane not in ['xy', 'xz', 'yz']:
+    msg = 'Unable to plot the neighbor cells with an invalid ' \
+        'plane {0}. Plane options xy, xz, yz'.format(plane)
+    raise ValueError(msg)
+
+  if not is_float(offset):
+    msg = 'Unable to plot the neighbor cells since the offset {0} is' \
+          'is not a float'.format(gridsize)
+    raise ValueError(msg)
+
+  print('Plotting the Neighbor Cells...')
+
+  # Initialize a NumPy array for the surface colors
+  surface = numpy.zeros((gridsize, gridsize))
+
+  # Retrieve the pixel coordinates
+  surf = get_pixel_coords(geometry, plane, offset, gridsize)
+
+  # Initialize the offsets used for computing region IDs
+  geometry.initializeCellOffsets()
+
+  # Build the neighbor Cells/Universes
+  geometry.buildNeighbors()
+
+  # Find the flat source region IDs for each grid point
+  for i in range(gridsize):
+    for j in range(gridsize):
+
+      if plane == 'xy':
+        coords = geometry.findCoords(x=surf['x'][i], y=surf['y'][j], z=offset)
+      elif plane == 'xz':
+        coords = geometry.findCoords(x=surf['x'][i], y=offset, z=surf['z'][j])
+      else:
+        coords = geometry.findCoords(x=offset, y=surf['y'][i], z=surf['z'][j])
+
+      neighbor_cells = coords.getUniqueNeighbors()
+      neighbor_hash = hash(tuple(neighbor_cells))
+      surface[j][i] = color_map[neighbor_hash % num_colors]
+
+
+  # Plot a 2D color map of the flat source regions
+  fig = plt.figure()
+  surface = np.flipud(surface)
+  plt.imshow(surface, extent=surf['bounds'], interpolation="nearest")
+  plt.title('Neighbor Cells ' + plane)
+  filename = subdirectory + 'neighbor-cells-' + plane + '.png'
   fig.savefig(filename, bbox_inches='tight')
   plt.close(fig)
 

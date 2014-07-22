@@ -1068,10 +1068,10 @@ class Lattice(Universe):
 
     if distance_y < on_lattice_cell_thresh:
       if y > 0:
-        lat_y = 0
-      else:
         lat_y = self._dimension[1] - 1
-        
+      else:
+        lat_y = 0
+
     if distance_z < on_lattice_cell_thresh:
       if z > 0:
         lat_z = self._dimension[2] - 1
@@ -1098,8 +1098,8 @@ class Lattice(Universe):
     # Compute local position of Point in the next level Universe
     next_x = x - (-self._dimension[0]*self._width[0]*0.5 + self._offset[0] \
                     + (lat_x + 0.5) * self._width[0])
-    next_y = y - (self._dimension[1]*self._width[1]*0.5 + self._offset[1] \
-                    - (lat_y + 0.5) * self._width[1])
+    next_y = y - (-self._dimension[1]*self._width[1]*0.5 + self._offset[1] \
+                    + (lat_y + 0.5) * self._width[1])
     next_z = z - (-self._dimension[2]*self._width[2]*0.5 + self._offset[2] \
                     + (lat_z + 0.5) * self._width[2])
     next_point = Point(x=next_x, y=next_y, z=next_z)

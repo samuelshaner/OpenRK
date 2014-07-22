@@ -15,6 +15,10 @@ class Geometry(object):
     self._num_regions = 0
     self._volume = np.float64(0.)
 
+    #FIXME:
+    self._neighbors_hash = dict()
+
+
     # A NumPy array of volumes for each region, indexed by Region ID
     self._region_volumes = None
 
@@ -232,6 +236,17 @@ class Geometry(object):
       raise ValueError(msg)
 
     self._root_universe.buildNeighbors()
+
+    #FIXME: Get integer indices
+    i = 0
+
+    for region in range(self._num_regions):
+      neighbor_cells = self.getUniqueNeighbors(region)
+      neighbor_hash = hash(tuple(neighbor_cells))
+
+      if not neighbor_hash in self._neighbors_hash.keys():
+        self._neighbors_hash[neighbor_hash] = i
+        i += 1
 
 
   def getRegionId(self, x=0., y=0., z=0.):
