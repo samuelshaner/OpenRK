@@ -229,7 +229,8 @@ def plot_regions(geometry, plane='xy', offset=0., gridsize=250):
   plt.close(fig)
 
 
-def plot_neighbor_cells(geometry, plane='xy', offset=0., gridsize=250):
+def plot_neighbor_cells(geometry, plane='xy', offset=0.,
+                        gridsize=250, unique=False):
 
   global subdirectory
 
@@ -288,7 +289,11 @@ def plot_neighbor_cells(geometry, plane='xy', offset=0., gridsize=250):
       else:
         coords = geometry.findCoords(x=offset, y=surf['y'][i], z=surf['z'][j])
 
-      neighbor_cells = coords.getNeighbors()
+      if unique:
+        neighbor_cells = coords.getUniqueNeighbors()
+      else:
+        neighbor_cells = coords.getNeighbors()
+
       neighbor_hash = hash(tuple(neighbor_cells))
       surface[j][i] = color_map[neighbor_hash % num_colors]
 
@@ -297,8 +302,14 @@ def plot_neighbor_cells(geometry, plane='xy', offset=0., gridsize=250):
   fig = plt.figure()
   surface = np.flipud(surface)
   plt.imshow(surface, extent=surf['bounds'], interpolation="nearest")
-  plt.title('Neighbor Cells ' + plane)
-  filename = subdirectory + 'neighbor-cells-' + plane + '.png'
+
+  if unique:
+    plt.title('Unique Neighbor Cells ' + plane)
+    filename = subdirectory + 'unique-neighbor-cells-' + plane + '.png'
+  else:
+    plt.title('Neighbor Cells ' + plane)
+    filename = subdirectory + 'neighbor-cells-' + plane + '.png'
+
   fig.savefig(filename, bbox_inches='tight')
   plt.close(fig)
 
