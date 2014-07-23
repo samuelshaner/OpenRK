@@ -303,8 +303,6 @@ def plot_neighbor_cells(geometry, plane='xy', offset=0.,
   color_map = np.linspace(0., 1., num_neighbors, endpoint=False)
   numpy.random.shuffle(color_map)
 
-  print 'neighbor color map: {0}'.format(color_map)
-
   # Initialize a NumPy array for the surface colors
   surface = numpy.zeros((gridsize, gridsize))
 
