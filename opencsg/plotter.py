@@ -19,15 +19,8 @@ import numpy as np
 import numpy.random
 import os
 
-
 ## A static variable for the output directory in which to save plots
 subdirectory = "plots/"
-
-## The number of colors to use when creating a random color map for plots
-num_colors = 50
-
-## An array of random floats that represents a random color map for plots
-color_map = np.random.random_sample((num_colors,))
 
 
 def plot_cells(geometry, plane='xy', offset=0., gridsize=250):
