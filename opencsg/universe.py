@@ -1350,14 +1350,14 @@ class Cell(object):
 
 
   def getNeighbors(self):
-    return tuple(self._neighbor_cells)
+    return tuple(sorted(self._neighbor_cells))
 
 
   def getUniqueNeighbors(self):
 
     # Select only unique Cells and return them as a tuple
     unique_neighbors = set(self._neighbor_cells)
-    return tuple(unique_neighbors)
+    return tuple(sorted(unique_neighbors))
 
 
   def setId(self, cell_id=None):
