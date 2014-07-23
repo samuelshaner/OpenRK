@@ -15,12 +15,22 @@ class Geometry(object):
     self._num_regions = 0
     self._volume = np.float64(0.)
 
-    #FIXME:
-    self._neighbors_hash = dict()
-
-
     # A NumPy array of volumes for each region, indexed by Region ID
     self._region_volumes = None
+
+    # Build dictionaries mapping neighbor hashes to consecutive integers
+    # Keys    - hashes of the tuples of (unique) neighbors
+    # Values  - monotonically consecutive non-negative integers
+    self._num_neighbors = 0
+    self._neighbor_ids = dict()
+    self._num_unique_neighbors = 0
+    self._unique_neighbor_ids = dict()
+
+    # Map regions to neighbors
+    # Keys    - region IDs
+    # Values  - hashes of the tuples of (unique) neighbors
+    self._regions_to_neighbors = dict()
+    self._regions_to_unique_neighbors = dict()
 
 
   def getMaxX(self):
@@ -237,16 +247,34 @@ class Geometry(object):
 
     self._root_universe.buildNeighbors()
 
-    #FIXME: Get integer indices
-    i = 0
+    # Initialize offsets maps
+    self.initializeCellOffsets()
+
+    # Build dictionaries mapping neighbor tuples to consecutive integers
+    # Keys    - tuple of (unique) neighbors
+    # Values  - monotonically consecutive non-negative integers
+    self._num_unique_neighbors = 0
+    self._num_neighbors = 0
 
     for region in range(self._num_regions):
-      neighbor_cells = self.getUniqueNeighbors(region)
-      neighbor_hash = hash(tuple(neighbor_cells))
 
-      if not neighbor_hash in self._neighbors_hash.keys():
-        self._neighbors_hash[neighbor_hash] = i
-        i += 1
+      # Build lists of neighbor Cells/Universes
+      neighbors = self.getNeighbors(region)
+      unique_neighbors = self.getUniqueNeighbors(region)
+
+      # Store the hashes to the region-to-neighbor hash maps
+      self._regions_to_neighbors[region] = neighbors
+      self._regions_to_unique_neighbors[region] = unique_neighbors
+
+      # Add the neighbor hash to the neighbor maps
+      if not neighbors in self._neighbor_ids.keys():
+        self._neighbor_ids[neighbors] = self._num_neighbors
+        self._num_neighbors += 1
+
+      # Add the unique neighbor hash to the unique neighbor maps
+      if not unique_neighbors in self._unique_neighbor_ids.keys():
+        self._unique_neighbor_ids[unique_neighbors] = self._num_unique_neighbors
+        self._num_unique_neighbors += 1
 
 
   def getRegionId(self, x=0., y=0., z=0.):

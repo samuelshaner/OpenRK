@@ -17,7 +17,7 @@ plt.ioff()
 
 import numpy as np
 import numpy.random
-import os, sys
+import os
 
 
 ## A static variable for the output directory in which to save plots
@@ -66,12 +66,22 @@ def plot_cells(geometry, plane='xy', offset=0., gridsize=250):
 
   print('Plotting the Cells...')
 
+  # Get the number of Cells filled with Materials
+  cells = geometry.getAllMaterialCells()
+  num_cells = len(cells)
+
+  # Create array of equally spaced randomized floats as a color map for plots
+  # Seed the NumPy random number generator to ensure reproducible color maps
+  numpy.random.seed(1)
+  color_map = np.linspace(0., 1., num_cells, endpoint=False)
+  numpy.random.shuffle(color_map)
+
   # Initialize a NumPy array for the surface colors
   surface = numpy.zeros((gridsize, gridsize))
 
   # Retrieve the pixel coordinates
   coords = get_pixel_coords(geometry, plane, offset, gridsize)
-  
+
   # Find the flat source region IDs for each grid point
   for i in range(gridsize):
     for j in range(gridsize):
@@ -83,7 +93,7 @@ def plot_cells(geometry, plane='xy', offset=0., gridsize=250):
       else:
         cell = geometry.findCell(x=offset, y=coords['y'][i], z=coords['z'][j])  
 
-      surface[j][i] = color_map[cell._id % num_colors]
+      surface[j][i] = color_map[cell._id % num_cells]
 
   # Plot a 2D color map of the flat source regions
   fig = plt.figure()
@@ -132,6 +142,16 @@ def plot_materials(geometry, plane='xy', offset=0., gridsize=250):
 
   print('Plotting the Materials...')
 
+  # Get the number of Cells filled with Materials
+  materials = geometry.getAllMaterials()
+  num_materials = len(materials)
+
+  # Create array of equally spaced randomized floats as a color map for plots
+  # Seed the NumPy random number generator to ensure reproducible color maps
+  numpy.random.seed(1)
+  color_map = np.linspace(0., 1., num_materials, endpoint=False)
+  numpy.random.shuffle(color_map)
+
   # Initialize a NumPy array for the surface colors
   surface = numpy.zeros((gridsize, gridsize))
 
@@ -149,7 +169,7 @@ def plot_materials(geometry, plane='xy', offset=0., gridsize=250):
       else:
         cell = geometry.findCell(x=offset, y=coords['y'][i], z=coords['z'][j])  
 
-      surface[j][i] = color_map[cell._fill._id % num_colors]
+      surface[j][i] = color_map[cell._fill._id % num_materials]
 
   # Plot a 2D color map of the flat source regions
   fig = plt.figure()
@@ -197,14 +217,21 @@ def plot_regions(geometry, plane='xy', offset=0., gridsize=250):
 
   print('Plotting the Regions...')
 
+  # Initialize the offsets used for computing region IDs
+  geometry.initializeCellOffsets()
+  num_regions = geometry._num_regions
+
+  # Create array of equally spaced randomized floats as a color map for plots
+  # Seed the NumPy random number generator to ensure reproducible color maps
+  numpy.random.seed(1)
+  color_map = np.linspace(0., 1., num_regions, endpoint=False)
+  numpy.random.shuffle(color_map)
+
   # Initialize a NumPy array for the surface colors
   surface = numpy.zeros((gridsize, gridsize))
 
   # Retrieve the pixel coordinates
   coords = get_pixel_coords(geometry, plane, offset, gridsize)
-
-  # Initialize the offsets used for computing region IDs
-  geometry.initializeCellOffsets()
 
   # Find the flat source region IDs for each grid point
   for i in range(gridsize):
@@ -217,7 +244,7 @@ def plot_regions(geometry, plane='xy', offset=0., gridsize=250):
       else:
         region_id = geometry.getRegionId(x=offset, y=coords['y'][i], z=coords['z'][j])
 
-      surface[j][i] = color_map[region_id % num_colors]
+      surface[j][i] = color_map[region_id % num_regions]
 
   # Plot a 2D color map of the flat source regions
   fig = plt.figure()
@@ -266,36 +293,48 @@ def plot_neighbor_cells(geometry, plane='xy', offset=0.,
 
   print('Plotting the Neighbor Cells...')
 
-  # Initialize a NumPy array for the surface colors
-  surface = numpy.zeros((gridsize, gridsize))
-
-  # Retrieve the pixel coordinates
-  surf = get_pixel_coords(geometry, plane, offset, gridsize)
-
   # Initialize the offsets used for computing region IDs
   geometry.initializeCellOffsets()
 
   # Build the neighbor Cells/Universes
   geometry.buildNeighbors()
 
+  if unique:
+    num_neighbors = geometry._num_neighbors
+  else:
+    num_neighbors = geometry._num_unique_neighbors
+
+  # Create array of equally spaced randomized floats as a color map for plots
+  # Seed the NumPy random number generator to ensure reproducible color maps
+  numpy.random.seed(1)
+  color_map = np.linspace(0., 1., num_neighbors, endpoint=False)
+  numpy.random.shuffle(color_map)
+
+  # Initialize a NumPy array for the surface colors
+  surface = numpy.zeros((gridsize, gridsize))
+
+  # Retrieve the pixel coordinates
+  surf = get_pixel_coords(geometry, plane, offset, gridsize)
+
   # Find the flat source region IDs for each grid point
   for i in range(gridsize):
     for j in range(gridsize):
 
       if plane == 'xy':
-        coords = geometry.findCoords(x=surf['x'][i], y=surf['y'][j], z=offset)
+        region_id = geometry.getRegionId(x=surf['x'][i], y=surf['y'][j], z=offset)
       elif plane == 'xz':
-        coords = geometry.findCoords(x=surf['x'][i], y=offset, z=surf['z'][j])
+        region_id = geometry.getRegionId(x=surf['x'][i], y=offset, z=surf['z'][j])
       else:
-        coords = geometry.findCoords(x=offset, y=surf['y'][i], z=surf['z'][j])
+        region_id = geometry.getRegionId(x=offset, y=surf['y'][i], z=surf['z'][j])
 
       if unique:
-        neighbor_cells = coords.getUniqueNeighbors()
+        neighbors = geometry._regions_to_unique_neighbors[region_id]
+        neighbor_id = geometry._unique_neighbor_ids[neighbors]
       else:
-        neighbor_cells = coords.getNeighbors()
+        neighbors = geometry._regions_to_neighbors[region_id]
+        neighbor_id = geometry._neighbor_ids[neighbors]
 
-      neighbor_hash = hash(tuple(neighbor_cells))
-      surface[j][i] = color_map[neighbor_hash % num_colors]
+      surface[j][i] = color_map[neighbor_id % num_neighbors]
 
 
   # Plot a 2D color map of the flat source regions
