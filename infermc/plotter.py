@@ -1,21 +1,95 @@
+import matplotlib
+from opencsg import *
+
+# force headless backend, or set 'backend' to 'Agg'
+# in your ~/.matplotlib/matplotlibrc
+matplotlib.use('Agg')
+
+import matplotlib.pyplot as plt
+
+# Force non-interactive mode, or set 'interactive' to False
+# in your ~/.matplotlib/matplotlibrc
+plt.ioff()
+
+
 from infermc.process import *
 from infermc.multigroupxs import *
 from opencsg.checkvalue import *
 from statepoint import StatePoint
-import os
-import matplotlib.pyplot as plt
 import numpy as np
 import numpy.random
+import os
 
 
 ## A static variable for the output directory in which to save plots
 directory = "plots/"
 
-## The number of colors to use when creating a random color map for plots
-num_colors = 50
 
-## An array of random floats that represents a random color map for plots
-color_map = np.random.random_sample((num_colors,))
+# Build color maps
+def get_color_maps(geometry):
+
+  # Initialize the offsets used for computing region IDs
+  geometry.initializeCellOffsets()
+
+  # Build the neighbor Cells/Universes
+  geometry.buildNeighbors()
+
+  materials = geometry.getAllMaterials()
+  cells = geometry.getAllMaterialCells()
+  universes = geometry.getAllMaterialUniverses()
+
+  num_materials = len(materials)
+  num_cells = len(cells)
+  num_universes = len(universes)
+  num_regions = geometry._num_regions
+  num_neighbors = geometry._num_neighbors
+  num_unique_neighbors = geometry._num_unique_neighbors
+
+  # Create arrays of equally spaced randomized floats as a color map for plots
+  # Seed the NumPy random number generator to ensure reproducible color maps
+
+  # Initialize dictionary for all color maps
+  # Keys    - color type string (ie, 'materials', 'cells', 'neighbors', etc.)
+  # Values  - randomized NumPy array of floats in [0, 1)
+  color_maps = dict()
+
+  # Create color map for Materials
+  numpy.random.seed(1)
+  color_map = np.linspace(0., 1., num_materials, endpoint=False)
+  numpy.random.shuffle(color_map)
+  color_maps['material'] = color_map
+
+  # Create color map for Cells
+  numpy.random.seed(1)
+  color_map = np.linspace(0., 1., num_cells, endpoint=False)
+  numpy.random.shuffle(color_map)
+  color_maps['cell'] = color_map
+
+  # Create color map for Universes
+  numpy.random.seed(1)
+  color_map = np.linspace(0., 1., num_universes, endpoint=False)
+  numpy.random.shuffle(color_map)
+  color_maps['universe'] = color_map
+
+  # Create color map for Regions
+  numpy.random.seed(1)
+  color_map = np.linspace(0., 1., num_regions, endpoint=False)
+  numpy.random.shuffle(color_map)
+  color_maps['region'] = color_map
+
+  # Create color map for neighbor Cells/Universes
+  numpy.random.seed(1)
+  color_map = np.linspace(0., 1., num_neighbors, endpoint=False)
+  numpy.random.shuffle(color_map)
+  color_maps['neighbors'] = color_map
+
+  # Create color map for neighbor Cells/Universes
+  numpy.random.seed(1)
+  color_map = np.linspace(0., 1., num_unique_neighbors, endpoint=False)
+  numpy.random.shuffle(color_map)
+  color_maps['unique neighbors'] = color_map
+
+  return color_maps
 
 
 def scatter_multigroup_xs(extractor, xs_type, domain_types=['distribcell'],
@@ -70,8 +144,8 @@ def scatter_multigroup_xs(extractor, xs_type, domain_types=['distribcell'],
     raise ValueError(msg)
 
   for color in colors:
-    if not color in ['domain_type', 'material', 'cell',
-                     'distribcell', 'universe', 'neighbors']:
+    if not color in ['domain_type', 'material', 'cell', 'distribcell'
+                     'universe', 'neighbors', 'unique neighbors']:
       msg = 'Unable to scatter plot cross-sections with color {0} which ' \
             'is not a supported type'.format(color)
       raise ValueError(msg)
@@ -101,24 +175,26 @@ def scatter_multigroup_xs(extractor, xs_type, domain_types=['distribcell'],
     if color == 'domain_type':
       colors[i] = domain_types[i]
 
-
   geometry = extractor._opencsg_geometry
+
+  # Get color maps for each domain within each domain type
+  color_maps = get_color_maps(geometry)
+
+  # Create a color for each type of domain
+  domain_colors = np.linspace(0, 1, len(domain_types), endpoint=False)
+
+  # Get lists of all Materials, Cells, Universes
   materials = geometry.getAllMaterials()
   cells = geometry.getAllMaterialCells()
   universes = geometry.getAllMaterialUniverses()
 
-  num_regions = geometry._num_regions
+  # Get the number of Materials, Cells, Universes, etc.
   num_materials = len(materials)
   num_cells = len(cells)
   num_universes = len(universes)
-
-
-  # Build neighbor Cells/Universes if we will use it for coloring
-  if 'neighbors' in colors:
-    geometry.buildNeighbors()
-
-
-  domain_colors = np.random.rand(len(domain_types))
+  num_regions = geometry._num_regions
+  num_neighbors = geometry._num_neighbors
+  num_unique_neighbors = geometry._num_unique_neighbors
 
   # Initialize an empty dictionary of data
   data = dict()
@@ -143,16 +219,34 @@ def scatter_multigroup_xs(extractor, xs_type, domain_types=['distribcell'],
 
         # Find color!!!
         if colors[i] == 'material':
-          data[domain_type][region, 2] = cells[cell_id]._fill._id
+          material_id = cells[cell_id]._fill._id
+          color = color_maps[colors[i]][material_id % num_materials]
+          data[domain_type][region, 2] = color
+
         elif colors[i] == 'cell':
-          data[domain_type][region, 2] = cell_id
+          color = color_maps[colors[i]][cell_id % num_cells]
+          data[domain_type][region, 2] = color
+
         elif colors[i] == 'distribcell':
-          data[domain_type][region, 2] = region
+          color = color_maps[colors[i]][region % num_regions]
+          data[domain_type][region, 2] = color
+
         elif colors[i] == 'universe':
-          data[domain_type][region, 2] = universes[universe_id]
+          color = color_maps[colors[i]][universe_id % num_universes]
+          data[domain_type][region, 2] = color
+
         elif colors[i] == 'neighbors':
-          neighbors = geometry.getUniqueNeighbors(region)
-          data[domain_type][region, 2] = hash(tuple(neighbors))
+          neighbors = geometry._regions_to_neighbors[region]
+          neighbor_id = geometry._neighbor_ids[neighbors]
+          color = color_maps[colors[i]][neighbor_id % num_neighbors]
+          data[domain_type][region, 2] = color
+
+        elif colors[i] == 'unique neighbors':
+          unique_neighbors = geometry._regions_to_unique_neighbors[region]
+          neighbor_id = geometry._unique_neighbor_ids[unique_neighbors]
+          color = color_maps[colors[i]][neighbor_id % num_unique_neighbors]
+          data[domain_type][region, 2] = color
+
         else:
           data[domain_type][region, 2] = domain_colors[i]
 
@@ -169,7 +263,9 @@ def scatter_multigroup_xs(extractor, xs_type, domain_types=['distribcell'],
 
         # Find color!!!
         if colors[i] == 'material':
-          data[domain_type][j, 2] = material._id
+          color = color_maps[colors[i]][material._id % num_materials]
+          data[domain_type][j, 2] = color
+
         else:
           data[domain_type][j, 2] = domain_colors[i]
 
@@ -185,10 +281,15 @@ def scatter_multigroup_xs(extractor, xs_type, domain_types=['distribcell'],
         data[domain_type][j, 1] = xs.getXS(energy_groups[1], cell._id)
 
         # Find color!!!
-        if colors[i] == 'cell':
-          data[domain_type][j, 2] = cell._id
-        elif colors[i] == 'material':
-          data[domain_type][j, 2] = cell._fill._id
+        if colors[i] == 'material':
+          material_id = cells[cell_id]._fill._id
+          color = color_maps[colors[i]][material_id % num_materials]
+          data[domain_type][j, 2] = color
+
+        elif colors[i] == 'cell':
+          color = color_maps[colors[i]][cell._id % num_cells]
+          data[domain_type][j, 2] = color
+
         else:
           data[domain_type][j, 2] = domain_colors[i]
 
@@ -205,7 +306,9 @@ def scatter_multigroup_xs(extractor, xs_type, domain_types=['distribcell'],
 
         # Find color!!!
         if colors[i] == 'universe':
-          data[domain_type][j, 2] = universe._id
+          color = color_maps[colors[i]][universe._id % num_universes]
+          data[domain_type][j, 2] = color
+
         else:
           data[domain_type][j, 2] = domain_colors[i]
 

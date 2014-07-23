@@ -78,3 +78,7 @@ tally_factory.createAllXS(groups, domain_type='cell')
 tally_factory.createAllXS(groups, domain_type='universe')
 
 tally_factory.createTalliesFile()
+
+import opencsg.plotter as plotter
+plotter.plot_neighbor_cells(geometry)
+plotter.plot_materials(geometry)

@@ -3,6 +3,7 @@ from openmc import *
 from datasets.BEAVRS.materials import openmc_materials
 from geometry import geometry
 from infermc.build import *
+import opencsg.plotter as plotter
 
 
 ###############################################################################
@@ -77,3 +78,14 @@ tally_factory.createAllXS(groups, domain_type='cell')
 tally_factory.createAllXS(groups, domain_type='universe')
 
 tally_factory.createTalliesFile()
+
+
+###############################################################################
+#########################   Plotting the Geometry  ############################
+###############################################################################
+
+plotter.plot_neighbor_cells(geometry)
+plotter.plot_neighbor_cells(geometry, unique=True)
+plotter.plot_regions(geometry)
+plotter.plot_materials(geometry)
+plotter.plot_cells(geometry)

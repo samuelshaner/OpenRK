@@ -79,6 +79,7 @@ root_cell.addSurface(surface=boundaries['Y-Max'], halfspace=-1)
 root_cell.addSurface(surface=boundaries['Z-Min'], halfspace=+1)
 root_cell.addSurface(surface=boundaries['Z-Max'], halfspace=-1)
 
+
 ###############################################################################
 ##########################   Creating the Geometry   ##########################
 ###############################################################################

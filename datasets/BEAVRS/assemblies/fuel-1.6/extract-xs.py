@@ -6,7 +6,7 @@ from infermc.multigroupxs import xs_types
 from infermc.plotter import scatter_multigroup_xs
 
 
-batches = [10, 15, 20, 25, 30, 35, 40, 45, 50]
+batches = [15]
 
 groups = group_structures['CASMO']['2-group']
 
