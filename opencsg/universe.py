@@ -666,10 +666,6 @@ class Lattice(Universe):
     jx = np.clip(lat_y - depth, 0, self._neighbor_universes.shape[1]-1)
     kx = np.clip(lat_x - depth, 0, self._neighbor_universes.shape[2]-1)
 
-#    ix = np.clip(lat_z - depth, 0, self._neighbor_universes.shape[0]-1)
-#    jx = np.clip(lat_y - depth, 0, self._neighbor_universes.shape[1]-1)
-#    kx = np.clip(lat_x - depth, 0, self._neighbor_universes.shape[2]-1)
-
     # Compute the neighbor cell starting indices for each dimension
     i0 = max(0, lat_z - depth - ix)
     j0 = max(0, lat_y - depth - jx)
@@ -698,7 +694,7 @@ class Lattice(Universe):
     # convert to a 1D tuple containing only unique Universes
     neighbor_universes = self.getNeighbors(lat_x, lat_y, lat_z)
     unique_neighbors = set(neighbor_universes.ravel())
-    return tuple(unique_neighbors)
+    return tuple(sorted(unique_neighbors))
 
 
   def getMaxX(self):
@@ -2236,19 +2232,9 @@ def sliding_window(arr, window_size):
     shape = (shape[0], shape[1], 1, shape[3], shape[4], arr.shape[2])
 
   # Determine the array of strides for NumPy for the sliding window array
-  strides = (arr.shape[0]*arr.itemsize, arr.itemsize,
-             arr.shape[1]*arr.itemsize, arr.itemsize,
-             arr.shape[2]*arr.itemsize, arr.itemsize)
-
-  strides = (arr.shape[1]*arr.shape[2]*arr.itemsize, arr.shape[2]*arr.itemsize, arr.itemsize,\
-    arr.shape[1]*arr.shape[2]*arr.itemsize, arr.shape[2]*arr.itemsize, arr.itemsize)
-
-#  strides = (arr.shape[0]*arr.itemsize, arr.itemsize,
-#             arr.shape[1]*arr.itemsize, arr.itemsize,
-#             arr.shape[2]*arr.itemsize, arr.itemsize)
-
-  print shape
-  print strides
-  print arr.strides
+  strides = (arr.shape[1] * arr.shape[2] * arr.itemsize,
+             arr.shape[2] * arr.itemsize, arr.itemsize,
+             arr.shape[1] * arr.shape[2] * arr.itemsize,
+             arr.shape[2] * arr.itemsize, arr.itemsize)
 
   return as_strided(arr, shape=shape, strides=strides)
