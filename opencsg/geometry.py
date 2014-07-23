@@ -18,7 +18,7 @@ class Geometry(object):
     # A NumPy array of volumes for each region, indexed by Region ID
     self._region_volumes = None
 
-    # Build dictionaries mapping neighbor hashes to consecutive integers
+    # Dictionaries mapping neighbor hashes to consecutive integers
     # Keys    - hashes of the tuples of (unique) neighbors
     # Values  - monotonically consecutive non-negative integers
     self._num_neighbors = 0
@@ -250,11 +250,20 @@ class Geometry(object):
     # Initialize offsets maps
     self.initializeCellOffsets()
 
-    # Build dictionaries mapping neighbor tuples to consecutive integers
-    # Keys    - tuple of (unique) neighbors
+    # Build dictionaries mapping neighbor hashes to consecutive integers
+    # Keys    - hashes of the tuples of (unique) neighbors
     # Values  - monotonically consecutive non-negative integers
-    self._num_unique_neighbors = 0
+    # Reinitialize each time this routine is called
     self._num_neighbors = 0
+    self._neighbor_ids = dict()
+    self._num_unique_neighbors = 0
+    self._unique_neighbor_ids = dict()
+
+    # Map regions to neighbors
+    # Keys    - region IDs
+    # Values  - hashes of the tuples of (unique) neighbors
+    self._regions_to_neighbors = dict()
+    self._regions_to_unique_neighbors = dict()
 
     for region in range(self._num_regions):
 
