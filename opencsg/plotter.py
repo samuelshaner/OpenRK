@@ -288,7 +288,7 @@ def plot_neighbor_cells(geometry, plane='xy', offset=0., gridsize=250):
       else:
         coords = geometry.findCoords(x=offset, y=surf['y'][i], z=surf['z'][j])
 
-      neighbor_cells = coords.getUniqueNeighbors()
+      neighbor_cells = coords.getNeighbors()
       neighbor_hash = hash(tuple(neighbor_cells))
       surface[j][i] = color_map[neighbor_hash % num_colors]
 

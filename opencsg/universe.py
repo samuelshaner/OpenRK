@@ -685,14 +685,34 @@ class Lattice(Universe):
       k1 = 1
 
     neighbor_universes = self._neighbor_universes[ix,jx,kx][i0:i1,j0:j1,k0:k1]
-    return neighbor_universes
+
+    # Convert 3D neighbor universes array to a 3D tuple of tuples of tuples
+    neighbors_universes_tuple = ( )
+
+    # Iterate over z-axis of sliding window
+    for i in range(neighbor_universes.shape[0]):
+      xy_neighbors = ( )
+
+      # Iterate over y-axis of sliding window
+      for j in range(neighbor_universes.shape[1]):
+        x_neighbors = ( )
+
+        # Iterate over x-axis of sliding window
+        for k in range(neighbor_universes.shape[2]):
+          x_neighbors += (neighbor_universes[i,j,k], )
+
+        xy_neighbors += (tuple(sorted(x_neighbors)), )
+
+      neighbors_universes_tuple += (tuple(sorted(xy_neighbors)), )
+
+    return neighbors_universes_tuple
 
 
   def getUniqueNeighbors(self, lat_x, lat_y, lat_z=None):
 
     # Get the depth x depth x depth array of neighbors and
     # convert to a 1D tuple containing only unique Universes
-    neighbor_universes = self.getNeighbors(lat_x, lat_y, lat_z)
+    neighbor_universes = np.asarray(self.getNeighbors(lat_x, lat_y, lat_z))
     unique_neighbors = set(neighbor_universes.ravel())
     return tuple(sorted(unique_neighbors))
 
