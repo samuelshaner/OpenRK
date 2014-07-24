@@ -343,8 +343,7 @@ class MultiGroupXS(object):
       xs_results['xs type'] = self._xs_type
       xs_results['domain type'] = self._domain_type
       xs_results['domain'] = self._domain
-      xs_results['# groups'] = self._num_groups
-      xs_results['group bounds'] = self._energy_groups._group_edges
+      xs_results['energy groups'] = self._energy_groups
       xs_results['tallies'] = self._tallies
       xs_results['xs'] = self._xs
       xs_results['offset'] = self._offset
@@ -367,6 +366,90 @@ class MultiGroupXS(object):
       xs_results.close()
 
       exit('Unable to export all results to HDF5!')
+
+
+
+  def importAllResults(self, filename, directory='.', format='hdf5'):
+
+    if not is_string(filename):
+      msg = 'Unable to import cross-section from filename={0} ' \
+            'since it is not a string'.format(filename)
+      raise ValueError(msg)
+
+    elif not is_string(directory):
+      msg = 'Unable to import cross-section from directory={0} ' \
+            'since it is not a string'.format(directory)
+      raise ValueError(msg)
+
+    elif not format in ['hdf5', 'pkl']:
+      msg = 'Unable to import cross-section from format {0} ' \
+            'since it is not supported'.format(format)
+      raise ValueError(msg)
+
+
+    # Python pickle files
+    if format == 'pkl':
+
+      import pickle
+
+      filename = directory + '/' + filename + '.pkl'
+      filename = filename.replace(' ', '-')
+
+      # Check that the file exists
+      import os.path
+
+      if not os.path.exists(filename):
+        msg = 'Unable to import cross-section from filename={0} ' \
+              'which does not exist'.format(filename)
+        raise ValueError(msg)
+
+      # Load the pickle file into a dictionary
+      xs_results = pickle.load(open(filename, 'rb'))
+
+      # Extract the MultiGroupXS' class attributes in the dictionary
+      xs_type = xs_results['xs type']
+      domain_type = xs_results['domain type']
+      domain = xs_results['domain']
+      energy_groups = xs_results['energy groups']
+      tallies = xs_results['tallies']
+      xs = xs_results['xs']
+      offset = xs_results['offset']
+      subdomain_offsets = xs_results['subdomain offsets']
+
+      # Store the MultiGroupXS class attributes
+      self._xs_type = xs_type
+      self.setDomainType(domain_type)
+      self.setDomain(domain)
+      self.setEnergyGroups(energy_groups)
+      self._tallies = tallies
+      self._xs = xs
+      self._offset = offset
+      self._subdomain_offsets = subdomain_offsets
+
+
+    # HDF5 binary file
+    if format == 'hdf5':
+
+      import h5py
+
+      filename = directory + '/' + filename + '.h5'
+      filename = filename.replace(' ', '-')
+
+      # Check that the file exists
+      import os.path
+
+      if not os.path.exists(filename):
+        msg = 'Unable to import cross-section from filename={0} ' \
+              'which does not exist'.format(filename)
+        raise ValueError(msg)
+
+      xs_results = h5py.File(filename, 'w')
+
+      xs_results.close()
+
+      exit('Unable to import results from HDF5!')
+
+
 
 
 
@@ -658,7 +741,8 @@ class MultiGroupXS(object):
     filename = filename.replace(' ', '-')
 
     # Generate LaTeX file
-    self.exportResults(subdomain, filename, '.', 'latex', False, uncertainties)
+    self.exportSubdomainResults(subdomain, filename, '.',
+                                'latex', False, uncertainties)
 
     # Compile LaTeX to PDF
     import subprocess
