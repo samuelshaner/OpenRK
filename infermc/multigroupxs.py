@@ -304,8 +304,7 @@ class MultiGroupXS(object):
       return unumpy.std_devs(xs)
 
 
-  def exportAllResults(self, filename='multigroupxs',
-                       directory='multigroupxs', format='pkl'):
+  def dumpToFile(self, filename='multigroupxs', directory='multigroupxs'):
 
     if not is_string(filename):
       msg = 'Unable to dump cross-section to filename={0} ' \
@@ -317,59 +316,33 @@ class MultiGroupXS(object):
             'since it is not a string'.format(directory)
       raise ValueError(msg)
 
-    elif not format in ['hdf5', 'pkl']:
-      msg = 'Unable to dump cross-section to format {0} ' \
-            'since it is not supported'.format(format)
-      raise ValueError(msg)
-
+    import pickle
 
     # Make directory if it does not exist
     if not os.path.exists(directory):
       os.makedirs(directory)
 
+    # Create an empty dictionary to store the data
+    xs_results = dict()
 
-    # Python pickle binary file
-    if format == 'pkl':
+    # Store all of this MultiGroupXS' class attributes in the dictionary
+    xs_results['xs type'] = self._xs_type
+    xs_results['domain type'] = self._domain_type
+    xs_results['domain'] = self._domain
+    xs_results['energy groups'] = self._energy_groups
+    xs_results['tallies'] = self._tallies
+    xs_results['xs'] = self._xs
+    xs_results['offset'] = self._offset
+    xs_results['subdomain offsets'] = self._subdomain_offsets
 
-      import pickle
-
-      # Load the dictionary from the Pickle file
-      filename = directory + '/' + filename + '.pkl'
-      filename = filename.replace(' ', '-')
-
-      xs_results = dict()
-
-      # Store all of this MultiGroupXS' class attributes in the dictionary
-      xs_results['xs type'] = self._xs_type
-      xs_results['domain type'] = self._domain_type
-      xs_results['domain'] = self._domain
-      xs_results['energy groups'] = self._energy_groups
-      xs_results['tallies'] = self._tallies
-      xs_results['xs'] = self._xs
-      xs_results['offset'] = self._offset
-      xs_results['subdomain offsets'] = self._subdomain_offsets
-
-      # Pickle the MultiGroupXS results to a file
-      pickle.dump(xs_results, open(filename, 'wb'))
-
-
-    # HDF5 binary file
-    if format == 'hdf5':
-
-      import h5py
-
-      filename = directory + '/' + filename + '.h5'
-      filename = filename.replace(' ', '-')
-
-      xs_results = h5py.File(filename, 'w')
-
-      xs_results.close()
-
-      exit('Unable to export all results to HDF5!')
+    # Pickle the MultiGroupXS results to a file
+    filename = directory + '/' + filename + '.pkl'
+    filename = filename.replace(' ', '-')
+    pickle.dump(xs_results, open(filename, 'wb'))
 
 
 
-  def importAllResults(self, filename, directory='.', format='hdf5'):
+  def restoreFromFile(self, filename, directory='.'):
 
     if not is_string(filename):
       msg = 'Unable to import cross-section from filename={0} ' \
@@ -381,75 +354,40 @@ class MultiGroupXS(object):
             'since it is not a string'.format(directory)
       raise ValueError(msg)
 
-    elif not format in ['hdf5', 'pkl']:
-      msg = 'Unable to import cross-section from format {0} ' \
-            'since it is not supported'.format(format)
+    import pickle
+    import os.path
+
+    filename = directory + '/' + filename + '.pkl'
+    filename = filename.replace(' ', '-')
+
+    # Check that the file exists
+    if not os.path.exists(filename):
+      msg = 'Unable to import cross-section from filename={0} ' \
+            'which does not exist'.format(filename)
       raise ValueError(msg)
 
+    # Load the pickle file into a dictionary
+    xs_results = pickle.load(open(filename, 'rb'))
 
-    # Python pickle files
-    if format == 'pkl':
+    # Extract the MultiGroupXS' class attributes in the dictionary
+    xs_type = xs_results['xs type']
+    domain_type = xs_results['domain type']
+    domain = xs_results['domain']
+    energy_groups = xs_results['energy groups']
+    tallies = xs_results['tallies']
+    xs = xs_results['xs']
+    offset = xs_results['offset']
+    subdomain_offsets = xs_results['subdomain offsets']
 
-      import pickle
-
-      filename = directory + '/' + filename + '.pkl'
-      filename = filename.replace(' ', '-')
-
-      # Check that the file exists
-      import os.path
-
-      if not os.path.exists(filename):
-        msg = 'Unable to import cross-section from filename={0} ' \
-              'which does not exist'.format(filename)
-        raise ValueError(msg)
-
-      # Load the pickle file into a dictionary
-      xs_results = pickle.load(open(filename, 'rb'))
-
-      # Extract the MultiGroupXS' class attributes in the dictionary
-      xs_type = xs_results['xs type']
-      domain_type = xs_results['domain type']
-      domain = xs_results['domain']
-      energy_groups = xs_results['energy groups']
-      tallies = xs_results['tallies']
-      xs = xs_results['xs']
-      offset = xs_results['offset']
-      subdomain_offsets = xs_results['subdomain offsets']
-
-      # Store the MultiGroupXS class attributes
-      self._xs_type = xs_type
-      self.setDomainType(domain_type)
-      self.setDomain(domain)
-      self.setEnergyGroups(energy_groups)
-      self._tallies = tallies
-      self._xs = xs
-      self._offset = offset
-      self._subdomain_offsets = subdomain_offsets
-
-
-    # HDF5 binary file
-    if format == 'hdf5':
-
-      import h5py
-
-      filename = directory + '/' + filename + '.h5'
-      filename = filename.replace(' ', '-')
-
-      # Check that the file exists
-      import os.path
-
-      if not os.path.exists(filename):
-        msg = 'Unable to import cross-section from filename={0} ' \
-              'which does not exist'.format(filename)
-        raise ValueError(msg)
-
-      xs_results = h5py.File(filename, 'w')
-
-      xs_results.close()
-
-      exit('Unable to import results from HDF5!')
-
-
+    # Store the MultiGroupXS class attributes
+    self._xs_type = xs_type
+    self.setDomainType(domain_type)
+    self.setDomain(domain)
+    self.setEnergyGroups(energy_groups)
+    self._tallies = tallies
+    self._xs = xs
+    self._offset = offset
+    self._subdomain_offsets = subdomain_offsets
 
 
 
@@ -750,7 +688,9 @@ class MultiGroupXS(object):
     proc.communicate()
 
     # Move PDF to requested directory and cleanup temporary LaTeX files
-    os.system('mv {0}.pdf {1}'.format(filename, directory))
+    if directory != '.':
+      os.system('mv {0}.pdf {1}'.format(filename, directory))
+
     os.system('rm {0}.tex {0}.aux {0}.log'.format(filename))
 
 

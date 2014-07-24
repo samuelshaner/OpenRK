@@ -37,8 +37,7 @@ for batch in batches:
 
       xs = extractor.getMultiGroupXS(xs_type, cell._id, 'distribcell')
       filename = 'cell-{0}-{1}'.format(cell._id, xs_type)
-
-      xs.exportAllResults(filename=filename, format='pkl')
+      xs.dumpToFile(filename)
 
 #    if xs_type != 'scatter matrix':
 #      scatter_multigroup_xs(extractor, xs_type,
