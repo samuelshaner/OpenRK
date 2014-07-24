@@ -82,3 +82,7 @@ simulation-state/*
 */*.svg
 *.pkl
 */*.pkl
+
+# IPython Notebook
+*.ipynb_checkpoints
+*/*.ipynb_checkpoints
