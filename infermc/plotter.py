@@ -3,13 +3,13 @@ from opencsg import *
 
 # force headless backend, or set 'backend' to 'Agg'
 # in your ~/.matplotlib/matplotlibrc
-matplotlib.use('Agg')
+#matplotlib.use('Agg')
 
 import matplotlib.pyplot as plt
 
 # Force non-interactive mode, or set 'interactive' to False
 # in your ~/.matplotlib/matplotlibrc
-plt.ioff()
+#plt.ioff()
 
 
 from infermc.process import *
@@ -23,6 +23,10 @@ import os
 
 ## A static variable for the output directory in which to save plots
 directory = "plots/"
+
+
+## List of supported file formats for saving Matplotlib figures
+file_formats = ['png', 'jpg', 'pdf', 'svg', 'eps', 'pkl']
 
 
 # Build color maps
@@ -94,7 +98,7 @@ def get_color_maps(geometry):
 
 def scatter_multigroup_xs(extractor, xs_type, domain_types=['distribcell'],
                           energy_groups=[1,2], colors=['domain_type'],
-                          legend=False, filename='multigroup-xs'):
+                          filename='multigroup-xs', extension='png'):
 
   if not isinstance(extractor, XSTallyExtractor):
     msg = 'Unable to scatter plot cross-sections since {0} is not a ' \
@@ -150,14 +154,14 @@ def scatter_multigroup_xs(extractor, xs_type, domain_types=['distribcell'],
             'is not a supported type'.format(color)
       raise ValueError(msg)
 
-  if not isinstance(legend, (bool, np.bool)):
-    msg = 'Unable to scatter plot cross-sections with legend {0} which is ' \
-          'not a boolean type'.format(legend)
-    raise ValueError(msg)
-
-  elif not is_string(filename):
+  if not is_string(filename):
     msg = 'Unable to scatter plot cross-sections since {0} is not a ' \
           'valid filename string'.format(filename)
+    raise ValueError(msg)
+
+  elif not is_string(extension) or not extension in file_formats:
+    msg = 'Unable to scatter plot cross-sections since {0} ' \
+          'is not a valid string file extension'.format(format)
     raise ValueError(msg)
 
   global directory
@@ -321,28 +325,48 @@ def scatter_multigroup_xs(extractor, xs_type, domain_types=['distribcell'],
 
   if 'distribcell' in domain_types:
     plt.scatter(data['distribcell'][:,0], data['distribcell'][:,1],
-                c=data['distribcell'][:,2], edgecolors='k')
+                c=data['distribcell'][:,2], edgecolors='k', picker=True)
 
   if 'material' in domain_types:
     plt.scatter(data['material'][:,0], data['material'][:,1],
-                c=data['material'][:,2], edgecolors='k', s=80)
+                c=data['material'][:,2], edgecolors='k', s=80, picker=True)
 
   if 'cell' in domain_types:
     plt.scatter(data['material'][:,0], data['material'][:,1],
-                color=data['material'][:,2], edgecolors='k', s=80)
+                color=data['material'][:,2], edgecolors='k', s=80, picker=True)
 
   if 'universe' in domain_types:
     plt.scatter(data['universe'][:,0], data['universe'][:,1],
-                color=data['universe'][:,2], edgecolors='k', s=80)
+                color=data['universe'][:,2], edgecolors='k', s=80, picker=True)
 
   plt.xlabel('Group {0} [cm^-1]'.format(energy_groups[0]))
   plt.ylabel('Group {0} [cm^-1]'.format(energy_groups[1]))
   plt.title('{0} {1} Cross-Section'.format(domain_type.capitalize(),
                                            xs_type.capitalize()))
   plt.grid()
-  filename = directory + '/' + filename + '.png'
-  plt.savefig(filename, bbox_inches='tight')
+
+  fig.canvas.mpl_connect('pick_event', onpick3)
+
+  plt.show()
+
+  filename = directory + '/' + filename + '.' + extension
+
+  if extension is 'pkl':
+    import pickle
+    ax = plt.subplot(111)
+    pickle.dump(ax, file(filename, 'w'))
+  else:
+    plt.savefig(filename, bbox_inches='tight')
+
   plt.close(fig)
+
+
+
+
+def onpick3(event):
+  ind = event.ind
+  print 'onpick3 scatter:', ind
+
 
 
 

@@ -30,7 +30,7 @@ for batch in batches:
     if xs_type != 'scatter matrix':
       scatter_multigroup_xs(extractor, xs_type,
                             domain_types=['distribcell', 'material'],
-                            colors=['neighbors', 'material'],
+                            colors=['unique neighbors', 'material'],
                             filename='{0}-{1}-batches'.format(xs_type,batch))
 
   openmc.reset_auto_ids()

@@ -304,8 +304,76 @@ class MultiGroupXS(object):
       return unumpy.std_devs(xs)
 
 
-  def exportResults(self, subdomain=None, filename='multigroupxs', directory='.',
-                     format='hdf5', append=True, uncertainties=False):
+  def exportAllResults(self, filename='multigroupxs',
+                       directory='multigroupxs', format='pkl'):
+
+    if not is_string(filename):
+      msg = 'Unable to dump cross-section to filename={0} ' \
+            'since it is not a string'.format(filename)
+      raise ValueError(msg)
+
+    elif not is_string(directory):
+      msg = 'Unable to dump cross-section to directory={0} ' \
+            'since it is not a string'.format(directory)
+      raise ValueError(msg)
+
+    elif not format in ['hdf5', 'pkl']:
+      msg = 'Unable to dump cross-section to format {0} ' \
+            'since it is not supported'.format(format)
+      raise ValueError(msg)
+
+
+    # Make directory if it does not exist
+    if not os.path.exists(directory):
+      os.makedirs(directory)
+
+
+    # Python pickle binary file
+    if format == 'pkl':
+
+      import pickle
+
+      # Load the dictionary from the Pickle file
+      filename = directory + '/' + filename + '.pkl'
+      filename = filename.replace(' ', '-')
+
+      xs_results = dict()
+
+      # Store all of this MultiGroupXS' class attributes in the dictionary
+      xs_results['xs type'] = self._xs_type
+      xs_results['domain type'] = self._domain_type
+      xs_results['domain'] = self._domain
+      xs_results['# groups'] = self._num_groups
+      xs_results['group bounds'] = self._energy_groups._group_edges
+      xs_results['tallies'] = self._tallies
+      xs_results['xs'] = self._xs
+      xs_results['offset'] = self._offset
+      xs_results['subdomain offsets'] = self._subdomain_offsets
+
+      # Pickle the MultiGroupXS results to a file
+      pickle.dump(xs_results, open(filename, 'wb'))
+
+
+    # HDF5 binary file
+    if format == 'hdf5':
+
+      import h5py
+
+      filename = directory + '/' + filename + '.h5'
+      filename = filename.replace(' ', '-')
+
+      xs_results = h5py.File(filename, 'w')
+
+      xs_results.close()
+
+      exit('Unable to export all results to HDF5!')
+
+
+
+  #FIXME: Modularize!!!
+  def exportSubdomainResults(self, subdomain=None, filename='multigroupxs',
+                             directory='multigroupxs', format='hdf5',
+                             append=True, uncertainties=False):
 
     if not subdomain is None and not subdomain in self._subdomain_offsets.keys():
       msg = 'Unable to export cross-section for domain {0} since it is ' \
