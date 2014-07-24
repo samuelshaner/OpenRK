@@ -68,7 +68,17 @@ simulation-state/*
 */*.out
 *.pyc
 */*.pyc
+
+# Plots and pickled files
 *.png
 */*.png
 *.pdf
 */*.pdf
+*.jpg
+*/*.jpg
+*.eps
+*/*.eps
+*.svg
+*/*.svg
+*.pkl
+*/*.pkl
