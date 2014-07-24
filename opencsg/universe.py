@@ -689,6 +689,11 @@ class Lattice(Universe):
     # Convert 3D neighbor universes array to a 3D tuple of tuples of tuples
     neighbors_universes_tuple = ( )
 
+    # Build a 2D tuple of all of the neighbors
+    # Iterate over all orderings of the (x,y,z) coordinates to ensure
+    # that neighbors tuple is rotationally symmetric across all dimensions
+
+    # x-y-z
     # Iterate over z-axis of sliding window
     for i in range(neighbor_universes.shape[0]):
       xy_neighbors = ( )
@@ -701,10 +706,96 @@ class Lattice(Universe):
         for k in range(neighbor_universes.shape[2]):
           x_neighbors += (neighbor_universes[i,j,k], )
 
-        xy_neighbors += (tuple(sorted(x_neighbors)), )
+        xy_neighbors += tuple(sorted(x_neighbors))
 
-      neighbors_universes_tuple += (tuple(sorted(xy_neighbors)), )
+      neighbors_universes_tuple += tuple(sorted(xy_neighbors))
 
+    # x-z-y
+    # Iterate over y-axis of sliding window
+    for j in range(neighbor_universes.shape[1]):
+      xz_neighbors = ( )
+
+      # Iterate over z-axis of sliding window
+      for i in range(neighbor_universes.shape[0]):
+        x_neighbors = ( )
+
+        # Iterate over x-axis of sliding window
+        for k in range(neighbor_universes.shape[2]):
+          x_neighbors += (neighbor_universes[i,j,k], )
+
+        xz_neighbors += tuple(sorted(x_neighbors))
+
+      neighbors_universes_tuple += tuple(sorted(xz_neighbors))
+
+    # y-x-z
+    # Iterate over z-axis of sliding window
+    for i in range(neighbor_universes.shape[0]):
+      yx_neighbors = ( )
+
+      # Iterate over x-axis of sliding window
+      for k in range(neighbor_universes.shape[2]):
+        y_neighbors = ( )
+
+        # Iterate over y-axis of sliding window
+        for j in range(neighbor_universes.shape[1]):
+          y_neighbors += (neighbor_universes[i,j,k], )
+
+        yx_neighbors += tuple(sorted(y_neighbors))
+
+      neighbors_universes_tuple += tuple(sorted(yx_neighbors))
+
+    # y-z-x
+    # Iterate over x-axis of sliding window
+    for k in range(neighbor_universes.shape[2]):
+      yz_neighbors = ( )
+
+      # Iterate over z-axis of sliding window
+      for i in range(neighbor_universes.shape[0]):
+        y_neighbors = ( )
+
+        # Iterate over y-axis of sliding window
+        for j in range(neighbor_universes.shape[1]):
+          y_neighbors += (neighbor_universes[i,j,k], )
+
+        yz_neighbors += tuple(sorted(y_neighbors))
+
+      neighbors_universes_tuple += tuple(sorted(yz_neighbors))
+
+    # z-x-y
+    # Iterate over y-axis of sliding window
+    for j in range(neighbor_universes.shape[1]):
+      xz_neighbors = ( )
+
+      # Iterate over x-axis of sliding window
+      for k in range(neighbor_universes.shape[2]):
+        z_neighbors = ( )
+
+        # Iterate over z-axis of sliding window
+        for i in range(neighbor_universes.shape[0]):
+          z_neighbors += (neighbor_universes[i,j,k], )
+
+        xz_neighbors += tuple(sorted(z_neighbors))
+
+      neighbors_universes_tuple += tuple(sorted(xz_neighbors))
+
+    # z-y-x
+    # Iterate over x-axis of sliding window
+    for k in range(neighbor_universes.shape[2]):
+      zy_neighbors = ( )
+
+      # Iterate over y-axis of sliding window
+      for j in range(neighbor_universes.shape[1]):
+        z_neighbors = ( )
+
+        # Iterate over z-axis of sliding window
+        for i in range(neighbor_universes.shape[0]):
+          z_neighbors += (neighbor_universes[i,j,k], )
+
+        zy_neighbors += tuple(sorted(z_neighbors))
+
+      neighbors_universes_tuple += tuple(sorted(zy_neighbors))
+
+    neighbors_universes_tuple = sorted(neighbors_universes_tuple)
     return neighbors_universes_tuple
 
 
