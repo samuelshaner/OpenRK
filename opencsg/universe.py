@@ -695,15 +695,15 @@ class Lattice(Universe):
 
     # x-y-z
     # Iterate over z-axis of sliding window
-    for i in range(neighbor_universes.shape[0]):
+    for i in np.arange(neighbor_universes.shape[0]):
       xy_neighbors = ( )
 
       # Iterate over y-axis of sliding window
-      for j in range(neighbor_universes.shape[1]):
+      for j in np.arange(neighbor_universes.shape[1]):
         x_neighbors = ( )
 
         # Iterate over x-axis of sliding window
-        for k in range(neighbor_universes.shape[2]):
+        for k in np.arange(neighbor_universes.shape[2]):
           x_neighbors += (neighbor_universes[i,j,k], )
 
         xy_neighbors += tuple(sorted(x_neighbors))
@@ -712,15 +712,15 @@ class Lattice(Universe):
 
     # x-z-y
     # Iterate over y-axis of sliding window
-    for j in range(neighbor_universes.shape[1]):
+    for j in np.arange(neighbor_universes.shape[1]):
       xz_neighbors = ( )
 
       # Iterate over z-axis of sliding window
-      for i in range(neighbor_universes.shape[0]):
+      for i in np.arange(neighbor_universes.shape[0]):
         x_neighbors = ( )
 
         # Iterate over x-axis of sliding window
-        for k in range(neighbor_universes.shape[2]):
+        for k in np.arange(neighbor_universes.shape[2]):
           x_neighbors += (neighbor_universes[i,j,k], )
 
         xz_neighbors += tuple(sorted(x_neighbors))
@@ -729,15 +729,15 @@ class Lattice(Universe):
 
     # y-x-z
     # Iterate over z-axis of sliding window
-    for i in range(neighbor_universes.shape[0]):
+    for i in np.arange(neighbor_universes.shape[0]):
       yx_neighbors = ( )
 
       # Iterate over x-axis of sliding window
-      for k in range(neighbor_universes.shape[2]):
+      for k in np.arange(neighbor_universes.shape[2]):
         y_neighbors = ( )
 
         # Iterate over y-axis of sliding window
-        for j in range(neighbor_universes.shape[1]):
+        for j in np.arange(neighbor_universes.shape[1]):
           y_neighbors += (neighbor_universes[i,j,k], )
 
         yx_neighbors += tuple(sorted(y_neighbors))
@@ -746,15 +746,15 @@ class Lattice(Universe):
 
     # y-z-x
     # Iterate over x-axis of sliding window
-    for k in range(neighbor_universes.shape[2]):
+    for k in np.arange(neighbor_universes.shape[2]):
       yz_neighbors = ( )
 
       # Iterate over z-axis of sliding window
-      for i in range(neighbor_universes.shape[0]):
+      for i in np.arange(neighbor_universes.shape[0]):
         y_neighbors = ( )
 
         # Iterate over y-axis of sliding window
-        for j in range(neighbor_universes.shape[1]):
+        for j in np.arange(neighbor_universes.shape[1]):
           y_neighbors += (neighbor_universes[i,j,k], )
 
         yz_neighbors += tuple(sorted(y_neighbors))
@@ -763,15 +763,15 @@ class Lattice(Universe):
 
     # z-x-y
     # Iterate over y-axis of sliding window
-    for j in range(neighbor_universes.shape[1]):
+    for j in np.arange(neighbor_universes.shape[1]):
       xz_neighbors = ( )
 
       # Iterate over x-axis of sliding window
-      for k in range(neighbor_universes.shape[2]):
+      for k in np.arange(neighbor_universes.shape[2]):
         z_neighbors = ( )
 
         # Iterate over z-axis of sliding window
-        for i in range(neighbor_universes.shape[0]):
+        for i in np.arange(neighbor_universes.shape[0]):
           z_neighbors += (neighbor_universes[i,j,k], )
 
         xz_neighbors += tuple(sorted(z_neighbors))
@@ -780,15 +780,15 @@ class Lattice(Universe):
 
     # z-y-x
     # Iterate over x-axis of sliding window
-    for k in range(neighbor_universes.shape[2]):
+    for k in np.arange(neighbor_universes.shape[2]):
       zy_neighbors = ( )
 
       # Iterate over y-axis of sliding window
-      for j in range(neighbor_universes.shape[1]):
+      for j in np.arange(neighbor_universes.shape[1]):
         z_neighbors = ( )
 
         # Iterate over z-axis of sliding window
-        for i in range(neighbor_universes.shape[0]):
+        for i in np.arange(neighbor_universes.shape[0]):
           z_neighbors += (neighbor_universes[i,j,k], )
 
         zy_neighbors += tuple(sorted(z_neighbors))
@@ -841,12 +841,9 @@ class Lattice(Universe):
 
     universes = dict()
 
-    for i in range(self._dimension[0]):
-      for j in range(self._dimension[1]):
-        for k in range(self._dimension[2]):
-          universe = self._universes[k][j][i]
-          universe_id = universe._id
-          universes[universe_id] = universe
+    for universe in self._universes.ravel():
+      universe_id = universe._id
+      universes[universe_id] = universe
 
     return universes
 
@@ -860,11 +857,8 @@ class Lattice(Universe):
 
     cells = dict()
 
-    for i in range(self._dimension[0]):
-      for j in range(self._dimension[1]):
-        for k in range(self._dimension[2]):
-          universe = self._universes[k][j][i]
-          cells.update(universe.getAllCells())
+    for universe in self._universes.ravel():
+      cells.update(universe.getAllCells())
 
     return cells
 
@@ -1081,9 +1075,9 @@ class Lattice(Universe):
     volume_fraction = np.float64(1. / (self._dimension[0] * self._dimension[1] \
                                          * self._dimension[2]))
 
-    for i in range(self._dimension[0]):
-      for j in range(self._dimension[1]):
-        for k in range(self._dimension[2]):
+    for i in np.arange(self._dimension[0]):
+      for j in np.arange(self._dimension[1]):
+        for k in np.arange(self._dimension[2]):
           universe = self._universes[k][j][i]
           universe.computeVolumeFractions(volume=(volume * volume_fraction),
                                           tolerance=tolerance)
@@ -1101,9 +1095,9 @@ class Lattice(Universe):
     # The cell offsets have not yet been initialized
     count = 0
 
-    for i in range(self._dimension[0]):
-      for j in range(self._dimension[1]):
-        for k in range(self._dimension[2]):
+    for i in np.arange(self._dimension[0]):
+      for j in np.arange(self._dimension[1]):
+        for k in np.arange(self._dimension[2]):
           self._cell_offsets[k][j][i] = count
           self._universes[k][j][i].initializeCellOffsets()
           count += self._universes[k][j][i]._num_regions
@@ -1911,7 +1905,7 @@ class Cell(object):
       y = np.nan_to_num(y)
       z = np.nan_to_num(z)
 
-      for i in range(num_samples):
+      for i in np.arange(num_samples):
 
         point.setX(x[i])
         point.setY(y[i])
