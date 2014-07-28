@@ -524,10 +524,11 @@ class XSTallyExtractor(object):
       num_regions = self._opencsg_geometry._num_regions
 
       for region in range(num_regions):
-        path = copy.deepcopy(self.getPath(region))
+        path = self.getPath(region)
         cell_id = path[-1]
 
         if cell_id == domain._id:
+          path = copy.deepcopy(path)
           offset = self._openmc_geometry.getOffset(path, domain_offset)
           multigroup_xs.setSubDomainOffset(region, offset)
 

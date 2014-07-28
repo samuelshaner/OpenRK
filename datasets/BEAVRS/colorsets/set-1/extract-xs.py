@@ -8,11 +8,10 @@ from infermc.multigroupxs import xs_types
 
 groups = group_structures['CASMO']['2-group']
 
-batches = range(10, 105, 5)
+#batches = range(10, 105, 5)
+batches = [10]
 
 for batch in batches:
-
-  print batch
 
   filename = 'statepoint.{0}.h5'.format(batch)
 
@@ -26,6 +25,8 @@ for batch in batches:
   extractor.extractAllMultiGroupXS(groups, 'distribcell')
 
   for xs_type in xs_types:
+
+    print batch, xs_type
 
     if xs_type != 'scatter matrix':
       scatter_multigroup_xs(extractor, xs_type,
