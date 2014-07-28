@@ -1,7 +1,7 @@
-import openmc
 from infermc.checkvalue import *
 from infermc.uncorr_math import *
-from uncertainties import unumpy
+import openmc
+import numpy as np
 import os
 
 
@@ -297,12 +297,12 @@ class MultiGroupXS(object):
     else:
       subdomain_index = 0
 
-    xs = self._xs[subdomain_index, group_index]
-
     if metric == 'mean':
-      return unumpy.nominal_values(xs)
+#      if str(self._xs[0, subdomain_index, group_index]) == '[ inf  nan]':
+#        print self._domain, self._domain_type, self._xs_type
+      return self._xs[0, subdomain_index, group_index]
     else:
-      return unumpy.std_devs(xs)
+      return self._xs[1, subdomain_index, group_index]
 
 
   def dumpToFile(self, filename='multigroupxs', directory='multigroupxs'):
@@ -468,13 +468,13 @@ class MultiGroupXS(object):
         subdomain_index = 0
 
       # Add MultiGroupXS results data to the HDF5 group
-      average = unumpy.nominal_values(self._xs)
+      average = self._xs[0, ...]
       shape = average[subdomain_index,:].shape
       xs_group.require_dataset('average', dtype=np.float64, shape=shape,
                                data=average[subdomain_index,:])
 
       if uncertainties:
-        std_dev = unumpy.std_devs(self._xs)
+        std_dev = self._xs[1, ...]
         xs_group.require_dataset('std. dev.', dtype=np.float64, shape=shape,
                                  data=std_dev[subdomain_index,:])
 
@@ -516,11 +516,11 @@ class MultiGroupXS(object):
         subdomain_index = 0
 
       # Add MultiGroupXS results data to the dictionary
-      average = unumpy.nominal_values(self._xs)
+      average = self._xs[0, ...]
       xs_group['average'] = average[subdomain_index,:]
 
       if uncertainties:
-        std_dev = unumpy.std_devs(self._xs)
+        std_dev = self._xs[1, ...]
         xs_group['std. dev.'] = std_dev[subdomain_index,:]
 
       # Pickle the MultiGroupXS results to a file
@@ -561,10 +561,10 @@ class MultiGroupXS(object):
 
       # Add MultiGroupXS results data to the table list
       table = list()
-      average = unumpy.nominal_values(self._xs)
+      average = self._xs[0, ...]
 
       if uncertainties:
-        std_dev = unumpy.std_devs(self._xs)
+        std_dev = self._xs[1, ...]
 
       if self._xs_type != 'scatter matrix':
 
@@ -730,7 +730,9 @@ class MultiGroupXS(object):
       bounds = self._energy_groups.getGroupBounds(group)
       string += '{0: <12}Group {1} [{2: <10} - ' \
                 '{3: <10}MeV]:\t'.format('', group, bounds[0], bounds[1])
-      string += '{:.2e}'.format(self._xs[subdomain_index, group-1])
+      average = self._xs[0, subdomain_index, group-1]
+      std_dev = self._xs[1, subdomain_index, group-1]
+      string += '{:.2e}+/-{:.2e}'.format(average, std_dev)
       string += '\n'
 
     print(string)
@@ -791,24 +793,25 @@ class TotalXS(MultiGroupXS):
     flux_std_dev = np.reshape(flux_std_dev, newshape)
     total_std_dev = np.reshape(total_std_dev, newshape)
 
-    flux = unumpy.uarray(flux_mean, flux_std_dev)
-    total = unumpy.uarray(total_mean, total_std_dev)
+    flux = np.array([flux_mean, flux_std_dev])
+    total = np.array([total_mean, total_std_dev])
 
     # Set any zero fluxes to a negative value
-    flux[flux == 0.] = unumpy.uarray([-1.], [0.])
+    flux[0, flux[0, ...] == 0.] = -1.
+    flux[1, flux[0, ...] == 0.] = 0.
 
     # Compute the xs with uncertainty propagation
-    self._xs = unumpy_uncorr_divide(total, flux)
+    self._xs = uncorr_divide_by_array(total, flux)
 
     # For any region without flux, convert xs to zero
-    self._xs[flux == 0.] = unumpy.uarray([0.], [0.])
+    self._xs[:, flux[0, ...] == 0.] = 0.
 
     # Correct -0.0 to +0.0
     self._xs += 0.
 
     # Reverse array so that it is ordered intuitively from high to low energy
     # Codes such as OpenMOC expect cross-sections ordered in this way
-    self._xs = self._xs[:,::-1]
+    self._xs = self._xs[..., ::-1]
 
 
 
@@ -882,25 +885,26 @@ class TransportXS(MultiGroupXS):
     total_std_dev = np.reshape(total_std_dev, newshape)
     scatter1_std_dev = np.reshape(scatter1_std_dev, newshape)
 
-    flux = unumpy.uarray(flux_mean, flux_std_dev)
-    total = unumpy.uarray(total_mean, total_std_dev)
-    scatter1 = unumpy.uarray(scatter1_mean, scatter1_std_dev)
+    flux = np.array([flux_mean, flux_std_dev])
+    total = np.array([total_mean, total_std_dev])
+    scatter1 = np.array([scatter1_mean, scatter1_std_dev])
 
     # Set any zero fluxes to a negative value
-    flux[flux == 0.] = unumpy.uarray([-1.], [0.])
+    flux[0, flux[0, ...] == 0.] = -1.
+    flux[1, flux[0, ...] == 0.] = 0.
 
     # Compute the xs with uncertainty propagation
-    self._xs = unumpy_uncorr_divide(unumpy_uncorr_sub(total, scatter1), flux)
+    self._xs = uncorr_divide_by_array(uncorr_sub(total, scatter1), flux)
 
     # For any region without flux, convert xs to zero
-    self._xs[flux == 0.] = unumpy.uarray([0.], [0.])
+    self._xs[:, flux[0, ...] == 0.] = 0.
 
     # Correct -0.0 to +0.0
     self._xs += 0.
 
     # Reverse array so that it is ordered intuitively from high to low energy
     # Codes such as OpenMOC expect cross-sections ordered in this way
-    self._xs = self._xs[:,::-1]
+    self._xs = self._xs[..., ::-1]
 
 
 
@@ -959,24 +963,25 @@ class AbsorptionXS(MultiGroupXS):
     flux_std_dev = np.reshape(flux_std_dev, newshape)
     absorption_std_dev = np.reshape(absorption_std_dev, newshape)
 
-    flux = unumpy.uarray(flux_mean, flux_std_dev)
-    absorption = unumpy.uarray(absorption_mean, absorption_std_dev)
+    flux = np.array([flux_mean, flux_std_dev])
+    absorption = np.array([absorption_mean, absorption_std_dev])
 
     # Set any zero fluxes to a negative value
-    flux[flux == 0.] = unumpy.uarray([-1.], [0.])
+    flux[0, flux[0, ...] == 0.] = -1.
+    flux[1, flux[0, ...] == 0.] = 0.
 
     # Compute the xs with uncertainty propagation
-    self._xs = unumpy_uncorr_divide(absorption, flux)
+    self._xs = uncorr_divide_by_array(absorption, flux)
 
     # For any region without flux, convert xs to zero
-    self._xs[flux == 0.] = unumpy.uarray([0.], [0.])
+    self._xs[:, flux[0, ...] == 0.] = 0.
 
     # Correct -0.0 to +0.0
     self._xs += 0.
 
     # Reverse array so that it is ordered intuitively from high to low energy
     # Codes such as OpenMOC expect cross-sections ordered in this way
-    self._xs = self._xs[:,::-1]
+    self._xs = self._xs[..., ::-1]
 
 
 
@@ -1035,24 +1040,25 @@ class FissionXS(MultiGroupXS):
     flux_std_dev = np.reshape(flux_std_dev, newshape)
     fission_std_dev = np.reshape(fission_std_dev, newshape)
 
-    flux = unumpy.uarray(flux_mean, flux_std_dev)
-    fission = unumpy.uarray(fission_mean, fission_std_dev)
+    flux = np.array([flux_mean, flux_std_dev])
+    fission = np.array([fission_mean, fission_std_dev])
 
     # Set any zero fluxes to a negative value
-    flux[flux == 0.] = unumpy.uarray([-1.], [0.])
+    flux[0, flux[0, ...] == 0.] = -1.
+    flux[1, flux[0, ...] == 0.] = 0.
 
     # Compute the xs with uncertainty propagation
-    self._xs = unumpy_uncorr_divide(fission, flux)
+    self._xs = uncorr_divide_by_array(fission, flux)
 
     # For any region without flux, convert xs to zero
-    self._xs[flux == 0.] = unumpy.uarray([0.], [0.])
+    self._xs[:, flux[0, ...] == 0.] = 0.
 
     # Correct -0.0 to +0.0
     self._xs += 0.
 
     # Reverse array so that it is ordered intuitively from high to low energy
     # Codes such as OpenMOC expect cross-sections ordered in this way
-    self._xs = self._xs[:,::-1]
+    self._xs = self._xs[..., ::-1]
 
 
 
@@ -1111,24 +1117,25 @@ class NuFissionXS(MultiGroupXS):
     flux_std_dev = np.reshape(flux_std_dev, newshape)
     nu_fission_std_dev = np.reshape(nu_fission_std_dev, newshape)
 
-    flux = unumpy.uarray(flux_mean, flux_std_dev)
-    nu_fission = unumpy.uarray(nu_fission_mean, nu_fission_std_dev)
+    flux = np.array([flux_mean, flux_std_dev])
+    nu_fission = np.array([nu_fission_mean, nu_fission_std_dev])
 
     # Set any zero fluxes to a negative value
-    flux[flux == 0.] = unumpy.uarray([-1.], [0.])
+    flux[0, flux[0, ...] == 0.] = -1.
+    flux[1, flux[0, ...] == 0.] = 0.
 
     # Compute the xs with uncertainty propagation
-    self._xs = unumpy_uncorr_divide(nu_fission, flux)
+    self._xs = uncorr_divide_by_array(nu_fission, flux)
 
     # For any region without flux, convert xs to zero
-    self._xs[flux == 0.] = unumpy.uarray([0.], [0.])
+    self._xs[:, flux[0, ...] == 0.] = 0.
 
     # Correct -0.0 to +0.0
     self._xs += 0.
 
     # Reverse array so that it is ordered intuitively from high to low energy
     # Codes such as OpenMOC expect cross-sections ordered in this way
-    self._xs = self._xs[:,::-1]
+    self._xs = self._xs[..., ::-1]
 
 
 
@@ -1187,24 +1194,25 @@ class ScatterXS(MultiGroupXS):
     flux_std_dev = np.reshape(flux_std_dev, newshape)
     scatter_std_dev = np.reshape(scatter_std_dev, newshape)
 
-    flux = unumpy.uarray(flux_mean, flux_std_dev)
-    scatter = unumpy.uarray(scatter_mean, scatter_std_dev)
+    flux = np.array([flux_mean, flux_std_dev])
+    scatter = np.array([scatter_mean, scatter_std_dev])
 
     # Set any zero fluxes to a negative value
-    flux[flux == 0.] = unumpy.uarray([-1.], [0.])
+    flux[0, flux[0, ...] == 0.] = -1.
+    flux[1, flux[0, ...] == 0.] = 0.
 
     # Compute the xs with uncertainty propagation
-    self._xs = unumpy_uncorr_divide(scatter, flux)
+    self._xs = uncorr_divide_by_array(scatter, flux)
 
     # For any region without flux, convert xs to zero
-    self._xs[flux == 0.] = unumpy.uarray([0.], [0.])
+    self._xs[:, flux[0, ...] == 0.] = 0.
 
     # Correct -0.0 to +0.0
     self._xs += 0.
 
     # Reverse array so that it is ordered intuitively from high to low energy
     # Codes such as OpenMOC expect cross-sections ordered in this way
-    self._xs = self._xs[:,::-1]
+    self._xs = self._xs[..., ::-1]
 
 
 
@@ -1265,24 +1273,25 @@ class NuScatterXS(MultiGroupXS):
     flux_std_dev = np.reshape(flux_std_dev, newshape)
     nu_scatter_std_dev = np.reshape(nu_scatter_std_dev, newshape)
 
-    flux = unumpy.uarray(flux_mean, flux_std_dev)
-    nu_scatter = unumpy.uarray(nu_scatter_mean, nu_scatter_std_dev)
+    flux = np.array([flux_mean, flux_std_dev])
+    nu_scatter = np.array([nu_scatter_mean, nu_scatter_std_dev])
 
     # Set any zero fluxes to a negative value
-    flux[flux == 0.] = unumpy.uarray([-1.], [0.])
+    flux[0, flux[0, ...] == 0.] = -1.
+    flux[1, flux[0, ...] == 0.] = 0.
 
     # Compute the xs with uncertainty propagation
-    self._xs = unumpy_uncorr_divide(nu_scatter, flux)
+    self._xs = uncorr_divide_by_array(nu_scatter, flux)
 
     # For any region without flux, convert xs to zero
-    self._xs[flux == 0.] = unumpy.uarray([0.], [0.])
+    self._xs[:, flux[0, ...] == 0.] = 0.
 
     # Reverse array so that it is ordered intuitively from high to low energy
     # Correct -0.0 to +0.0
     self._xs += 0.
 
     # Codes such as OpenMOC expect cross-sections ordered in this way
-    self._xs = self._xs[:,::-1]
+    self._xs = self._xs[..., ::-1]
 
 
 
@@ -1345,28 +1354,30 @@ class ScatterMatrixXS(MultiGroupXS):
     flux_std_dev = np.reshape(flux_std_dev, newshape[0:2])
     nu_scatter_std_dev = np.reshape(nu_scatter_std_dev, newshape)
 
-    flux = unumpy.uarray(flux_mean, flux_std_dev)
-    nu_scatter = unumpy.uarray(nu_scatter_mean, nu_scatter_std_dev)
+    flux = np.array([flux_mean, flux_std_dev])
+    nu_scatter = np.array([nu_scatter_mean, nu_scatter_std_dev])
 
     # Set any zero fluxes to a negative value
-    flux[flux == 0.] = unumpy.uarray([-1.], [0.])
+    flux[0, flux[0, ...] == 0.] = -1.
+    flux[1, flux[0, ...] == 0.] = 0.
 
     # Tile the flux into a 3D array corresponding to the nu-scatter array
-    flux = np.reshape(flux, (num_subdomains, self._num_groups, 1))
-    flux = np.repeat(flux, self._num_groups, axis=2)
+    flux = np.reshape(flux, (2, num_subdomains, self._num_groups, 1))
+    # FIXME: should axis=2 or axis=3?
+    flux = np.repeat(flux, self._num_groups, axis=3)
 
     # Compute the xs with uncertainty propagation
-    self._xs = unumpy_uncorr_divide(nu_scatter, flux)
+    self._xs = uncorr_divide_by_array(nu_scatter, flux)
 
     # For any region without flux, convert xs to zero
-    self._xs[flux == 0.] = unumpy.uarray([0.], [0.])
+    self._xs[:, flux[0, ...] == 0.] = 0.
 
     # Correct -0.0 to +0.0
     self._xs += 0.
 
     # Reverse array so that it is ordered intuitively from high to low energy
     # Codes such as OpenMOC expect cross-sections ordered in this way
-    self._xs = self._xs[:,::-1,::-1]
+    self._xs = self._xs[..., ::-1, ::-1]
 
 
   def printXS(self, subdomain=None):
@@ -1411,7 +1422,9 @@ class ScatterMatrixXS(MultiGroupXS):
     for in_group in range(1,self._num_groups+1):
       for out_group in range(1,self._num_groups+1):
         string += '{0: <12}Group {1} -> Group {2}:\t\t'.format('', in_group, out_group)
-        string += '{:.2e}'.format(self._xs[subdomain_index, in_group-1, out_group-1])
+        average = self._xs[0, subdomain_index, in_group-1, out_group-1]
+        std_dev = self._xs[1, subdomain_index, in_group-1, out_group-1]
+        string += '{:.2e}+/-{:.2e}'.format(average, std_dev)
         string += '\n'
 
     print(string)
@@ -1464,12 +1477,11 @@ class ScatterMatrixXS(MultiGroupXS):
     else:
       subdomain_index = 0
 
-    xs = self._xs[subdomain_index, in_group_index, out_group_index]
-
     if metric == 'mean':
-      return unumpy.nominal_values(xs)
+      print self._xs[0, subdomain_index, in_group_index, out_group_index]
+      return self._xs[0, subdomain_index, in_group_index, out_group_index]
     else:
-      return unumpy.std_devs(xs)
+      return self._xs[1, subdomain_index, in_group_index, out_group_index]
 
 
 
@@ -1553,28 +1565,30 @@ class Chi(MultiGroupXS):
     nu_fission_in_std_dev = np.reshape(nu_fission_in_std_dev, newshape)
     nu_fission_out_std_dev = np.reshape(nu_fission_out_std_dev, newshape)
 
-    nu_fission_in = unumpy.uarray(nu_fission_in_mean, nu_fission_in_std_dev)
-    nu_fission_out = unumpy.uarray(nu_fission_out_mean, nu_fission_out_std_dev)
+    nu_fission_in = np.array([nu_fission_in_mean, nu_fission_in_std_dev])
+    nu_fission_out = np.array([nu_fission_out_mean, nu_fission_out_std_dev])
 
     # Compute the xs with uncertainty propagation
-    norm = nu_fission_in.sum()
+    norm = nu_fission_in[0, ...].sum()
 
     # If the xs are from a non-fissionable domain
-    if norm.nominal_value == 0.:
-      self._xs = unumpy.uarray(np.zeros(nu_fission_in.shape),
-                               np.zeros(nu_fission_in.shape))
+    if norm == 0.:
+      self._xs = np.zeros(nu_fission_in.shape)
 
     # If the xs are from a fissionable domain
     else:
 
-      self._xs = nu_fission_out / nu_fission_in.sum(1)[:, np.newaxis]
+      # FIXME???
+      self._xs = uncorr_divide_by_scalar(nu_fission_out,
+                                         nu_fission_in.sum(2)[0, :, np.newaxis])
 
       # Normalize chi to 1.0
-      self._xs = self._xs / self._xs.sum(1)[:, np.newaxis]
+      self._xs = uncorr_divide_by_scalar(self._xs,
+                                         self._xs.sum(2)[0, :, np.newaxis])
 
       # Correct -0.0 to +0.0
       self._xs += 0.
 
       # Reverse array so that it is ordered intuitively from high to low energy
       # Codes such as OpenMOC expect cross-sections ordered in this way
-      self._xs = self._xs[:,::-1]
+      self._xs = self._xs[..., ::-1]

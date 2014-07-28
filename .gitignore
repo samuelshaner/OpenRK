@@ -86,3 +86,6 @@ simulation-state/*
 # IPython Notebook
 *.ipynb_checkpoints
 */*.ipynb_checkpoints
+
+*stats
+*/*stats
