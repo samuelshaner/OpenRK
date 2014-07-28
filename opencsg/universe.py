@@ -1250,29 +1250,17 @@ class Lattice(Universe):
             'not a LatCoords'.format(region_id, self._id, lat_coords)
       raise ValueError(msg)
 
-    # Initialize cell and offset
-    universe = None
-    offset = 0
-    lat_x = 0
-    lat_y = 0
-    lat_z = 0
+    # Find Lattice cell indices where region is less than the Cell offset
+    indices = np.where(np.swapaxes(self._cell_offsets, 0, 2) <= region_id)
 
-    # Loop over cells until we reach the one the first one with
-    # an offset larger than region_id - return the one prior
-    for i in range(self._dimension[0]):
-      for j in range(self._dimension[1]):
-        for k in range(self._dimension[2]):
-          if self._cell_offsets[k][j][i] <= region_id:
-            offset = self._cell_offsets[k][j][i]
-            universe = self._universes[k][j][i]
-            lat_x = i
-            lat_y = j
-            lat_z = k
+    if indices != None:
+      lat_z = indices[2][-1]
+      lat_y = indices[1][-1]
+      lat_x = indices[0][-1]
+      universe = self._universes[lat_z][lat_y][lat_x]
+      offset = self._cell_offsets[lat_z][lat_y][lat_x]
 
-          elif self._cell_offsets[k][j][i] > region_id:
-            break
-
-    if universe is None:
+    else:
       msg = 'Unable to find region_id={0} for FSR ID={1} in Lattice ' \
             'ID={2}'.format(region_id, self._id)
       raise ValueError(msg)
