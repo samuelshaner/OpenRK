@@ -1,5 +1,6 @@
 import openmc
 from infermc.checkvalue import *
+from infermc.uncorr_math import *
 from uncertainties import unumpy
 import os
 
@@ -735,7 +736,6 @@ class MultiGroupXS(object):
     print(string)
 
 
-
 class TotalXS(MultiGroupXS):
 
   def __init__(self, domain=None, domain_type=None, energy_groups=None):
@@ -798,7 +798,7 @@ class TotalXS(MultiGroupXS):
     flux[flux == 0.] = unumpy.uarray([-1.], [0.])
 
     # Compute the xs with uncertainty propagation
-    self._xs = total / flux
+    self._xs = unumpy_uncorr_divide(total, flux)
 
     # For any region without flux, convert xs to zero
     self._xs[flux == 0.] = unumpy.uarray([0.], [0.])
@@ -890,7 +890,7 @@ class TransportXS(MultiGroupXS):
     flux[flux == 0.] = unumpy.uarray([-1.], [0.])
 
     # Compute the xs with uncertainty propagation
-    self._xs = (total - scatter1) / flux
+    self._xs = unumpy_uncorr_divide(unumpy_uncorr_sub(total, scatter1), flux)
 
     # For any region without flux, convert xs to zero
     self._xs[flux == 0.] = unumpy.uarray([0.], [0.])
@@ -966,7 +966,7 @@ class AbsorptionXS(MultiGroupXS):
     flux[flux == 0.] = unumpy.uarray([-1.], [0.])
 
     # Compute the xs with uncertainty propagation
-    self._xs = absorption / flux
+    self._xs = unumpy_uncorr_divide(absorption, flux)
 
     # For any region without flux, convert xs to zero
     self._xs[flux == 0.] = unumpy.uarray([0.], [0.])
@@ -1042,7 +1042,7 @@ class FissionXS(MultiGroupXS):
     flux[flux == 0.] = unumpy.uarray([-1.], [0.])
 
     # Compute the xs with uncertainty propagation
-    self._xs = fission / flux
+    self._xs = unumpy_uncorr_divide(fission, flux)
 
     # For any region without flux, convert xs to zero
     self._xs[flux == 0.] = unumpy.uarray([0.], [0.])
@@ -1118,7 +1118,7 @@ class NuFissionXS(MultiGroupXS):
     flux[flux == 0.] = unumpy.uarray([-1.], [0.])
 
     # Compute the xs with uncertainty propagation
-    self._xs = nu_fission / flux
+    self._xs = unumpy_uncorr_divide(nu_fission, flux)
 
     # For any region without flux, convert xs to zero
     self._xs[flux == 0.] = unumpy.uarray([0.], [0.])
@@ -1194,7 +1194,7 @@ class ScatterXS(MultiGroupXS):
     flux[flux == 0.] = unumpy.uarray([-1.], [0.])
 
     # Compute the xs with uncertainty propagation
-    self._xs = scatter / flux
+    self._xs = unumpy_uncorr_divide(scatter, flux)
 
     # For any region without flux, convert xs to zero
     self._xs[flux == 0.] = unumpy.uarray([0.], [0.])
@@ -1272,7 +1272,7 @@ class NuScatterXS(MultiGroupXS):
     flux[flux == 0.] = unumpy.uarray([-1.], [0.])
 
     # Compute the xs with uncertainty propagation
-    self._xs = nu_scatter / flux
+    self._xs = unumpy_uncorr_divide(nu_scatter, flux)
 
     # For any region without flux, convert xs to zero
     self._xs[flux == 0.] = unumpy.uarray([0.], [0.])
@@ -1356,7 +1356,7 @@ class ScatterMatrixXS(MultiGroupXS):
     flux = np.repeat(flux, self._num_groups, axis=2)
 
     # Compute the xs with uncertainty propagation
-    self._xs = nu_scatter / flux
+    self._xs = unumpy_uncorr_divide(nu_scatter, flux)
 
     # For any region without flux, convert xs to zero
     self._xs[flux == 0.] = unumpy.uarray([0.], [0.])

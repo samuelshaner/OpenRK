@@ -345,10 +345,6 @@ def scatter_multigroup_xs(extractor, xs_type, domain_types=['distribcell'],
                                            xs_type.capitalize()))
   plt.grid()
 
-  fig.canvas.mpl_connect('pick_event', onpick3)
-
-  plt.show()
-
   filename = directory + '/' + filename + '.' + extension
 
   if extension is 'pkl':
@@ -359,13 +355,6 @@ def scatter_multigroup_xs(extractor, xs_type, domain_types=['distribcell'],
     plt.savefig(filename, bbox_inches='tight')
 
   plt.close(fig)
-
-
-
-
-def onpick3(event):
-  ind = event.ind
-  print 'onpick3 scatter:', ind
 
 
 
