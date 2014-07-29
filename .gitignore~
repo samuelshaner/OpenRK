@@ -1,7 +1,5 @@
 *.pyc
 */*.pyc
-*.py~
-*/*.py~
 
 # Distribution / packaging
 .Python
