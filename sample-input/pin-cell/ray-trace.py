@@ -1,5 +1,8 @@
 from opencsg import *
 import opencsg.plotter as plotter
+import numpy as np
+import matplotlib as plt
+import pylab as pl
 
 ###############################################################################
 ###########################   Creating Materials   ############################
@@ -100,6 +103,42 @@ geometry.setRootUniverse(universes[1])
 
 geometry.initializeCellOffsets()
 geometry.setVolume(volume=16., tolerance=1e-1)
+
+###############################################################################
+###############################   Ray Tracing   ###############################
+###############################################################################
+
+print('Tracing Sample Rays...')
+
+rays = []
+
+for ray in xrange(50):
+
+  x, y, z = 4*np.random.rand(3)-2
+  u, v, w = np.random.rand(3)
+  point = Point(x=x,y=y,z=z)
+  direction = Direction(u=u,v=v,w=w)
+  rays.append((point, direction))
+
+segments = []
+colors = []
+
+for ray in rays:
+  intersect = geometry.getNearestIntersection(ray[0], ray[1])
+  if not intersect is None:
+    segments.append([ray[0]._coords[:2], intersect._coords[:2]])
+    if cylinder.evaluate(ray[0]) < 0:
+      colors.append((1, 0, 0, 1))
+    else:
+      colors.append((0, 1, 0, 1))
+
+c = np.array(colors)
+
+lc = plt.collections.LineCollection(segments, colors=c, linewidths = 2)
+fig, ax = pl.subplots()
+ax.add_collection(lc)
+ax.autoscale()
+ax.margins(0.1)
 
 
 ###############################################################################
