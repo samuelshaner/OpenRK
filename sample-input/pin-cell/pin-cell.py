@@ -109,7 +109,7 @@ geometry.setVolume(volume=16., tolerance=1e-1)
 
 print('Plotting Geometry...')
 
-plotter.plot_cells(geometry)
-plotter.plot_materials(geometry)
-plotter.plot_regions(geometry)
-plotter.plot_neighbor_cells(geometry)
+#plotter.plot_cells(geometry)
+#plotter.plot_materials(geometry)
+#plotter.plot_regions(geometry)
+#plotter.plot_neighbor_cells(geometry)
