@@ -326,9 +326,10 @@ class Geometry(object):
     for surface in surfaces.keys():
 
       intersect = surfaces[surface][0].getIntersectionPoints(point, direction)
+      points.extend(intersect)
 
-      if intersect is not None:
-        points.extend(intersect)
+    while None in points:
+      points.remove(None)
 
     if points == []:
       return None

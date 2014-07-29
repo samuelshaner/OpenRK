@@ -314,7 +314,14 @@ class Plane(Surface):
     denominator = self._coeffs['A'] * u + \
                   self._coeffs['B'] * v + \
                   self._coeffs['C'] * w
+
+    if abs(denominator) < 1e-11:
+        return [None]
+
     dist = numerator/denominator
+
+    if dist < 0:
+        return [None]
 
     intersect = Point()
     intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
@@ -782,15 +789,21 @@ class XCylinder(Cylinder):
     k = ybar*v + zbar*w
     c = ybar**2 + zbar**2 - self._coeffs['R']**2
 
+    if abs(a) < 1e-11 or k**2-a*c < 0:
+        return [None, None]
+
     dist1 = (-k + np.sqrt(k**2-a*c))/a
     dist2 = (-k - np.sqrt(k**2-a*c))/a
 
     intersects = []
 
     for dist in [dist1, dist2]:
-      intersect = Point()
-      intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
-      intersects.append(intersect)
+      if dist < 0:
+        intersects.append(None)
+      else:
+        intersect = Point()
+        intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
+        intersects.append(intersect)
 
     return intersects
 
@@ -987,15 +1000,21 @@ class YCylinder(Cylinder):
     k = xbar*u + zbar*w
     c = xbar**2 + zbar**2 - self._coeffs['R']**2
 
+    if abs(a) < 1e-11 or k**2-a*c < 0:
+        return [None, None]
+
     dist1 = (-k + np.sqrt(k**2-a*c))/a
     dist2 = (-k - np.sqrt(k**2-a*c))/a
 
     intersects = []
 
     for dist in [dist1, dist2]:
-      intersect = Point()
-      intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
-      intersects.append(intersect)
+      if dist < 0:
+        intersects.append(None)
+      else:
+        intersect = Point()
+        intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
+        intersects.append(intersect)
 
     return intersects
 
@@ -1193,15 +1212,21 @@ class ZCylinder(Cylinder):
     k = xbar*u + ybar*v
     c = xbar**2 + ybar**2 - self._coeffs['R']**2
 
+    if abs(a) < 1e-11 or k**2-a*c < 0:
+        return [None, None]
+
     dist1 = (-k + np.sqrt(k**2-a*c))/a
     dist2 = (-k - np.sqrt(k**2-a*c))/a
 
     intersects = []
 
     for dist in [dist1, dist2]:
-      intersect = Point()
-      intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
-      intersects.append(intersect)
+      if dist < 0:
+        intersects.append(None)
+      else:
+        intersect = Point()
+        intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
+        intersects.append(intersect)
 
     return intersects
 
@@ -1480,15 +1505,21 @@ class Sphere(Surface):
     k = xbar*u + ybar*v + zbar*w
     c = xbar**2 + ybar**2 + zbar**2 - self._coeffs['R']**2
 
-    dist1 = -k + np.sqrt(k**2-c)
-    dist2 = -k - np.sqrt(k**2-c)
+    if k**2-c < 0:
+        return [None, None]
+
+    dist1 = (-k + np.sqrt(k**2-c))
+    dist2 = (-k - np.sqrt(k**2-c))
 
     intersects = []
 
     for dist in [dist1, dist2]:
-      intersect = Point()
-      intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
-      intersects.append(intersect)
+      if dist < 0:
+        intersects.append(None)
+      else:
+        intersect = Point()
+        intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
+        intersects.append(intersect)
 
     return intersects
 

@@ -1,7 +1,8 @@
 from opencsg import *
 import opencsg.plotter as plotter
 import numpy as np
-import matplotlib.pyplot as plt
+import matplotlib as plt
+import pylab as pl
 
 ###############################################################################
 ###########################   Creating Materials   ############################
@@ -127,9 +128,18 @@ for ray in rays:
   if not intersect is None:
     segments.append([ray[0]._coords[:2], intersect._coords[:2]])
     if cylinder.evaluate(ray[0]) < 0:
-      colors.append('b-')
+      colors.append((1, 0, 0, 1))
     else:
-      colors.append('r-')
+      colors.append((0, 1, 0, 1))
+
+c = np.array(colors)
+
+lc = plt.collections.LineCollection(segments, colors=c, linewidths = 2)
+fig, ax = pl.subplots()
+ax.add_collection(lc)
+ax.autoscale()
+ax.margins(0.1)
+lc.show()
 
 
 ###############################################################################
