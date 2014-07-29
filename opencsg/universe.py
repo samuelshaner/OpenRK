@@ -841,9 +841,12 @@ class Lattice(Universe):
 
     universes = dict()
 
-    for universe in self._universes.ravel():
-      universe_id = universe._id
-      universes[universe_id] = universe
+    for i in range(self._dimension[0]):
+      for j in range(self._dimension[1]):
+        for k in range(self._dimension[2]):
+          universe = self._universes[k][j][i]
+          universe_id = universe._id
+          universes[universe_id] = universe
 
     return universes
 
@@ -857,8 +860,11 @@ class Lattice(Universe):
 
     cells = dict()
 
-    for universe in self._universes.ravel():
-      cells.update(universe.getAllCells())
+    for i in range(self._dimension[0]):
+      for j in range(self._dimension[1]):
+        for k in range(self._dimension[2]):
+          universe = self._universes[k][j][i]
+          cells.update(universe.getAllCells())
 
     return cells
 
