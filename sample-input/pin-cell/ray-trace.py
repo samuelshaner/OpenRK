@@ -1,7 +1,8 @@
 from opencsg import *
 import opencsg.plotter as plotter
 import numpy as np
-import matplotlib.pyplot as plt
+import matplotlib as plt
+import pylab as pl
 
 ###############################################################################
 ###########################   Creating Materials   ############################
@@ -20,9 +21,10 @@ water = Material(name='Water')
 print('Creating Surfaces...')
 
 cylinder = ZCylinder(x0=0.0, y0=0.0, R=1.0)
-square = Square(x0=0., y0=0., R=2.0)
-square.setBoundaryType('reflective')
-
+left = XPlane(boundary='reflective', x0=-2.0)
+right = XPlane(boundary='reflective', x0=2.0)
+top = YPlane(boundary='reflective', y0=2.0)
+bottom = YPlane(boundary='reflective', y0=-2.0)
 
 ###############################################################################
 ###########################   Creating Universes  #############################
@@ -48,7 +50,10 @@ cells.append(Cell(name='Root Cell'))
 
 cells[0].addSurface(halfspace=-1, surface=cylinder)
 cells[1].addSurface(halfspace=+1, surface=cylinder)
-cells[2].addSurface(halfspace=-1, surface=square)
+cells[2].addSurface(halfspace=+1, surface=left)
+cells[2].addSurface(halfspace=-1, surface=right)
+cells[2].addSurface(halfspace=-1, surface=top)
+cells[2].addSurface(halfspace=+1, surface=bottom)
 
 universes[0].addCells(cells[0:2])
 universes[1].addCell(cells[2])
@@ -109,27 +114,38 @@ geometry.setVolume(volume=16., tolerance=1e-1)
 
 print('Tracing Sample Rays...')
 
+
 rays = []
 
-for ray in xrange(50):
-
+for ray in xrange(5000):
   x, y, z = 4*np.random.rand(3)-2
   u, v, w = np.random.rand(3)
   point = Point(x=x,y=y,z=z)
   direction = Direction(u=u,v=v,w=w)
   rays.append((point, direction))
 
-segments = []
 colors = []
+segments = []
 
 for ray in rays:
   intersect = geometry.getNearestIntersection(ray[0], ray[1])
-  if not intersect is None:
+
+  if (not intersect is None) and (ray[0].distanceToPoint(intersect) < 4):
     segments.append([ray[0]._coords[:2], intersect._coords[:2]])
     if cylinder.evaluate(ray[0]) < 0:
-      colors.append('b-')
+      colors.append((1, 0, 0, 1))
     else:
-      colors.append('r-')
+      colors.append((0, 1, 0, 1))
+
+c = np.array(colors)
+
+lc = plt.collections.LineCollection(segments, colors=c, linewidths = 2)
+fig, ax = pl.subplots()
+ax.add_collection(lc)
+ax.autoscale()
+ax.margins(0.1)
+fig.savefig('plots/rays-xy.png')
+pl.show()
 
 
 ###############################################################################
