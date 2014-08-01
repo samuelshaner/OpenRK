@@ -1,8 +1,8 @@
 __author__ = 'wbinventor'
 
-from nuclides import *
-from materials import *
-from surfaces import *
-from pin_cells import *
-from templates import *
-from lattices import *
+from datasets.BEAVRS.nuclides import *
+from datasets.BEAVRS.materials import *
+from datasets.BEAVRS.surfaces import *
+from datasets.BEAVRS.pin_cells import *
+from datasets.BEAVRS.templates import *
+from datasets.BEAVRS.lattices import *
