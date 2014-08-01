@@ -1577,11 +1577,12 @@ class Chi(MultiGroupXS):
     # If the xs are from a fissionable domain
     else:
 
-      # FIXME???
+      # FIXME - uncertainty propagation
       self._xs = uncorr_divide_by_scalar(nu_fission_out,
                                          nu_fission_in.sum(2)[0, :, np.newaxis])
 
       # Normalize chi to 1.0
+      # FIXME - uncertainty propagation
       self._xs = uncorr_divide_by_scalar(self._xs,
                                          self._xs.sum(2)[0, :, np.newaxis])
 
