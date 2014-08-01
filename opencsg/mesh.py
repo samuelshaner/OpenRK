@@ -5,7 +5,7 @@ __email__ = 'wboyd@mit.edu'
 from opencsg.universe import *
 from opencsg.surface import *
 from opencsg.checkvalue import *
-
+from collections import MappingView
 
 
 class RadialMesh(object):
@@ -260,10 +260,14 @@ class SectorMesh(object):
 
   def subdivideCells(self, cells, universe=None):
 
-    if not isinstance(cells, (tuple, list, np.ndarray)):
+    if not isinstance(cells, (tuple, list, MappingView, np.ndarray)):
+      print(type(cells))
       msg = 'Unable to subdivide cells with a SectorMesh since {0} ' \
             'is not a Python tuple/list or NumPy array'.format(cells)
       raise ValueError(msg)
+
+    # Cast to a list so we can safely modify it in place
+    cells = list(cells)
 
     # Initialize an empty list of new Cells
     new_cells = list()
