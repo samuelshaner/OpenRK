@@ -48,7 +48,7 @@ class Surface(object):
     self._neighbor_cells[+1] = list()
 
     # A dictionary of the quadratic surface coefficients
-    # Key   - coefficient name
+    # Key - coefficient name
     # Value - coefficient value
     self._coeffs = dict()
 
@@ -114,7 +114,7 @@ class Surface(object):
             'since the input is not a Point object'.format(self._id)
       raise ValueError(msg)
 
-    if not isinstance(direction, Direction) and len(direction) != 3:
+    if not isinstance(direction, Direction):
       msg = 'Unable to get intersection point with Surface ID={0} ' \
             'since the input is not a Direction object'.format(self._id)
       raise ValueError(msg)
@@ -315,7 +315,7 @@ class Plane(Surface):
                   self._coeffs['B'] * v + \
                   self._coeffs['C'] * w
 
-    if abs(denominator) < 1e-11:
+    if abs(denominator) < on_surface_thresh:
         return [None]
 
     dist = numerator/denominator
@@ -410,6 +410,29 @@ class XPlane(Plane):
     self._min_x = np.float64(x0)
 
 
+  def getIntersectionPoints(self, point, direction):
+
+    super(XPlane, self).getIntersectionPoints(point, direction)
+
+    if self.onSurface(point):
+      return point
+
+    x, y, z = point._coords
+    u, v, w = direction.normalize()
+
+    if abs(u) < on_surface_thresh:
+        return [None]
+
+    dist = (self._coeffs['x0'] - x)/u
+
+    if dist < 0:
+        return [None]
+
+    intersect = Point()
+    intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
+
+    return [intersect]
+
 
 class YPlane(Plane):
 
@@ -492,6 +515,30 @@ class YPlane(Plane):
     self._min_y = np.float64(y0)
 
 
+  def getIntersectionPoints(self, point, direction):
+
+    super(YPlane, self).getIntersectionPoints(point, direction)
+
+    if self.onSurface(point):
+      return point
+
+    x, y, z = point._coords
+    u, v, w = direction.normalize()
+
+    if abs(v) < on_surface_thresh:
+        return [None]
+
+    dist = (self._coeffs['y0'] - y)/v
+
+    if dist < 0:
+        return [None]
+
+    intersect = Point()
+    intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
+
+    return [intersect]
+
+
 class ZPlane(Plane):
 
   def __init__(self, surface_id=None, name='',
@@ -572,6 +619,29 @@ class ZPlane(Plane):
     self._max_z = z0
     self._min_z = z0
 
+
+  def getIntersectionPoints(self, point, direction):
+
+    super(ZPlane, self).getIntersectionPoints(point, direction)
+
+    if self.onSurface(point):
+      return point
+
+    x, y, z = point._coords
+    u, v, w = direction.normalize()
+
+    if abs(w) < on_surface_thresh:
+        return [None]
+
+    dist = (self._coeffs['z0'] - z)/w
+
+    if dist < 0:
+        return [None]
+
+    intersect = Point()
+    intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
+
+    return [intersect]
 
 
 class Cylinder(Surface):
@@ -789,7 +859,7 @@ class XCylinder(Cylinder):
     k = ybar*v + zbar*w
     c = ybar**2 + zbar**2 - self._coeffs['R']**2
 
-    if abs(a) < 1e-11 or k**2-a*c < 0:
+    if abs(a) < on_surface_thresh or k**2-a*c < 0:
         return [None, None]
 
     dist1 = (-k + np.sqrt(k**2-a*c))/a
@@ -1000,7 +1070,7 @@ class YCylinder(Cylinder):
     k = xbar*u + zbar*w
     c = xbar**2 + zbar**2 - self._coeffs['R']**2
 
-    if abs(a) < 1e-11 or k**2-a*c < 0:
+    if abs(a) < on_surface_thresh or k**2-a*c < 0:
         return [None, None]
 
     dist1 = (-k + np.sqrt(k**2-a*c))/a
@@ -1212,7 +1282,7 @@ class ZCylinder(Cylinder):
     k = xbar*u + ybar*v
     c = xbar**2 + ybar**2 - self._coeffs['R']**2
 
-    if abs(a) < 1e-11 or k**2-a*c < 0:
+    if abs(a) < on_surface_thresh or k**2-a*c < 0:
         return [None, None]
 
     dist1 = (-k + np.sqrt(k**2-a*c))/a
@@ -1708,15 +1778,15 @@ class Square(Surface):
     return max(Rx, Ry)
 
 '''
-  def getIntersectionPoints(self, point, direction):
+def getIntersectionPoints(self, point, direction):
 
-    super(Square, self).getIntersectionPoints(point, direction)
+super(Square, self).getIntersectionPoints(point, direction)
 
-    x, y, z = point._coords
-    u, v, w = direction.normalize()
+x, y, z = point._coords
+u, v, w = direction.normalize()
 
-    Dx_left = (self._coeffs['x0'] - self._coeffs['R'] - x)/u
-    Dx_right = (self._coeffs['x0'] + self._coeffs['R'] - x)/u
-    Dy_left = (self._coeffs['y0'] - self._coeffs['R'] - y)/u
-    Dy_right = (self._coeffs['y0'] - self._coeffs['R'] - y)/u
+Dx_left = (self._coeffs['x0'] - self._coeffs['R'] - x)/u
+Dx_right = (self._coeffs['x0'] + self._coeffs['R'] - x)/u
+Dy_left = (self._coeffs['y0'] - self._coeffs['R'] - y)/u
+Dy_right = (self._coeffs['y0'] - self._coeffs['R'] - y)/u
 '''

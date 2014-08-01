@@ -65,6 +65,7 @@ universes[1].addCell(cells[2])
 
 print('Meshing the Cells...')
 
+'''
 mesh = RadialMesh()
 mesh.setNumRings(3)
 mesh.setMaxRadius(1.0)
@@ -80,7 +81,7 @@ new_cells = mesh.subdivideCell(cell=cells[1], universe=universes[0])
 
 mesh = SectorMesh(num_sectors=8)
 mesh.subdivideUniverse(universe=universes[0])
-
+'''
 
 ###############################################################################
 ###########################   Creating Lattices   #############################
@@ -116,9 +117,27 @@ print('Tracing Sample Rays...')
 
 
 rays = []
+bounds = geometry.getBounds()
 
-for ray in xrange(5000):
-  x, y, z = 4*np.random.rand(3)-2
+for ray in xrange(1000):
+  edge = np.random.choice([0,1,2,3])
+  if edge == 0:
+    x = bounds[edge] + 1e-10
+    y = np.random.uniform(bounds[2], bounds[3])
+    z = np.random.uniform(1e-12, 1e12)
+  elif edge == 1:
+    x = bounds[edge] - 1e-10
+    y = np.random.uniform(bounds[2], bounds[3])
+    z = np.random.uniform(1e-12, 1e12)
+  elif edge == 2:
+    x = np.random.uniform(bounds[0], bounds[1])
+    y = bounds[edge] + 1e-10
+    z = np.random.uniform(1e-12, 1e12)
+  else:
+    x = np.random.uniform(bounds[0], bounds[1])
+    y = bounds[edge] - 1e-10
+    z = np.random.uniform(1e-12, 1e12)
+
   u, v, w = np.random.rand(3)
   point = Point(x=x,y=y,z=z)
   direction = Direction(u=u,v=v,w=w)
@@ -127,26 +146,65 @@ for ray in xrange(5000):
 colors = []
 segments = []
 
+#Code below generates rays that do not go through surfaces
+#Picture is still, however, off center
+
 for ray in rays:
   intersect = geometry.getNearestIntersection(ray[0], ray[1])
-
-  if (not intersect is None) and (ray[0].distanceToPoint(intersect) < 4):
+  if not intersect is None and ray[0].distanceToPoint(intersect)<10:
     segments.append([ray[0]._coords[:2], intersect._coords[:2]])
     if cylinder.evaluate(ray[0]) < 0:
-      colors.append((1, 0, 0, 1))
+      colors.append((1, 0, 1, 1))
     else:
-      colors.append((0, 1, 0, 1))
+      colors.append((1, 1, 0, 1))
+
+#Code below attempts to generate rays that go through surfaces
+#Picture is off center and goes crazy
+'''
+for ray in rays:
+  intersect = geometry.getNearestIntersection(ray[0], ray[1])
+  while not intersect is None:
+    print ray[0]
+    segments.append([ray[0]._coords[:2], intersect._coords[:2]])
+    if cylinder.evaluate(ray[0]) < 0:
+      colors.append((1, 0, 1, 1))
+    else:
+      colors.append((1, 1, 0, 1))
+    ray[0].setCoords((intersect._coords + 1e-10*ray[1]._comps))
+    print ray[0]
+    intersect = geometry.getNearestIntersection(ray[0], ray[1])
+'''
+
+def startToEnd(rays, geometry):
+  #Code below plots initial and intersect points
+  init_x_vals = []
+  init_y_vals = []
+  int_x_vals = []
+  int_y_vals = []
+  for ray in rays:
+    intersect = geometry.getNearestIntersection(ray[0], ray[1])
+    if not intersect is None and ray[0].distanceToPoint(intersect)<10:
+      init_x_vals.append(ray[0]._coords[0])
+      init_y_vals.append(ray[0]._coords[1])
+      int_x_vals.append(intersect._coords[0])
+      int_y_vals.append(intersect._coords[1])
+
+  fig = plt.pyplot.figure()
+  plt.pyplot.plot(init_x_vals, init_y_vals, 'ro')
+  plt.pyplot.plot(int_x_vals, int_y_vals, 'bo')
+  plt.pyplot.show()
+  fig.savefig('plots/start-end.png')
 
 c = np.array(colors)
 
-lc = plt.collections.LineCollection(segments, colors=c, linewidths = 2)
+lc = plt.collections.LineCollection(segments, colors=c, linewidths=1)
 fig, ax = pl.subplots()
 ax.add_collection(lc)
 ax.autoscale()
-ax.margins(0.1)
+ax.margins(0)
 fig.savefig('plots/rays-xy.png')
-pl.show()
 
+startToEnd(rays, geometry)
 
 ###############################################################################
 ##########################   Plotting the Geometry   ##########################
