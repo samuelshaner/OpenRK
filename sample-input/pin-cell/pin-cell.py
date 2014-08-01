@@ -63,17 +63,17 @@ mesh = RadialMesh()
 mesh.setNumRings(3)
 mesh.setMaxRadius(1.0)
 mesh.setMinRadius(0.0)
-new_cells = mesh.subdivideCell(cell=cells[0], universe=universes[0])
+#new_cells = mesh.subdivideCell(cell=cells[0], universe=universes[0])
 
 mesh = RadialMesh()
 mesh.setNumRings(3)
 mesh.setMaxRadius(2.3)
 mesh.setMinRadius(1.0)
 mesh.setWithOuter(True)
-new_cells = mesh.subdivideCell(cell=cells[1], universe=universes[0])
+#new_cells = mesh.subdivideCell(cell=cells[1], universe=universes[0])
 
 mesh = SectorMesh(num_sectors=8)
-mesh.subdivideUniverse(universe=universes[0])
+#mesh.subdivideUniverse(universe=universes[0])
 
 
 ###############################################################################
@@ -109,7 +109,7 @@ geometry.setVolume(volume=16., tolerance=1e-1)
 
 print('Plotting Geometry...')
 
-#plotter.plot_cells(geometry)
-#plotter.plot_materials(geometry)
-#plotter.plot_regions(geometry)
-#plotter.plot_neighbor_cells(geometry)
+plotter.plot_cells(geometry)
+plotter.plot_materials(geometry)
+plotter.plot_regions(geometry)
+plotter.plot_neighbor_cells(geometry)

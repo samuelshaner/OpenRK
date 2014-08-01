@@ -51,7 +51,7 @@ class Universe(object):
   def buildNeighbors(self):
 
     # Loop over all of the Universe's Cells
-    for cell_id, cell in self._cells.iteritems():
+    for cell_id, cell in self._cells.items():
 
       # Make recursive call for the Cell to build its neighbor Cells
       cell.buildNeighbors()
@@ -65,7 +65,7 @@ class Universe(object):
     cells.update(self._cells)
 
     # Append all Cells in each Cell in the Universe to the dictionary
-    for cell_id, cell in self._cells.iteritems():
+    for cell_id, cell in self._cells.items():
       cells.update(cell.getAllCells())
 
     return cells
@@ -79,7 +79,7 @@ class Universe(object):
     universes = dict()
 
     # Append all Universes containing each Cell to the dictionary
-    for cell_id, cell in cells.iteritems():
+    for cell_id, cell in cells.items():
       universes.update(cell.getAllUniverses())
 
     return universes
@@ -882,7 +882,7 @@ class Lattice(Universe):
     all_universes.update(unique_universes)
 
     # Append all Universes containing each cell to the dictionary
-    for universe_id, universe in unique_universes.iteritems():
+    for universe_id, universe in unique_universes.items():
       all_universes.update(universe.getAllUniverses())
 
     return all_universes
@@ -1132,7 +1132,7 @@ class Lattice(Universe):
     # call to build their neighbor Cells
     unique_universes = self.getUniqueUniverses()
 
-    for universe_id, universe in unique_universes.iteritems():
+    for universe_id, universe in unique_universes.items():
       universe.buildNeighbors()
 
 

@@ -147,7 +147,7 @@ class Geometry(object):
     all_cells = self.getAllCells()
     material_cells = set()
 
-    for cell_id, cell in all_cells.iteritems():
+    for cell_id, cell in all_cells.items():
       if cell._type == 'material':
         material_cells.add(cell)
 
@@ -159,7 +159,7 @@ class Geometry(object):
     all_universes = self.getAllUniverses()
     material_universes = set()
 
-    for universe_id, universe in all_universes.iteritems():
+    for universe_id, universe in all_universes.items():
 
       # Do not consider Lattices since they are not at the Material level
       if isinstance(universe, Lattice):
@@ -167,7 +167,7 @@ class Geometry(object):
 
       cells = universe._cells
 
-      for cell_id, cell in cells.iteritems():
+      for cell_id, cell in cells.items():
         if cell._type == 'material':
           material_universes.add(universe)
 
