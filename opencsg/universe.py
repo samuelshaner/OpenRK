@@ -2,14 +2,14 @@ __author__ = 'Will Boyd'
 __email__ = 'wboyd@mit.edu'
 
 
-from material import Material
-from surface import Surface, on_surface_thresh
-from point import Point
-from checkvalue import *
+from opencsg.material import Material
+from opencsg.surface import Surface, on_surface_thresh
+from opencsg.point import Point
+from opencsg.checkvalue import *
 import numpy as np
-from numpy.lib.stride_tricks import as_strided
 import math
 from collections import OrderedDict
+from numpy.lib.stride_tricks import as_strided
 
 
 # Error threshold for determining how close to the boundary of a Lattice cell

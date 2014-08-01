@@ -2,8 +2,8 @@ __author__ = 'Will Boyd'
 __email__ = 'wboyd@mit.edu'
 
 
-from point import Point
-from checkvalue import *
+from opencsg.point import Point
+from opencsg.checkvalue import *
 import numpy as np
 
 

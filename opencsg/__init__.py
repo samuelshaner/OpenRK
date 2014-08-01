@@ -1,8 +1,8 @@
 __author__ = 'Will Boyd'
 __email__ = 'wboyd@mit.edu'
 
-from material import *
-from surface import *
-from universe import *
-from geometry import *
-from mesh import *
+from opencsg.material import *
+from opencsg.surface import *
+from opencsg.universe import *
+from opencsg.geometry import *
+from opencsg.mesh import *

@@ -2,9 +2,9 @@ __author__ = 'wbinventor'
 __email__ = 'wboyd@mit.edu'
 
 
-from universe import *
-from surface import *
-from checkvalue import *
+from opencsg.universe import *
+from opencsg.surface import *
+from opencsg.checkvalue import *
 
 
 

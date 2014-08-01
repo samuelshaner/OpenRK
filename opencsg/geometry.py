@@ -2,8 +2,8 @@ __author__ = 'Will Boyd'
 __email__ = 'wboyd@mit.edu'
 
 
-from universe import *
-from point import Point
+from opencsg.universe import *
+from opencsg.point import Point
 
 
 class Geometry(object):
