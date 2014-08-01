@@ -1478,7 +1478,6 @@ class ScatterMatrixXS(MultiGroupXS):
       subdomain_index = 0
 
     if metric == 'mean':
-      print self._xs[0, subdomain_index, in_group_index, out_group_index]
       return self._xs[0, subdomain_index, in_group_index, out_group_index]
     else:
       return self._xs[1, subdomain_index, in_group_index, out_group_index]
