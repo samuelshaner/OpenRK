@@ -119,7 +119,7 @@ print('Tracing Sample Rays...')
 rays = []
 bounds = geometry.getBounds()
 
-for ray in xrange(1000):
+for ray in xrange(20):
   edge = np.random.choice([0,1,2,3])
   if edge == 0:
     x = bounds[edge] + 1e-10
@@ -138,10 +138,11 @@ for ray in xrange(1000):
     y = bounds[edge] - 1e-10
     z = np.random.uniform(1e-12, 1e12)
 
-  u, v, w = np.random.rand(3)
+  u, v, w = np.random.rand(3)-0.5
   point = Point(x=x,y=y,z=z)
   direction = Direction(u=u,v=v,w=w)
   rays.append((point, direction))
+  print point, direction
 
 colors = []
 segments = []
@@ -183,9 +184,9 @@ def startToEnd(rays, geometry):
   int_y_vals = []
   for ray in rays:
     intersect = geometry.getNearestIntersection(ray[0], ray[1])
-    if not intersect is None and ray[0].distanceToPoint(intersect)<10:
-      init_x_vals.append(ray[0]._coords[0])
-      init_y_vals.append(ray[0]._coords[1])
+    init_x_vals.append(ray[0]._coords[0])
+    init_y_vals.append(ray[0]._coords[1])
+    if not intersect is None:
       int_x_vals.append(intersect._coords[0])
       int_y_vals.append(intersect._coords[1])
 
@@ -200,7 +201,8 @@ c = np.array(colors)
 lc = plt.collections.LineCollection(segments, colors=c, linewidths=1)
 fig, ax = pl.subplots()
 ax.add_collection(lc)
-ax.autoscale()
+plt.pyplot.xlim([-2,2])
+plt.pyplot.ylim([-2,2])
 ax.margins(0)
 fig.savefig('plots/rays-xy.png')
 
