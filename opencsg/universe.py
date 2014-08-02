@@ -69,38 +69,6 @@ class Universe(object):
       return False
 
 
-  def __lt__(self, other):
-
-    if self._id < other._id:
-      return True
-    else:
-      return False
-
-
-  def __le__(self, other):
-
-    if self._id <= other._id:
-      return True
-    else:
-      return False
-
-
-  def __gt__(self, other):
-
-    if self._id > other._id:
-      return True
-    else:
-      return False
-
-
-  def __gt__(self, other):
-
-    if self._id >= other._id:
-      return True
-    else:
-      return False
-
-
   def getAllCells(self):
 
     cells = dict()
@@ -609,38 +577,6 @@ class Lattice(Universe):
     if not isinstance(other, Lattice):
       return True
     elif self._id != other._id:
-      return True
-    else:
-      return False
-
-
-  def __lt__(self, other):
-
-    if self._id < other._id:
-      return True
-    else:
-      return False
-
-
-  def __le__(self, other):
-
-    if self._id <= other._id:
-      return True
-    else:
-      return False
-
-
-  def __gt__(self, other):
-
-    if self._id > other._id:
-      return True
-    else:
-      return False
-
-
-  def __gt__(self, other):
-
-    if self._id >= other._id:
       return True
     else:
       return False
@@ -1437,38 +1373,6 @@ class Cell(object):
     if not isinstance(other, Cell):
       return True
     elif self._id != other._id:
-      return True
-    else:
-      return False
-
-
-  def __lt__(self, other):
-
-    if self._id < other._id:
-      return True
-    else:
-      return False
-
-
-  def __le__(self, other):
-
-    if self._id <= other._id:
-      return True
-    else:
-      return False
-
-
-  def __gt__(self, other):
-
-    if self._id > other._id:
-      return True
-    else:
-      return False
-
-
-  def __gt__(self, other):
-
-    if self._id >= other._id:
       return True
     else:
       return False

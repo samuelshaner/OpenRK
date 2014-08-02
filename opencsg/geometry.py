@@ -134,30 +134,30 @@ class Geometry(object):
   def getAllMaterials(self):
 
     material_cells = self.getAllMaterialCells()
-    materials = set()
+    materials = dict()
 
-    for cell in material_cells:
-      materials.add(cell._fill)
+    for cell_id, cell in material_cells.items():
+      materials[cell._fill._id] = cell._fill
 
-    return list(materials)
+    return materials
 
 
   def getAllMaterialCells(self):
 
     all_cells = self.getAllCells()
-    material_cells = set()
+    material_cells = dict()
 
     for cell_id, cell in all_cells.items():
       if cell._type == 'material':
-        material_cells.add(cell)
+        material_cells[cell._id] = cell
 
-    return list(material_cells)
+    return material_cells
 
 
   def getAllMaterialUniverses(self):
 
     all_universes = self.getAllUniverses()
-    material_universes = set()
+    material_universes = dict()
 
     for universe_id, universe in all_universes.items():
 
@@ -169,9 +169,9 @@ class Geometry(object):
 
       for cell_id, cell in cells.items():
         if cell._type == 'material':
-          material_universes.add(universe)
+          material_universes[universe._id] = universe
 
-    return list(material_universes)
+    return material_universes
 
 
   def setRootUniverse(self, root_universe):
