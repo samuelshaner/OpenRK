@@ -245,6 +245,10 @@ class Geometry(object):
             'root Universe for the Geometry has not yet been set'
       raise ValueError(msg)
 
+    # If the neighbors have already been built, just return
+    if self._num_neighbors > 0:
+      return
+
     self._root_universe.buildNeighbors()
 
     # Initialize offsets maps

@@ -453,9 +453,25 @@ class Universe(object):
             'not a UnivCoords'.format(self._id, univ_coords)
       raise ValueError(msg)
 
+
     # Initialize cell and offset
     cell = None
     offset = 0
+
+
+
+    # Find Lattice cell indices where region is less than the Cell offset
+#    indices = np.where(self._cell_offsets <= region_id)
+#    print indices
+
+#    if indices != None:
+#      lat_z = indices[2][-1]
+#      lat_y = indices[1][-1]
+#      lat_x = indices[0][-1]
+#      universe = self._universes[lat_z][lat_y][lat_x]
+#      offset = self._cell_offsets[lat_z][lat_y][lat_x]
+
+
 
     # Loop over cells until we reach the one the first one with
     # an offset larger than region_id - return the one prior
@@ -495,6 +511,7 @@ class Universe(object):
 
     # We have found the cell in the base nested universe
     elif region_id == 0 and isinstance(fill, Material):
+#      print self._num_regions, self._cell_offsets.values()[-1], offset, region_id
       return
 
     # We were unable to find the cell
@@ -659,6 +676,7 @@ class Lattice(Universe):
     # Assign the z-coordinate to zero for 2D Lattices
     if lat_z is None:
       lat_z = 0
+
 
     depth = self._neighbor_depth
 
@@ -1022,9 +1040,9 @@ class Lattice(Universe):
     volume_fraction = np.float64(1. / (self._dimension[0] * self._dimension[1] \
                                          * self._dimension[2]))
 
-    for i in np.arange(self._dimension[0]):
-      for j in np.arange(self._dimension[1]):
-        for k in np.arange(self._dimension[2]):
+    for i in xrange(self._dimension[0]):
+      for j in xrange(self._dimension[1]):
+        for k in xrange(self._dimension[2]):
           universe = self._universes[k][j][i]
           universe.computeVolumeFractions(volume=(volume * volume_fraction),
                                           tolerance=tolerance)
@@ -1042,9 +1060,9 @@ class Lattice(Universe):
     # The cell offsets have not yet been initialized
     count = 0
 
-    for i in np.arange(self._dimension[0]):
-      for j in np.arange(self._dimension[1]):
-        for k in np.arange(self._dimension[2]):
+    for i in xrange(self._dimension[0]):
+      for j in xrange(self._dimension[1]):
+        for k in xrange(self._dimension[2]):
           self._cell_offsets[k][j][i] = count
           self._universes[k][j][i].initializeCellOffsets()
           count += self._universes[k][j][i]._num_regions
@@ -1868,7 +1886,7 @@ class Cell(object):
       y = np.nan_to_num(y)
       z = np.nan_to_num(z)
 
-      for i in np.arange(num_samples):
+      for i in xrange(num_samples):
 
         point.setX(x[i])
         point.setY(y[i])
