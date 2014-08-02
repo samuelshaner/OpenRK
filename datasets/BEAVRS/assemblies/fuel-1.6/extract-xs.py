@@ -4,7 +4,6 @@ from openmc.statepoint import StatePoint
 from infermc.process import XSTallyExtractor
 from infermc.multigroupxs import xs_types
 from infermc.plotter import scatter_multigroup_xs
-import numpy as np
 
 
 batches = range(10, 55, 5)

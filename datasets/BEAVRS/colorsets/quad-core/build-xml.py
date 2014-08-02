@@ -5,37 +5,19 @@ from geometry import geometry
 from infermc.build import *
 
 
-import matplot 
-
-
 ###############################################################################
 ###################   Simulation Input File Parameters   ######################
 ###############################################################################
 
 # OpenMC simulation parameters
-batches = 25
-inactive = 10
-particles = 100
+batches = 100
+inactive = 5
+particles = 10000
 
 
 ###############################################################################
 ##################   Exporting to OpenMC geometry.xml File  ###################
 ###############################################################################
-
-geometry.buildNeighbors()
-
-num_regions = geometry._num_regions
-neighbor_hashes = np.zeros(num_regions, dtype=np.int64)
-
-for region in range(num_regions):
-  print region, num_regions
-  coords = geometry.findRegion(region)
-  neighbors = coords.getUniqueNeighbors()
-  neighbor_hashes[region] = hash(neighbors)
-
-unique_hashes = set(neighbor_hashes)
-print len(unique_hashes)
-print len(geometry.getAllCells())
 
 # Create geometry.xml
 openmc_geometry = get_openmc_geometry(geometry)
