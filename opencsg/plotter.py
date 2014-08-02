@@ -293,9 +293,9 @@ def plot_neighbor_cells(geometry, plane='xy', offset=0.,
   geometry.buildNeighbors()
 
   if unique:
-    num_neighbors = geometry._num_neighbors
-  else:
     num_neighbors = geometry._num_unique_neighbors
+  else:
+    num_neighbors = geometry._num_neighbors
 
   # Create array of equally spaced randomized floats as a color map for plots
   # Seed the NumPy random number generator to ensure reproducible color maps

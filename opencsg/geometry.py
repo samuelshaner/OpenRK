@@ -268,8 +268,8 @@ class Geometry(object):
     for region in range(self._num_regions):
 
       # Build lists of neighbor Cells/Universes
-      neighbors = self.getNeighbors(region)
-      unique_neighbors = self.getUniqueNeighbors(region)
+      neighbors = self.getNeighborsHash(region)
+      unique_neighbors = self.getUniqueNeighborsHash(region)
 
       # Store the hashes to the region-to-neighbor hash maps
       self._regions_to_neighbors[region] = neighbors
@@ -372,3 +372,12 @@ class Geometry(object):
   def getUniqueNeighbors(self, region_id):
     coords = self.findRegion(region_id)
     return coords.getUniqueNeighbors()
+
+
+  def getNeighborsHash(self, region_id):
+    coords = self.findRegion(region_id)
+    return coords.getNeighborsHash()
+
+  def getUniqueNeighborsHash(self, region_id):
+    coords = self.findRegion(region_id)
+    return coords.getUniqueNeighborsHash()
