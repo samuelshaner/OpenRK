@@ -7,8 +7,8 @@ from infermc.plotter import scatter_multigroup_xs
 import numpy as np
 
 
-#batches = range(10, 55, 5)
-batches = [10]
+batches = range(10, 55, 5)
+#batches = [10]
 
 groups = group_structures['CASMO']['2-group']
 
@@ -19,7 +19,6 @@ for batch in batches:
   filename = 'statepoint.{0}.h5'.format(batch)
 
   # Initialize a handle on the OpenMC statepoint file
-  print filename
   statepoint = openmc.statepoint.StatePoint(filename)
 
   # Initialize an InferMC XSTallyExtractor object to compute cross-sections

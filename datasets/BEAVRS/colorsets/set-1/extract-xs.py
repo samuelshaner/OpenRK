@@ -8,8 +8,8 @@ from infermc.multigroupxs import xs_types
 
 groups = group_structures['CASMO']['2-group']
 
-#batches = range(10, 105, 5)
-batches = [10]
+batches = range(10, 105, 5)
+#batches = [10]
 
 for batch in batches:
 
@@ -31,7 +31,7 @@ for batch in batches:
     if xs_type != 'scatter matrix':
       scatter_multigroup_xs(extractor, xs_type,
                             domain_types=['distribcell', 'material'],
-                            colors=['material', 'material'],
+                            colors=['neighbors', 'material'],
                             filename='{0}-{1}-batches'.format(xs_type,batch))
 
   openmc.reset_auto_ids()

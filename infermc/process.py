@@ -514,6 +514,7 @@ class XSTallyExtractor(object):
     multigroup_xs.computeXS()
 
 
+
     # Build offsets such that a user can query the MultiGroupXS for any region
     if domain_type == 'distribcell':
 
@@ -528,9 +529,9 @@ class XSTallyExtractor(object):
         cell_id = path[-1]
 
         if cell_id == domain._id:
-          path = copy.deepcopy(path)
           offset = self._openmc_geometry.getOffset(path, domain_offset)
           multigroup_xs.setSubDomainOffset(region, offset)
+
 
     return multigroup_xs
 
