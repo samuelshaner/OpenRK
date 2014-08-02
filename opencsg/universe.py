@@ -695,7 +695,7 @@ class Lattice(Universe):
     # that neighbors tuple is rotationally symmetric across all dimensions
 
     # x-y-z
-    xy_neighbors = np.copy(neighbor_universes)
+    xy_neighbors = neighbor_universes
     neighbors_universes_array = np.append(neighbors_universes_array, xy_neighbors)
 
     # x-z-y
@@ -735,7 +735,7 @@ class Lattice(Universe):
 
   def getNeighborsHash(self, lat_x, lat_y, lat_z=None):
 
-    neighbors_universes = np.copy(self.getNeighbors(lat_x, lat_y, lat_z))
+    neighbors_universes = self.getNeighbors(lat_x, lat_y, lat_z)
     neighbors_universes.sort()
     neighbors_universes.flags.writeable = False
     neighbors_hash = hash(neighbors_universes.data)
@@ -744,7 +744,7 @@ class Lattice(Universe):
 
   def getUniqueNeighborsHash(self, lat_x, lat_y, lat_z=None):
 
-    neighbors_universes = np.copy(self.getUniqueNeighbors(lat_x, lat_y, lat_z))
+    neighbors_universes = self.getUniqueNeighbors(lat_x, lat_y, lat_z)
     neighbors_universes.sort()
     neighbors_universes.flags.writeable = False
     neighbors_hash = hash(neighbors_universes.data)
