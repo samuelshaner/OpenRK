@@ -800,154 +800,30 @@ class Lattice(Universe):
 
     # x-y-z
     xy_neighbors = np.copy(neighbor_universes)
-#    xy_neighbors.sort()
-#    xy_neighbors.flags.writeable = False
-
     neighbors_universes_array = np.append(neighbors_universes_array, xy_neighbors)
-
-
-    # Iterate over z-axis of sliding window
-#    for i in np.arange(neighbor_universes.shape[0]):
-#      xy_neighbors = ( )
-
-      # Iterate over y-axis of sliding window
-#      for j in np.arange(neighbor_universes.shape[1]):
-#        x_neighbors = ( )
-
-        # Iterate over x-axis of sliding window
-#        for k in np.arange(neighbor_universes.shape[2]):
-#          x_neighbors += (neighbor_universes[i,j,k], )
-
-#        xy_neighbors += tuple(sorted(x_neighbors))
-
-#      neighbors_universes_tuple += tuple(sorted(xy_neighbors))
-
 
     # x-z-y
     xz_neighbors = np.swapaxes(neighbor_universes, 0, 1)
-#    xz_neighbors.sort()
-#    xz_neighbors.flags.writeable = False
-
     neighbors_universes_array = np.append(neighbors_universes_array, xz_neighbors)
-
-#    neighbors_universes_tuple += tuple(xz_neighbors)
-
-    # Iterate over y-axis of sliding window
-#    for j in np.arange(neighbor_universes.shape[1]):
-#      xz_neighbors = ( )
-
-      # Iterate over z-axis of sliding window
-#      for i in np.arange(neighbor_universes.shape[0]):
-#        x_neighbors = ( )
-
-        # Iterate over x-axis of sliding window
-#        for k in np.arange(neighbor_universes.shape[2]):
-#          x_neighbors += (neighbor_universes[i,j,k], )
-
-#        xz_neighbors += tuple(sorted(x_neighbors))
-
-#      neighbors_universes_tuple += tuple(sorted(xz_neighbors))
-
 
     # y-x-z
     yx_neighbors = np.swapaxes(neighbor_universes, 2, 1)
-#    yx_neighbors.sort()
-#    yx_neighbors.flags.writeable = False
-
     neighbors_universes_array = np.append(neighbors_universes_array, yx_neighbors)
-#    neighbors_universes_tuple += tuple(yx_neighbors)
-
-    # Iterate over z-axis of sliding window
-#    for i in np.arange(neighbor_universes.shape[0]):
-#      yx_neighbors = ( )
-
-      # Iterate over x-axis of sliding window
-#      for k in np.arange(neighbor_universes.shape[2]):
-#        y_neighbors = ( )
-
-        # Iterate over y-axis of sliding window
-#        for j in np.arange(neighbor_universes.shape[1]):
-#          y_neighbors += (neighbor_universes[i,j,k], )
-
-#        yx_neighbors += tuple(sorted(y_neighbors))
-
-#      neighbors_universes_tuple += tuple(sorted(yx_neighbors))
 
     # y-z-x
     yz_neighbors = np.swapaxes(neighbor_universes, 2, 0)
     yz_neighbors = np.swapaxes(yz_neighbors, 2, 1)
-#    yz_neighbors.sort()
-#    yz_neighbors.flags.writeable = False
-
     neighbors_universes_array = np.append(neighbors_universes_array, yz_neighbors)
-#    neighbors_universes_tuple += tuple(yz_neighbors)
-
-    # Iterate over x-axis of sliding window
-#    for k in np.arange(neighbor_universes.shape[2]):
-#      yz_neighbors = ( )
-
-      # Iterate over z-axis of sliding window
-#      for i in np.arange(neighbor_universes.shape[0]):
-#        y_neighbors = ( )
-
-        # Iterate over y-axis of sliding window
-#        for j in np.arange(neighbor_universes.shape[1]):
-#          y_neighbors += (neighbor_universes[i,j,k], )
-
-#        yz_neighbors += tuple(sorted(y_neighbors))
-
-#      neighbors_universes_tuple += tuple(sorted(yz_neighbors))
 
     # z-x-y
     xz_neighbors = np.swapaxes(neighbor_universes, 2, 0)
     xz_neighbors = np.swapaxes(xz_neighbors, 1, 0)
-#    xz_neighbors.sort()
-#    xz_neighbors.flags.writeable = False
-
     neighbors_universes_array = np.append(neighbors_universes_array, xz_neighbors)
-#    neighbors_universes_tuple += tuple(xz_neighbors)
-
-    # Iterate over y-axis of sliding window
-#    for j in np.arange(neighbor_universes.shape[1]):
-#      xz_neighbors = ( )
-
-      # Iterate over x-axis of sliding window
-#      for k in np.arange(neighbor_universes.shape[2]):
-#        z_neighbors = ( )
-
-        # Iterate over z-axis of sliding window
-#        for i in np.arange(neighbor_universes.shape[0]):
-#          z_neighbors += (neighbor_universes[i,j,k], )
-
-#        xz_neighbors += tuple(sorted(z_neighbors))
-
-#      neighbors_universes_tuple += tuple(sorted(xz_neighbors))
 
     # z-y-x
     zy_neighbors = np.swapaxes(neighbor_universes, 2, 0)
-#    zy_neighbors.sort()
-#    zy_neighbors.flags.writeable = False
-
     neighbors_universes_array = np.append(neighbors_universes_array, zy_neighbors)
-#    neighbors_universes_tuple += tuple(zy_neighbors)
 
-    # Iterate over x-axis of sliding window
-#    for k in np.arange(neighbor_universes.shape[2]):
-#      zy_neighbors = ( )
-
-      # Iterate over y-axis of sliding window
-#      for j in np.arange(neighbor_universes.shape[1]):
-#        z_neighbors = ( )
-
-        # Iterate over z-axis of sliding window
-#        for i in np.arange(neighbor_universes.shape[0]):
-#          z_neighbors += (neighbor_universes[i,j,k], )
-
-#        zy_neighbors += tuple(sorted(z_neighbors))
-
-#      neighbors_universes_tuple += tuple(sorted(zy_neighbors))
-
-#    neighbors_universes_tuple = sorted(neighbors_universes_tuple)
     neighbors_universes_array = np.asarray(neighbors_universes_array)
     return neighbors_universes_array
 
