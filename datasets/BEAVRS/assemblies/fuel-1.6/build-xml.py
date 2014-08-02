@@ -84,8 +84,8 @@ tally_factory.createTalliesFile()
 #########################   Plotting the Geometry  ############################
 ###############################################################################
 
-#plotter.plot_neighbor_cells(geometry)
-#plotter.plot_neighbor_cells(geometry, unique=True)
-plotter.plot_regions(geometry)
-plotter.plot_materials(geometry)
-plotter.plot_cells(geometry)
+plotter.plot_neighbor_cells(geometry)
+plotter.plot_neighbor_cells(geometry, unique=True)
+#plotter.plot_regions(geometry)
+#plotter.plot_materials(geometry)
+#plotter.plot_cells(geometry)

@@ -260,14 +260,14 @@ def scatter_multigroup_xs(extractor, xs_type, domain_types=['distribcell'],
       # Data is indexed by: (group #1, group #2, color)
       data[domain_type] = np.zeros((num_materials, 3))
 
-      for j, material in enumerate(materials):
-        xs = extractor.getMultiGroupXS(xs_type, material._id, 'material')
-        data[domain_type][j, 0] = xs.getXS(energy_groups[0], material._id)
-        data[domain_type][j, 1] = xs.getXS(energy_groups[1], material._id)
+      for j, material_id in enumerate(materials):
+        xs = extractor.getMultiGroupXS(xs_type, material_id, 'material')
+        data[domain_type][j, 0] = xs.getXS(energy_groups[0], material_id)
+        data[domain_type][j, 1] = xs.getXS(energy_groups[1], material_id)
 
         # Find color!!!
         if colors[i] == 'material':
-          color = color_maps[colors[i]][material._id % num_materials]
+          color = color_maps[colors[i]][material_id % num_materials]
           data[domain_type][j, 2] = color
 
         else:
@@ -279,10 +279,10 @@ def scatter_multigroup_xs(extractor, xs_type, domain_types=['distribcell'],
       # Data is indexed by: (group #1, group #2, color)
       data[domain_type] = np.zeros((num_cells, 3))
 
-      for j, cell in enumerate(cells):
-        xs = extractor.getMultiGroupXS(xs_type, cell._id, 'cell')
-        data[domain_type][j, 0] = xs.getXS(energy_groups[0], cell._id)
-        data[domain_type][j, 1] = xs.getXS(energy_groups[1], cell._id)
+      for j, cell_id in enumerate(cells):
+        xs = extractor.getMultiGroupXS(xs_type, cell_id, 'cell')
+        data[domain_type][j, 0] = xs.getXS(energy_groups[0], cell_id)
+        data[domain_type][j, 1] = xs.getXS(energy_groups[1], cell_id)
 
         # Find color!!!
         if colors[i] == 'material':
@@ -291,7 +291,7 @@ def scatter_multigroup_xs(extractor, xs_type, domain_types=['distribcell'],
           data[domain_type][j, 2] = color
 
         elif colors[i] == 'cell':
-          color = color_maps[colors[i]][cell._id % num_cells]
+          color = color_maps[colors[i]][cell_id % num_cells]
           data[domain_type][j, 2] = color
 
         else:
@@ -303,14 +303,14 @@ def scatter_multigroup_xs(extractor, xs_type, domain_types=['distribcell'],
       # Data is indexed by: (group #1, group #2, color)
       data[domain_type] = np.zeros((num_universes, 3))
 
-      for j, universe in enumerate(universes):
-        xs = extractor.getMultiGroupXS(xs_type, universe._id, 'universe')
-        data[domain_type][j, 0] = xs.getXS(energy_groups[0], universe._id)
-        data[domain_type][j, 1] = xs.getXS(energy_groups[1], universe._id)
+      for j, universe_id in enumerate(universes):
+        xs = extractor.getMultiGroupXS(xs_type, universe_id, 'universe')
+        data[domain_type][j, 0] = xs.getXS(energy_groups[0], universe_id)
+        data[domain_type][j, 1] = xs.getXS(energy_groups[1], universe_id)
 
         # Find color!!!
         if colors[i] == 'universe':
-          color = color_maps[colors[i]][universe._id % num_universes]
+          color = color_maps[colors[i]][universe_id % num_universes]
           data[domain_type][j, 2] = color
 
         else:
