@@ -1037,6 +1037,7 @@ class Lattice(Universe):
     for i in range(len(width)):
       self._width[i] = width[i]
 
+
   def setUniverses(self, universes):
 
     if not isinstance(universes, (tuple, list, np.ndarray)):
@@ -1045,12 +1046,13 @@ class Lattice(Universe):
             'NumPy array'.format(self._id, universes)
       raise ValueError(msg)
 
+
     # if universes was input in 2D -> make 3D
     shape = np.shape(universes)
     if len(shape) == 2:
       universes = [universes]
     
-    self._universes = universes
+    self._universes = np.asarray(universes, dtype=Universe)
 
     for i in range(self._dimension[0]):
       for j in range(self._dimension[1]):
