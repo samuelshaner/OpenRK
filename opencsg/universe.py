@@ -688,7 +688,6 @@ class Lattice(Universe):
     neighbor_universes = self._neighbor_universes[ix,jx,kx][i0:i1,j0:j1,k0:k1]
 
     # Convert 3D neighbor universes array to a 3D tuple of tuples of tuples
-    neighbors_universes_array = np.empty(shape=(0,), dtype=Universe)
 
     # Build a 2D tuple of all of the neighbors
     # Iterate over all orderings of the (x,y,z) coordinates to ensure
@@ -696,31 +695,28 @@ class Lattice(Universe):
 
     # x-y-z
     xy_neighbors = neighbor_universes
-    neighbors_universes_array = np.append(neighbors_universes_array, xy_neighbors)
 
     # x-z-y
     xz_neighbors = np.swapaxes(neighbor_universes, 0, 1)
-    neighbors_universes_array = np.append(neighbors_universes_array, xz_neighbors)
 
     # y-x-z
     yx_neighbors = np.swapaxes(neighbor_universes, 2, 1)
-    neighbors_universes_array = np.append(neighbors_universes_array, yx_neighbors)
 
     # y-z-x
     yz_neighbors = np.swapaxes(neighbor_universes, 2, 0)
     yz_neighbors = np.swapaxes(yz_neighbors, 2, 1)
-    neighbors_universes_array = np.append(neighbors_universes_array, yz_neighbors)
 
     # z-x-y
-    xz_neighbors = np.swapaxes(neighbor_universes, 2, 0)
-    xz_neighbors = np.swapaxes(xz_neighbors, 1, 0)
-    neighbors_universes_array = np.append(neighbors_universes_array, xz_neighbors)
+    zx_neighbors = np.swapaxes(neighbor_universes, 2, 0)
+    zx_neighbors = np.swapaxes(zx_neighbors, 1, 0)
 
     # z-y-x
     zy_neighbors = np.swapaxes(neighbor_universes, 2, 0)
-    neighbors_universes_array = np.append(neighbors_universes_array, zy_neighbors)
 
-    neighbors_universes_array = np.asarray(neighbors_universes_array)
+    neighbors_universes_array = np.array([xy_neighbors.ravel(), xz_neighbors.ravel(),
+                                          yx_neighbors.ravel(), yz_neighbors.ravel(),
+                                          zx_neighbors.ravel(), zy_neighbors.ravel()])
+
     return neighbors_universes_array
 
 
