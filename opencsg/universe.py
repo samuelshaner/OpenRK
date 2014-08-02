@@ -49,26 +49,6 @@ class Universe(object):
     self.setName(name)
 
 
-  def __eq__(self, other):
-
-    if not isinstance(other, Universe):
-      return False
-    elif self._id != other._id:
-      return False
-    else:
-      return True
-
-
-  def __ne__(self, other):
-
-    if not isinstance(other, Universe):
-      return True
-    elif self._id != other._id:
-      return True
-    else:
-      return False
-
-
   def getAllCells(self):
 
     cells = dict()
@@ -560,26 +540,6 @@ class Lattice(Universe):
     self.setId(lattice_id)
     self.setName(name)
     self.setType(type)
-
-
-  def __eq__(self, other):
-
-    if not isinstance(other, Lattice):
-      return False
-    elif self._id != other._id:
-      return False
-    else:
-      return True
-
-
-  def __ne__(self, other):
-
-    if not isinstance(other, Lattice):
-      return True
-    elif self._id != other._id:
-      return True
-    else:
-      return False
 
 
   def getUniverse(self, lat_x, lat_y, lat_z=None):
@@ -1356,26 +1316,6 @@ class Cell(object):
 
     if not fill is None:
       self.setFill(fill)
-
-
-  def __eq__(self, other):
-
-    if not isinstance(other, Cell):
-      return False
-    elif self._id != other._id:
-      return False
-    else:
-      return True
-
-
-  def __ne__(self, other):
-
-    if not isinstance(other, Cell):
-      return True
-    elif self._id != other._id:
-      return True
-    else:
-      return False
 
 
   def getMaxX(self):
