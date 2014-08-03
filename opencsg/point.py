@@ -130,6 +130,7 @@ class Direction(object):
 
     comps = self._comps
     unit = comps**2/np.sqrt(np.sum(comps**2))
+    unit = unit*(comps/abs(comps))
     return unit
 
   def toPolar(self):
@@ -146,3 +147,4 @@ class Direction(object):
     string = 'Direction\n'
     string += '{0: <16}{1}{2}\n'.format('\tComps', '=\t', self._comps)
     return string
+

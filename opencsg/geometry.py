@@ -324,7 +324,6 @@ class Geometry(object):
     points = []
 
     for surface in surfaces.keys():
-
       intersect = surfaces[surface][0].getIntersectionPoints(point, direction)
       points.extend(intersect)
 

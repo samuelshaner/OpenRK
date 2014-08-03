@@ -115,12 +115,11 @@ geometry.setVolume(volume=16., tolerance=1e-1)
 
 print('Tracing Sample Rays...')
 
-
-rays = []
+rays = dict()
 bounds = geometry.getBounds()
 
-for ray in xrange(20):
-  edge = np.random.choice([0,1,2,3])
+for ray in xrange(1):
+  edge = np.random.choice([0, 1, 2, 3])
   if edge == 0:
     x = bounds[edge] + 1e-10
     y = np.random.uniform(bounds[2], bounds[3])
@@ -139,42 +138,31 @@ for ray in xrange(20):
     z = np.random.uniform(1e-12, 1e12)
 
   u, v, w = np.random.rand(3)-0.5
-  point = Point(x=x,y=y,z=z)
-  direction = Direction(u=u,v=v,w=w)
-  rays.append((point, direction))
-  print point, direction
+  point = Point(x=x, y=y, z=z)
+  direction = Direction(u=u, v=v, w=w)
+  rays[point] = direction
 
 colors = []
 segments = []
 
-#Code below generates rays that do not go through surfaces
-#Picture is still, however, off center
-
-for ray in rays:
-  intersect = geometry.getNearestIntersection(ray[0], ray[1])
-  if not intersect is None and ray[0].distanceToPoint(intersect)<10:
-    segments.append([ray[0]._coords[:2], intersect._coords[:2]])
-    if cylinder.evaluate(ray[0]) < 0:
-      colors.append((1, 0, 1, 1))
+while rays != {}:
+  print len(rays)
+  points = rays.keys()
+  for ray in points:
+    intersect = geometry.getNearestIntersection(ray, rays[ray])
+    if intersect is None:
+      del rays[ray]
     else:
-      colors.append((1, 1, 0, 1))
+      segments.append([ray._coords[:2], intersect._coords[:2]])
+      if cylinder.evaluate(ray) < 0:
+        colors.append((1, 0, 1, 1))
+      else:
+        colors.append((1, 1, 0, 1))
+      intersect.setCoords(intersect._coords + 1e-10*rays[ray]._comps)
+      rays[intersect] = rays[ray]
+      del rays[ray]
 
-#Code below attempts to generate rays that go through surfaces
-#Picture is off center and goes crazy
-'''
-for ray in rays:
-  intersect = geometry.getNearestIntersection(ray[0], ray[1])
-  while not intersect is None:
-    print ray[0]
-    segments.append([ray[0]._coords[:2], intersect._coords[:2]])
-    if cylinder.evaluate(ray[0]) < 0:
-      colors.append((1, 0, 1, 1))
-    else:
-      colors.append((1, 1, 0, 1))
-    ray[0].setCoords((intersect._coords + 1e-10*ray[1]._comps))
-    print ray[0]
-    intersect = geometry.getNearestIntersection(ray[0], ray[1])
-'''
+
 
 def startToEnd(rays, geometry):
   #Code below plots initial and intersect points
@@ -201,8 +189,8 @@ c = np.array(colors)
 lc = plt.collections.LineCollection(segments, colors=c, linewidths=1)
 fig, ax = pl.subplots()
 ax.add_collection(lc)
-plt.pyplot.xlim([-2,2])
-plt.pyplot.ylim([-2,2])
+plt.pyplot.xlim([bounds[0], bounds[1]])
+plt.pyplot.ylim([bounds[2], bounds[3]])
 ax.margins(0)
 fig.savefig('plots/rays-xy.png')
 
@@ -212,7 +200,7 @@ startToEnd(rays, geometry)
 ##########################   Plotting the Geometry   ##########################
 ###############################################################################
 
-print('Plotting Geometry...')
+#print('Plotting Geometry...')
 
 #plotter.plot_cells(geometry)
 #plotter.plot_materials(geometry)
