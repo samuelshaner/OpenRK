@@ -1,8 +1,7 @@
 from opencsg import *
+from opencsg.point import Segment
 import opencsg.plotter as plotter
 import numpy as np
-import matplotlib as plt
-import pylab as pl
 
 ###############################################################################
 ###########################   Creating Materials   ############################
@@ -115,86 +114,8 @@ geometry.setVolume(volume=16., tolerance=1e-1)
 
 print('Tracing Sample Rays...')
 
-rays = dict()
-bounds = geometry.getBounds()
+segments = geometry.traceSampleRays(num_rays=1000)
 
-for ray in xrange(1000):
-  edge = np.random.choice([0, 1, 2, 3])
-  if edge == 0:
-    x = bounds[edge] + 1e-10
-    y = np.random.uniform(bounds[2], bounds[3])
-    z = np.random.uniform(1e-12, 1e12)
-  elif edge == 1:
-    x = bounds[edge] - 1e-10
-    y = np.random.uniform(bounds[2], bounds[3])
-    z = np.random.uniform(1e-12, 1e12)
-  elif edge == 2:
-    x = np.random.uniform(bounds[0], bounds[1])
-    y = bounds[edge] + 1e-10
-    z = np.random.uniform(1e-12, 1e12)
-  else:
-    x = np.random.uniform(bounds[0], bounds[1])
-    y = bounds[edge] - 1e-10
-    z = np.random.uniform(1e-12, 1e12)
-
-  u, v, w = np.random.rand(3)-0.5
-  point = Point(x=x, y=y, z=z)
-  direction = Direction(u=u, v=v, w=w)
-  rays[point] = direction
-
-colors = []
-segments = []
-
-while rays != {}:
-  print len(rays)
-  points = rays.keys()
-  for ray in points:
-    intersect = geometry.getNearestIntersection(ray, rays[ray])
-    if intersect is None:
-      del rays[ray]
-    else:
-      segments.append([ray._coords[:2], intersect._coords[:2]])
-      if cylinder.evaluate(ray) < 0:
-        colors.append((1, 0, 1, 1))
-      else:
-        colors.append((1, 1, 0, 1))
-      intersect.setCoords(intersect._coords + 1e-10*rays[ray]._comps)
-      rays[intersect] = rays[ray]
-      del rays[ray]
-
-
-
-def startToEnd(rays, geometry):
-  #Code below plots initial and intersect points
-  init_x_vals = []
-  init_y_vals = []
-  int_x_vals = []
-  int_y_vals = []
-  for ray in rays:
-    intersect = geometry.getNearestIntersection(ray[0], ray[1])
-    init_x_vals.append(ray[0]._coords[0])
-    init_y_vals.append(ray[0]._coords[1])
-    if not intersect is None:
-      int_x_vals.append(intersect._coords[0])
-      int_y_vals.append(intersect._coords[1])
-
-  fig = plt.pyplot.figure()
-  plt.pyplot.plot(init_x_vals, init_y_vals, 'ro')
-  plt.pyplot.plot(int_x_vals, int_y_vals, 'bo')
-  plt.pyplot.show()
-  fig.savefig('plots/start-end.png')
-
-c = np.array(colors)
-
-lc = plt.collections.LineCollection(segments, colors=c, linewidths=1)
-fig, ax = pl.subplots()
-ax.add_collection(lc)
-plt.pyplot.xlim([bounds[0], bounds[1]])
-plt.pyplot.ylim([bounds[2], bounds[3]])
-ax.margins(0)
-fig.savefig('plots/rays-xy.png')
-
-startToEnd(rays, geometry)
 
 ###############################################################################
 ##########################   Plotting the Geometry   ##########################
@@ -202,6 +123,7 @@ startToEnd(rays, geometry)
 
 #print('Plotting Geometry...')
 
+plotter.plot_segments(segments, geometry)
 #plotter.plot_cells(geometry)
 #plotter.plot_materials(geometry)
 #plotter.plot_regions(geometry)

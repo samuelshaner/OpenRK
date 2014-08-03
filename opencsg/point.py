@@ -3,6 +3,7 @@ __email__ = 'wboyd@mit.edu'
 
 
 from opencsg.checkvalue import *
+from opencsg import *
 import numpy as np
 
 class Point(object):
@@ -148,3 +149,80 @@ class Direction(object):
     string = 'Direction\n'
     string += '{0: <16}{1}{2}\n'.format('\tComps', '=\t', self._comps)
     return string
+
+
+class Segment(object):
+
+  def __init__(self, geometry, start=None, end=None, region_id=None, cell=None):
+
+    self._start = None
+    self._end = None
+    self._region_id = None
+    self._cell = None
+
+    if not start is None:
+      self.setStart(start)
+
+    if not end is None:
+      self.setEnd(end)
+
+    if not region_id is None:
+      x,y,z = self._start._coords
+      self.setRegion(geometry.getRegionID(x=x,y=y,z=z))
+
+    if not cell is None:
+      x,y,z = self._start._coords
+      self.setCell(geometry.findCell(x=x,y=y,z=z))
+
+
+  def setStart(self, start):
+
+    if not isinstance(start, Point):
+      msg = 'Unable to set start point for segment to {0} since it is ' \
+            'not a point object'.format(start)
+      raise ValueError(msg)
+
+    self._start = start
+
+  def setEnd(self, end):
+
+    if not isinstance(end, Point):
+      msg = 'Unable to set end point for segment to {0} since it is ' \
+            'not a point object'.format(end)
+      raise ValueError(msg)
+
+    self._end = end
+
+  def setRegion(self, region_id):
+    if not is_integer(region_id):
+      msg = 'Unable to set region id for segment to {0} since it is ' \
+            'not an integer'.format(region_id)
+      raise ValueError(msg)
+
+    self._region_id = region_id
+
+  def setCell(self, cell):
+    if not isinstance(cell, Cell):
+      msg = 'Unable to set cell for segment to {0} since it is ' \
+            'not a cell object'.format(cell)
+      raise ValueError(msg)
+
+    self._cell = cell
+
+  def getXYCoords(self):
+    return [self._start._coords[:2], self._end._coords[:2]]
+
+  def getYZCoords(self):
+    return [self._start._coords[1:], self._end._coords[1:]]
+
+  def getXZCoords(self):
+    return [self._start._coords[::2], self._end._coords[::2]]
+
+  def getLength(self):
+    return self._start.distanceToPoint(self._end)
+
+  def __repr__(self):
+
+    string = 'Surface\n'
+    string += '{0: <16}{1}{2}\n'.format('\tStart', '=\t', self._start._coords)
+    string += '{0: <16}{1}{2}\n'.format('\tEnd', '=\t', self._end._coords)

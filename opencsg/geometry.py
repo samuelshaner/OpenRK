@@ -3,8 +3,9 @@ __email__ = 'wboyd@mit.edu'
 
 
 from opencsg.universe import *
-from opencsg.point import Point
+from opencsg.point import *
 
+tiny_bit = 1e-10
 
 class Geometry(object):
 
@@ -389,6 +390,61 @@ class Geometry(object):
         nearestdist = point.distanceToPoint(intersect)
 
     return nearestpoint
+
+  def getShortestSegment(self, point, direction):
+
+    intersect = self.getNearestIntersection(point, direction)
+    if intersect is None:
+      return None
+
+    segment = Segment(self, start=point, end=intersect)
+    return segment
+
+  def traceSampleRays(self, num_rays=1000):
+
+    rays = dict()
+    bounds = self.getBounds()
+
+    for ray in xrange(num_rays):
+      edge = np.random.choice([0, 1, 2, 3])
+      if edge == 0:
+        x = bounds[edge] + 1e-10
+        y = np.random.uniform(bounds[2], bounds[3])
+        z = np.random.uniform(1e-12, 1e12)
+      elif edge == 1:
+        x = bounds[edge] - 1e-10
+        y = np.random.uniform(bounds[2], bounds[3])
+        z = np.random.uniform(1e-12, 1e12)
+      elif edge == 2:
+        x = np.random.uniform(bounds[0], bounds[1])
+        y = bounds[edge] + 1e-10
+        z = np.random.uniform(1e-12, 1e12)
+      else:
+        x = np.random.uniform(bounds[0], bounds[1])
+        y = bounds[edge] - 1e-10
+        z = np.random.uniform(1e-12, 1e12)
+
+      u, v, w = np.random.rand(3)-0.5
+      point = Point(x=x, y=y, z=z)
+      direction = Direction(u=u, v=v, w=w)
+      rays[point] = direction
+
+    segments = []
+
+    while rays != {}:
+      print len(rays)
+      points = rays.keys()
+      for ray in points:
+        intersect = self.getNearestIntersection(ray, rays[ray])
+        if intersect is None:
+          del rays[ray]
+        else:
+          segment = Segment(self, start=ray, end=intersect)
+          segments.append(segment)
+          intersect.setCoords(intersect._coords + tiny_bit*rays[ray]._comps)
+          rays[intersect] = rays[ray]
+          del rays[ray]
+    return segments
 
   def getNeighbors(self, region_id):
     coords = self.findRegion(region_id)

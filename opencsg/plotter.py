@@ -4,6 +4,7 @@ __email__ = 'wboyd@mit.edu'
 
 import matplotlib
 from opencsg import *
+from opencsg.point import Segment
 
 # force headless backend, or set 'backend' to 'Agg'
 # in your ~/.matplotlib/matplotlibrc
@@ -345,6 +346,105 @@ def plot_neighbor_cells(geometry, plane='xy', offset=0.,
   fig.savefig(filename, bbox_inches='tight')
   plt.close(fig)
 
+
+def plot_segments(segments, geometry, plane='xy', offset=0.,
+                  gridsize=250, linewidths=1):
+
+  global subdirectory
+
+  # Make directory if it does not exist
+  if not os.path.exists(subdirectory):
+    os.makedirs(subdirectory)
+
+  # Error checking
+  for segment in segments:
+    if not isinstance(segment, Segment):
+      msg = 'Unable to plot the segments since input does not ' \
+            'completely consist of segment objects'
+      raise ValueError(msg)
+
+  if not isinstance(geometry, Geometry):
+    msg = 'Unable to plot the neighbor cells since input was not ' \
+          'a Geometry class object'
+    raise ValueError(msg)
+
+  if not is_integer(gridsize):
+    msg = 'Unable to plot the neighbor cells since the gridsize {0} is' \
+          'is not an integer'.format(gridsize)
+    raise ValueError(msg)
+
+  if gridsize <= 0:
+    msg = 'Unable to plot the neighbor cells with a negative ' \
+          'gridsize {0}'.format(gridsize)
+    raise ValueError(msg)
+
+  if not is_integer(linewidths):
+    msg = 'Unable to plot the segments since the linewidths {0} is' \
+          'is not an integer'.format(linewidths)
+    raise ValueError(msg)
+
+  if linewidths <= 0:
+    msg = 'Unable to plot the segments with a negative ' \
+          'linewidths {0}'.format(linewidths)
+    raise ValueError(msg)
+
+  if plane not in ['xy', 'xz', 'yz']:
+    msg = 'Unable to plot the segments with an invalid ' \
+        'plane {0}. Plane options xy, xz, yz'.format(plane)
+    raise ValueError(msg)
+
+  if not is_float(offset):
+    msg = 'Unable to plot the neighbor cells since the offset {0} is' \
+          'is not a float'.format(offset)
+    raise ValueError(msg)
+
+  print('Plotting the Segments...')
+
+  # Get the number of Cells filled with Materials
+  cells = geometry.getAllMaterialCells()
+  num_cells = len(cells)
+
+  # Create array of equally spaced randomized floats as a color map for plots
+  # Seed the NumPy random number generator to ensure reproducible color maps
+  numpy.random.seed(1)
+  color_map = list()
+  for i in xrange(num_cells):
+    color_map.append(np.random.rand(4))
+
+  # Initialize a NumPy array for the segment colors
+  colors = list()
+
+  # Retrieve the pixel coordinates
+  coords = get_pixel_coords(geometry, plane, offset, gridsize)
+
+  # Find the flat source region IDs for each grid point
+  for i in xrange(len(segments)):
+    if plane == 'xy':
+      x,y = segments[i]._start._coords[:2]
+      cell = geometry.findCell(x=x, y=y, z=offset)
+      segments[i] = segments[i].getXYCoords()
+    elif plane == 'xz':
+      x,z = segments[i]._start._coords[::2]
+      cell = geometry.findCell(x=x, y=offset, z=z)
+      segments[i] = segments[i].getXZCoords()
+    else:
+      y,z = segments[i]._start._coords[1:]
+      cell = geometry.findCell(x=offset, y=y, z=z)
+      segments[i] = segments[i].getYZCoords()
+
+    colors.append(color_map[cell._id % num_cells])
+  colors = np.array(colors)
+
+  # Plot a 2D color map of the segments
+  lc = matplotlib.collections.LineCollection(segments, colors=colors, linewidths=linewidths)
+  fig, ax = plt.subplots()
+  ax.add_collection(lc)
+  plt.xlim(coords['x'][0], coords['x'][-1])
+  plt.ylim(coords['y'][0], coords['y'][-1])
+  plt.title('Segments ' + plane)
+  ax.margins(0)
+  filename = subdirectory + 'segments-' + plane + '.png'
+  fig.savefig(filename, bbox_inches='tight')
 
 def get_pixel_coords(geometry, plane, offset, gridsize):
 
