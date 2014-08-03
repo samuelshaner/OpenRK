@@ -15,21 +15,12 @@ import matplotlib.pyplot as plt
 # in your ~/.matplotlib/matplotlibrc
 plt.ioff()
 
-import matplotlib.colors as colors
-import matplotlib.cm as cmx
 import numpy as np
 import numpy.random
-import os, sys
-
+import os
 
 ## A static variable for the output directory in which to save plots
 subdirectory = "plots/"
-
-## The number of colors to use when creating a random color map for plots
-num_colors = 50
-
-## An array of random floats that represents a random color map for plots
-color_map = np.random.random_sample((num_colors,))
 
 
 def plot_cells(geometry, plane='xy', offset=0., gridsize=250):
@@ -68,12 +59,22 @@ def plot_cells(geometry, plane='xy', offset=0., gridsize=250):
 
   print('Plotting the Cells...')
 
+  # Get the number of Cells filled with Materials
+  cells = geometry.getAllMaterialCells()
+  num_cells = len(cells)
+
+  # Create array of equally spaced randomized floats as a color map for plots
+  # Seed the NumPy random number generator to ensure reproducible color maps
+  numpy.random.seed(1)
+  color_map = np.linspace(0., 1., num_cells, endpoint=False)
+  numpy.random.shuffle(color_map)
+
   # Initialize a NumPy array for the surface colors
   surface = numpy.zeros((gridsize, gridsize))
 
   # Retrieve the pixel coordinates
   coords = get_pixel_coords(geometry, plane, offset, gridsize)
-  
+
   # Find the flat source region IDs for each grid point
   for i in range(gridsize):
     for j in range(gridsize):
@@ -85,12 +86,12 @@ def plot_cells(geometry, plane='xy', offset=0., gridsize=250):
       else:
         cell = geometry.findCell(x=offset, y=coords['y'][i], z=coords['z'][j])  
 
-      surface[j][i] = color_map[cell._id % num_colors]
+      surface[j][i] = color_map[cell._id % num_cells]
 
   # Plot a 2D color map of the flat source regions
   fig = plt.figure()
   surface = np.flipud(surface)
-  plt.imshow(surface, extent=coords['bounds'])
+  plt.imshow(surface, extent=coords['bounds'], interpolation="nearest")
   plt.title('Cells ' + plane)
   filename = subdirectory + 'cells-' + plane + '.png'
   fig.savefig(filename, bbox_inches='tight')
@@ -134,6 +135,16 @@ def plot_materials(geometry, plane='xy', offset=0., gridsize=250):
 
   print('Plotting the Materials...')
 
+  # Get the number of Cells filled with Materials
+  materials = geometry.getAllMaterials()
+  num_materials = len(materials)
+
+  # Create array of equally spaced randomized floats as a color map for plots
+  # Seed the NumPy random number generator to ensure reproducible color maps
+  numpy.random.seed(1)
+  color_map = np.linspace(0., 1., num_materials, endpoint=False)
+  numpy.random.shuffle(color_map)
+
   # Initialize a NumPy array for the surface colors
   surface = numpy.zeros((gridsize, gridsize))
 
@@ -151,12 +162,12 @@ def plot_materials(geometry, plane='xy', offset=0., gridsize=250):
       else:
         cell = geometry.findCell(x=offset, y=coords['y'][i], z=coords['z'][j])  
 
-      surface[j][i] = color_map[cell._fill._id % num_colors]
+      surface[j][i] = color_map[cell._fill._id % num_materials]
 
   # Plot a 2D color map of the flat source regions
   fig = plt.figure()
   surface = np.flipud(surface)
-  plt.imshow(surface, extent=coords['bounds'])
+  plt.imshow(surface, extent=coords['bounds'], interpolation="nearest")
   plt.title('Materials ' + plane)
   filename = subdirectory + 'materials-' + plane + '.png'
   fig.savefig(filename, bbox_inches='tight')
@@ -199,14 +210,21 @@ def plot_regions(geometry, plane='xy', offset=0., gridsize=250):
 
   print('Plotting the Regions...')
 
+  # Initialize the offsets used for computing region IDs
+  geometry.initializeCellOffsets()
+  num_regions = geometry._num_regions
+
+  # Create array of equally spaced randomized floats as a color map for plots
+  # Seed the NumPy random number generator to ensure reproducible color maps
+  numpy.random.seed(1)
+  color_map = np.linspace(0., 1., num_regions, endpoint=False)
+  numpy.random.shuffle(color_map)
+
   # Initialize a NumPy array for the surface colors
   surface = numpy.zeros((gridsize, gridsize))
 
   # Retrieve the pixel coordinates
   coords = get_pixel_coords(geometry, plane, offset, gridsize)
-
-  # Initialize the offsets used for computing region IDs
-  geometry.initializeCellOffsets()
 
   # Find the flat source region IDs for each grid point
   for i in range(gridsize):
@@ -219,14 +237,111 @@ def plot_regions(geometry, plane='xy', offset=0., gridsize=250):
       else:
         region_id = geometry.getRegionId(x=offset, y=coords['y'][i], z=coords['z'][j])
 
-      surface[j][i] = color_map[region_id % num_colors]
+      surface[j][i] = color_map[region_id % num_regions]
 
   # Plot a 2D color map of the flat source regions
   fig = plt.figure()
   surface = np.flipud(surface)
-  plt.imshow(surface, extent=coords['bounds'])
+  plt.imshow(surface, extent=coords['bounds'], interpolation="nearest")
   plt.title('Regions ' + plane)
   filename = subdirectory + 'regions-' + plane + '.png'
+  fig.savefig(filename, bbox_inches='tight')
+  plt.close(fig)
+
+
+def plot_neighbor_cells(geometry, plane='xy', offset=0.,
+                        gridsize=250, unique=False):
+
+  global subdirectory
+
+  # Make directory if it does not exist
+  if not os.path.exists(subdirectory):
+    os.makedirs(subdirectory)
+
+  # Error checking
+  if not isinstance(geometry, Geometry):
+    msg = 'Unable to plot the neighbor cells since input was not ' \
+          'a Geometry class object'
+    raise ValueError(msg)
+
+  if not is_integer(gridsize):
+    msg = 'Unable to plot the neighbor cells since the gridsize {0} is' \
+          'is not an integer'.format(gridsize)
+    raise ValueError(msg)
+
+  if gridsize <= 0:
+    msg = 'Unable to plot the neighbor cells with a negative ' \
+          'gridsize {0}'.format(gridsize)
+    raise ValueError(msg)
+
+  if plane not in ['xy', 'xz', 'yz']:
+    msg = 'Unable to plot the neighbor cells with an invalid ' \
+        'plane {0}. Plane options xy, xz, yz'.format(plane)
+    raise ValueError(msg)
+
+  if not is_float(offset):
+    msg = 'Unable to plot the neighbor cells since the offset {0} is' \
+          'is not a float'.format(gridsize)
+    raise ValueError(msg)
+
+  print('Plotting the Neighbor Cells...')
+
+  # Initialize the offsets used for computing region IDs
+  geometry.initializeCellOffsets()
+
+  # Build the neighbor Cells/Universes
+  geometry.buildNeighbors()
+
+  if unique:
+    num_neighbors = geometry._num_neighbors
+  else:
+    num_neighbors = geometry._num_unique_neighbors
+
+  # Create array of equally spaced randomized floats as a color map for plots
+  # Seed the NumPy random number generator to ensure reproducible color maps
+  numpy.random.seed(1)
+  color_map = np.linspace(0., 1., num_neighbors, endpoint=False)
+  numpy.random.shuffle(color_map)
+
+  # Initialize a NumPy array for the surface colors
+  surface = numpy.zeros((gridsize, gridsize))
+
+  # Retrieve the pixel coordinates
+  surf = get_pixel_coords(geometry, plane, offset, gridsize)
+
+  # Find the flat source region IDs for each grid point
+  for i in range(gridsize):
+    for j in range(gridsize):
+
+      if plane == 'xy':
+        region_id = geometry.getRegionId(x=surf['x'][i], y=surf['y'][j], z=offset)
+      elif plane == 'xz':
+        region_id = geometry.getRegionId(x=surf['x'][i], y=offset, z=surf['z'][j])
+      else:
+        region_id = geometry.getRegionId(x=offset, y=surf['y'][i], z=surf['z'][j])
+
+      if unique:
+        neighbors = geometry._regions_to_unique_neighbors[region_id]
+        neighbor_id = geometry._unique_neighbor_ids[neighbors]
+      else:
+        neighbors = geometry._regions_to_neighbors[region_id]
+        neighbor_id = geometry._neighbor_ids[neighbors]
+
+      surface[j][i] = color_map[neighbor_id % num_neighbors]
+
+
+  # Plot a 2D color map of the flat source regions
+  fig = plt.figure()
+  surface = np.flipud(surface)
+  plt.imshow(surface, extent=surf['bounds'], interpolation="nearest")
+
+  if unique:
+    plt.title('Unique Neighbor Cells ' + plane)
+    filename = subdirectory + 'unique-neighbor-cells-' + plane + '.png'
+  else:
+    plt.title('Neighbor Cells ' + plane)
+    filename = subdirectory + 'neighbor-cells-' + plane + '.png'
+
   fig.savefig(filename, bbox_inches='tight')
   plt.close(fig)
 

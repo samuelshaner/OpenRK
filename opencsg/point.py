@@ -2,7 +2,7 @@ __author__ = 'Will Boyd'
 __email__ = 'wboyd@mit.edu'
 
 
-from checkvalue import *
+from opencsg.checkvalue import *
 import numpy as np
 
 class Point(object):
@@ -71,6 +71,7 @@ class Point(object):
     string = 'Point\n'
     string += '{0: <16}{1}{2}\n'.format('\tCoords', '=\t', self._coords)
     return string
+
 
 class Direction(object):
 
@@ -147,4 +148,3 @@ class Direction(object):
     string = 'Direction\n'
     string += '{0: <16}{1}{2}\n'.format('\tComps', '=\t', self._comps)
     return string
-

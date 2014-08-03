@@ -2,8 +2,8 @@ __author__ = 'Will Boyd'
 __email__ = 'wboyd@mit.edu'
 
 
-from universe import *
-from point import Point
+from opencsg.universe import *
+from opencsg.point import Point
 
 
 class Geometry(object):
@@ -18,24 +18,19 @@ class Geometry(object):
     # A NumPy array of volumes for each region, indexed by Region ID
     self._region_volumes = None
 
+    # Dictionaries mapping neighbor hashes to consecutive integers
+    # Keys    - hashes of the tuples of (unique) neighbors
+    # Values  - monotonically consecutive non-negative integers
+    self._num_neighbors = 0
+    self._neighbor_ids = dict()
+    self._num_unique_neighbors = 0
+    self._unique_neighbor_ids = dict()
 
-  def buildNeighbors(self):
-
-    # Allocate dictionaries for neighbor Cells for each Surface halfspace
-    surface_positive_neighbors = dict()
-    surface_negative_neighbors = dict()
-
-    cells = self.getAllCells()
-
-    # Determine the number of Cells sharing each Surface's halfspaces
-    for cell_id, cell in cells.iteritems():
-      surfaces = cell._surfaces
-
-      for surface_id in surfaces.keys():
-
-        surface = surfaces[surface_id][0]
-        halfspace = surfaces[surface_id][1]
-        surface.addNeighborCell(cell_id, halfspace)
+    # Map regions to neighbors
+    # Keys    - region IDs
+    # Values  - hashes of the tuples of (unique) neighbors
+    self._regions_to_neighbors = dict()
+    self._regions_to_unique_neighbors = dict()
 
 
   def getMaxX(self):
@@ -152,7 +147,7 @@ class Geometry(object):
     all_cells = self.getAllCells()
     material_cells = set()
 
-    for cell_id, cell in all_cells.iteritems():
+    for cell_id, cell in all_cells.items():
       if cell._type == 'material':
         material_cells.add(cell)
 
@@ -164,11 +159,15 @@ class Geometry(object):
     all_universes = self.getAllUniverses()
     material_universes = set()
 
-    for universe_id, universe in all_universes.iteritems():
+    for universe_id, universe in all_universes.items():
+
+      # Do not consider Lattices since they are not at the Material level
+      if isinstance(universe, Lattice):
+        continue
 
       cells = universe._cells
 
-      for cell_id, cell in cells.iteritems():
+      for cell_id, cell in cells.items():
         if cell._type == 'material':
           material_universes.add(universe)
 
@@ -239,6 +238,54 @@ class Geometry(object):
     self._num_regions = self._root_universe._num_regions
 
 
+  def buildNeighbors(self):
+
+    if self._root_universe is None:
+      msg = 'Unable to build neighbor Cells/Universes since the ' \
+            'root Universe for the Geometry has not yet been set'
+      raise ValueError(msg)
+
+    self._root_universe.buildNeighbors()
+
+    # Initialize offsets maps
+    self.initializeCellOffsets()
+
+    # Build dictionaries mapping neighbor hashes to consecutive integers
+    # Keys    - hashes of the tuples of (unique) neighbors
+    # Values  - monotonically consecutive non-negative integers
+    # Reinitialize each time this routine is called
+    self._num_neighbors = 0
+    self._neighbor_ids = dict()
+    self._num_unique_neighbors = 0
+    self._unique_neighbor_ids = dict()
+
+    # Map regions to neighbors
+    # Keys    - region IDs
+    # Values  - hashes of the tuples of (unique) neighbors
+    self._regions_to_neighbors = dict()
+    self._regions_to_unique_neighbors = dict()
+
+    for region in range(self._num_regions):
+
+      # Build lists of neighbor Cells/Universes
+      neighbors = self.getNeighbors(region)
+      unique_neighbors = self.getUniqueNeighbors(region)
+
+      # Store the hashes to the region-to-neighbor hash maps
+      self._regions_to_neighbors[region] = neighbors
+      self._regions_to_unique_neighbors[region] = unique_neighbors
+
+      # Add the neighbor hash to the neighbor maps
+      if not neighbors in self._neighbor_ids.keys():
+        self._neighbor_ids[neighbors] = self._num_neighbors
+        self._num_neighbors += 1
+
+      # Add the unique neighbor hash to the unique neighbor maps
+      if not unique_neighbors in self._unique_neighbor_ids.keys():
+        self._unique_neighbor_ids[unique_neighbors] = self._num_unique_neighbors
+        self._num_unique_neighbors += 1
+
+
   def getRegionId(self, x=0., y=0., z=0.):
 
     coords = self.findCoords(x=x, y=y, z=z)
@@ -255,8 +302,8 @@ class Geometry(object):
       # The coords is a LatCoords object
       else:
         lattice = coords._lattice
-        lat_x, lat_y = coords._lattice_x, coords._lattice_y
-        region_id += lattice.getCellOffset(lat_x, lat_y)
+        lat_x, lat_y, lat_z = coords._lat_x, coords._lat_y, coords._lat_z
+        region_id += lattice.getCellOffset(lat_x, lat_y, lat_z)
 
       coords = coords._next
 
@@ -342,3 +389,13 @@ class Geometry(object):
         nearestdist = point.distanceToPoint(intersect)
 
     return nearestpoint
+
+  def getNeighbors(self, region_id):
+    coords = self.findRegion(region_id)
+    return coords.getNeighbors()
+
+
+  def getUniqueNeighbors(self, region_id):
+    coords = self.findRegion(region_id)
+    return coords.getUniqueNeighbors()
+

@@ -2,13 +2,14 @@ __author__ = 'Will Boyd'
 __email__ = 'wboyd@mit.edu'
 
 
-from material import Material
-from surface import Surface, on_surface_thresh
-from point import Point
-from checkvalue import *
+from opencsg.material import Material
+from opencsg.surface import Surface, on_surface_thresh
+from opencsg.point import Point
+from opencsg.checkvalue import *
 import numpy as np
 import math
 from collections import OrderedDict
+from numpy.lib.stride_tricks import as_strided
 
 
 # Error threshold for determining how close to the boundary of a Lattice cell
@@ -47,6 +48,15 @@ class Universe(object):
     self.setName(name)
 
 
+  def buildNeighbors(self):
+
+    # Loop over all of the Universe's Cells
+    for cell_id, cell in self._cells.items():
+
+      # Make recursive call for the Cell to build its neighbor Cells
+      cell.buildNeighbors()
+
+
   def getAllCells(self):
 
     cells = dict()
@@ -55,7 +65,7 @@ class Universe(object):
     cells.update(self._cells)
 
     # Append all Cells in each Cell in the Universe to the dictionary
-    for cell_id, cell in self._cells.iteritems():
+    for cell_id, cell in self._cells.items():
       cells.update(cell.getAllCells())
 
     return cells
@@ -69,7 +79,7 @@ class Universe(object):
     universes = dict()
 
     # Append all Universes containing each Cell to the dictionary
-    for cell_id, cell in cells.iteritems():
+    for cell_id, cell in cells.items():
       universes.update(cell.getAllUniverses())
 
     return universes
@@ -430,9 +440,6 @@ class Universe(object):
           return fill.findCell(next_coords)
 
 
-#  def findCell(self, region_id):
-
-
   def findRegion(self, region_id, univ_coords):
 
     if not is_integer(region_id):
@@ -440,7 +447,7 @@ class Universe(object):
             'not an integer value'.format(self._id, region_id)
       raise ValueError(msg)
 
-    if not isinstance(univ_coords, UnivCoords):
+    elif not isinstance(univ_coords, UnivCoords):
       msg = 'Unable to find region_id in Universe ID={0} since {1} is ' \
             'not a UnivCoords'.format(self._id, univ_coords)
       raise ValueError(msg)
@@ -526,6 +533,8 @@ class Lattice(Universe):
     self._cell_offsets = None
     self._num_regions = None
     self._offset = np.zeros(3, dtype=np.float64)
+    self._neighbor_universes = None
+    self._neighbor_depth = 1
 
     self.setId(lattice_id)
     self.setName(name)
@@ -539,35 +548,35 @@ class Lattice(Universe):
             'a lattice cell'.format(self._id, lat_x)
       raise ValueError(msg)
 
-    if not is_integer(lat_y):
+    elif not is_integer(lat_y):
       msg = 'Unable to get Universe from Lattice ID={0} since y={1} is not ' \
            'a lattice cell'.format(self._id, lat_y)
       raise ValueError(msg)
 
-    if lat_z != None and not is_integer(lat_y):
+    elif lat_z != None and not is_integer(lat_y):
       msg = 'Unable to get Universe from Lattice ID={0} since z={1} is not ' \
            'a lattice cell'.format(self._id, lat_z)
       raise ValueError(msg)
 
-    if lat_x < 0 or lat_x > self._dimension[0]:
+    elif lat_x < 0 or lat_x > self._dimension[0]:
       msg = 'Unable to get Universe from Lattice ID={0} since x={1} is ' \
             'outside the bounds of the lattice cells'.format(self._id, lat_x)
       raise ValueError(msg)
 
-    if lat_y < 0 or lat_y > self._dimension[1]:
+    elif lat_y < 0 or lat_y > self._dimension[1]:
       msg = 'Unable to get Universe from Lattice ID={0} since y={1} is ' \
             'outside the bounds of the lattice cells'.format(self._id, lat_y)
       raise ValueError(msg)
 
-    if lat_z != None and (lat_y < 0 or lat_y > self._dimension[1]):
+    elif lat_z != None and (lat_y < 0 or lat_y > self._dimension[1]):
       msg = 'Unable to get Universe from Lattice ID={0} since z={1} is ' \
             'outside the bounds of the lattice cells'.format(self._id, lat_z)
       raise ValueError(msg)
 
     if lat_z is None:
-      return self._universes[0][lat_y][lat_x]
-    else:
-      return self._universes[lat_z][lat_y][lat_x]
+      lat_z = 0
+
+    return self._universes[lat_z][lat_y][lat_x]
 
 
   def getCellOffset(self, lat_x, lat_y, lat_z=None):
@@ -577,35 +586,226 @@ class Lattice(Universe):
             'lat_x={1} is not a lattice cell'.format(self._id, lat_x)
       raise ValueError(msg)
 
-    if not is_integer(lat_y):
+    elif not is_integer(lat_y):
       msg = 'Unable to get cell offset from Lattice ID={0} since ' \
             'lat_y={1} is not a lattice cell'.format(self._id, lat_y)
       raise ValueError(msg)
 
-    if lat_z != None and not is_integer(lat_y):
+    elif lat_z != None and not is_integer(lat_y):
       msg = 'Unable to get Universe from Lattice ID={0} since z={1} is not ' \
            'a lattice cell'.format(self._id, lat_z)
       raise ValueError(msg)
 
-    if lat_x < 0 or lat_x > self._dimension[0]:
+    elif lat_x < 0 or lat_x > self._dimension[0]:
       msg = 'Unable to get cell offset from Lattice ID={0} since lat_x={1}' \
            'is outside the bounds of the lattice cells'.format(self._id, lat_x)
       raise ValueError(msg)
 
-    if lat_y < 0 or lat_y > self._dimension[1]:
+    elif lat_y < 0 or lat_y > self._dimension[1]:
       msg = 'Unable to get cell offset from Lattice ID={0} since lat_y={1} is ' \
             'outside the bounds of the lattice cells'.format(self._id, lat_y)
       raise ValueError(msg)
 
-    if lat_z != None and (lat_y < 0 or lat_y > self._dimension[1]):
+    elif lat_z != None and (lat_y < 0 or lat_y > self._dimension[1]):
       msg = 'Unable to get cell offset from Lattice ID={0} since z={1} is ' \
             'outside the bounds of the lattice cells'.format(self._id, lat_z)
       raise ValueError(msg)
 
     if lat_z is None:
-      return self._cell_offsets[0][lat_y][lat_x]
-    else:
-      return self._cell_offsets[lat_z][lat_y][lat_x]
+      lat_z = 0
+
+    return self._cell_offsets[lat_z][lat_y][lat_x]
+
+
+  def getNeighbors(self, lat_x, lat_y, lat_z=None):
+    """Return d-th neighbors of cell (i, j)"""
+
+    if not is_integer(lat_x):
+      msg = 'Unable to get neighbor Universes from Lattice ID={0} since ' \
+            'x={1} is not a lattice cell'.format(self._id, lat_x)
+      raise ValueError(msg)
+
+    elif not is_integer(lat_y):
+      msg = 'Unable to get neighbor Universes from Lattice ID={0} since ' \
+            'y={1} is not a lattice cell'.format(self._id, lat_y)
+      raise ValueError(msg)
+
+    elif lat_z != None and not is_integer(lat_y):
+      msg = 'Unable to get neighbor Universes from Lattice ID={0} since ' \
+            'z={1} is not a lattice cell'.format(self._id, lat_z)
+      raise ValueError(msg)
+
+    elif lat_x < 0 or lat_x > self._dimension[0]:
+      msg = 'Unable to get neighbor Universes from Lattice ID={0} since ' \
+            'x={1} is outside the bounds of the lattice'.format(self._id, lat_x)
+      raise ValueError(msg)
+
+    elif lat_y < 0 or lat_y > self._dimension[1]:
+      msg = 'Unable to get neighbor Universes from Lattice ID={0} since ' \
+            'y={1} is outside the bounds of the lattice'.format(self._id, lat_y)
+      raise ValueError(msg)
+
+    elif lat_z != None and (lat_y < 0 or lat_y > self._dimension[1]):
+      msg = 'Unable to get neighbor Universes from Lattice ID={0} since ' \
+            'z={1} is outside the bounds of the lattice'.format(self._id, lat_z)
+      raise ValueError(msg)
+
+    elif self._universes is None:
+      msg = 'Unable to get neighbor Universes for Lattice ID={0} since ' \
+            'the universes array has not been set'.format(self._id)
+      raise ValueError(msg)
+
+    # Assign the z-coordinate to zero for 2D Lattices
+    if lat_z is None:
+      lat_z = 0
+
+    depth = self._neighbor_depth
+
+    # Compute indices for Lattice cell entry in the neighbor universes array
+    ix = np.clip(lat_z - depth, 0, self._neighbor_universes.shape[0]-1)
+    jx = np.clip(lat_y - depth, 0, self._neighbor_universes.shape[1]-1)
+    kx = np.clip(lat_x - depth, 0, self._neighbor_universes.shape[2]-1)
+
+    # Compute the neighbor cell starting indices for each dimension
+    i0 = max(0, lat_z - depth - ix)
+    j0 = max(0, lat_y - depth - jx)
+    k0 = max(0, lat_x - depth - kx)
+
+    # Compute the neighbor cell ending indices for each dimension
+    i1 = self._neighbor_universes.shape[3] - max(0, depth - lat_z + ix)
+    j1 = self._neighbor_universes.shape[4] - max(0, depth - lat_y + jx)
+    k1 = self._neighbor_universes.shape[5] - max(0, depth - lat_x + kx)
+
+    # Account for cases where the lattice cell dimensions is 1
+    if i0 == 0 and i1 == 0:
+      i1 = 1
+    if j0 == 0 and j1 == 0:
+      j1 = 1
+    if k0 == 0 and k1 == 0:
+      k1 = 1
+
+    neighbor_universes = self._neighbor_universes[ix,jx,kx][i0:i1,j0:j1,k0:k1]
+
+    # Convert 3D neighbor universes array to a 3D tuple of tuples of tuples
+    neighbors_universes_tuple = ( )
+
+    # Build a 2D tuple of all of the neighbors
+    # Iterate over all orderings of the (x,y,z) coordinates to ensure
+    # that neighbors tuple is rotationally symmetric across all dimensions
+
+    # x-y-z
+    # Iterate over z-axis of sliding window
+    for i in np.arange(neighbor_universes.shape[0]):
+      xy_neighbors = ( )
+
+      # Iterate over y-axis of sliding window
+      for j in np.arange(neighbor_universes.shape[1]):
+        x_neighbors = ( )
+
+        # Iterate over x-axis of sliding window
+        for k in np.arange(neighbor_universes.shape[2]):
+          x_neighbors += (neighbor_universes[i,j,k], )
+
+        xy_neighbors += tuple(sorted(x_neighbors))
+
+      neighbors_universes_tuple += tuple(sorted(xy_neighbors))
+
+    # x-z-y
+    # Iterate over y-axis of sliding window
+    for j in np.arange(neighbor_universes.shape[1]):
+      xz_neighbors = ( )
+
+      # Iterate over z-axis of sliding window
+      for i in np.arange(neighbor_universes.shape[0]):
+        x_neighbors = ( )
+
+        # Iterate over x-axis of sliding window
+        for k in np.arange(neighbor_universes.shape[2]):
+          x_neighbors += (neighbor_universes[i,j,k], )
+
+        xz_neighbors += tuple(sorted(x_neighbors))
+
+      neighbors_universes_tuple += tuple(sorted(xz_neighbors))
+
+    # y-x-z
+    # Iterate over z-axis of sliding window
+    for i in np.arange(neighbor_universes.shape[0]):
+      yx_neighbors = ( )
+
+      # Iterate over x-axis of sliding window
+      for k in np.arange(neighbor_universes.shape[2]):
+        y_neighbors = ( )
+
+        # Iterate over y-axis of sliding window
+        for j in np.arange(neighbor_universes.shape[1]):
+          y_neighbors += (neighbor_universes[i,j,k], )
+
+        yx_neighbors += tuple(sorted(y_neighbors))
+
+      neighbors_universes_tuple += tuple(sorted(yx_neighbors))
+
+    # y-z-x
+    # Iterate over x-axis of sliding window
+    for k in np.arange(neighbor_universes.shape[2]):
+      yz_neighbors = ( )
+
+      # Iterate over z-axis of sliding window
+      for i in np.arange(neighbor_universes.shape[0]):
+        y_neighbors = ( )
+
+        # Iterate over y-axis of sliding window
+        for j in np.arange(neighbor_universes.shape[1]):
+          y_neighbors += (neighbor_universes[i,j,k], )
+
+        yz_neighbors += tuple(sorted(y_neighbors))
+
+      neighbors_universes_tuple += tuple(sorted(yz_neighbors))
+
+    # z-x-y
+    # Iterate over y-axis of sliding window
+    for j in np.arange(neighbor_universes.shape[1]):
+      xz_neighbors = ( )
+
+      # Iterate over x-axis of sliding window
+      for k in np.arange(neighbor_universes.shape[2]):
+        z_neighbors = ( )
+
+        # Iterate over z-axis of sliding window
+        for i in np.arange(neighbor_universes.shape[0]):
+          z_neighbors += (neighbor_universes[i,j,k], )
+
+        xz_neighbors += tuple(sorted(z_neighbors))
+
+      neighbors_universes_tuple += tuple(sorted(xz_neighbors))
+
+    # z-y-x
+    # Iterate over x-axis of sliding window
+    for k in np.arange(neighbor_universes.shape[2]):
+      zy_neighbors = ( )
+
+      # Iterate over y-axis of sliding window
+      for j in np.arange(neighbor_universes.shape[1]):
+        z_neighbors = ( )
+
+        # Iterate over z-axis of sliding window
+        for i in np.arange(neighbor_universes.shape[0]):
+          z_neighbors += (neighbor_universes[i,j,k], )
+
+        zy_neighbors += tuple(sorted(z_neighbors))
+
+      neighbors_universes_tuple += tuple(sorted(zy_neighbors))
+
+    neighbors_universes_tuple = sorted(neighbors_universes_tuple)
+    return neighbors_universes_tuple
+
+
+  def getUniqueNeighbors(self, lat_x, lat_y, lat_z=None):
+
+    # Get the depth x depth x depth array of neighbors and
+    # convert to a 1D tuple containing only unique Universes
+    neighbor_universes = np.asarray(self.getNeighbors(lat_x, lat_y, lat_z))
+    unique_neighbors = set(neighbor_universes.ravel())
+    return tuple(sorted(unique_neighbors))
 
 
   def getMaxX(self):
@@ -682,7 +882,7 @@ class Lattice(Universe):
     all_universes.update(unique_universes)
 
     # Append all Universes containing each cell to the dictionary
-    for universe_id, universe in unique_universes.iteritems():
+    for universe_id, universe in unique_universes.items():
       all_universes.update(universe.getAllUniverses())
 
     return all_universes
@@ -742,7 +942,7 @@ class Lattice(Universe):
             'value {1}'.format(self._id, type)
       raise ValueError(msg)
 
-    if not type in ['rectangular']:
+    elif not type in ['rectangular']:
       msg = 'Unable to set the type for Lattice ID={0} to {1} since it ' \
             'is not rectangular'.format(self._id, type)
       raise ValueError(msg)
@@ -758,7 +958,7 @@ class Lattice(Universe):
           format(self._id, origin)
       raise ValueError(msg)
 
-    if len(offset) != 3 and len(offset) != 2:
+    elif len(offset) != 3 and len(offset) != 2:
       msg = 'Unable to set Lattice ID={0} offset to {1} since it ' \
             'does not contain 2 or 3 coordinates'.\
             format(self._id, offset)
@@ -782,7 +982,7 @@ class Lattice(Universe):
             'a Python tuple/list or NumPy array'.format(self._id, dimension)
       raise ValueError(msg)
 
-    if len(dimension) != 2 and len(dimension) != 3:
+    elif len(dimension) != 2 and len(dimension) != 3:
       msg = 'Unable to set Lattice ID={0} dimension to {1} since it does ' \
             'not contain 2 or 3 coordinates'.format(self._id, dimension)
       raise ValueError(msg)
@@ -794,7 +994,7 @@ class Lattice(Universe):
               'since it is not an integer'.format(self._id, dim)
         raise ValueError(msg)
 
-      if dim < 0:
+      elif dim < 0:
         msg = 'Unable to set Lattice ID={0} dimension to {1} since it ' \
               'is a negative value'.format(self._id, dim)
         raise ValueError(msg)
@@ -813,7 +1013,7 @@ class Lattice(Universe):
             'array'.format(self._id, width)
       raise ValueError(msg)
 
-    if len(width) != 2 and len(width) != 3:
+    elif len(width) != 2 and len(width) != 3:
       msg = 'Unable to set the width for Lattice ID={0} to {1} since it does ' \
             'not contain 2 or 3 coordinates'.format(self._id, width)
       raise ValueError(msg)
@@ -825,7 +1025,7 @@ class Lattice(Universe):
               'not an integer or floating point value'.format(self._id, dim)
         raise ValueError(msg)
 
-      if dim < 0:
+      elif dim < 0:
         msg = 'Unable to set the width for Lattice ID={0} to {1} since it ' \
               'is a negative value'.format(self._id, dim)
         raise ValueError(msg)
@@ -881,9 +1081,9 @@ class Lattice(Universe):
     volume_fraction = np.float64(1. / (self._dimension[0] * self._dimension[1] \
                                          * self._dimension[2]))
 
-    for i in range(self._dimension[0]):
-      for j in range(self._dimension[1]):
-        for k in range(self._dimension[2]):
+    for i in np.arange(self._dimension[0]):
+      for j in np.arange(self._dimension[1]):
+        for k in np.arange(self._dimension[2]):
           universe = self._universes[k][j][i]
           universe.computeVolumeFractions(volume=(volume * volume_fraction),
                                           tolerance=tolerance)
@@ -901,14 +1101,39 @@ class Lattice(Universe):
     # The cell offsets have not yet been initialized
     count = 0
 
-    for i in range(self._dimension[0]):
-      for j in range(self._dimension[1]):
-        for k in range(self._dimension[2]):
+    for i in np.arange(self._dimension[0]):
+      for j in np.arange(self._dimension[1]):
+        for k in np.arange(self._dimension[2]):
           self._cell_offsets[k][j][i] = count
           self._universes[k][j][i].initializeCellOffsets()
           count += self._universes[k][j][i]._num_regions
 
     self._num_regions = count
+
+
+  def buildNeighbors(self, depth=1):
+
+    if self._universes is None:
+      msg = 'Unable to build neighbor Universes for Lattice ID={0} since ' \
+            'its Universes array has not yet been set'.format(self._id)
+      raise ValueError(msg)
+
+    elif not is_integer(depth) or depth <= 0:
+      msg = 'Unable to build neighbor Universes for Lattice ID={0} to a ' \
+            'depth of {1} which is not a positive integer'.format(depth)
+
+    self._neighbor_depth = 1
+
+    # Create 3D depth x depth x depth array of neighbor
+    # Universes for each Lattice cell
+    self._neighbor_universes = sliding_window(self._universes, 2*depth+1)
+
+    # Iterate over each unique Universe in the Lattice and make recursive
+    # call to build their neighbor Cells
+    unique_universes = self.getUniqueUniverses()
+
+    for universe_id, universe in unique_universes.items():
+      universe.buildNeighbors()
 
 
   def findCell(self, localcoords):
@@ -927,8 +1152,8 @@ class Lattice(Universe):
     # Compute the Lattice cell indices
     lat_x = math.floor((x + self._dimension[0]*self._width[0]*0.5 \
                           - self._offset[0]) / self._width[0])
-    lat_y = math.floor((self._dimension[1]*self._width[1]*0.5 \
-                          + self._offset[1] - y) / self._width[1])
+    lat_y = math.floor((y + self._dimension[1]*self._width[1]*0.5 \
+                          + self._offset[1]) / self._width[1])
     if self._dimension[2] == 1:
       lat_z = 0
     else:
@@ -954,10 +1179,10 @@ class Lattice(Universe):
 
     if distance_y < on_lattice_cell_thresh:
       if y > 0:
-        lat_y = 0
-      else:
         lat_y = self._dimension[1] - 1
-        
+      else:
+        lat_y = 0
+
     if distance_z < on_lattice_cell_thresh:
       if z > 0:
         lat_z = self._dimension[2] - 1
@@ -979,13 +1204,13 @@ class Lattice(Universe):
     # Set the Lattice cell indices for the LocalCoords
     localcoords.setLatticeX(lat_x)
     localcoords.setLatticeY(lat_y)
-    localcoords.setLatticeY(lat_z)
+    localcoords.setLatticeZ(lat_z)
 
     # Compute local position of Point in the next level Universe
     next_x = x - (-self._dimension[0]*self._width[0]*0.5 + self._offset[0] \
                     + (lat_x + 0.5) * self._width[0])
-    next_y = y - (self._dimension[1]*self._width[1]*0.5 + self._offset[1] \
-                    - (lat_y + 0.5) * self._width[1])
+    next_y = y - (-self._dimension[1]*self._width[1]*0.5 + self._offset[1] \
+                    + (lat_y + 0.5) * self._width[1])
     next_z = z - (-self._dimension[2]*self._width[2]*0.5 + self._offset[2] \
                     + (lat_z + 0.5) * self._width[2])
     next_point = Point(x=next_x, y=next_y, z=next_z)
@@ -1020,34 +1245,22 @@ class Lattice(Universe):
             'not an integer value'.format(region_id, self._id, region_id)
       raise ValueError(msg)
 
-    if not isinstance(lat_coords, LatCoords):
+    elif not isinstance(lat_coords, LatCoords):
       msg = 'Unable to find region_id={0} in Lattice ID={1} since {2} is ' \
             'not a LatCoords'.format(region_id, self._id, lat_coords)
       raise ValueError(msg)
 
-    # Initialize cell and offset
-    universe = None
-    offset = 0
-    lat_x = 0
-    lat_y = 0
-    lat_z = 0
+    # Find Lattice cell indices where region is less than the Cell offset
+    indices = np.where(np.swapaxes(self._cell_offsets, 0, 2) <= region_id)
 
-    # Loop over cells until we reach the one the first one with
-    # an offset larger than region_id - return the one prior
-    for i in range(self._dimension[0]):
-      for j in range(self._dimension[1]):
-        for k in range(self._dimension[2]):
-          if self._cell_offsets[k][j][i] <= region_id:
-            offset = self._cell_offsets[k][j][i]
-            universe = self._universes[k][j][i]
-            lat_x = i
-            lat_y = j
-            lat_z = k
+    if indices != None:
+      lat_z = indices[2][-1]
+      lat_y = indices[1][-1]
+      lat_x = indices[0][-1]
+      universe = self._universes[lat_z][lat_y][lat_x]
+      offset = self._cell_offsets[lat_z][lat_y][lat_x]
 
-          elif self._cell_offsets[k][j][i] > region_id:
-            break
-
-    if universe is None:
+    else:
       msg = 'Unable to find region_id={0} for FSR ID={1} in Lattice ' \
             'ID={2}'.format(region_id, self._id)
       raise ValueError(msg)
@@ -1199,12 +1412,6 @@ class Cell(object):
     return cells
 
 
-
-#  def buildNeighborLists(self):
-
-
-
-
   def getAllUniverses(self):
 
     if self._fill is None:
@@ -1219,6 +1426,17 @@ class Cell(object):
       universes.update(self._fill.getAllUniverses())
 
     return universes
+
+
+  def getNeighbors(self):
+    return tuple(sorted(self._neighbor_cells))
+
+
+  def getUniqueNeighbors(self):
+
+    # Select only unique Cells and return them as a tuple
+    unique_neighbors = set(self._neighbor_cells)
+    return tuple(sorted(unique_neighbors))
 
 
   def setId(self, cell_id=None):
@@ -1291,7 +1509,7 @@ class Cell(object):
             'a string'.format(self._id, type)
       raise ValueError(msg)
 
-    if not type.lower() in ['universe', 'lattice', 'material']:
+    elif not type.lower() in ['universe', 'lattice', 'material']:
       msg = 'Unable to set the type for Cell ID={0} to {1} since it is not ' \
             'universe, lattice or material'.format(self._id, type)
       raise ValueError(msg)
@@ -1366,7 +1584,7 @@ class Cell(object):
             'not a Surface'.format(self._id, surface)
       raise ValueError(msg)
 
-    if not halfspace in [-1, +1]:
+    elif not halfspace in [-1, +1]:
       msg = 'Unable to add a Surface to Cell ID={0} with halfspace {1} ' \
             'since it is not +/-1'.format(self._id, halfspace)
       raise ValueError(msg)
@@ -1406,12 +1624,12 @@ class Cell(object):
             'tuple/list or NumPy array'.format(self._id, surfaces)
       raise ValueError(msg)
 
-    if not isinstance(halfspaces, (list, tuple, np.ndarray)):
+    elif not isinstance(halfspaces, (list, tuple, np.ndarray)):
       msg = 'Unable to add Surfaces to Cell ID={0} since {1} is not a Python ' \
             'tuple/list or NumPy array'.format(self._id, halfspaces)
       raise ValueError(msg)
 
-    if len(surfaces) != len(halfspaces):
+    elif len(surfaces) != len(halfspaces):
       msg = 'Unable to add Surfaces to Cell ID={0} since the number ' \
             'of Surfaces ({1}) and halfspaces ({2}) are not ' \
             'equal'.format(self._id, len(surfaces), len(halfspaces))
@@ -1513,6 +1731,16 @@ class Cell(object):
     self._volume = volume
 
 
+  def addNeighborCell(self, cell):
+
+    if not isinstance(cell, Cell):
+      msg = 'Unable to add a neighbor Cell to Cell ID={0} ' \
+            'since it {1} is not a Cell object'.format(self._id, cell)
+      raise ValueError(msg)
+
+    self._neighbor_cells.append(cell)
+
+
   def getNumSubCells(self):
 
     # If we have already called this routine, return the number of subcells
@@ -1588,6 +1816,21 @@ class Cell(object):
       self.setMinZ(min_float)
 
 
+  def buildNeighbors(self):
+
+    # Loop over all of the Surfaces
+    for surface_id in self._surfaces.keys():
+
+      # Add this Cell to the Surface's neighbor Cells
+      surface = self._surfaces[surface_id][0]
+      halfspace = self._surfaces[surface_id][1]
+      surface.addNeighborCell(self, halfspace)
+
+    # Make recursive call to the Cell's Fill
+    if self._type in ['universe', 'lattice']:
+      self._fill.buildNeighbors()
+
+
   def containsPoint(self, point):
 
     if not isinstance(point, Point):
@@ -1621,13 +1864,13 @@ class Cell(object):
             'value'.format(self._id, volume)
       raise ValueError(msg)
 
-    if not is_integer(num_samples):
+    elif not is_integer(num_samples):
       msg = 'Unable to compute the volume fraction for Cell ' \
             'ID={0} since num_samples={1} is not an integer ' \
             'value'.format(self._id, num_samples)
       raise ValueError(msg)
 
-    if not is_float(tolerance):
+    elif not is_float(tolerance):
       msg = 'Unable to compute the volume fraction for Cell ' \
             'ID={0} since tolerance={1} is not a floating point ' \
             'value'.format(self._id, tolerance)
@@ -1668,7 +1911,7 @@ class Cell(object):
       y = np.nan_to_num(y)
       z = np.nan_to_num(z)
 
-      for i in range(num_samples):
+      for i in np.arange(num_samples):
 
         point.setX(x[i])
         point.setY(y[i])
@@ -1842,6 +2085,14 @@ class LocalCoords(object):
     self.setNext(None)
 
 
+  def getNeighbors(self):
+
+    msg = 'The abstract LocalCoords class does not have the ' \
+          'getNeighbors() method implemented. Try again wih UnivCoords ' \
+          'and LatCoords subclasses.'
+    raise ValueError(msg)
+
+
   def __repr__(self):
 
     string = 'LocalCoords\n'
@@ -1876,6 +2127,36 @@ class UnivCoords(LocalCoords):
       self.setCell(cell)
 
 
+  def getNeighbors(self, neighbors=None):
+
+    if neighbors is None:
+      neighbors = list()
+
+    cells = self._cell.getNeighbors()
+    neighbors.append(cells)
+
+    # Make recursive call to next LocalCoords or return
+    if self._next is None:
+      return tuple(neighbors)
+    else:
+      return self._next.getNeighbors(neighbors=neighbors)
+
+
+  def getUniqueNeighbors(self, neighbors=None):
+
+    if neighbors is None:
+      neighbors = list()
+
+    cells = self._cell.getUniqueNeighbors()
+    neighbors.append(cells)
+
+    # Make recursive call to next LocalCoords or return
+    if self._next is None:
+      return tuple(neighbors)
+    else:
+      return self._next.getUniqueNeighbors(neighbors)
+
+
   def setUniverse(self, universe):
 
     if not isinstance(universe, Universe):
@@ -1899,9 +2180,7 @@ class UnivCoords(LocalCoords):
   def __repr__(self):
 
     string = super(UnivCoords, self).__repr__()
-
     string += '{0: <16}{1}{2}\n'.format('\tUniverse', '=\t', self._universe._id)
-
     string += '{0: <16}{1}'.format('\tCell', '=\t')
 
     if not self._cell is None:
@@ -1914,27 +2193,62 @@ class UnivCoords(LocalCoords):
 class LatCoords(LocalCoords):
 
   def __init__(self, point=None, next=None, prev=None, lattice=None,
-               lattice_x=None, lattice_y=None, lattice_z=None):
+               lat_x=None, lat_y=None, lat_z=None):
 
     super(LatCoords, self).__init__(point, next, prev)
 
     self._type = 'lattice'
     self._lattice = None
-    self._lattice_x = None
-    self._lattice_y = None
-    self._lattice_z = None
+    self._lat_x = None
+    self._lat_y = None
+    self._lat_z = None
 
     if not lattice is None:
       self.setLattice(lattice)
 
-    if not lattice_x is None:
-      self.setLatticeX(lattice_x)
+    if not lat_x is None:
+      self.setLatticeX(lat_x)
 
-    if not lattice_y is None:
-      self.setLatticeY(lattice_y)
+    if not lat_y is None:
+      self.setLatticeY(lat_y)
 
-    if not lattice_z is None:
-      self.setLatticeY(lattice_z)
+    if not lat_z is None:
+      self.setLatticeY(lat_z)
+
+
+  def getNeighbors(self, neighbors=None):
+
+    if neighbors is None:
+      neighbors = list()
+
+    # Append the Universes in the neighboring Lattice cells to the
+    # neighbors list
+    universes = self._lattice.getNeighbors(self._lat_x, self._lat_y, self._lat_z)
+    neighbors.extend(universes)
+
+    # Make recursive call to next LocalCoords if it exists or return
+    if self._next is None:
+      return tuple(neighbors)
+    else:
+      return self._next.getNeighbors(neighbors=neighbors)
+
+
+  def getUniqueNeighbors(self, neighbors=None):
+
+    if neighbors is None:
+      neighbors = list()
+
+    # Append the Universes in the neighboring Lattice cells to the
+    # neighbors list
+    universes = self._lattice.getUniqueNeighbors(self._lat_x,
+                                                 self._lat_y, self._lat_z)
+    neighbors.append(universes)
+
+    # Make recursive call to next LocalCoords if it exists or return
+    if self._next is None:
+      return tuple(neighbors)
+    else:
+      return self._next.getUniqueNeighbors(neighbors)
 
 
   def setLattice(self, lattice):
@@ -1947,34 +2261,34 @@ class LatCoords(LocalCoords):
     self._lattice = lattice
 
 
-  def setLatticeX(self, lattice_x):
+  def setLatticeX(self, lat_x):
 
-    if not is_integer(lattice_x):
+    if not is_integer(lat_x):
       msg = 'Unable to set the Lattice X to {0} for LocalCoords since it ' \
-            'is not an integer'.format(lattice_x)
+            'is not an integer'.format(lat_x)
       raise ValueError(msg)
 
-    self._lattice_x = lattice_x
+    self._lat_x = lat_x
 
 
-  def setLatticeY(self, lattice_y):
+  def setLatticeY(self, lat_y):
 
-    if not is_integer(lattice_y):
+    if not is_integer(lat_y):
       msg = 'Unable to set the Lattice Y to {0} for LocalCoords since it ' \
-            'is not an integer'.format(lattice_y)
+            'is not an integer'.format(lat_y)
       raise ValueError(msg)
 
-    self._lattice_y = lattice_y
+    self._lat_y = lat_y
 
 
-  def setLatticeZ(self, lattice_z):
+  def setLatticeZ(self, lat_z):
 
-    if not is_integer(lattice_z):
+    if not is_integer(lat_z):
       msg = 'Unable to set the Lattice Z to {0} for LocalCoords since it ' \
-            'is not an integer'.format(lattice_z)
+            'is not an integer'.format(lat_z)
       raise ValueError(msg)
 
-    self._lattice_z = lattice_z
+    self._lat_z = lat_z
 
 
   def __repr__(self):
@@ -1982,8 +2296,44 @@ class LatCoords(LocalCoords):
     string = super(LatCoords, self).__repr__()
 
     string += '{0: <16}{1}{2}\n'.format('\tLattice', '=\t', self._lattice._id)
-    string += '{0: <16}{1}{2}\n'.format('\tLattice X', '=\t', self._lattice_x)
-    string += '{0: <16}{1}{2}\n'.format('\tLattice Y', '=\t', self._lattice_y)
-    string += '{0: <16}{1}{2}\n'.format('\tLattice ', '=\t', self._lattice_z)
+    string += '{0: <16}{1}{2}\n'.format('\tLattice X', '=\t', self._lat_x)
+    string += '{0: <16}{1}{2}\n'.format('\tLattice Y', '=\t', self._lat_y)
+    string += '{0: <16}{1}{2}\n'.format('\tLattice ', '=\t', self._lat_z)
 
     return string
+
+
+
+def sliding_window(arr, window_size):
+  """ Construct a sliding window view of the array"""
+
+    # This algorithm is based on a technique for building sliding windows on
+    # NumPy arrays using the as_strided(...) routine described here:
+    # http://stackoverflow.com/questions/10996769/pixel-neighbors-in-2d-array-image-using-python
+
+  # Correct input parameters if needed
+  arr = np.asarray(arr)
+  window_size = int(window_size)
+
+  # Determine the shape of the sliding windows array
+  shape = (arr.shape[0] - window_size + 1,
+           arr.shape[1] - window_size + 1,
+           arr.shape[2] - window_size + 1,
+           window_size, window_size, window_size)
+
+  # Correct the shape of the sliding windows array to account for dimensions
+  # of the original array that are not as large as the window size
+  if shape[0] <= 0:
+    shape = (1, shape[1], shape[2], arr.shape[0], shape[4], shape[5])
+  if shape[1] <= 0:
+    shape = (shape[0], 1, shape[2], shape[3], arr.shape[1], shape[5])
+  if shape[2] <= 0:
+    shape = (shape[0], shape[1], 1, shape[3], shape[4], arr.shape[2])
+
+  # Determine the array of strides for NumPy for the sliding window array
+  strides = (arr.shape[1] * arr.shape[2] * arr.itemsize,
+             arr.shape[2] * arr.itemsize, arr.itemsize,
+             arr.shape[1] * arr.shape[2] * arr.itemsize,
+             arr.shape[2] * arr.itemsize, arr.itemsize)
+
+  return as_strided(arr, shape=shape, strides=strides)

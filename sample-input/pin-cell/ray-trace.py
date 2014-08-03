@@ -118,7 +118,7 @@ print('Tracing Sample Rays...')
 rays = dict()
 bounds = geometry.getBounds()
 
-for ray in xrange(1):
+for ray in xrange(1000):
   edge = np.random.choice([0, 1, 2, 3])
   if edge == 0:
     x = bounds[edge] + 1e-10
