@@ -54,7 +54,7 @@ def plot_cells(geometry, plane='xy', offset=0., gridsize=250):
 
   if not is_float(offset):
     msg = 'Unable to plot the cells since the offset {0} is' \
-          'is not a float'.format(gridsize)
+          'is not a float'.format(offset)
     raise ValueError(msg)
 
   print('Plotting the Cells...')
@@ -130,7 +130,7 @@ def plot_materials(geometry, plane='xy', offset=0., gridsize=250):
 
   if not is_float(offset):
     msg = 'Unable to plot the materials since the offset {0} is' \
-          'is not a float'.format(gridsize)
+          'is not a float'.format(offset)
     raise ValueError(msg)
 
   print('Plotting the Materials...')
@@ -205,7 +205,7 @@ def plot_regions(geometry, plane='xy', offset=0., gridsize=250):
 
   if not is_float(offset):
     msg = 'Unable to plot the regions since the offset {0} is' \
-          'is not a float'.format(gridsize)
+          'is not a float'.format(offset)
     raise ValueError(msg)
 
   print('Plotting the Regions...')
@@ -281,7 +281,7 @@ def plot_neighbor_cells(geometry, plane='xy', offset=0.,
 
   if not is_float(offset):
     msg = 'Unable to plot the neighbor cells since the offset {0} is' \
-          'is not a float'.format(gridsize)
+          'is not a float'.format(offset)
     raise ValueError(msg)
 
   print('Plotting the Neighbor Cells...')
