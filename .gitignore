@@ -27,3 +27,6 @@ var/
 */*.png
 *plots
 */plots/*
+
+*~
+*/*~

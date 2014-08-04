@@ -13,9 +13,9 @@ OpenCSG                         VERSION 0.1.1                           8/4/2014
 ================================================================================
 
 
-=============================
-AUTHORS & CONTACT INFORMATION
-=============================
+================================================================================
+                         AUTHORS & CONTACT INFORMATION                         
+================================================================================
 
 Contributors--------------------------------------------------------------------
 
@@ -30,9 +30,9 @@ Faculty Advisors----------------------------------------------------------------
         Kord Smith        -- kord@mit.edu
 
 
-============
-INTRODUCTION
-============
+================================================================================
+                                  INTRODUCTION
+================================================================================
 
 OpenCSG is a Python package for Constructive Solid Geometry (CSG) models. The
 goal for OpenCSG is to provide an easy-to-use, physics-agnostic library to
@@ -53,9 +53,9 @@ students in the MIT Nuclear Science & Engineering Department working in the
 Computational Reactor Physics Group.
 
 
-=======================
-DOWNLOAD & INSTALLATION
-=======================
+================================================================================
+                             DOWNLOAD & INSTALLATION
+================================================================================
 
 Make sure Git an the NumPy, h5py, and matplotlib python modules are installed 
 on your machine. These packages can easily be installed on any Linux or Mac
@@ -85,9 +85,9 @@ If this worked without any errors, you now have OpenCSG installed as the
 "opencsg" Python package importable from any directory on your machine. 
 
 
-=============
-USING OPENCSG
-=============
+================================================================================
+                                  USING OPENCSG
+================================================================================
 
 At the time of this writing, there is no documentation on the API provided to 
 users by OpenCSG. It is expected that such documentation will be provided in an 
@@ -108,9 +108,9 @@ to use these modules to interface with OpenCSG, please reference the
 documentation provided with your code of interest.
 
 
-===================
-ONGOING DEVELOPMENT
-===================
+================================================================================
+                               ONGOING DEVELOPMENT
+================================================================================
 
 At the time of this writing, some of the key areas of ongoing development 
 include the following:
@@ -124,9 +124,9 @@ If you would like to contribute to the OpenCSG project, please contact the
 development team.
 
 
-=======
-LICENSE
-=======
+================================================================================
+                                    LICENSE                                    
+================================================================================
 
 OpenCSG is currently going through review from the MIT Technology Licensing
 Office for open source distribution under the MIT/X License:
