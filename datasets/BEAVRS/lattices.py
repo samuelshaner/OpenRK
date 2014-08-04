@@ -13,7 +13,7 @@ lattices = dict()
 ###############################################################################
 
 pin_pitch = 1.25984                                        # centimeters
-lattice_pin_dims = 17.                                     # 17 pins
+lattice_pin_dims = 17                                      # 17 pins
 lattice_width = lattice_pin_dims * pin_pitch               # Lattice width [cm]
 
 
