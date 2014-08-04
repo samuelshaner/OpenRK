@@ -1,6 +1,8 @@
 from opencsg import *
 from opencsg.point import Segment
 import opencsg.plotter as plotter
+import matplotlib.pyplot as plt
+import matplotlib
 import numpy as np
 
 ###############################################################################
@@ -113,8 +115,34 @@ geometry.setVolume(volume=16., tolerance=1e-1)
 ###############################################################################
 
 print('Tracing Sample Rays...')
+'''
+segment = geometry.traceSampleRays(num_rays=1000)
+'''
 
-segments = geometry.traceSampleRays(num_rays=1000)
+faulty_rays = []
+for i in xrange(100):
+  output = geometry.traceSampleRays(num_rays=1000)
+  if isinstance(output, dict):
+    faulty_rays.append(output)
+
+x_vals = []
+y_vals = []
+lines = []
+
+for rays in faulty_rays:
+  for point in rays.keys():
+    x_vals.append(point._coords[0])
+    y_vals.append(point._coords[1])
+    lines.append([(point._coords[0], point._coords[1]), ((point._coords + 3*rays[point]._comps)[0],(point._coords + 3*rays[point]._comps)[1])])
+
+plt.plot(x_vals, y_vals, 'bo')
+lc = matplotlib.collections.LineCollection(lines, linewidths=1)
+fig, ax = plt.subplots()
+ax.add_collection(lc)
+plt.title('Errors ')
+ax.margins(0)
+plt.savefig('plots/error-points.png')
+
 
 
 ###############################################################################
@@ -123,7 +151,7 @@ segments = geometry.traceSampleRays(num_rays=1000)
 
 #print('Plotting Geometry...')
 
-plotter.plot_segments(segments, geometry)
+#plotter.plot_segments(segments, geometry)
 #plotter.plot_cells(geometry)
 #plotter.plot_materials(geometry)
 #plotter.plot_regions(geometry)
