@@ -10,9 +10,9 @@ from infermc.build import *
 ###############################################################################
 
 # OpenMC simulation parameters
-batches = 100
-inactive = 5
-particles = 10000
+batches = 1000
+inactive = 100
+particles = 100000
 
 
 ###############################################################################
@@ -48,6 +48,7 @@ settings_file.setOutput({'tallies': False})
 source_bounds = [geometry.getMinX(), geometry.getMinY(), geometry.getMinZ(), \
                  geometry.getMaxX(), geometry.getMaxY(), geometry.getMaxZ()]
 settings_file.setSourceSpace('box', source_bounds)
+settings_file.setThreads(8)
 settings_file.exportToXML()
 
 

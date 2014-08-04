@@ -11,8 +11,8 @@ import opencsg.plotter as plotter
 ###############################################################################
 
 # OpenMC simulation parameters
-batches = 100
-inactive = 5
+batches = 1000
+inactive = 25
 particles = 10000
 
 
@@ -45,6 +45,7 @@ settings_file.setBatches(batches)
 settings_file.setInactive(inactive)
 settings_file.setParticles(particles)
 settings_file.setStatepointInterval(5)
+settings_file.setThreads(8)
 settings_file.setOutput({'tallies': False})
 source_bounds = [geometry.getMinX(), geometry.getMinY(), geometry.getMinZ(), \
                  geometry.getMaxX(), geometry.getMaxY(), geometry.getMaxZ()]
@@ -84,8 +85,8 @@ tally_factory.createTalliesFile()
 ##########################   Ploting the Geometry  ############################
 ###############################################################################
 
-plotter.plot_neighbor_cells(geometry)
-plotter.plot_neighbor_cells(geometry, unique=True)
+#plotter.plot_neighbor_cells(geometry)
+#plotter.plot_neighbor_cells(geometry, unique=True)
 #plotter.plot_regions(geometry)
 #plotter.plot_materials(geometry)
 #plotter.plot_cells(geometry)

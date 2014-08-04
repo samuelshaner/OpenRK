@@ -15,7 +15,7 @@ lattice_width = lattice_pin_dims * pin_pitch               # Lattice width [cm]
 #########################   Pin Cell Universe Masks   #########################
 ###############################################################################
 
-# Keys are pin cell string names. Values are Universe IDs for each pin cell,
+# Keys are pin cell string names. Values are template numbers.
 masks = dict()
 
 masks['Fuel Pin'] = 1
