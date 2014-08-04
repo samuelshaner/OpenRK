@@ -45,7 +45,7 @@ for i in range(len(cells)):
 lattice = Lattice(name='1.6% Fuel - 0BA')
 lattices[lattice._name] = lattice
 
-lattice.setDimension((17, 17))
+lattice.setDimension((lattice_pin_dims, lattice_pin_dims))
 lattice.setWidth((pin_pitch, pin_pitch))
 lattice.setUniverses(cells)
 
@@ -78,7 +78,7 @@ for i in range(len(cells)):
 lattice = Lattice(name='2.4% Fuel - 0BA')
 lattices[lattice._name] = lattice
 
-lattice.setDimension((17, 17))
+lattice.setDimension((lattice_pin_dims, lattice_pin_dims))
 lattice.setWidth((pin_pitch, pin_pitch))
 lattice.setUniverses(cells)
 
@@ -115,7 +115,7 @@ for i in range(len(cells)):
 lattice = Lattice(name='2.4% Fuel - 12BA')
 lattices[lattice._name] = lattice
 
-lattice.setDimension((17, 17))
+lattice.setDimension((lattice_pin_dims, lattice_pin_dims))
 lattice.setWidth((pin_pitch, pin_pitch))
 lattice.setUniverses(cells)
 
@@ -152,7 +152,7 @@ for i in range(len(cells)):
 lattice = Lattice(name='2.4% Fuel - 16BA')
 lattices[lattice._name] = lattice
 
-lattice.setDimension((17, 17))
+lattice.setDimension((lattice_pin_dims, lattice_pin_dims))
 lattice.setWidth((pin_pitch, pin_pitch))
 lattice.setUniverses(cells)
 
@@ -185,7 +185,7 @@ for i in range(len(cells)):
 lattice = Lattice(name='3.1% Fuel - 0BA')
 lattices[lattice._name] = lattice
 
-lattice.setDimension((17, 17))
+lattice.setDimension((lattice_pin_dims, lattice_pin_dims))
 lattice.setWidth((pin_pitch, pin_pitch))
 lattice.setUniverses(cells)
 
@@ -222,7 +222,7 @@ for i in range(len(cells)):
 lattice = Lattice(name='3.1% Fuel - 6BA')
 lattices[lattice._name] = lattice
 
-lattice.setDimension((17, 17))
+lattice.setDimension((lattice_pin_dims, lattice_pin_dims))
 lattice.setWidth((pin_pitch, pin_pitch))
 lattice.setUniverses(cells)
 
@@ -259,7 +259,7 @@ for i in range(len(cells)):
 lattice = Lattice(name='3.1% Fuel - 15BA')
 lattices[lattice._name] = lattice
 
-lattice.setDimension((17, 17))
+lattice.setDimension((lattice_pin_dims, lattice_pin_dims))
 lattice.setWidth((pin_pitch, pin_pitch))
 lattice.setUniverses(cells)
 
@@ -296,7 +296,7 @@ for i in range(len(cells)):
 lattice = Lattice(name='3.1% Fuel - 16BA')
 lattices[lattice._name] = lattice
 
-lattice.setDimension((17, 17))
+lattice.setDimension((lattice_pin_dims, lattice_pin_dims))
 lattice.setWidth((pin_pitch, pin_pitch))
 lattice.setUniverses(cells)
 
@@ -333,6 +333,6 @@ for i in range(len(cells)):
 lattice = Lattice(name='3.1% Fuel - 20BA')
 lattices[lattice._name] = lattice
 
-lattice.setDimension((17, 17))
+lattice.setDimension((lattice_pin_dims, lattice_pin_dims))
 lattice.setWidth((pin_pitch, pin_pitch))
 lattice.setUniverses(cells)
