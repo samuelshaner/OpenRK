@@ -86,7 +86,7 @@ def plot_cells(geometry, plane='xy', offset=0., gridsize=250):
       else:
         cell = geometry.findCell(x=offset, y=coords['y'][i], z=coords['z'][j])  
 
-      # If we did not find a cell for this region, use a NaN "bad" number
+      # If we did not find a Cell for this region, use a NaN "bad" number color
       if cell is None:
         surface[j][i] = np.nan
       else:
@@ -171,7 +171,11 @@ def plot_materials(geometry, plane='xy', offset=0., gridsize=250):
       else:
         cell = geometry.findCell(x=offset, y=coords['y'][i], z=coords['z'][j])  
 
-      surface[j][i] = colors[cell._fill._id % num_materials]
+      # If we did not find a Cell for this region, use a NaN "bad" number color
+      if cell is None:
+        surface[j][i] = np.nan
+      else:
+        surface[j][i] = colors[cell._id % num_materials]
 
   # Make Matplotlib color "bad" numbers (ie, NaN, INF) with transparent pixels
   cmap = plt.get_cmap('spectral')
@@ -251,7 +255,7 @@ def plot_regions(geometry, plane='xy', offset=0., gridsize=250):
       else:
         region_id = geometry.getRegionId(x=offset, y=coords['y'][i], z=coords['z'][j])
 
-      # FIXME!!!
+      # If we did not find a region for this region, use a NaN "bad" number color
       if np.isnan(region_id):
         surface[j][i] = region_id
       else:
@@ -343,14 +347,17 @@ def plot_neighbor_cells(geometry, plane='xy', offset=0.,
       else:
         region_id = geometry.getRegionId(x=offset, y=surf['y'][i], z=surf['z'][j])
 
-      if unique:
+      # If we did not find a region for this region, use a NaN "bad" number color
+      if np.isnan(region_id):
+        surface[j][i] = region_id
+      elif unique:
         neighbors = geometry._regions_to_unique_neighbors[region_id]
         neighbor_id = geometry._unique_neighbor_ids[neighbors]
+        surface[j][i] = colors[neighbor_id % num_neighbors]
       else:
         neighbors = geometry._regions_to_neighbors[region_id]
         neighbor_id = geometry._neighbor_ids[neighbors]
-
-      surface[j][i] = colors[neighbor_id % num_neighbors]
+        surface[j][i] = colors[neighbor_id % num_neighbors]
 
   # Make Matplotlib color "bad" numbers (ie, NaN, INF) with transparent pixels
   cmap = plt.get_cmap('spectral')

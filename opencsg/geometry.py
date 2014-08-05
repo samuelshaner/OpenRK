@@ -296,7 +296,7 @@ class Geometry(object):
     region_id = 0
 
     # FIXME!!!
-    # If we did not find the coords, return a region ID of -1 as an error code
+    # If we did not find the coords, return NaN as an error code
     if coords._cell is None:
       return np.nan
 

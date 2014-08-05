@@ -441,7 +441,7 @@ class Universe(object):
           # Make recursive call to next nested Universe level
           return fill.findCell(next_coords)
 
-    # If we reach this point, we did not find a Cell containing the point
+    # If we reach this point, we did not find a Cell containing the Point
     return None
 
 
@@ -1172,7 +1172,7 @@ class Lattice(Universe):
       next_coords.setLattice(universe)
 
     else:
-      
+
       msg = 'Unable to find Cell since Lattice ID={0} does ' \
           'not contain a Universe or Lattice in lattice cell ' \
           '({1}, {2}, {3})'.format(self._id, lat_x, lat_y, lat_z)
