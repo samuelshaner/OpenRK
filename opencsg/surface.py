@@ -5,6 +5,7 @@ __email__ = 'wboyd@mit.edu'
 from opencsg.point import Point
 from opencsg.checkvalue import *
 import numpy as np
+import copy
 
 
 # Threshold for determining how close a point must be to a surface to be on it
@@ -70,7 +71,32 @@ class Surface(object):
 
 
   def __deepcopy__(self, memo):
-    return self
+
+    existing = memo.get(self)
+
+    # If this is the first time we have tried to copy this object, create a copy
+    if existing is None:
+
+      clone = type(self).__new__(type(self))
+      clone._id = self._id
+      clone._name = self._name
+      clone._type = self._type
+      clone._boundary_type = self._boundary_type
+      clone._neighbor_cells = copy.deepcopy(self._neighbor_cells)
+      clone._coeffs = copy.deepcopy(self._coeffs)
+
+      clone._max_x = self._max_x
+      clone._min_x = self._min_x
+      clone._max_y = self._max_y
+      clone._min_y = self._min_y
+      clone._max_z = self._max_z
+      clone._min_z = self._min_z
+
+      return clone
+
+    # If this object has been copied before, return the first copy made
+    else:
+      return existing
 
 
   def getMaxX(self, halfspace=None):

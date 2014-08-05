@@ -10,6 +10,7 @@ import numpy as np
 import math
 from collections import OrderedDict
 from numpy.lib.stride_tricks import as_strided
+import copy
 
 
 # Error threshold for determining how close to the boundary of a Lattice cell
@@ -54,7 +55,25 @@ class Universe(object):
 
 
   def __deepcopy__(self, memo):
-    return self
+
+    existing = memo.get(self)
+
+    # If this is the first time we have tried to copy this object, create a copy
+    if existing is None:
+
+      clone = type(self).__new__(type(self))
+      clone._id = self._id
+      clone._name = self._name
+      clone._cells = copy.deepcopy(self._cells)
+      clone._cell_offsets = copy.deepcopy(self._cell_offsets)
+      clone._num_regions = self._num_regions
+      clone._volume = self._volume
+
+      return clone
+
+    # If this object has been copied before, return the first copy made
+    else:
+      return existing
 
 
   def getAllCells(self):
@@ -559,7 +578,30 @@ class Lattice(Universe):
 
 
   def __deepcopy__(self, memo):
-    return self
+
+    existing = memo.get(self)
+
+    # If this is the first time we have tried to copy this object, create a copy
+    if existing is None:
+
+      clone = type(self).__new__(type(self))
+      clone._id = self._id
+      clone._name = self._name
+      clone._type = self._type
+      clone._dimension = self._dimension
+      clone._width = self._width
+      clone._universes = copy.deepcopy(self._universes)
+      clone._cell_offsets = copy.deepcopy(self._cell_offsets)
+      clone._num_regions = self._num_regions
+      clone._offset = copy.deepcopy(self._offset)
+      clone._neighbor_universes = copy.deepcopy(self._neighbor_universes)
+      clone._neighbor_depth = self._neighbor_depth
+
+      return clone
+
+    # If this object has been copied before, return the first copy made
+    else:
+      return existing
 
 
   def getUniverse(self, lat_x, lat_y, lat_z=None):
@@ -1340,7 +1382,35 @@ class Cell(object):
 
 
   def __deepcopy__(self, memo):
-    return self
+
+    existing = memo.get(self)
+
+    # If this is the first time we have tried to copy this object, create a copy
+    if existing is None:
+
+      clone = type(self).__new__(type(self))
+      clone._id = self._id
+      clone._name = self._name
+      clone._fill = self._fill
+      clone._type = self._type
+      clone._num_subcells = self._num_subcells
+      clone._volume_fraction = self._volume_fraction
+      clone._volume = self._volume
+      clone._neighbor_cells = copy.deepcopy(self._neighbor_cells)
+      clone._surfaces = copy.deepcopy(self._surfaces)
+
+      clone._max_x = self._max_x
+      clone._min_x = self._min_x
+      clone._max_y = self._max_y
+      clone._min_y = self._min_y
+      clone._max_z = self._max_z
+      clone._min_z = self._min_z
+
+      return clone
+
+    # If this object has been copied before, return the first copy made
+    else:
+      return existing
 
 
   def getMaxX(self):
@@ -2007,7 +2077,23 @@ class LocalCoords(object):
 
 
   def __deepcopy__(self, memo):
-    return self
+
+    existing = memo.get(self)
+
+    # If this is the first time we have tried to copy this object, create a copy
+    if existing is None:
+
+      clone = type(self).__new__(type(self))
+      clone._point = copy.deepcopy(self._point)
+      clone._type = self._type
+      clone._next = copy.deepcopy(self._next)
+      clone._prev = copy.deepcopy(self._prev)
+
+      return clone
+
+    # If this object has been copied before, return the first copy made
+    else:
+      return existing
 
 
   def setPoint(self, point):
@@ -2126,7 +2212,21 @@ class UnivCoords(LocalCoords):
 
 
   def __deepcopy__(self, memo):
-    return self
+
+    existing = memo.get(self)
+
+    # If this is the first time we have tried to copy this object, create a copy
+    if existing is None:
+
+      clone = super(UnivCoords, self)._deepcopy(self, memo)
+      clone._universe = copy.deepcopy(self._universe)
+      clone._cell = copy.deepcopy(self._cell)
+
+      return clone
+
+    # If this object has been copied before, return the first copy made
+    else:
+      return existing
 
 
   def getNeighbors(self, neighbors=None):
@@ -2246,6 +2346,30 @@ class LatCoords(LocalCoords):
 
     if not lat_z is None:
       self.setLatticeY(lat_z)
+
+
+  def __copy__(self):
+    return self
+
+
+  def __deepcopy__(self, memo):
+
+    existing = memo.get(self)
+
+    # If this is the first time we have tried to copy this object, create a copy
+    if existing is None:
+
+      clone = super(LatCoords, self)._deepcopy(self, memo)
+      clone._lattice = copy.deepcopy(self._lattice)
+      clone._lat_x = self._lat_x
+      clone._lat_y = self._lat_y
+      clone._lat_z = self._lat_z
+
+      return clone
+
+    # If this object has been copied before, return the first copy made
+    else:
+      return existing
 
 
   def getNeighbors(self, neighbors=None):
