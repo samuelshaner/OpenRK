@@ -23,6 +23,14 @@ class Point(object):
       self.setZ(z)
 
 
+  def __copy__(self):
+    return self
+
+
+  def __deepcopy__(self, memo):
+    return self
+
+
   def setCoords(self, coords):
 
     if not isinstance(coords, tuple) and len(coords) != 3:

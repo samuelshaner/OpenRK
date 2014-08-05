@@ -25,6 +25,14 @@ class RadialMesh(object):
       self.setNumRings(num_rings)
 
 
+  def __copy__(self):
+    return self
+
+
+  def __deepcopy__(self, memo):
+    return self
+
+
   def setNumRings(self, num_rings):
 
     if not is_integer(num_rings):

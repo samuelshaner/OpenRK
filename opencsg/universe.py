@@ -49,6 +49,14 @@ class Universe(object):
     self.setName(name)
 
 
+  def __copy__(self):
+    return self
+
+
+  def __deepcopy__(self, memo):
+    return self
+
+
   def getAllCells(self):
 
     cells = dict()
@@ -544,6 +552,14 @@ class Lattice(Universe):
     self.setId(lattice_id)
     self.setName(name)
     self.setType(type)
+
+
+  def __copy__(self):
+    return self
+
+
+  def __deepcopy__(self, memo):
+    return self
 
 
   def getUniverse(self, lat_x, lat_y, lat_z=None):
@@ -1319,6 +1335,14 @@ class Cell(object):
       self.setFill(fill)
 
 
+  def __copy__(self):
+    return self
+
+
+  def __deepcopy__(self, memo):
+    return self
+
+
   def getMaxX(self):
     return self._max_x
 
@@ -1978,6 +2002,14 @@ class LocalCoords(object):
       self.setPrev(prev)
 
 
+  def __copy__(self):
+    return self
+
+
+  def __deepcopy__(self, memo):
+    return self
+
+
   def setPoint(self, point):
 
     if not isinstance(point, Point):
@@ -2087,6 +2119,14 @@ class UnivCoords(LocalCoords):
 
     if not cell is None:
       self.setCell(cell)
+
+
+  def __copy__(self):
+    return self
+
+
+  def __deepcopy__(self, memo):
+    return self
 
 
   def getNeighbors(self, neighbors=None):

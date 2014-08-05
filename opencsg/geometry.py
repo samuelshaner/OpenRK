@@ -33,6 +33,14 @@ class Geometry(object):
     self._regions_to_unique_neighbors = dict()
 
 
+  def __copy__(self):
+    return self
+
+
+  def __deepcopy__(self, memo):
+    return self
+
+
   def getMaxX(self):
 
     if self._root_universe is None:

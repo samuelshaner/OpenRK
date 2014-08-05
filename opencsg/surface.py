@@ -65,6 +65,14 @@ class Surface(object):
     self.setBoundaryType(boundary)
 
 
+  def __copy__(self):
+    return self
+
+
+  def __deepcopy__(self, memo):
+    return self
+
+
   def getMaxX(self, halfspace=None):
     return self._max_x
 
