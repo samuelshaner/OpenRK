@@ -295,6 +295,11 @@ class Geometry(object):
     coords = self.findCoords(x=x, y=y, z=z)
     region_id = 0
 
+    # FIXME!!!
+    # If we did not find the coords, return a region ID of -1 as an error code
+    if coords._cell is None:
+      return np.nan
+
     while not coords is None:
 
       # The coords is a UnivCoords object
