@@ -25,10 +25,6 @@ class RadialMesh(object):
       self.setNumRings(num_rings)
 
 
-  def __copy__(self):
-    return self
-
-
   def __deepcopy__(self, memo):
 
     existing = memo.get(self)

@@ -50,10 +50,6 @@ class Universe(object):
     self.setName(name)
 
 
-  def __copy__(self):
-    return self
-
-
   def __deepcopy__(self, memo):
 
     existing = memo.get(self)
@@ -571,10 +567,6 @@ class Lattice(Universe):
     self.setId(lattice_id)
     self.setName(name)
     self.setType(type)
-
-
-  def __copy__(self):
-    return self
 
 
   def __deepcopy__(self, memo):
@@ -1377,10 +1369,6 @@ class Cell(object):
       self.setFill(fill)
 
 
-  def __copy__(self):
-    return self
-
-
   def __deepcopy__(self, memo):
 
     existing = memo.get(self)
@@ -2072,10 +2060,6 @@ class LocalCoords(object):
       self.setPrev(prev)
 
 
-  def __copy__(self):
-    return self
-
-
   def __deepcopy__(self, memo):
 
     existing = memo.get(self)
@@ -2205,10 +2189,6 @@ class UnivCoords(LocalCoords):
 
     if not cell is None:
       self.setCell(cell)
-
-
-  def __copy__(self):
-    return self
 
 
   def __deepcopy__(self, memo):
@@ -2346,10 +2326,6 @@ class LatCoords(LocalCoords):
 
     if not lat_z is None:
       self.setLatticeY(lat_z)
-
-
-  def __copy__(self):
-    return self
 
 
   def __deepcopy__(self, memo):

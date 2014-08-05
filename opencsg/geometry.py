@@ -33,10 +33,6 @@ class Geometry(object):
     self._regions_to_unique_neighbors = dict()
 
 
-  def __copy__(self):
-    return self
-
-
   def __deepcopy__(self, memo):
 
     existing = memo.get(self)
