@@ -175,7 +175,7 @@ def plot_materials(geometry, plane='xy', offset=0., gridsize=250):
       if cell is None:
         surface[j][i] = np.nan
       else:
-        surface[j][i] = colors[cell._id % num_materials]
+        surface[j][i] = colors[cell._fill._id % num_materials]
 
   # Make Matplotlib color "bad" numbers (ie, NaN, INF) with transparent pixels
   cmap = plt.get_cmap('spectral')
