@@ -413,7 +413,7 @@ class Universe(object):
 
         # 'material' type Cell - lowest level, terminate search for Cell
         if cell._type == 'material':
-            return cell
+          return cell
 
         # 'fill' type Cell - Cell contains a Universe at a lower level
         # Update coords to next level and continue search
@@ -438,7 +438,11 @@ class Universe(object):
           localcoords.setNext(next_coords)
           next_coords.setPrev(localcoords)
 
+          # Make recursive call to next nested Universe level
           return fill.findCell(next_coords)
+
+    # If we reach this point, we did not find a Cell containing the point
+    return None
 
 
   def findRegion(self, region_id, univ_coords):
