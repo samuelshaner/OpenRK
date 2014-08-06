@@ -1980,6 +1980,7 @@ class Cell(object):
     clone = Cell()
     clone.setName(self._name)
     clone.setFill(self._fill)
+    clone.setType(self._type)
 
     for surface_id in self._surfaces.keys():
       surface = self._surfaces[surface_id][0]
