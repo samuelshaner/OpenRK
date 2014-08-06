@@ -1280,7 +1280,8 @@ class ZCylinder(Cylinder):
     super(ZCylinder, self).getIntersectionPoints(point, direction)
 
     if self.onSurface(point):
-      return [point]
+      print 'blah'
+      return [None]
 
     x, y, z = point._coords
     u, v, w = direction.normalize()

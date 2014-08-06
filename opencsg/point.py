@@ -131,8 +131,7 @@ class Direction(object):
   def normalize(self):
 
     comps = self._comps
-    unit = comps**2/np.sqrt(np.sum(comps**2))
-    unit = unit*(comps/abs(comps))
+    unit = comps/np.sqrt(np.sum(comps**2))
     return unit
 
   def toPolar(self):
@@ -159,6 +158,7 @@ class Segment(object):
     self._end = None
     self._region_id = None
     self._cell = None
+    self._length = None
 
     if not start is None:
       self.setStart(start)
@@ -173,6 +173,9 @@ class Segment(object):
     if not cell is None:
       x,y,z = self._start._coords
       self.setCell(geometry.findCell(x=x,y=y,z=z))
+
+    if not (start is None and end is None):
+      self._length = start.distanceToPoint(end)
 
 
   def setStart(self, start):
@@ -218,8 +221,8 @@ class Segment(object):
   def getXZCoords(self):
     return [self._start._coords[::2], self._end._coords[::2]]
 
-  def getLength(self):
-    return self._start.distanceToPoint(self._end)
+  def getMaterial(self):
+    return self._cell._fill
 
   def __repr__(self):
 

@@ -4,7 +4,6 @@ __email__ = 'wboyd@mit.edu'
 
 import matplotlib
 from opencsg import *
-from opencsg.point import Segment
 
 # force headless backend, or set 'backend' to 'Agg'
 # in your ~/.matplotlib/matplotlibrc

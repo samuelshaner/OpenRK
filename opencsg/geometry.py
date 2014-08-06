@@ -5,7 +5,7 @@ __email__ = 'wboyd@mit.edu'
 from opencsg.universe import *
 from opencsg.point import *
 
-tiny_bit = 1e-10
+tiny_bit = 1e-5
 
 class Geometry(object):
 
@@ -410,19 +410,19 @@ class Geometry(object):
       if edge == 0:
         x = bounds[edge] + tiny_bit
         y = np.random.uniform(bounds[2], bounds[3])
-        z = np.random.uniform(1e-12, 1e12)
+        z = np.random.uniform(-1e12, 1e12)
       elif edge == 1:
         x = bounds[edge] - tiny_bit
         y = np.random.uniform(bounds[2], bounds[3])
-        z = np.random.uniform(1e-12, 1e12)
+        z = np.random.uniform(-1e12, 1e12)
       elif edge == 2:
         x = np.random.uniform(bounds[0], bounds[1])
         y = bounds[edge] + tiny_bit
-        z = np.random.uniform(1e-12, 1e12)
+        z = np.random.uniform(-1e12, 1e12)
       else:
         x = np.random.uniform(bounds[0], bounds[1])
         y = bounds[edge] - tiny_bit
-        z = np.random.uniform(1e-12, 1e12)
+        z = np.random.uniform(-1e12, 1e12)
 
       u, v, w = np.random.rand(3)-0.5
       point = Point(x=x, y=y, z=z)
@@ -430,12 +430,7 @@ class Geometry(object):
       rays[point] = direction
 
     segments = []
-
-    counter = 0
     while rays != {}:
-      if counter > 5:
-        return rays
-      counter +=1
       points = rays.keys()
       for ray in points:
         intersect = self.getNearestIntersection(ray, rays[ray])
