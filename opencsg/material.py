@@ -6,10 +6,10 @@ from opencsg.checkvalue import *
 
 
 # A list of all IDs for all Materials created
-material_ids = list()
+MATERIAL_IDS = list()
 
 # A static variable for auto-generated Material IDs
-auto_material_id = 10000
+AUTO_MATERIAL_ID = 10000
 
 
 class Material(object):
@@ -25,24 +25,42 @@ class Material(object):
     self.setName(name)
 
 
+  def __deepcopy__(self, memo):
+
+    existing = memo.get(self)
+
+    # If this is the first time we have tried to copy this object, create a copy
+    if existing is None:
+
+      clone = type(self).__new__(type(self))
+      clone._id = self._id
+      clone._name = self._name
+
+      return clone
+
+    # If this object has been copied before, return the first copy made
+    else:
+      return existing
+
+
   def setId(self, material_id=None):
 
-    global material_ids
+    global MATERIAL_IDS
 
     if material_id is None:
-      global auto_material_id
-      self._id = auto_material_id
-      material_ids.append(auto_material_id)
-      auto_material_id += 1
+      global AUTO_MATERIAL_ID
+      self._id = AUTO_MATERIAL_ID
+      MATERIAL_IDS.append(AUTO_MATERIAL_ID)
+      AUTO_MATERIAL_ID += 1
 
     # Check that the ID is an integer and wasn't already used
     elif is_integer(material_id):
 
       # If the Material already has an ID, remove it from global list
       if not self._id is None:
-        material_ids.remove(self._id)
+        MATERIAL_IDS.remove(self._id)
 
-      if material_id in material_ids:
+      if material_id in MATERIAL_IDS:
         msg = 'Unable to set Material ID to {0} since a Material ' \
               'with this ID was already initialized'.format(material_id)
         raise ValueError(msg)
@@ -54,7 +72,7 @@ class Material(object):
 
       else:
         self._id = material_id
-        material_ids.append(material_id)
+        MATERIAL_IDS.append(material_id)
 
     else:
       msg = 'Unable to set Material ID to non-integer {0}'.format(material_id)

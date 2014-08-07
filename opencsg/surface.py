@@ -7,22 +7,23 @@ from checkvalue import *
 from opencsg.point import Point
 from opencsg.checkvalue import *
 import numpy as np
+import copy
 
 
 # Threshold for determining how close a point must be to a surface to be on it
-on_surface_thresh = 1e-12
+ON_SURFACE_THRESH = 1e-12
 
 # A list of all IDs for all Surfaces created
-surface_ids = list()
+SURFACE_IDS = list()
 
 # A static variable for auto-generated Surface IDs
-auto_surface_id = 10000
+AUTO_SURFACE_ID = 10000
 
 # The Surface boundary conditions
-boundary_types = ['interface', 'vacuum', 'reflective']
+BOUNDARY_TYPES = ['interface', 'vacuum', 'reflective']
 
 # The types of Surfaces
-surf_types = ['plane',
+SURF_TYPES = ['plane',
               'x-plane',
               'y-plane',
               'z-plane',
@@ -30,10 +31,12 @@ surf_types = ['plane',
               'y-cylinder',
               'z-cylinder',
               'sphere',
-              'square']
+              'x-squareprism',
+              'y-squareprism',
+              'z-squareprism']
 
-max_float = np.finfo(np.float64).max
-min_float = np.finfo(np.float64).min
+MAX_FLOAT = np.finfo(np.float64).max
+MIN_FLOAT = np.finfo(np.float64).min
 
 
 class Surface(object):
@@ -55,16 +58,45 @@ class Surface(object):
     self._coeffs = dict()
 
     # Max/min values
-    self._max_x = np.finfo(np.float64).max
-    self._max_y = np.finfo(np.float64).max
-    self._max_z = np.finfo(np.float64).max
-    self._min_x = np.finfo(np.float64).min
-    self._min_y = np.finfo(np.float64).min
-    self._min_z = np.finfo(np.float64).min
+    self._max_x = MAX_FLOAT
+    self._max_y = MAX_FLOAT
+    self._max_z = MAX_FLOAT
+    self._min_x = MIN_FLOAT
+    self._min_y = MIN_FLOAT
+    self._min_z = MIN_FLOAT
 
     self.setId(surface_id)
     self.setName(name)
     self.setBoundaryType(boundary)
+
+
+  def __deepcopy__(self, memo):
+
+    existing = memo.get(self)
+
+    # If this is the first time we have tried to copy this object, create a copy
+    if existing is None:
+
+      clone = type(self).__new__(type(self))
+      clone._id = self._id
+      clone._name = self._name
+      clone._type = self._type
+      clone._boundary_type = self._boundary_type
+      clone._neighbor_cells = copy.deepcopy(self._neighbor_cells)
+      clone._coeffs = copy.deepcopy(self._coeffs)
+
+      clone._max_x = self._max_x
+      clone._min_x = self._min_x
+      clone._max_y = self._max_y
+      clone._min_y = self._min_y
+      clone._max_z = self._max_z
+      clone._min_z = self._min_z
+
+      return clone
+
+    # If this object has been copied before, return the first copy made
+    else:
+      return existing
 
 
   def getMaxX(self, halfspace=None):
@@ -104,7 +136,7 @@ class Surface(object):
             'the input is not a Point object'.format(self._id)
       raise ValueError(msg)
 
-    if np.abs(self.evaluate(point)) < on_surface_thresh:
+    if np.abs(self.evaluate(point)) < ON_SURFACE_THRESH:
       return True
     else:
       return False
@@ -124,22 +156,22 @@ class Surface(object):
 
   def setId(self, surface_id=None):
 
-    global surface_ids
+    global SURFACE_IDS
 
     if surface_id is None:
-      global auto_surface_id
-      self._id = auto_surface_id
-      surface_ids.append(auto_surface_id)
-      auto_surface_id += 1
+      global AUTO_SURFACE_ID
+      self._id = AUTO_SURFACE_ID
+      SURFACE_IDS.append(AUTO_SURFACE_ID)
+      AUTO_SURFACE_ID += 1
 
     # Check that the ID is an integer and wasn't already used
     elif is_integer(surface_id):
 
       # If the Material already has an ID, remove it from global list
       if not self._id is None:
-        surface_ids.remove(self._id)
+        SURFACE_IDS.remove(self._id)
 
-      elif surface_id in surface_ids:
+      elif surface_id in SURFACE_IDS:
         msg = 'Unable to set Surface ID to {0} since a Surface with ' \
               'this ID was already initialized'.format(surface_id)
         raise ValueError(msg)
@@ -151,7 +183,7 @@ class Surface(object):
 
       else:
         self._id = surface_id
-        surface_ids.append(surface_id)
+        SURFACE_IDS.append(surface_id)
 
     else:
       msg = 'Unable to set a non-integer Surface ID {0}'.format(surface_id)
@@ -176,7 +208,7 @@ class Surface(object):
             'non-string value {1}'.format(self._id, boundary)
       raise ValueError(msg)
 
-    elif not boundary in boundary_types:
+    elif not boundary in BOUNDARY_TYPES:
       msg = 'Unable to set boundary type for Surface ID={0} to {1} which ' \
             'is not interface, vacuum or reflective'.format(self._id, boundary)
       raise ValueError(msg)
@@ -377,7 +409,7 @@ class XPlane(Plane):
         return self._max_x
 
       else:
-        return np.finfo(np.float64).max
+        return MAX_FLOAT
 
 
   def getMinX(self, halfspace=None):
@@ -400,7 +432,7 @@ class XPlane(Plane):
         raise ValueError(msg)
 
       elif halfspace == -1:
-        return np.finfo(np.float64).min
+        return MIN_FLOAT
 
       else:
         return self._min_x
@@ -482,7 +514,7 @@ class YPlane(Plane):
         return self._max_y
 
       else:
-        return np.finfo(np.float64).max
+        return MAX_FLOAT
 
 
   def getMinY(self, halfspace=None):
@@ -505,7 +537,7 @@ class YPlane(Plane):
         raise ValueError(msg)
 
       elif halfspace == -1:
-        return np.finfo(np.float64).min
+        return MIN_FLOAT
 
       else:
         return self._min_y
@@ -587,7 +619,7 @@ class ZPlane(Plane):
         return self._max_z
 
       else:
-        return np.finfo(np.float64).max
+        return MAX_FLOAT
 
 
   def getMinZ(self, halfspace=None):
@@ -610,7 +642,7 @@ class ZPlane(Plane):
         raise ValueError(msg)
 
       elif halfspace == -1:
-        return np.finfo(np.float64).min
+        return MIN_FLOAT
 
       else:
         return self._min_z
@@ -684,8 +716,9 @@ class XCylinder(Cylinder):
     super(XCylinder, self).__init__(surface_id, name, boundary, R)
 
     self._type = 'x-cylinder'
-    self._coeffs['y0'] = None
-    self._coeffs['z0'] = None
+    self._coeffs['y0'] = 0.
+    self._coeffs['z0'] = 0.
+    self._coeffs['R'] = None
 
     if not y0 is None:
       self.setY0(y0)
@@ -720,7 +753,7 @@ class XCylinder(Cylinder):
         return self._max_y
 
       else:
-        return np.finfo(np.float64).max
+        return MAX_FLOAT
 
 
   def getMinY(self, halfspace=None):
@@ -746,7 +779,7 @@ class XCylinder(Cylinder):
         return self._min_y
 
       else:
-        return np.finfo(np.float64).min
+        return MIN_FLOAT
 
 
   def getMaxZ(self, halfspace=None):
@@ -772,7 +805,7 @@ class XCylinder(Cylinder):
         return self._max_z
 
       else:
-        return np.finfo(np.float64).max
+        return MAX_FLOAT
 
 
   def getMinZ(self, halfspace=None):
@@ -798,7 +831,7 @@ class XCylinder(Cylinder):
         return self._min_z
 
       else:
-        return np.finfo(np.float64).min
+        return MIN_FLOAT
 
 
   def setY0(self, y0):
@@ -896,8 +929,9 @@ class YCylinder(Cylinder):
     super(YCylinder, self).__init__(surface_id, name, boundary, R)
 
     self._type = 'y-cylinder'
-    self._coeffs['x0'] = None
-    self._coeffs['z0'] = None
+    self._coeffs['x0'] = 0.
+    self._coeffs['z0'] = 0.
+    self._coeffs['R'] = None
 
     if not x0 is None:
       self.setX0(x0)
@@ -932,7 +966,7 @@ class YCylinder(Cylinder):
         return self._max_x
 
       else:
-        return np.finfo(np.float64).max
+        return MAX_FLOAT
 
 
   def getMinX(self, halfspace=None):
@@ -958,7 +992,7 @@ class YCylinder(Cylinder):
         return self._min_x
 
       else:
-        return np.finfo(np.float64).min
+        return MIN_FLOAT
 
 
   def getMaxZ(self, halfspace=None):
@@ -983,7 +1017,7 @@ class YCylinder(Cylinder):
         return self._max_z
 
       else:
-        return np.finfo(np.float64).max
+        return MAX_FLOAT
 
 
   def getMinZ(self, halfspace=None):
@@ -1009,7 +1043,7 @@ class YCylinder(Cylinder):
         return self._min_z
 
       else:
-        return np.finfo(np.float64).min
+        return MIN_FLOAT
 
 
   def setX0(self, x0):
@@ -1107,8 +1141,10 @@ class ZCylinder(Cylinder):
     super(ZCylinder, self).__init__(surface_id, name, boundary, R)
 
     self._type = 'z-cylinder'
-    self._coeffs['x0'] = None
-    self._coeffs['y0'] = None
+    self._coeffs['x0'] = 0.
+    self._coeffs['y0'] = 0.
+    self._coeffs['R'] = None
+
 
     if not x0 is None:
       self.setX0(x0)
@@ -1143,7 +1179,7 @@ class ZCylinder(Cylinder):
         return self._max_x
 
       else:
-        return np.finfo(np.float64).max
+        return MAX_FLOAT
 
 
   def getMinX(self, halfspace=None):
@@ -1169,7 +1205,7 @@ class ZCylinder(Cylinder):
         return self._min_x
 
       else:
-        return np.finfo(np.float64).min
+        return MIN_FLOAT
 
 
   def getMaxY(self, halfspace=None):
@@ -1195,7 +1231,7 @@ class ZCylinder(Cylinder):
         return self._max_y
 
       else:
-        return np.finfo(np.float64).max
+        return MAX_FLOAT
 
 
   def getMinY(self, halfspace=None):
@@ -1221,7 +1257,7 @@ class ZCylinder(Cylinder):
         return self._min_y
 
       else:
-        return np.finfo(np.float64).min
+        return MIN_FLOAT
 
 
   def setX0(self, x0):
@@ -1360,7 +1396,7 @@ class Sphere(Surface):
         return self._max_x
 
       else:
-        return np.finfo(np.float64).max
+        return MAX_FLOAT
 
 
   def getMinX(self, halfspace=None):
@@ -1386,7 +1422,7 @@ class Sphere(Surface):
         return self._min_x
 
       else:
-        return np.finfo(np.float64).min
+        return MIN_FLOAT
 
 
   def getMaxY(self, halfspace=None):
@@ -1412,7 +1448,7 @@ class Sphere(Surface):
         return self._max_y
 
       else:
-        return np.finfo(np.float64).max
+        return MAX_FLOAT
 
 
   def getMinY(self, halfspace=None):
@@ -1438,7 +1474,7 @@ class Sphere(Surface):
         return self._min_y
 
       else:
-        return np.finfo(np.float64).min
+        return MIN_FLOAT
 
 
   def getMaxZ(self, halfspace=None):
@@ -1464,7 +1500,7 @@ class Sphere(Surface):
         return self._max_z
 
       else:
-        return np.finfo(np.float64).max
+        return MAX_FLOAT
 
 
   def getMinZ(self, halfspace=None):
@@ -1490,7 +1526,7 @@ class Sphere(Surface):
         return self._min_z
 
       else:
-        return np.finfo(np.float64).min
+        return MIN_FLOAT
 
 
   def setX0(self, x0):
@@ -1606,17 +1642,400 @@ class Sphere(Surface):
       intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
       return [intersect]
 
-class Square(Surface):
+
+class SquarePrism(Surface):
+
+  def __init__(self, surface_id=None, name='',
+               boundary='interface', R=None):
+
+    # Initialize Cylinder class attributes
+    super(SquarePrism, self).__init__(surface_id, name, boundary)
+
+    self._coeffs['R'] = None
+
+
+  def setR(self, R):
+
+    if not is_integer(R) and not is_float(R):
+      msg = 'Unable to set R coefficient for SquarePrism ID={0} to ' \
+            'a non-integer or floating point value {1}'.format(self._id, R)
+      raise ValueError(msg)
+
+    self._coeffs['R'] = np.float64(R)
+
+
+
+class XSquarePrism(SquarePrism):
+
+  def __init__(self, surface_id=None, name='',
+               boundary='interface', y0=None, z0=None, R=None):
+
+    # Initialize XSquarePrism class attributes
+    super(XSquarePrism, self).__init__(surface_id, name, boundary, R)
+
+    self._type = 'x-squareprism'
+    self._coeffs['y0'] = 0.
+    self._coeffs['z0'] = 0.
+    self._coeffs['R'] = None
+
+    if not y0 is None:
+      self.setY0(y0)
+
+    if not z0 is None:
+      self.setZ0(z0)
+
+    if not R is None:
+      self.setR(R)
+
+
+  def getMaxY(self, halfspace=None):
+
+    if halfspace is None:
+      return self._max_y
+
+    else:
+
+      if not is_integer(halfspace):
+        msg = 'Unable to get the maximum y-coordinate for ' \
+              'XSquarePrism ID={0} since the halfspace is a non-integer ' \
+              'value {1}'.format(self._id, halfspace)
+        raise ValueError(msg)
+
+      elif not halfspace in [-1, +1]:
+        msg = 'Unable to get the maximum y-coordinate for ' \
+              'XSquarePrism ID={0} since the halfspace is {1} which ' \
+              'is not +/-1'.format(self._id, halfspace)
+        raise ValueError(msg)
+
+      elif halfspace == -1:
+        return self._max_y
+
+      else:
+        return MAX_FLOAT
+
+
+  def getMinY(self, halfspace=None):
+
+    if halfspace is None:
+      return self._min_y
+
+    else:
+
+      if not is_integer(halfspace):
+        msg = 'Unable to get the minimum y-coordinate for ' \
+              'XSquarePrism ID={0} since the halfspace is a non-integer ' \
+              'value {1}'.format(self._id, halfspace)
+        raise ValueError(msg)
+
+      elif not halfspace in [-1, +1]:
+        msg = 'Unable to get the minimum y-coordinate for ' \
+              'XSquarePrism ID={0} since the halfspace is {1} which ' \
+              'is not +/-1'.format(self._id, halfspace)
+        raise ValueError(msg)
+
+      elif halfspace == -1:
+        return self._min_y
+
+      else:
+        return MIN_FLOAT
+
+
+  def getMaxZ(self, halfspace=None):
+
+    if halfspace is None:
+      return self._max_z
+
+    else:
+
+      if not is_integer(halfspace):
+        msg = 'Unable to get the maximum z-coordinate for ' \
+              'XSquarePrism ID={0} since the halfspace is a non-integer ' \
+              'value {1}'.format(self._id, halfspace)
+        raise ValueError(msg)
+
+      elif not halfspace in [-1, +1]:
+        msg = 'Unable to get the maximum z-coordinate for ' \
+              'XSquarePrism ID={0} since the halfspace is {1} which is ' \
+              'not +/-1'.format(self._id, halfspace)
+        raise ValueError(msg)
+
+      elif halfspace == -1:
+        return self._max_z
+
+      else:
+        return MAX_FLOAT
+
+
+  def getMinZ(self, halfspace=None):
+
+    if halfspace is None:
+      return self._min_z
+
+    else:
+
+      if not is_integer(halfspace):
+        msg = 'Unable to get the minimum z-coordinate for ' \
+              'XSquarePrism ID={0} since the halfspace is a non-integer ' \
+              'value {1}'.format(self._id, halfspace)
+        raise ValueError(msg)
+
+      elif not halfspace in [-1, +1]:
+        msg = 'Unable to get the minimum z-coordinate for ' \
+              'XSquarePrism ID={0} since the halfspace is {1} which is ' \
+              'not +/-1'.format(self._id, halfspace)
+        raise ValueError(msg)
+
+      elif halfspace == -1:
+        return self._min_z
+
+      else:
+        return MIN_FLOAT
+
+
+  def setY0(self, y0):
+
+    if not is_integer(y0) and not is_float(y0):
+      msg = 'Unable to set x0 coefficient for XSquarePrism ID={0} to ' \
+            'a non-integer or floating point value {1}'.format(self._id, y0)
+      raise ValueError(msg)
+
+    self._coeffs['x0'] = np.float64(y0)
+
+    if not self._coeffs['R'] is None:
+      self._max_x = y0 + self._coeffs['R']
+      self._min_x = y0 - self._coeffs['R']
+
+
+  def setZ0(self, z0):
+
+    if not is_integer(z0) and not is_float(z0):
+      msg = 'Unable to set y0 coefficient for XSquarePrism ID={0} to ' \
+            'a non-integer or floating point value {1}'.format(self._id, z0)
+      raise ValueError(msg)
+
+    self._coeffs['z0'] = np.float64(z0)
+
+    if not self._coeffs['R'] is None:
+      self._max_y = z0 + self._coeffs['R']
+      self._min_y = z0 - self._coeffs['R']
+
+
+  def setR(self, R):
+
+    super(XSquarePrism, self).setR(R)
+
+    if not self._coeffs['y0'] is None:
+      self._max_y = self._coeffs['y0'] + R
+      self._min_y = self._coeffs['y0'] - R
+
+    if not self._coeffs['z0'] is None:
+      self._max_z = self._coeffs['z0'] + R
+      self._min_z = self._coeffs['z0'] - R
+
+
+  def evaluate(self, point):
+
+    super(XSquarePrism, self).evaluate(point)
+
+    x, y, z = point._coords
+
+    Ry = abs(self._coeffs['y0'] - y) - self._coeffs['R']
+    Rz = abs(self._coeffs['z0'] - z) - self._coeffs['R']
+
+    return max(Ry, Rz)
+
+
+class YSquarePrism(SquarePrism):
+
+  def __init__(self, surface_id=None, name='',
+               boundary='interface', x0=None, z0=None, R=None):
+
+    # Initialize YSquarePrism class attributes
+    super(YSquarePrism, self).__init__(surface_id, name, boundary, R)
+
+    self._type = 'y-squareprism'
+    self._coeffs['x0'] = 0.
+    self._coeffs['z0'] = 0.
+    self._coeffs['R'] = None
+
+    if not x0 is None:
+      self.setX0(x0)
+
+    if not z0 is None:
+      self.setZ0(z0)
+
+    if not R is None:
+      self.setR(R)
+
+
+  def getMaxX(self, halfspace=None):
+
+    if halfspace is None:
+      return self._max_x
+
+    else:
+
+      if not is_integer(halfspace):
+        msg = 'Unable to get the maximum x-coordinate for ' \
+              'YSquarePrism ID={0} since the halfspace is a non-integer ' \
+              'value {1}'.format(self._id, halfspace)
+        raise ValueError(msg)
+
+      elif not halfspace in [-1, +1]:
+        msg = 'Unable to get the maximum x-coordinate for ' \
+              'YSquarePrism ID={0} since the halfspace is {1} which ' \
+              'is not +/-1'.format(self._id, halfspace)
+        raise ValueError(msg)
+
+      elif halfspace == -1:
+        return self._max_x
+
+      else:
+        return MAX_FLOAT
+
+
+  def getMinX(self, halfspace=None):
+
+    if halfspace is None:
+      return self._min_x
+
+    else:
+
+      if not is_integer(halfspace):
+        msg = 'Unable to get the minimum x-coordinate for ' \
+              'YSquarePrism ID={0} since the halfspace is a non-integer ' \
+              'value {1}'.format(self._id, halfspace)
+        raise ValueError(msg)
+
+      elif not halfspace in [-1, +1]:
+        msg = 'Unable to get the minimum x-coordinate for ' \
+              'YSquarePrism ID={0} since the halfspace is {1} which ' \
+              'is not +/-1'.format(self._id, halfspace)
+        raise ValueError(msg)
+
+      elif halfspace == -1:
+        return self._min_x
+
+      else:
+        return MIN_FLOAT
+
+
+  def getMaxZ(self, halfspace=None):
+
+    if halfspace is None:
+      return self._max_z
+
+    else:
+
+      if not is_integer(halfspace):
+        msg = 'Unable to get the maximum z-coordinate for ' \
+              'YSquarePrism ID={0} since the halfspace is a non-integer ' \
+              'value {1}'.format(self._id, halfspace)
+        raise ValueError(msg)
+
+      elif not halfspace in [-1, +1]:
+        msg = 'Unable to get the maximum z-coordinate for ' \
+              'YSquarePrism ID={0} since the halfspace is {1} which is ' \
+              'not +/-1'.format(self._id, halfspace)
+        raise ValueError(msg)
+
+      elif halfspace == -1:
+        return self._max_z
+
+      else:
+        return MAX_FLOAT
+
+
+  def getMinZ(self, halfspace=None):
+
+    if halfspace is None:
+      return self._min_z
+
+    else:
+
+      if not is_integer(halfspace):
+        msg = 'Unable to get the minimum z-coordinate for ' \
+              'YSquarePrism ID={0} since the halfspace is a non-integer ' \
+              'value {1}'.format(self._id, halfspace)
+        raise ValueError(msg)
+
+      elif not halfspace in [-1, +1]:
+        msg = 'Unable to get the minimum z-coordinate for ' \
+              'YSquarePrism ID={0} since the halfspace is {1} which is ' \
+              'not +/-1'.format(self._id, halfspace)
+        raise ValueError(msg)
+
+      elif halfspace == -1:
+        return self._min_z
+
+      else:
+        return MIN_FLOAT
+
+
+  def setX0(self, x0):
+
+    if not is_integer(x0) and not is_float(x0):
+      msg = 'Unable to set x0 coefficient for YSquarePrism ID={0} to ' \
+            'a non-integer or floating point value {1}'.format(self._id, x0)
+      raise ValueError(msg)
+
+    self._coeffs['x0'] = np.float64(x0)
+
+    if not self._coeffs['R'] is None:
+      self._max_x = x0 + self._coeffs['R']
+      self._min_x = x0 - self._coeffs['R']
+
+
+  def setZ0(self, z0):
+
+    if not is_integer(z0) and not is_float(z0):
+      msg = 'Unable to set y0 coefficient for YSquarePrism ID={0} to ' \
+            'a non-integer or floating point value {1}'.format(self._id, z0)
+      raise ValueError(msg)
+
+    self._coeffs['z0'] = np.float64(z0)
+
+    if not self._coeffs['R'] is None:
+      self._max_y = z0 + self._coeffs['R']
+      self._min_y = z0 - self._coeffs['R']
+
+
+  def setR(self, R):
+
+    super(YSquarePrism, self).setR(R)
+
+    if not self._coeffs['x0'] is None:
+      self._max_x = self._coeffs['x0'] + R
+      self._min_x = self._coeffs['x0'] - R
+
+    if not self._coeffs['z0'] is None:
+      self._max_z = self._coeffs['z0'] + R
+      self._min_z = self._coeffs['z0'] - R
+
+
+  def evaluate(self, point):
+
+    super(YSquarePrism, self).evaluate(point)
+
+    x, y, z = point._coords
+
+    Rx = abs(self._coeffs['x0'] - x) - self._coeffs['R']
+    Rz = abs(self._coeffs['z0'] - z) - self._coeffs['R']
+
+    return max(Rx, Rz)
+
+
+class ZSquarePrism(SquarePrism):
 
   def __init__(self, surface_id=None, name='',
                boundary='interface', x0=None, y0=None, R=None):
 
     # Initialize Square class attributes
-    super(Square, self).__init__(surface_id, name, boundary)
+    super(ZSquarePrism, self).__init__(surface_id, name, boundary, R)
 
-    self._type = 'square'
-    self._coeffs['x0'] = None
-    self._coeffs['y0'] = None
+    self._type = 'z-squareprism'
+    self._coeffs['x0'] = 0.
+    self._coeffs['y0'] = 0.
     self._coeffs['R'] = None
 
     if not x0 is None:
@@ -1638,13 +2057,13 @@ class Square(Surface):
 
       if not is_integer(halfspace):
         msg = 'Unable to get the maximum x-coordinate for ' \
-              'Square ID={0} since the halfspace is a non-integer ' \
+              'ZSquarePrism ID={0} since the halfspace is a non-integer ' \
               'value {1}'.format(self._id, halfspace)
         raise ValueError(msg)
 
       elif not halfspace in [-1, +1]:
         msg = 'Unable to get the maximum x-coordinate for ' \
-              'Square ID={0} since the halfspace is {1} which ' \
+              'ZSquarePrism ID={0} since the halfspace is {1} which ' \
               'is not +/-1'.format(self._id, halfspace)
         raise ValueError(msg)
 
@@ -1652,7 +2071,7 @@ class Square(Surface):
         return self._max_x
 
       else:
-        return np.finfo(np.float64).max
+        return MAX_FLOAT
 
 
   def getMinX(self, halfspace=None):
@@ -1664,13 +2083,13 @@ class Square(Surface):
 
       if not is_integer(halfspace):
         msg = 'Unable to get the minimum x-coordinate for ' \
-              'Square ID={0} since the halfspace is a non-integer ' \
+              'ZSquarePrism ID={0} since the halfspace is a non-integer ' \
               'value {1}'.format(self._id, halfspace)
         raise ValueError(msg)
 
       elif not halfspace in [-1, +1]:
         msg = 'Unable to get the minimum x-coordinate for ' \
-              'Square ID={0} since the halfspace is {1} which ' \
+              'ZSquarePrism ID={0} since the halfspace is {1} which ' \
               'is not +/-1'.format(self._id, halfspace)
         raise ValueError(msg)
 
@@ -1678,7 +2097,7 @@ class Square(Surface):
         return self._min_x
 
       else:
-        return np.finfo(np.float64).min
+        return MIN_FLOAT
 
 
   def getMaxY(self, halfspace=None):
@@ -1690,13 +2109,13 @@ class Square(Surface):
 
       if not is_integer(halfspace):
         msg = 'Unable to get the maximum y-coordinate for ' \
-              'Square ID={0} since the halfspace is a non-integer ' \
+              'ZSquarePrism ID={0} since the halfspace is a non-integer ' \
               'value {1}'.format(self._id, halfspace)
         raise ValueError(msg)
 
       elif not halfspace in [-1, +1]:
         msg = 'Unable to get the maximum y-coordinate for ' \
-              'Square ID={0} since the halfspace is {1} which is ' \
+              'ZSquarePrism ID={0} since the halfspace is {1} which is ' \
               'not +/-1'.format(self._id, halfspace)
         raise ValueError(msg)
 
@@ -1704,7 +2123,7 @@ class Square(Surface):
         return self._max_y
 
       else:
-        return np.finfo(np.float64).max
+        return MAX_FLOAT
 
 
   def getMinY(self, halfspace=None):
@@ -1716,13 +2135,13 @@ class Square(Surface):
 
       if not is_integer(halfspace):
         msg = 'Unable to get the minimum y-coordinate for ' \
-              'Square ID={0} since the halfspace is a non-integer ' \
+              'ZSquarePrism ID={0} since the halfspace is a non-integer ' \
               'value {1}'.format(self._id, halfspace)
         raise ValueError(msg)
 
       elif not halfspace in [-1, +1]:
         msg = 'Unable to get the minimum y-coordinate for ' \
-              'Square ID={0} since the halfspace is {1} which is ' \
+              'ZSquarePrism ID={0} since the halfspace is {1} which is ' \
               'not +/-1'.format(self._id, halfspace)
         raise ValueError(msg)
 
@@ -1730,14 +2149,14 @@ class Square(Surface):
         return self._min_y
 
       else:
-        return np.finfo(np.float64).min
+        return MIN_FLOAT
 
 
   def setX0(self, x0):
 
     if not is_integer(x0) and not is_float(x0):
-      msg = 'Unable to set x0 coefficient for Square ID={0} to a non-integer ' \
-            'or floating point value {1}'.format(self._id, x0)
+      msg = 'Unable to set x0 coefficient for ZSquarePrism ID={0} to ' \
+            'a non-integer or floating point value {1}'.format(self._id, x0)
       raise ValueError(msg)
 
     self._coeffs['x0'] = np.float64(x0)
@@ -1750,8 +2169,8 @@ class Square(Surface):
   def setY0(self, y0):
 
     if not is_integer(y0) and not is_float(y0):
-      msg = 'Unable to set y0 coefficient for Square ID={0} to a non-integer ' \
-            'or floating point value {1}'.format(self._id, y0)
+      msg = 'Unable to set y0 coefficient for ZSquarePrism ID={0} to ' \
+            'a non-integer or floating point value {1}'.format(self._id, y0)
       raise ValueError(msg)
 
     self._coeffs['y0'] = np.float64(y0)
@@ -1763,12 +2182,7 @@ class Square(Surface):
 
   def setR(self, R):
 
-    if not is_integer(R) and not is_float(R):
-      msg = 'Unable to set R coefficient for Square ID={0} to a non-integer ' \
-            'or floating point value {1}'.format(self._id, R)
-      raise ValueError(msg)
-
-    self._coeffs['R'] = np.float64(R)
+    super(ZSquarePrism, self).setR(R)
 
     if not self._coeffs['x0'] is None:
       self._max_x = self._coeffs['x0'] + R
@@ -1781,7 +2195,7 @@ class Square(Surface):
 
   def evaluate(self, point):
 
-    super(Square, self).evaluate(point)
+    super(ZSquarePrism, self).evaluate(point)
 
     x, y, z = point._coords
 

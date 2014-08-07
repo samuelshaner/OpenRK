@@ -25,6 +25,27 @@ class RadialMesh(object):
       self.setNumRings(num_rings)
 
 
+  def __deepcopy__(self, memo):
+
+    existing = memo.get(self)
+
+    # If this is the first time we have tried to copy this object, create a copy
+    if existing is None:
+
+      clone = type(self).__new__(type(self))
+      clone._num_rings = self._num_rings
+      clone._max_radius = self._max_radius
+      clone._min_radius = self._min_radius
+      clone._with_outer = self._with_outer
+      clone._with_inner = self._with_inner
+
+      return clone
+
+    # If this object has been copied before, return the first copy made
+    else:
+      return existing
+
+
   def setNumRings(self, num_rings):
 
     if not is_integer(num_rings):
@@ -182,6 +203,23 @@ class SectorMesh(object):
 
     if not num_sectors is None:
       self.setNumSectors(num_sectors)
+
+
+  def __deepcopy__(self, memo):
+
+    existing = memo.get(self)
+
+    # If this is the first time we have tried to copy this object, create a copy
+    if existing is None:
+
+      clone = type(self).__new__(type(self))
+      clone._num_sectors = self._num_sectors
+
+      return clone
+
+    # If this object has been copied before, return the first copy made
+    else:
+      return existing
 
 
   def setNumSectors(self, num_sectors):
