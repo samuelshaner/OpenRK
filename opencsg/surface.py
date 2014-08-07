@@ -603,8 +603,9 @@ class XCylinder(Cylinder):
     super(XCylinder, self).__init__(surface_id, name, boundary, R)
 
     self._type = 'x-cylinder'
-    self._coeffs['y0'] = None
-    self._coeffs['z0'] = None
+    self._coeffs['y0'] = 0.
+    self._coeffs['z0'] = 0.
+    self._coeffs['R'] = None
 
     if not y0 is None:
       self.setY0(y0)
@@ -781,8 +782,9 @@ class YCylinder(Cylinder):
     super(YCylinder, self).__init__(surface_id, name, boundary, R)
 
     self._type = 'y-cylinder'
-    self._coeffs['x0'] = None
-    self._coeffs['z0'] = None
+    self._coeffs['x0'] = 0.
+    self._coeffs['z0'] = 0.
+    self._coeffs['R'] = None
 
     if not x0 is None:
       self.setX0(x0)
@@ -958,8 +960,10 @@ class ZCylinder(Cylinder):
     super(ZCylinder, self).__init__(surface_id, name, boundary, R)
 
     self._type = 'z-cylinder'
-    self._coeffs['x0'] = None
-    self._coeffs['y0'] = None
+    self._coeffs['x0'] = 0.
+    self._coeffs['y0'] = 0.
+    self._coeffs['R'] = None
+
 
     if not x0 is None:
       self.setX0(x0)
@@ -1420,8 +1424,8 @@ class XSquarePrism(SquarePrism):
     super(XSquarePrism, self).__init__(surface_id, name, boundary, R)
 
     self._type = 'x-squareprism'
-    self._coeffs['y0'] = None
-    self._coeffs['z0'] = None
+    self._coeffs['y0'] = 0.
+    self._coeffs['z0'] = 0.
     self._coeffs['R'] = None
 
     if not y0 is None:
@@ -1600,8 +1604,8 @@ class YSquarePrism(SquarePrism):
     super(YSquarePrism, self).__init__(surface_id, name, boundary, R)
 
     self._type = 'y-squareprism'
-    self._coeffs['x0'] = None
-    self._coeffs['z0'] = None
+    self._coeffs['x0'] = 0.
+    self._coeffs['z0'] = 0.
     self._coeffs['R'] = None
 
     if not x0 is None:
@@ -1780,8 +1784,8 @@ class ZSquarePrism(SquarePrism):
     super(ZSquarePrism, self).__init__(surface_id, name, boundary, R)
 
     self._type = 'z-squareprism'
-    self._coeffs['x0'] = None
-    self._coeffs['y0'] = None
+    self._coeffs['x0'] = 0.
+    self._coeffs['y0'] = 0.
     self._coeffs['R'] = None
 
     if not x0 is None:
