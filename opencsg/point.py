@@ -289,5 +289,3 @@ class Segment(object):
     string += '{0: <16}{1}{2}\n'.format('\tRegion Id', '=\t', self._region_id)
     string += '{0: <16}{1}{2}\n'.format('\tLength', '=\t', self._length)
     return string
-
-
