@@ -19,8 +19,8 @@ water = Material(name='Water')
 print('Creating Surfaces...')
 
 cylinder = ZCylinder(x0=0.0, y0=0.0, R=1.0)
-square = Square(x0=0., y0=0., R=2.0)
-square.setBoundaryType('reflective')
+box = ZSquarePrism(x0=0., y0=0., R=2.0)
+box.setBoundaryType('reflective')
 
 
 ###############################################################################
@@ -47,7 +47,7 @@ cells.append(Cell(name='Root Cell'))
 
 cells[0].addSurface(halfspace=-1, surface=cylinder)
 cells[1].addSurface(halfspace=+1, surface=cylinder)
-cells[2].addSurface(halfspace=-1, surface=square)
+cells[2].addSurface(halfspace=-1, surface=box)
 
 universes[0].addCells(cells[0:2])
 universes[1].addCell(cells[2])

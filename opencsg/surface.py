@@ -29,7 +29,9 @@ surf_types = ['plane',
               'y-cylinder',
               'z-cylinder',
               'sphere',
-              'square']
+              'x-squareprism',
+              'y-squareprism',
+              'z-squareprism']
 
 max_float = np.finfo(np.float64).max
 min_float = np.finfo(np.float64).min
@@ -1386,15 +1388,398 @@ class Sphere(Surface):
     return (R - self._coeffs['R'])
 
 
-class Square(Surface):
+
+class SquarePrism(Surface):
+
+  def __init__(self, surface_id=None, name='',
+               boundary='interface', R=None):
+
+    # Initialize Cylinder class attributes
+    super(SquarePrism, self).__init__(surface_id, name, boundary)
+
+    self._coeffs['R'] = None
+
+
+  def setR(self, R):
+
+    if not is_integer(R) and not is_float(R):
+      msg = 'Unable to set R coefficient for SquarePrism ID={0} to ' \
+            'a non-integer or floating point value {1}'.format(self._id, R)
+      raise ValueError(msg)
+
+    self._coeffs['R'] = np.float64(R)
+
+
+
+class XSquarePrism(SquarePrism):
+
+  def __init__(self, surface_id=None, name='',
+               boundary='interface', y0=None, z0=None, R=None):
+
+    # Initialize XSquarePrism class attributes
+    super(XSquarePrism, self).__init__(surface_id, name, boundary, R)
+
+    self._type = 'x-squareprism'
+    self._coeffs['y0'] = None
+    self._coeffs['z0'] = None
+    self._coeffs['R'] = None
+
+    if not y0 is None:
+      self.setY0(y0)
+
+    if not z0 is None:
+      self.setZ0(z0)
+
+    if not R is None:
+      self.setR(R)
+
+
+  def getMaxY(self, halfspace=None):
+
+    if halfspace is None:
+      return self._max_y
+
+    else:
+
+      if not is_integer(halfspace):
+        msg = 'Unable to get the maximum y-coordinate for ' \
+              'XSquarePrism ID={0} since the halfspace is a non-integer ' \
+              'value {1}'.format(self._id, halfspace)
+        raise ValueError(msg)
+
+      elif not halfspace in [-1, +1]:
+        msg = 'Unable to get the maximum y-coordinate for ' \
+              'XSquarePrism ID={0} since the halfspace is {1} which ' \
+              'is not +/-1'.format(self._id, halfspace)
+        raise ValueError(msg)
+
+      elif halfspace == -1:
+        return self._max_y
+
+      else:
+        return np.finfo(np.float64).max
+
+
+  def getMinY(self, halfspace=None):
+
+    if halfspace is None:
+      return self._min_y
+
+    else:
+
+      if not is_integer(halfspace):
+        msg = 'Unable to get the minimum y-coordinate for ' \
+              'XSquarePrism ID={0} since the halfspace is a non-integer ' \
+              'value {1}'.format(self._id, halfspace)
+        raise ValueError(msg)
+
+      elif not halfspace in [-1, +1]:
+        msg = 'Unable to get the minimum y-coordinate for ' \
+              'XSquarePrism ID={0} since the halfspace is {1} which ' \
+              'is not +/-1'.format(self._id, halfspace)
+        raise ValueError(msg)
+
+      elif halfspace == -1:
+        return self._min_y
+
+      else:
+        return np.finfo(np.float64).min
+
+
+  def getMaxZ(self, halfspace=None):
+
+    if halfspace is None:
+      return self._max_z
+
+    else:
+
+      if not is_integer(halfspace):
+        msg = 'Unable to get the maximum z-coordinate for ' \
+              'XSquarePrism ID={0} since the halfspace is a non-integer ' \
+              'value {1}'.format(self._id, halfspace)
+        raise ValueError(msg)
+
+      elif not halfspace in [-1, +1]:
+        msg = 'Unable to get the maximum z-coordinate for ' \
+              'XSquarePrism ID={0} since the halfspace is {1} which is ' \
+              'not +/-1'.format(self._id, halfspace)
+        raise ValueError(msg)
+
+      elif halfspace == -1:
+        return self._max_z
+
+      else:
+        return np.finfo(np.float64).max
+
+
+  def getMinZ(self, halfspace=None):
+
+    if halfspace is None:
+      return self._min_z
+
+    else:
+
+      if not is_integer(halfspace):
+        msg = 'Unable to get the minimum z-coordinate for ' \
+              'XSquarePrism ID={0} since the halfspace is a non-integer ' \
+              'value {1}'.format(self._id, halfspace)
+        raise ValueError(msg)
+
+      elif not halfspace in [-1, +1]:
+        msg = 'Unable to get the minimum z-coordinate for ' \
+              'XSquarePrism ID={0} since the halfspace is {1} which is ' \
+              'not +/-1'.format(self._id, halfspace)
+        raise ValueError(msg)
+
+      elif halfspace == -1:
+        return self._min_z
+
+      else:
+        return np.finfo(np.float64).min
+
+
+  def setY0(self, y0):
+
+    if not is_integer(y0) and not is_float(y0):
+      msg = 'Unable to set x0 coefficient for XSquarePrism ID={0} to ' \
+            'a non-integer or floating point value {1}'.format(self._id, y0)
+      raise ValueError(msg)
+
+    self._coeffs['x0'] = np.float64(y0)
+
+    if not self._coeffs['R'] is None:
+      self._max_x = y0 + self._coeffs['R']
+      self._min_x = y0 - self._coeffs['R']
+
+
+  def setZ0(self, z0):
+
+    if not is_integer(z0) and not is_float(z0):
+      msg = 'Unable to set y0 coefficient for XSquarePrism ID={0} to ' \
+            'a non-integer or floating point value {1}'.format(self._id, z0)
+      raise ValueError(msg)
+
+    self._coeffs['z0'] = np.float64(z0)
+
+    if not self._coeffs['R'] is None:
+      self._max_y = z0 + self._coeffs['R']
+      self._min_y = z0 - self._coeffs['R']
+
+
+  def setR(self, R):
+
+    super(XSquarePrism, self).setR(R)
+
+    if not self._coeffs['y0'] is None:
+      self._max_y = self._coeffs['y0'] + R
+      self._min_y = self._coeffs['y0'] - R
+
+    if not self._coeffs['z0'] is None:
+      self._max_z = self._coeffs['z0'] + R
+      self._min_z = self._coeffs['z0'] - R
+
+
+  def evaluate(self, point):
+
+    super(XSquarePrism, self).evaluate(point)
+
+    x, y, z = point._coords
+
+    Ry = abs(self._coeffs['y0'] - y) - self._coeffs['R']
+    Rz = abs(self._coeffs['z0'] - z) - self._coeffs['R']
+
+    return max(Ry, Rz)
+
+
+class YSquarePrism(SquarePrism):
+
+  def __init__(self, surface_id=None, name='',
+               boundary='interface', x0=None, z0=None, R=None):
+
+    # Initialize YSquarePrism class attributes
+    super(YSquarePrism, self).__init__(surface_id, name, boundary, R)
+
+    self._type = 'y-squareprism'
+    self._coeffs['x0'] = None
+    self._coeffs['z0'] = None
+    self._coeffs['R'] = None
+
+    if not x0 is None:
+      self.setX0(x0)
+
+    if not z0 is None:
+      self.setZ0(z0)
+
+    if not R is None:
+      self.setR(R)
+
+
+  def getMaxX(self, halfspace=None):
+
+    if halfspace is None:
+      return self._max_x
+
+    else:
+
+      if not is_integer(halfspace):
+        msg = 'Unable to get the maximum x-coordinate for ' \
+              'YSquarePrism ID={0} since the halfspace is a non-integer ' \
+              'value {1}'.format(self._id, halfspace)
+        raise ValueError(msg)
+
+      elif not halfspace in [-1, +1]:
+        msg = 'Unable to get the maximum x-coordinate for ' \
+              'YSquarePrism ID={0} since the halfspace is {1} which ' \
+              'is not +/-1'.format(self._id, halfspace)
+        raise ValueError(msg)
+
+      elif halfspace == -1:
+        return self._max_x
+
+      else:
+        return np.finfo(np.float64).max
+
+
+  def getMinX(self, halfspace=None):
+
+    if halfspace is None:
+      return self._min_x
+
+    else:
+
+      if not is_integer(halfspace):
+        msg = 'Unable to get the minimum x-coordinate for ' \
+              'YSquarePrism ID={0} since the halfspace is a non-integer ' \
+              'value {1}'.format(self._id, halfspace)
+        raise ValueError(msg)
+
+      elif not halfspace in [-1, +1]:
+        msg = 'Unable to get the minimum x-coordinate for ' \
+              'YSquarePrism ID={0} since the halfspace is {1} which ' \
+              'is not +/-1'.format(self._id, halfspace)
+        raise ValueError(msg)
+
+      elif halfspace == -1:
+        return self._min_x
+
+      else:
+        return np.finfo(np.float64).min
+
+
+  def getMaxZ(self, halfspace=None):
+
+    if halfspace is None:
+      return self._max_z
+
+    else:
+
+      if not is_integer(halfspace):
+        msg = 'Unable to get the maximum z-coordinate for ' \
+              'YSquarePrism ID={0} since the halfspace is a non-integer ' \
+              'value {1}'.format(self._id, halfspace)
+        raise ValueError(msg)
+
+      elif not halfspace in [-1, +1]:
+        msg = 'Unable to get the maximum z-coordinate for ' \
+              'YSquarePrism ID={0} since the halfspace is {1} which is ' \
+              'not +/-1'.format(self._id, halfspace)
+        raise ValueError(msg)
+
+      elif halfspace == -1:
+        return self._max_z
+
+      else:
+        return np.finfo(np.float64).max
+
+
+  def getMinZ(self, halfspace=None):
+
+    if halfspace is None:
+      return self._min_z
+
+    else:
+
+      if not is_integer(halfspace):
+        msg = 'Unable to get the minimum z-coordinate for ' \
+              'YSquarePrism ID={0} since the halfspace is a non-integer ' \
+              'value {1}'.format(self._id, halfspace)
+        raise ValueError(msg)
+
+      elif not halfspace in [-1, +1]:
+        msg = 'Unable to get the minimum z-coordinate for ' \
+              'YSquarePrism ID={0} since the halfspace is {1} which is ' \
+              'not +/-1'.format(self._id, halfspace)
+        raise ValueError(msg)
+
+      elif halfspace == -1:
+        return self._min_z
+
+      else:
+        return np.finfo(np.float64).min
+
+
+  def setX0(self, x0):
+
+    if not is_integer(x0) and not is_float(x0):
+      msg = 'Unable to set x0 coefficient for YSquarePrism ID={0} to ' \
+            'a non-integer or floating point value {1}'.format(self._id, x0)
+      raise ValueError(msg)
+
+    self._coeffs['x0'] = np.float64(x0)
+
+    if not self._coeffs['R'] is None:
+      self._max_x = x0 + self._coeffs['R']
+      self._min_x = x0 - self._coeffs['R']
+
+
+  def setZ0(self, z0):
+
+    if not is_integer(z0) and not is_float(z0):
+      msg = 'Unable to set y0 coefficient for YSquarePrism ID={0} to ' \
+            'a non-integer or floating point value {1}'.format(self._id, z0)
+      raise ValueError(msg)
+
+    self._coeffs['z0'] = np.float64(z0)
+
+    if not self._coeffs['R'] is None:
+      self._max_y = z0 + self._coeffs['R']
+      self._min_y = z0 - self._coeffs['R']
+
+
+  def setR(self, R):
+
+    super(YSquarePrism, self).setR(R)
+
+    if not self._coeffs['x0'] is None:
+      self._max_x = self._coeffs['x0'] + R
+      self._min_x = self._coeffs['x0'] - R
+
+    if not self._coeffs['z0'] is None:
+      self._max_z = self._coeffs['z0'] + R
+      self._min_z = self._coeffs['z0'] - R
+
+
+  def evaluate(self, point):
+
+    super(YSquarePrism, self).evaluate(point)
+
+    x, y, z = point._coords
+
+    Rx = abs(self._coeffs['x0'] - x) - self._coeffs['R']
+    Rz = abs(self._coeffs['z0'] - z) - self._coeffs['R']
+
+    return max(Rx, Rz)
+
+
+class ZSquarePrism(SquarePrism):
 
   def __init__(self, surface_id=None, name='',
                boundary='interface', x0=None, y0=None, R=None):
 
     # Initialize Square class attributes
-    super(Square, self).__init__(surface_id, name, boundary)
+    super(ZSquarePrism, self).__init__(surface_id, name, boundary, R)
 
-    self._type = 'square'
+    self._type = 'z-squareprism'
     self._coeffs['x0'] = None
     self._coeffs['y0'] = None
     self._coeffs['R'] = None
@@ -1418,13 +1803,13 @@ class Square(Surface):
 
       if not is_integer(halfspace):
         msg = 'Unable to get the maximum x-coordinate for ' \
-              'Square ID={0} since the halfspace is a non-integer ' \
+              'ZSquarePrism ID={0} since the halfspace is a non-integer ' \
               'value {1}'.format(self._id, halfspace)
         raise ValueError(msg)
 
       elif not halfspace in [-1, +1]:
         msg = 'Unable to get the maximum x-coordinate for ' \
-              'Square ID={0} since the halfspace is {1} which ' \
+              'ZSquarePrism ID={0} since the halfspace is {1} which ' \
               'is not +/-1'.format(self._id, halfspace)
         raise ValueError(msg)
 
@@ -1444,13 +1829,13 @@ class Square(Surface):
 
       if not is_integer(halfspace):
         msg = 'Unable to get the minimum x-coordinate for ' \
-              'Square ID={0} since the halfspace is a non-integer ' \
+              'ZSquarePrism ID={0} since the halfspace is a non-integer ' \
               'value {1}'.format(self._id, halfspace)
         raise ValueError(msg)
 
       elif not halfspace in [-1, +1]:
         msg = 'Unable to get the minimum x-coordinate for ' \
-              'Square ID={0} since the halfspace is {1} which ' \
+              'ZSquarePrism ID={0} since the halfspace is {1} which ' \
               'is not +/-1'.format(self._id, halfspace)
         raise ValueError(msg)
 
@@ -1470,13 +1855,13 @@ class Square(Surface):
 
       if not is_integer(halfspace):
         msg = 'Unable to get the maximum y-coordinate for ' \
-              'Square ID={0} since the halfspace is a non-integer ' \
+              'ZSquarePrism ID={0} since the halfspace is a non-integer ' \
               'value {1}'.format(self._id, halfspace)
         raise ValueError(msg)
 
       elif not halfspace in [-1, +1]:
         msg = 'Unable to get the maximum y-coordinate for ' \
-              'Square ID={0} since the halfspace is {1} which is ' \
+              'ZSquarePrism ID={0} since the halfspace is {1} which is ' \
               'not +/-1'.format(self._id, halfspace)
         raise ValueError(msg)
 
@@ -1496,13 +1881,13 @@ class Square(Surface):
 
       if not is_integer(halfspace):
         msg = 'Unable to get the minimum y-coordinate for ' \
-              'Square ID={0} since the halfspace is a non-integer ' \
+              'ZSquarePrism ID={0} since the halfspace is a non-integer ' \
               'value {1}'.format(self._id, halfspace)
         raise ValueError(msg)
 
       elif not halfspace in [-1, +1]:
         msg = 'Unable to get the minimum y-coordinate for ' \
-              'Square ID={0} since the halfspace is {1} which is ' \
+              'ZSquarePrism ID={0} since the halfspace is {1} which is ' \
               'not +/-1'.format(self._id, halfspace)
         raise ValueError(msg)
 
@@ -1516,8 +1901,8 @@ class Square(Surface):
   def setX0(self, x0):
 
     if not is_integer(x0) and not is_float(x0):
-      msg = 'Unable to set x0 coefficient for Square ID={0} to a non-integer ' \
-            'or floating point value {1}'.format(self._id, x0)
+      msg = 'Unable to set x0 coefficient for ZSquarePrism ID={0} to ' \
+            'a non-integer or floating point value {1}'.format(self._id, x0)
       raise ValueError(msg)
 
     self._coeffs['x0'] = np.float64(x0)
@@ -1530,8 +1915,8 @@ class Square(Surface):
   def setY0(self, y0):
 
     if not is_integer(y0) and not is_float(y0):
-      msg = 'Unable to set y0 coefficient for Square ID={0} to a non-integer ' \
-            'or floating point value {1}'.format(self._id, y0)
+      msg = 'Unable to set y0 coefficient for ZSquarePrism ID={0} to ' \
+            'a non-integer or floating point value {1}'.format(self._id, y0)
       raise ValueError(msg)
 
     self._coeffs['y0'] = np.float64(y0)
@@ -1543,12 +1928,7 @@ class Square(Surface):
 
   def setR(self, R):
 
-    if not is_integer(R) and not is_float(R):
-      msg = 'Unable to set R coefficient for Square ID={0} to a non-integer ' \
-            'or floating point value {1}'.format(self._id, R)
-      raise ValueError(msg)
-
-    self._coeffs['R'] = np.float64(R)
+    super(ZSquarePrism, self).setR(R)
 
     if not self._coeffs['x0'] is None:
       self._max_x = self._coeffs['x0'] + R
@@ -1561,7 +1941,7 @@ class Square(Surface):
 
   def evaluate(self, point):
 
-    super(Square, self).evaluate(point)
+    super(ZSquarePrism, self).evaluate(point)
 
     x, y, z = point._coords
 
