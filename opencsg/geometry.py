@@ -443,7 +443,7 @@ class Geometry(object):
     bounds = self.getBounds()
 
     for ray in xrange(num_rays):
-      edge = np.random.choice([0, 1, 2, 3])
+      edge = np.random.randint(4)
       if edge == 0:
         x = bounds[edge] + tiny_bit
         y = np.random.uniform(bounds[2], bounds[3])
