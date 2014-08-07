@@ -356,7 +356,7 @@ class Plane(Surface):
                   self._coeffs['B'] * v + \
                   self._coeffs['C'] * w
 
-    if abs(denominator) < on_surface_thresh:
+    if abs(denominator) < ON_SURFACE_THRESH:
       return [None]
 
     dist = numerator/denominator
@@ -461,7 +461,7 @@ class XPlane(Plane):
     x, y, z = point._coords
     u, v, w = direction.normalize()
 
-    if abs(u) < on_surface_thresh:
+    if abs(u) < ON_SURFACE_THRESH:
       return [None]
 
     dist = (self._coeffs['x0'] - x)/u
@@ -566,7 +566,7 @@ class YPlane(Plane):
     x, y, z = point._coords
     u, v, w = direction.normalize()
 
-    if abs(v) < on_surface_thresh:
+    if abs(v) < ON_SURFACE_THRESH:
       return [None]
 
     dist = (self._coeffs['y0'] - y)/v
@@ -671,7 +671,7 @@ class ZPlane(Plane):
     x, y, z = point._coords
     u, v, w = direction.normalize()
 
-    if abs(w) < on_surface_thresh:
+    if abs(w) < ON_SURFACE_THRESH:
       return [None]
 
     dist = (self._coeffs['z0'] - z)/w
@@ -901,7 +901,7 @@ class XCylinder(Cylinder):
     k = ybar*v + zbar*w
     c = ybar**2 + zbar**2 - self._coeffs['R']**2
 
-    if abs(a) < on_surface_thresh or k**2-a*c < 0:
+    if abs(a) < ON_SURFACE_THRESH or k**2-a*c < 0:
       return [None, None]
 
     if c < 0:
@@ -1113,7 +1113,7 @@ class YCylinder(Cylinder):
     k = xbar*u + zbar*w
     c = xbar**2 + zbar**2 - self._coeffs['R']**2
 
-    if abs(a) < on_surface_thresh or k**2-a*c < 0:
+    if abs(a) < ON_SURFACE_THRESH or k**2-a*c < 0:
       return [None, None]
 
     if c < 0:
@@ -1328,7 +1328,7 @@ class ZCylinder(Cylinder):
     k = xbar*u + ybar*v
     c = xbar**2 + ybar**2 - self._coeffs['R']**2
 
-    if abs(a) < on_surface_thresh or k**2-a*c < 0:
+    if abs(a) < ON_SURFACE_THRESH or k**2-a*c < 0:
       return [None]
 
     if c < 0:
