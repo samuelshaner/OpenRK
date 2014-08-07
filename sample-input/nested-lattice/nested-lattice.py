@@ -23,8 +23,8 @@ cylinders.append(ZCylinder(x0=0.0, y0=0.0, R=0.4))
 cylinders.append(ZCylinder(x0=0.0, y0=0.0, R=0.3))
 cylinders.append(ZCylinder(x0=0.0, y0=0.0, R=0.2))
 
-square = Square(x0=0., y0=0., R=2.)
-square.setBoundaryType('reflective')
+box = ZSquarePrism(x0=0., y0=0., R=2.)
+box.setBoundaryType('reflective')
 
 
 ###############################################################################
@@ -64,7 +64,7 @@ cells[3].addSurface(halfspace=+1, surface=cylinders[1])
 cells[4].addSurface(halfspace=-1, surface=cylinders[2])
 cells[5].addSurface(halfspace=+1, surface=cylinders[2])
 
-cells[7].addSurface(halfspace=-1, surface=square)
+cells[7].addSurface(halfspace=-1, surface=box)
 
 universes[0].addCells(cells[0:2])
 universes[1].addCells(cells[2:4])
@@ -165,4 +165,4 @@ print('Plotting Geometry...')
 plotter.plot_cells(geometry)
 plotter.plot_materials(geometry)
 plotter.plot_regions(geometry)
-#plotter.plot_neighbor_cells(geometry)
+plotter.plot_neighbor_cells(geometry)

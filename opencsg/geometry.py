@@ -33,6 +33,32 @@ class Geometry(object):
     self._regions_to_unique_neighbors = dict()
 
 
+  def __deepcopy__(self, memo):
+
+    existing = memo.get(self)
+
+    # If this is the first time we have tried to copy this object, create a copy
+    if existing is None:
+
+      clone = type(self).__new__(type(self))
+      clone._root_universe = copy.deepcopy(self._root_universe)
+      clone._num_regions = self._num_regions
+      clone._volume = self._volume
+      clone._region_volumes = copy.deepcopy(self._region_volumes)
+      clone._num_neighbors = self._num_neighbors
+      clone._neighbor_ids = copy.deepcopy(self._neighbor_ids)
+      clone._num_unique_neighbors = copy.deepcopy(self._num_unique_neighbors)
+      clone._unique_neighbor_ids = copy.deepcopy(self._unique_neighbor_ids)
+      clone._regions_to_neighbors = copy.deepcopy(self._regions_to_neighbors)
+      clone._regions_to_unique_neighbors = copy.deepcopy(self._regions_to_unique_neighbors)
+
+      return clone
+
+    # If this object has been copied before, return the first copy made
+    else:
+      return existing
+
+
   def getMaxX(self):
 
     if self._root_universe is None:
@@ -134,30 +160,30 @@ class Geometry(object):
   def getAllMaterials(self):
 
     material_cells = self.getAllMaterialCells()
-    materials = set()
+    materials = dict()
 
-    for cell in material_cells:
-      materials.add(cell._fill)
+    for cell_id, cell in material_cells.items():
+      materials[cell._fill._id] = cell._fill
 
-    return list(materials)
+    return materials
 
 
   def getAllMaterialCells(self):
 
     all_cells = self.getAllCells()
-    material_cells = set()
+    material_cells = dict()
 
     for cell_id, cell in all_cells.items():
       if cell._type == 'material':
-        material_cells.add(cell)
+        material_cells[cell._id] = cell
 
-    return list(material_cells)
+    return material_cells
 
 
   def getAllMaterialUniverses(self):
 
     all_universes = self.getAllUniverses()
-    material_universes = set()
+    material_universes = dict()
 
     for universe_id, universe in all_universes.items():
 
@@ -169,9 +195,9 @@ class Geometry(object):
 
       for cell_id, cell in cells.items():
         if cell._type == 'material':
-          material_universes.add(universe)
+          material_universes[universe._id] = universe
 
-    return list(material_universes)
+    return material_universes
 
 
   def setRootUniverse(self, root_universe):
@@ -245,6 +271,10 @@ class Geometry(object):
             'root Universe for the Geometry has not yet been set'
       raise ValueError(msg)
 
+    # If the neighbors have already been built, just return
+    if self._num_neighbors > 0:
+      return
+
     self._root_universe.buildNeighbors()
 
     # Initialize offsets maps
@@ -268,8 +298,8 @@ class Geometry(object):
     for region in range(self._num_regions):
 
       # Build lists of neighbor Cells/Universes
-      neighbors = self.getNeighbors(region)
-      unique_neighbors = self.getUniqueNeighbors(region)
+      neighbors = self.getNeighborsHash(region)
+      unique_neighbors = self.getUniqueNeighborsHash(region)
 
       # Store the hashes to the region-to-neighbor hash maps
       self._regions_to_neighbors[region] = neighbors
@@ -290,6 +320,11 @@ class Geometry(object):
 
     coords = self.findCoords(x=x, y=y, z=z)
     region_id = 0
+
+    # FIXME!!!
+    # If we did not find the coords, return NaN as an error code
+    if coords._cell is None:
+      return np.nan
 
     while not coords is None:
 
@@ -372,3 +407,12 @@ class Geometry(object):
   def getUniqueNeighbors(self, region_id):
     coords = self.findRegion(region_id)
     return coords.getUniqueNeighbors()
+
+
+  def getNeighborsHash(self, region_id):
+    coords = self.findRegion(region_id)
+    return coords.getNeighborsHash()
+
+  def getUniqueNeighborsHash(self, region_id):
+    coords = self.findRegion(region_id)
+    return coords.getUniqueNeighborsHash()

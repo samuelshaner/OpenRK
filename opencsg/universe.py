@@ -10,6 +10,7 @@ import numpy as np
 import math
 from collections import OrderedDict
 from numpy.lib.stride_tricks import as_strided
+import copy
 
 
 # Error threshold for determining how close to the boundary of a Lattice cell
@@ -24,6 +25,7 @@ AUTO_UNIVERSE_ID = 10000
 
 
 class Universe(object):
+
 
   def __init__(self, universe_id=None, name=''):
 
@@ -45,13 +47,26 @@ class Universe(object):
     self.setName(name)
 
 
-  def buildNeighbors(self):
+  def __deepcopy__(self, memo):
 
-    # Loop over all of the Universe's Cells
-    for cell_id, cell in self._cells.items():
+    existing = memo.get(self)
 
-      # Make recursive call for the Cell to build its neighbor Cells
-      cell.buildNeighbors()
+    # If this is the first time we have tried to copy this object, create a copy
+    if existing is None:
+
+      clone = type(self).__new__(type(self))
+      clone._id = self._id
+      clone._name = self._name
+      clone._cells = copy.deepcopy(self._cells)
+      clone._cell_offsets = copy.deepcopy(self._cell_offsets)
+      clone._num_regions = self._num_regions
+      clone._volume = self._volume
+
+      return clone
+
+    # If this object has been copied before, return the first copy made
+    else:
+      return existing
 
 
   def getAllCells(self):
@@ -393,6 +408,15 @@ class Universe(object):
     self._num_regions = count
 
 
+  def buildNeighbors(self):
+
+    # Loop over all of the Universe's Cells
+    for cell_id, cell in self._cells.items():
+
+      # Make recursive call for the Cell to build its neighbor Cells
+      cell.buildNeighbors()
+
+
   def findCell(self, localcoords):
 
     if not isinstance(localcoords, LocalCoords):
@@ -409,7 +433,7 @@ class Universe(object):
 
         # 'material' type Cell - lowest level, terminate search for Cell
         if cell._type == 'material':
-            return cell
+          return cell
 
         # 'fill' type Cell - Cell contains a Universe at a lower level
         # Update coords to next level and continue search
@@ -434,7 +458,11 @@ class Universe(object):
           localcoords.setNext(next_coords)
           next_coords.setPrev(localcoords)
 
+          # Make recursive call to next nested Universe level
           return fill.findCell(next_coords)
+
+    # If we reach this point, we did not find a Cell containing the Point
+    return None
 
 
   def findRegion(self, region_id, univ_coords):
@@ -536,6 +564,33 @@ class Lattice(Universe):
     self.setId(lattice_id)
     self.setName(name)
     self.setType(type)
+
+
+  def __deepcopy__(self, memo):
+
+    existing = memo.get(self)
+
+    # If this is the first time we have tried to copy this object, create a copy
+    if existing is None:
+
+      clone = type(self).__new__(type(self))
+      clone._id = self._id
+      clone._name = self._name
+      clone._type = self._type
+      clone._dimension = self._dimension
+      clone._width = self._width
+      clone._universes = copy.deepcopy(self._universes)
+      clone._cell_offsets = copy.deepcopy(self._cell_offsets)
+      clone._num_regions = self._num_regions
+      clone._offset = copy.deepcopy(self._offset)
+      clone._neighbor_universes = copy.deepcopy(self._neighbor_universes)
+      clone._neighbor_depth = self._neighbor_depth
+
+      return clone
+
+    # If this object has been copied before, return the first copy made
+    else:
+      return existing
 
 
   def getUniverse(self, lat_x, lat_y, lat_z=None):
@@ -656,6 +711,7 @@ class Lattice(Universe):
     if lat_z is None:
       lat_z = 0
 
+
     depth = self._neighbor_depth
 
     # Compute indices for Lattice cell entry in the neighbor universes array
@@ -684,125 +740,63 @@ class Lattice(Universe):
     neighbor_universes = self._neighbor_universes[ix,jx,kx][i0:i1,j0:j1,k0:k1]
 
     # Convert 3D neighbor universes array to a 3D tuple of tuples of tuples
-    neighbors_universes_tuple = ( )
 
     # Build a 2D tuple of all of the neighbors
     # Iterate over all orderings of the (x,y,z) coordinates to ensure
     # that neighbors tuple is rotationally symmetric across all dimensions
 
     # x-y-z
-    # Iterate over z-axis of sliding window
-    for i in np.arange(neighbor_universes.shape[0]):
-      xy_neighbors = ( )
-
-      # Iterate over y-axis of sliding window
-      for j in np.arange(neighbor_universes.shape[1]):
-        x_neighbors = ( )
-
-        # Iterate over x-axis of sliding window
-        for k in np.arange(neighbor_universes.shape[2]):
-          x_neighbors += (neighbor_universes[i,j,k], )
-
-        xy_neighbors += tuple(sorted(x_neighbors))
-
-      neighbors_universes_tuple += tuple(sorted(xy_neighbors))
+    xy_neighbors = neighbor_universes
 
     # x-z-y
-    # Iterate over y-axis of sliding window
-    for j in np.arange(neighbor_universes.shape[1]):
-      xz_neighbors = ( )
-
-      # Iterate over z-axis of sliding window
-      for i in np.arange(neighbor_universes.shape[0]):
-        x_neighbors = ( )
-
-        # Iterate over x-axis of sliding window
-        for k in np.arange(neighbor_universes.shape[2]):
-          x_neighbors += (neighbor_universes[i,j,k], )
-
-        xz_neighbors += tuple(sorted(x_neighbors))
-
-      neighbors_universes_tuple += tuple(sorted(xz_neighbors))
+    xz_neighbors = np.swapaxes(neighbor_universes, 0, 1)
 
     # y-x-z
-    # Iterate over z-axis of sliding window
-    for i in np.arange(neighbor_universes.shape[0]):
-      yx_neighbors = ( )
-
-      # Iterate over x-axis of sliding window
-      for k in np.arange(neighbor_universes.shape[2]):
-        y_neighbors = ( )
-
-        # Iterate over y-axis of sliding window
-        for j in np.arange(neighbor_universes.shape[1]):
-          y_neighbors += (neighbor_universes[i,j,k], )
-
-        yx_neighbors += tuple(sorted(y_neighbors))
-
-      neighbors_universes_tuple += tuple(sorted(yx_neighbors))
+    yx_neighbors = np.swapaxes(neighbor_universes, 2, 1)
 
     # y-z-x
-    # Iterate over x-axis of sliding window
-    for k in np.arange(neighbor_universes.shape[2]):
-      yz_neighbors = ( )
-
-      # Iterate over z-axis of sliding window
-      for i in np.arange(neighbor_universes.shape[0]):
-        y_neighbors = ( )
-
-        # Iterate over y-axis of sliding window
-        for j in np.arange(neighbor_universes.shape[1]):
-          y_neighbors += (neighbor_universes[i,j,k], )
-
-        yz_neighbors += tuple(sorted(y_neighbors))
-
-      neighbors_universes_tuple += tuple(sorted(yz_neighbors))
+    yz_neighbors = np.swapaxes(neighbor_universes, 2, 0)
+    yz_neighbors = np.swapaxes(yz_neighbors, 2, 1)
 
     # z-x-y
-    # Iterate over y-axis of sliding window
-    for j in np.arange(neighbor_universes.shape[1]):
-      xz_neighbors = ( )
-
-      # Iterate over x-axis of sliding window
-      for k in np.arange(neighbor_universes.shape[2]):
-        z_neighbors = ( )
-
-        # Iterate over z-axis of sliding window
-        for i in np.arange(neighbor_universes.shape[0]):
-          z_neighbors += (neighbor_universes[i,j,k], )
-
-        xz_neighbors += tuple(sorted(z_neighbors))
-
-      neighbors_universes_tuple += tuple(sorted(xz_neighbors))
+    zx_neighbors = np.swapaxes(neighbor_universes, 2, 0)
+    zx_neighbors = np.swapaxes(zx_neighbors, 1, 0)
 
     # z-y-x
-    # Iterate over x-axis of sliding window
-    for k in np.arange(neighbor_universes.shape[2]):
-      zy_neighbors = ( )
+    zy_neighbors = np.swapaxes(neighbor_universes, 2, 0)
 
-      # Iterate over y-axis of sliding window
-      for j in np.arange(neighbor_universes.shape[1]):
-        z_neighbors = ( )
+    neighbors_universes_array = np.array([xy_neighbors.ravel(), xz_neighbors.ravel(),
+                                          yx_neighbors.ravel(), yz_neighbors.ravel(),
+                                          zx_neighbors.ravel(), zy_neighbors.ravel()])
 
-        # Iterate over z-axis of sliding window
-        for i in np.arange(neighbor_universes.shape[0]):
-          z_neighbors += (neighbor_universes[i,j,k], )
-
-        zy_neighbors += tuple(sorted(z_neighbors))
-
-      neighbors_universes_tuple += tuple(sorted(zy_neighbors))
-
-    neighbors_universes_tuple = sorted(neighbors_universes_tuple)
-    return neighbors_universes_tuple
+    return neighbors_universes_array
 
 
   def getUniqueNeighbors(self, lat_x, lat_y, lat_z=None):
 
     # Get the depth x depth x depth array of neighbors and
     # convert to a 1D tuple containing only unique Universes
-    neighbor_universes = np.asarray(self.getNeighbors(lat_x, lat_y, lat_z))
-    unique_neighbors = set(neighbor_universes.ravel())
-    return tuple(sorted(unique_neighbors))
+    neighbor_universes = self.getNeighbors(lat_x, lat_y, lat_z)
+    unique_neighbors = np.unique(neighbor_universes)
+    return unique_neighbors
+
+
+  def getNeighborsHash(self, lat_x, lat_y, lat_z=None):
+
+    neighbors_universes = self.getNeighbors(lat_x, lat_y, lat_z)
+    neighbors_universes.sort()
+    neighbors_universes.flags.writeable = False
+    neighbors_hash = hash(neighbors_universes.data)
+    return neighbors_hash
+
+
+  def getUniqueNeighborsHash(self, lat_x, lat_y, lat_z=None):
+
+    neighbors_universes = self.getUniqueNeighbors(lat_x, lat_y, lat_z)
+    neighbors_universes.sort()
+    neighbors_universes.flags.writeable = False
+    neighbors_hash = hash(neighbors_universes.data)
+    return neighbors_hash
 
 
   def getMaxX(self):
@@ -1034,6 +1028,7 @@ class Lattice(Universe):
     for i in range(len(width)):
       self._width[i] = width[i]
 
+
   def setUniverses(self, universes):
 
     if not isinstance(universes, (tuple, list, np.ndarray)):
@@ -1042,12 +1037,13 @@ class Lattice(Universe):
             'NumPy array'.format(self._id, universes)
       raise ValueError(msg)
 
+
     # if universes was input in 2D -> make 3D
     shape = np.shape(universes)
     if len(shape) == 2:
       universes = [universes]
     
-    self._universes = universes
+    self._universes = np.asarray(universes, dtype=Universe)
 
     for i in range(self._dimension[0]):
       for j in range(self._dimension[1]):
@@ -1078,9 +1074,9 @@ class Lattice(Universe):
     volume_fraction = np.float64(1. / (self._dimension[0] * self._dimension[1] \
                                          * self._dimension[2]))
 
-    for i in np.arange(self._dimension[0]):
-      for j in np.arange(self._dimension[1]):
-        for k in np.arange(self._dimension[2]):
+    for i in xrange(self._dimension[0]):
+      for j in xrange(self._dimension[1]):
+        for k in xrange(self._dimension[2]):
           universe = self._universes[k][j][i]
           universe.computeVolumeFractions(volume=(volume * volume_fraction),
                                           tolerance=tolerance)
@@ -1098,9 +1094,9 @@ class Lattice(Universe):
     # The cell offsets have not yet been initialized
     count = 0
 
-    for i in np.arange(self._dimension[0]):
-      for j in np.arange(self._dimension[1]):
-        for k in np.arange(self._dimension[2]):
+    for i in xrange(self._dimension[0]):
+      for j in xrange(self._dimension[1]):
+        for k in xrange(self._dimension[2]):
           self._cell_offsets[k][j][i] = count
           self._universes[k][j][i].initializeCellOffsets()
           count += self._universes[k][j][i]._num_regions
@@ -1223,7 +1219,7 @@ class Lattice(Universe):
       next_coords.setLattice(universe)
 
     else:
-      
+
       msg = 'Unable to find Cell since Lattice ID={0} does ' \
           'not contain a Universe or Lattice in lattice cell ' \
           '({1}, {2}, {3})'.format(self._id, lat_x, lat_y, lat_z)
@@ -1342,7 +1338,7 @@ class Cell(object):
     self._volume_fraction = np.float64(0.)
     self._volume = np.float64(0.)
 
-    self._neighbor_cells = list()
+    self._neighbor_cells = np.empty(shape=(0,), dtype=Cell)
 
     # Keys   - Surface IDs
     # Values - (halfpsace, Surface) tuples
@@ -1368,6 +1364,38 @@ class Cell(object):
 
     if not fill is None:
       self.setFill(fill)
+
+
+  def __deepcopy__(self, memo):
+
+    existing = memo.get(self)
+
+    # If this is the first time we have tried to copy this object, create a copy
+    if existing is None:
+
+      clone = type(self).__new__(type(self))
+      clone._id = self._id
+      clone._name = self._name
+      clone._fill = self._fill
+      clone._type = self._type
+      clone._num_subcells = self._num_subcells
+      clone._volume_fraction = self._volume_fraction
+      clone._volume = self._volume
+      clone._neighbor_cells = copy.deepcopy(self._neighbor_cells)
+      clone._surfaces = copy.deepcopy(self._surfaces)
+
+      clone._max_x = self._max_x
+      clone._min_x = self._min_x
+      clone._max_y = self._max_y
+      clone._min_y = self._min_y
+      clone._max_z = self._max_z
+      clone._min_z = self._min_z
+
+      return clone
+
+    # If this object has been copied before, return the first copy made
+    else:
+      return existing
 
 
   def getMaxX(self):
@@ -1426,14 +1454,30 @@ class Cell(object):
 
 
   def getNeighbors(self):
-    return tuple(sorted(self._neighbor_cells))
+    return self._neighbor_cells
 
 
   def getUniqueNeighbors(self):
 
     # Select only unique Cells and return them as a tuple
-    unique_neighbors = set(self._neighbor_cells)
-    return tuple(sorted(unique_neighbors))
+    unique_neighbors = np.unique(self._neighbor_cells)
+    return unique_neighbors
+
+
+  def getNeighborsHash(self):
+    neighbor_cells = np.copy(self.getNeighbors())
+    neighbor_cells.sort()
+    neighbor_cells.flags.writeable = False
+    neighbors_hash = hash(neighbor_cells.data)
+    return neighbors_hash
+
+
+  def getUniqueNeighborsHash(self):
+    neighbor_cells = np.copy(self.getUniqueNeighbors())
+    neighbor_cells.sort()
+    neighbor_cells.flags.writeable = False
+    neighbors_hash = hash(neighbor_cells.data)
+    return neighbors_hash
 
 
   def setId(self, cell_id=None):
@@ -1735,7 +1779,7 @@ class Cell(object):
             'since it {1} is not a Cell object'.format(self._id, cell)
       raise ValueError(msg)
 
-    self._neighbor_cells.append(cell)
+    self._neighbor_cells = np.append(self._neighbor_cells, cell)
 
 
   def getNumSubCells(self):
@@ -1908,7 +1952,7 @@ class Cell(object):
       y = np.nan_to_num(y)
       z = np.nan_to_num(z)
 
-      for i in np.arange(num_samples):
+      for i in xrange(num_samples):
 
         point.setX(x[i])
         point.setY(y[i])
@@ -1933,6 +1977,7 @@ class Cell(object):
     clone = Cell()
     clone.setName(self._name)
     clone.setFill(self._fill)
+    clone.setType(self._type)
 
     for surface_id in self._surfaces.keys():
       surface = self._surfaces[surface_id][0]
@@ -2011,6 +2056,26 @@ class LocalCoords(object):
 
     if not prev is None:
       self.setPrev(prev)
+
+
+  def __deepcopy__(self, memo):
+
+    existing = memo.get(self)
+
+    # If this is the first time we have tried to copy this object, create a copy
+    if existing is None:
+
+      clone = type(self).__new__(type(self))
+      clone._point = copy.deepcopy(self._point)
+      clone._type = self._type
+      clone._next = copy.deepcopy(self._next)
+      clone._prev = copy.deepcopy(self._prev)
+
+      return clone
+
+    # If this object has been copied before, return the first copy made
+    else:
+      return existing
 
 
   def setPoint(self, point):
@@ -2124,6 +2189,24 @@ class UnivCoords(LocalCoords):
       self.setCell(cell)
 
 
+  def __deepcopy__(self, memo):
+
+    existing = memo.get(self)
+
+    # If this is the first time we have tried to copy this object, create a copy
+    if existing is None:
+
+      clone = super(UnivCoords, self)._deepcopy(self, memo)
+      clone._universe = copy.deepcopy(self._universe)
+      clone._cell = copy.deepcopy(self._cell)
+
+      return clone
+
+    # If this object has been copied before, return the first copy made
+    else:
+      return existing
+
+
   def getNeighbors(self, neighbors=None):
 
     if neighbors is None:
@@ -2134,7 +2217,7 @@ class UnivCoords(LocalCoords):
 
     # Make recursive call to next LocalCoords or return
     if self._next is None:
-      return tuple(neighbors)
+      return neighbors
     else:
       return self._next.getNeighbors(neighbors=neighbors)
 
@@ -2152,6 +2235,36 @@ class UnivCoords(LocalCoords):
       return tuple(neighbors)
     else:
       return self._next.getUniqueNeighbors(neighbors)
+
+
+  def getNeighborsHash(self, neighbors=None):
+
+    if neighbors is None:
+      neighbors = list()
+
+    cells = self._cell.getNeighborsHash()
+    neighbors.append(cells)
+
+    # Make recursive call to next LocalCoords or return
+    if self._next is None:
+      return hash(tuple(neighbors))
+    else:
+      return self._next.getNeighborsHash(neighbors=neighbors)
+
+
+  def getUniqueNeighborsHash(self, neighbors=None):
+
+    if neighbors is None:
+      neighbors = list()
+
+    cells = self._cell.getUniqueNeighborsHash()
+    neighbors.append(cells)
+
+    # Make recursive call to next LocalCoords or return
+    if self._next is None:
+      return hash(tuple(neighbors))
+    else:
+      return self._next.getUniqueNeighborsHash(neighbors=neighbors)
 
 
   def setUniverse(self, universe):
@@ -2213,6 +2326,26 @@ class LatCoords(LocalCoords):
       self.setLatticeY(lat_z)
 
 
+  def __deepcopy__(self, memo):
+
+    existing = memo.get(self)
+
+    # If this is the first time we have tried to copy this object, create a copy
+    if existing is None:
+
+      clone = super(LatCoords, self)._deepcopy(self, memo)
+      clone._lattice = copy.deepcopy(self._lattice)
+      clone._lat_x = self._lat_x
+      clone._lat_y = self._lat_y
+      clone._lat_z = self._lat_z
+
+      return clone
+
+    # If this object has been copied before, return the first copy made
+    else:
+      return existing
+
+
   def getNeighbors(self, neighbors=None):
 
     if neighbors is None:
@@ -2221,11 +2354,11 @@ class LatCoords(LocalCoords):
     # Append the Universes in the neighboring Lattice cells to the
     # neighbors list
     universes = self._lattice.getNeighbors(self._lat_x, self._lat_y, self._lat_z)
-    neighbors.extend(universes)
+    neighbors.append(universes)
 
     # Make recursive call to next LocalCoords if it exists or return
     if self._next is None:
-      return tuple(neighbors)
+      return neighbors
     else:
       return self._next.getNeighbors(neighbors=neighbors)
 
@@ -2243,9 +2376,45 @@ class LatCoords(LocalCoords):
 
     # Make recursive call to next LocalCoords if it exists or return
     if self._next is None:
-      return tuple(neighbors)
+      return neighbors
     else:
       return self._next.getUniqueNeighbors(neighbors)
+
+
+  def getNeighborsHash(self, neighbors=None):
+
+    if neighbors is None:
+      neighbors = list()
+
+    # Append the Universes in the neighboring Lattice cells to the
+    # neighbors list
+    universes = self._lattice.getNeighborsHash(self._lat_x,
+                                               self._lat_y, self._lat_z)
+    neighbors.append(universes)
+
+    # Make recursive call to next LocalCoords if it exists or return
+    if self._next is None:
+      return hash(tuple(neighbors))
+    else:
+      return self._next.getNeighborsHash(neighbors=neighbors)
+
+
+  def getUniqueNeighborsHash(self, neighbors=None):
+
+    if neighbors is None:
+      neighbors = list()
+
+    # Append the Universes in the neighboring Lattice cells to the
+    # neighbors list
+    universes = self._lattice.getUniqueNeighborsHash(self._lat_x,
+                                                     self._lat_y, self._lat_z)
+    neighbors.append(universes)
+
+    # Make recursive call to next LocalCoords if it exists or return
+    if self._next is None:
+      return hash(tuple(neighbors))
+    else:
+      return self._next.getUniqueNeighborsHash(neighbors)
 
 
   def setLattice(self, lattice):

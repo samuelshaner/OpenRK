@@ -3,7 +3,7 @@ __email__ = 'wboyd@mit.edu'
 
 
 from opencsg.checkvalue import *
-import numpy as np
+import copy
 
 
 class Point(object):
@@ -21,6 +21,22 @@ class Point(object):
 
     if not z is None:
       self.setZ(z)
+
+
+  def __deepcopy__(self, memo):
+
+    existing = memo.get(self)
+
+    # If this is the first time we have tried to copy this object, create a copy
+    if existing is None:
+
+      clone = type(self).__new__(type(self))
+      clone._coords = copy.deepcopy(self._coords)
+      return clone
+
+    # If this object has been copied before, return the first copy made
+    else:
+      return existing
 
 
   def setCoords(self, coords):
