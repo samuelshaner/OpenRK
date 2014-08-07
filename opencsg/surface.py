@@ -1461,7 +1461,7 @@ class XSquarePrism(SquarePrism):
         return self._max_y
 
       else:
-        return np.finfo(np.float64).max
+        return MAX_FLOAT
 
 
   def getMinY(self, halfspace=None):
@@ -1487,7 +1487,7 @@ class XSquarePrism(SquarePrism):
         return self._min_y
 
       else:
-        return np.finfo(np.float64).min
+        return MIN_FLOAT
 
 
   def getMaxZ(self, halfspace=None):
@@ -1513,7 +1513,7 @@ class XSquarePrism(SquarePrism):
         return self._max_z
 
       else:
-        return np.finfo(np.float64).max
+        return MAX_FLOAT
 
 
   def getMinZ(self, halfspace=None):
@@ -1539,7 +1539,7 @@ class XSquarePrism(SquarePrism):
         return self._min_z
 
       else:
-        return np.finfo(np.float64).min
+        return MIN_FLOAT
 
 
   def setY0(self, y0):
@@ -1641,7 +1641,7 @@ class YSquarePrism(SquarePrism):
         return self._max_x
 
       else:
-        return np.finfo(np.float64).max
+        return MAX_FLOAT
 
 
   def getMinX(self, halfspace=None):
@@ -1667,7 +1667,7 @@ class YSquarePrism(SquarePrism):
         return self._min_x
 
       else:
-        return np.finfo(np.float64).min
+        return MIN_FLOAT
 
 
   def getMaxZ(self, halfspace=None):
@@ -1693,7 +1693,7 @@ class YSquarePrism(SquarePrism):
         return self._max_z
 
       else:
-        return np.finfo(np.float64).max
+        return MAX_FLOAT
 
 
   def getMinZ(self, halfspace=None):
@@ -1719,7 +1719,7 @@ class YSquarePrism(SquarePrism):
         return self._min_z
 
       else:
-        return np.finfo(np.float64).min
+        return MIN_FLOAT
 
 
   def setX0(self, x0):

@@ -23,6 +23,9 @@ UNIVERSE_IDS = list()
 # A static variable for auto-generated Universe IDs
 AUTO_UNIVERSE_ID = 10000
 
+MAX_FLOAT = np.finfo(np.float64).max
+MIN_FLOAT = np.finfo(np.float64).min
+
 
 class Universe(object):
 
@@ -116,7 +119,7 @@ class Universe(object):
 
   def getMaxX(self):
 
-    max_x = min_float
+    max_x = MIN_FLOAT
 
     for cell_id in self._cells:
 
@@ -129,7 +132,7 @@ class Universe(object):
 
   def getMaxY(self):
 
-    max_y = min_float
+    max_y = MIN_FLOAT
 
     for cell_id in self._cells:
 
@@ -142,7 +145,7 @@ class Universe(object):
 
   def getMaxZ(self):
 
-    max_z = min_float
+    max_z = MIN_FLOAT
 
     for cell_id in self._cells:
 
@@ -155,7 +158,7 @@ class Universe(object):
 
   def getMinX(self):
 
-    min_x = max_float
+    min_x = MAX_FLOAT
 
     for cell_id in self._cells:
 
@@ -168,7 +171,7 @@ class Universe(object):
 
   def getMinY(self):
 
-    min_y = max_float
+    min_y = MAX_FLOAT
 
     for cell_id in self._cells:
 
@@ -181,7 +184,7 @@ class Universe(object):
 
   def getMinZ(self):
 
-    min_z = max_float
+    min_z = MAX_FLOAT
 
     for cell_id in self._cells:
 
@@ -1023,7 +1026,7 @@ class Lattice(Universe):
 
     # Initialize width array to infinity by default
     self._width = np.zeros(3, dtype=np.float64)
-    self._width[:] = max_float
+    self._width[:] = MAX_FLOAT
 
     for i in range(len(width)):
       self._width[i] = width[i]
@@ -1051,15 +1054,15 @@ class Lattice(Universe):
 
           universe = self._universes[k][j][i]
 
-          if self._width[0] != max_float:
+          if self._width[0] != MAX_FLOAT:
             universe.setMaxX(self._width[0]/2.)
             universe.setMinX(-self._width[0]/2.)
 
-          if self._width[1] != max_float:
+          if self._width[1] != MAX_FLOAT:
             universe.setMaxY(self._width[1]/2.)
             universe.setMinY(-self._width[1]/2.)
 
-          if self._width[2] != max_float:
+          if self._width[2] != MAX_FLOAT:
             universe.setMaxZ(self._width[2]/2.)
             universe.setMinZ(-self._width[2]/2.)
 
@@ -1355,12 +1358,12 @@ class Cell(object):
     self.setId(cell_id)
     self.setName(name)
 
-    self.setMaxX(max_float)
-    self.setMaxY(max_float)
-    self.setMaxZ(max_float)
-    self.setMinX(min_float)
-    self.setMinY(min_float)
-    self.setMinZ(min_float)
+    self.setMaxX(MAX_FLOAT)
+    self.setMaxY(MAX_FLOAT)
+    self.setMaxZ(MAX_FLOAT)
+    self.setMinX(MIN_FLOAT)
+    self.setMinY(MIN_FLOAT)
+    self.setMinZ(MIN_FLOAT)
 
     if not fill is None:
       self.setFill(fill)
@@ -1807,12 +1810,12 @@ class Cell(object):
 
   def findBoundingBox(self):
 
-    self.setMaxX(max_float)
-    self.setMaxY(max_float)
-    self.setMaxZ(max_float)
-    self.setMinX(min_float)
-    self.setMinY(min_float)
-    self.setMinZ(min_float)
+    self.setMaxX(MAX_FLOAT)
+    self.setMaxY(MAX_FLOAT)
+    self.setMaxZ(MAX_FLOAT)
+    self.setMinX(MIN_FLOAT)
+    self.setMinY(MIN_FLOAT)
+    self.setMinZ(MIN_FLOAT)
 
     for surface_id in self._surfaces:
       surface = self._surfaces[surface_id][0]
@@ -1826,35 +1829,35 @@ class Cell(object):
       min_y = surface.getMinY(halfspace=halfspace)
       min_z = surface.getMinZ(halfspace=halfspace)
 
-      if max_x != max_float and max_x < self._max_x:
+      if max_x != MAX_FLOAT and max_x < self._max_x:
         self.setMaxX(max_x)
-      if max_y != max_float and max_y < self._max_y:
+      if max_y != MAX_FLOAT and max_y < self._max_y:
         self.setMaxY(max_y)
-      if max_z != max_float and max_z < self._max_z:
+      if max_z != MAX_FLOAT and max_z < self._max_z:
         self.setMaxZ(max_z)
 
-      if min_x != min_float and min_x > self._min_x:
+      if min_x != MIN_FLOAT and min_x > self._min_x:
         self.setMinX(min_x)
-      if min_y != min_float and min_y > self._min_y:
+      if min_y != MIN_FLOAT and min_y > self._min_y:
         self.setMinY(min_y)
-      if min_z != min_float and min_z > self._min_z:
+      if min_z != MIN_FLOAT and min_z > self._min_z:
         self.setMinZ(min_z)
 
     # If we could not find a bounds for any dimension, readjust
     # it to +/- infinity
-    if self._max_x == min_float:
-      self.setMaxX(max_float)
-    if self._max_y == min_float:
-      self.setMaxY(max_float)
-    if self._max_z == min_float:
-      self.setMaxZ(max_float)
+    if self._max_x == MIN_FLOAT:
+      self.setMaxX(MAX_FLOAT)
+    if self._max_y == MIN_FLOAT:
+      self.setMaxY(MAX_FLOAT)
+    if self._max_z == MIN_FLOAT:
+      self.setMaxZ(MAX_FLOAT)
 
-    if self._min_x == max_float:
-      self.setMinX(min_float)
-    if self._min_y == max_float:
-      self.setMinY(min_float)
-    if self._min_z == max_float:
-      self.setMinZ(min_float)
+    if self._min_x == MAX_FLOAT:
+      self.setMinX(MIN_FLOAT)
+    if self._min_y == MAX_FLOAT:
+      self.setMinY(MIN_FLOAT)
+    if self._min_z == MAX_FLOAT:
+      self.setMinZ(MIN_FLOAT)
 
 
   def buildNeighbors(self):
@@ -1925,17 +1928,17 @@ class Cell(object):
     # Compute the volume/area of the bounding box we sample from
     box_volume = np.float64(1.)
 
-    if self._min_x > min_float and self._max_x < max_float:
+    if self._min_x > MIN_FLOAT and self._max_x < MAX_FLOAT:
       box_volume *= (self._max_x - self._min_x)
-    if self._min_y > min_float and self._max_y < max_float:
+    if self._min_y > MIN_FLOAT and self._max_y < MAX_FLOAT:
       box_volume *= (self._max_y - self._min_y)
-    if self._min_z > min_float and self._max_z < max_float:
+    if self._min_z > MIN_FLOAT and self._max_z < MAX_FLOAT:
       box_volume *= (self._max_z - self._min_z)
 
     # Initialize variables
     counter = 0.
     tot_samples = 0.
-    uncertainty = max_float
+    uncertainty = MAX_FLOAT
 
     while (uncertainty > tolerance):
 
