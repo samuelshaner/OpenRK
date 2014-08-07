@@ -8,19 +8,19 @@ import numpy as np
 
 
 # Threshold for determining how close a point must be to a surface to be on it
-on_surface_thresh = 1e-12
+ON_SURFACE_THRESH = 1e-12
 
 # A list of all IDs for all Surfaces created
-surface_ids = list()
+SURFACE_IDS = list()
 
 # A static variable for auto-generated Surface IDs
-auto_surface_id = 10000
+AUTO_SURFACE_ID = 10000
 
 # The Surface boundary conditions
-boundary_types = ['interface', 'vacuum', 'reflective']
+BOUNDARY_TYPES = ['interface', 'vacuum', 'reflective']
 
 # The types of Surfaces
-surf_types = ['plane',
+SURF_TYPES = ['plane',
               'x-plane',
               'y-plane',
               'z-plane',
@@ -30,8 +30,8 @@ surf_types = ['plane',
               'sphere',
               'square']
 
-max_float = np.finfo(np.float64).max
-min_float = np.finfo(np.float64).min
+MAX_FLOAT = np.finfo(np.float64).max
+MIN_FLOAT = np.finfo(np.float64).min
 
 
 class Surface(object):
@@ -53,12 +53,12 @@ class Surface(object):
     self._coeffs = dict()
 
     # Max/min values
-    self._max_x = np.finfo(np.float64).max
-    self._max_y = np.finfo(np.float64).max
-    self._max_z = np.finfo(np.float64).max
-    self._min_x = np.finfo(np.float64).min
-    self._min_y = np.finfo(np.float64).min
-    self._min_z = np.finfo(np.float64).min
+    self._max_x = MAX_FLOAT
+    self._max_y = MAX_FLOAT
+    self._max_z = MAX_FLOAT
+    self._min_x = MIN_FLOAT
+    self._min_y = MIN_FLOAT
+    self._min_z = MIN_FLOAT
 
     self.setId(surface_id)
     self.setName(name)
@@ -102,7 +102,7 @@ class Surface(object):
             'the input is not a Point object'.format(self._id)
       raise ValueError(msg)
 
-    if np.abs(self.evaluate(point)) < on_surface_thresh:
+    if np.abs(self.evaluate(point)) < ON_SURFACE_THRESH:
       return True
     else:
       return False
@@ -110,22 +110,22 @@ class Surface(object):
 
   def setId(self, surface_id=None):
 
-    global surface_ids
+    global SURFACE_IDS
 
     if surface_id is None:
-      global auto_surface_id
-      self._id = auto_surface_id
-      surface_ids.append(auto_surface_id)
-      auto_surface_id += 1
+      global AUTO_SURFACE_ID
+      self._id = AUTO_SURFACE_ID
+      SURFACE_IDS.append(AUTO_SURFACE_ID)
+      AUTO_SURFACE_ID += 1
 
     # Check that the ID is an integer and wasn't already used
     elif is_integer(surface_id):
 
       # If the Material already has an ID, remove it from global list
       if not self._id is None:
-        surface_ids.remove(self._id)
+        SURFACE_IDS.remove(self._id)
 
-      elif surface_id in surface_ids:
+      elif surface_id in SURFACE_IDS:
         msg = 'Unable to set Surface ID to {0} since a Surface with ' \
               'this ID was already initialized'.format(surface_id)
         raise ValueError(msg)
@@ -137,7 +137,7 @@ class Surface(object):
 
       else:
         self._id = surface_id
-        surface_ids.append(surface_id)
+        SURFACE_IDS.append(surface_id)
 
     else:
       msg = 'Unable to set a non-integer Surface ID {0}'.format(surface_id)
@@ -162,7 +162,7 @@ class Surface(object):
             'non-string value {1}'.format(self._id, boundary)
       raise ValueError(msg)
 
-    elif not boundary in boundary_types:
+    elif not boundary in BOUNDARY_TYPES:
       msg = 'Unable to set boundary type for Surface ID={0} to {1} which ' \
             'is not interface, vacuum or reflective'.format(self._id, boundary)
       raise ValueError(msg)
@@ -334,7 +334,7 @@ class XPlane(Plane):
         return self._max_x
 
       else:
-        return np.finfo(np.float64).max
+        return MAX_FLOAT
 
 
   def getMinX(self, halfspace=None):
@@ -357,7 +357,7 @@ class XPlane(Plane):
         raise ValueError(msg)
 
       elif halfspace == -1:
-        return np.finfo(np.float64).min
+        return MIN_FLOAT
 
       else:
         return self._min_x
@@ -416,7 +416,7 @@ class YPlane(Plane):
         return self._max_y
 
       else:
-        return np.finfo(np.float64).max
+        return MAX_FLOAT
 
 
   def getMinY(self, halfspace=None):
@@ -439,7 +439,7 @@ class YPlane(Plane):
         raise ValueError(msg)
 
       elif halfspace == -1:
-        return np.finfo(np.float64).min
+        return MIN_FLOAT
 
       else:
         return self._min_y
@@ -497,7 +497,7 @@ class ZPlane(Plane):
         return self._max_z
 
       else:
-        return np.finfo(np.float64).max
+        return MAX_FLOAT
 
 
   def getMinZ(self, halfspace=None):
@@ -520,7 +520,7 @@ class ZPlane(Plane):
         raise ValueError(msg)
 
       elif halfspace == -1:
-        return np.finfo(np.float64).min
+        return MIN_FLOAT
 
       else:
         return self._min_z
@@ -607,7 +607,7 @@ class XCylinder(Cylinder):
         return self._max_y
 
       else:
-        return np.finfo(np.float64).max
+        return MAX_FLOAT
 
 
   def getMinY(self, halfspace=None):
@@ -633,7 +633,7 @@ class XCylinder(Cylinder):
         return self._min_y
 
       else:
-        return np.finfo(np.float64).min
+        return MIN_FLOAT
 
 
   def getMaxZ(self, halfspace=None):
@@ -659,7 +659,7 @@ class XCylinder(Cylinder):
         return self._max_z
 
       else:
-        return np.finfo(np.float64).max
+        return MAX_FLOAT
 
 
   def getMinZ(self, halfspace=None):
@@ -685,7 +685,7 @@ class XCylinder(Cylinder):
         return self._min_z
 
       else:
-        return np.finfo(np.float64).min
+        return MIN_FLOAT
 
 
   def setY0(self, y0):
@@ -785,7 +785,7 @@ class YCylinder(Cylinder):
         return self._max_x
 
       else:
-        return np.finfo(np.float64).max
+        return MAX_FLOAT
 
 
   def getMinX(self, halfspace=None):
@@ -811,7 +811,7 @@ class YCylinder(Cylinder):
         return self._min_x
 
       else:
-        return np.finfo(np.float64).min
+        return MIN_FLOAT
 
 
   def getMaxZ(self, halfspace=None):
@@ -836,7 +836,7 @@ class YCylinder(Cylinder):
         return self._max_z
 
       else:
-        return np.finfo(np.float64).max
+        return MAX_FLOAT
 
 
   def getMinZ(self, halfspace=None):
@@ -862,7 +862,7 @@ class YCylinder(Cylinder):
         return self._min_z
 
       else:
-        return np.finfo(np.float64).min
+        return MIN_FLOAT
 
 
   def setX0(self, x0):
@@ -962,7 +962,7 @@ class ZCylinder(Cylinder):
         return self._max_x
 
       else:
-        return np.finfo(np.float64).max
+        return MAX_FLOAT
 
 
   def getMinX(self, halfspace=None):
@@ -988,7 +988,7 @@ class ZCylinder(Cylinder):
         return self._min_x
 
       else:
-        return np.finfo(np.float64).min
+        return MIN_FLOAT
 
 
   def getMaxY(self, halfspace=None):
@@ -1014,7 +1014,7 @@ class ZCylinder(Cylinder):
         return self._max_y
 
       else:
-        return np.finfo(np.float64).max
+        return MAX_FLOAT
 
 
   def getMinY(self, halfspace=None):
@@ -1040,7 +1040,7 @@ class ZCylinder(Cylinder):
         return self._min_y
 
       else:
-        return np.finfo(np.float64).min
+        return MIN_FLOAT
 
 
   def setX0(self, x0):
@@ -1146,7 +1146,7 @@ class Sphere(Surface):
         return self._max_x
 
       else:
-        return np.finfo(np.float64).max
+        return MAX_FLOAT
 
 
   def getMinX(self, halfspace=None):
@@ -1172,7 +1172,7 @@ class Sphere(Surface):
         return self._min_x
 
       else:
-        return np.finfo(np.float64).min
+        return MIN_FLOAT
 
 
   def getMaxY(self, halfspace=None):
@@ -1198,7 +1198,7 @@ class Sphere(Surface):
         return self._max_y
 
       else:
-        return np.finfo(np.float64).max
+        return MAX_FLOAT
 
 
   def getMinY(self, halfspace=None):
@@ -1224,7 +1224,7 @@ class Sphere(Surface):
         return self._min_y
 
       else:
-        return np.finfo(np.float64).min
+        return MIN_FLOAT
 
 
   def getMaxZ(self, halfspace=None):
@@ -1250,7 +1250,7 @@ class Sphere(Surface):
         return self._max_z
 
       else:
-        return np.finfo(np.float64).max
+        return MAX_FLOAT
 
 
   def getMinZ(self, halfspace=None):
@@ -1276,7 +1276,7 @@ class Sphere(Surface):
         return self._min_z
 
       else:
-        return np.finfo(np.float64).min
+        return MIN_FLOAT
 
 
   def setX0(self, x0):
@@ -1402,7 +1402,7 @@ class Square(Surface):
         return self._max_x
 
       else:
-        return np.finfo(np.float64).max
+        return MAX_FLOAT
 
 
   def getMinX(self, halfspace=None):
@@ -1428,7 +1428,7 @@ class Square(Surface):
         return self._min_x
 
       else:
-        return np.finfo(np.float64).min
+        return MIN_FLOAT
 
 
   def getMaxY(self, halfspace=None):
@@ -1454,7 +1454,7 @@ class Square(Surface):
         return self._max_y
 
       else:
-        return np.finfo(np.float64).max
+        return MAX_FLOAT
 
 
   def getMinY(self, halfspace=None):
@@ -1480,7 +1480,7 @@ class Square(Surface):
         return self._min_y
 
       else:
-        return np.finfo(np.float64).min
+        return MIN_FLOAT
 
 
   def setX0(self, x0):

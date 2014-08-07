@@ -14,16 +14,13 @@ from numpy.lib.stride_tricks import as_strided
 
 # Error threshold for determining how close to the boundary of a Lattice cell
 # a Point needs to be to be considered on it
-on_lattice_cell_thresh = 1e-12
+ON_LATTICE_CELL_THRESH = 1e-12
 
 # Lists of all IDs for all Universes created
-universe_ids = list()
+UNIVERSE_IDS = list()
 
 # A static variable for auto-generated Universe IDs
-auto_universe_id = 10000
-
-max_float = np.finfo(np.float64).max
-min_float = np.finfo(np.float64).min
+AUTO_UNIVERSE_ID = 10000
 
 
 class Universe(object):
@@ -254,22 +251,22 @@ class Universe(object):
 
   def setId(self, universe_id=None):
 
-    global universe_ids
+    global UNIVERSE_IDS
 
     if universe_id is None:
-      global auto_universe_id
-      self._id = auto_universe_id
-      universe_ids.append(auto_universe_id)
-      auto_universe_id += 1
+      global AUTO_UNIVERSE_ID
+      self._id = AUTO_UNIVERSE_ID
+      UNIVERSE_IDS.append(AUTO_UNIVERSE_ID)
+      AUTO_UNIVERSE_ID += 1
 
     # Check that the ID is an integer and wasn't already used
     elif is_integer(universe_id):
 
       # If the Universe already has an ID, remove it from global list
       if not self._id is None:
-        universe_ids.remove(self._id)
+        UNIVERSE_IDS.remove(self._id)
 
-      if universe_id in universe_ids:
+      if universe_id in UNIVERSE_IDS:
         msg = 'Unable to set Universe ID to {0} since a Universe with this ' \
               'ID was already initialized'.format(universe_id)
         raise ValueError(msg)
@@ -281,7 +278,7 @@ class Universe(object):
 
       else:
         self._id = universe_id
-        universe_ids.append(universe_id)
+        UNIVERSE_IDS.append(universe_id)
 
     else:
       msg = 'Unable to set Universe ID to a non-integer {0}'.format(universe_id)
@@ -890,22 +887,22 @@ class Lattice(Universe):
 
   def setId(self, lattice_id=None):
 
-    global universe_ids
+    global UNIVERSE_IDS
 
     if lattice_id is None:
-      global auto_universe_id
-      self._id = auto_universe_id
-      universe_ids.append(auto_universe_id)
-      auto_universe_id += 1
+      global AUTO_UNIVERSE_ID
+      self._id = AUTO_UNIVERSE_ID
+      UNIVERSE_IDS.append(AUTO_UNIVERSE_ID)
+      AUTO_UNIVERSE_ID += 1
 
     # Check that the ID is an integer and wasn't already used
     elif is_integer(lattice_id):
 
       # If the Lattice already has an ID, remove it from global list
       if not self._id is None:
-        universe_ids.remove(self._id)
+        UNIVERSE_IDS.remove(self._id)
 
-      if lattice_id in universe_ids:
+      if lattice_id in UNIVERSE_IDS:
         msg = 'Unable to set Lattice ID to {0} since a Lattice ' \
               'with this ID was already initialized'.format(lattice_id)
         raise ValueError(msg)
@@ -917,7 +914,7 @@ class Lattice(Universe):
 
       else:
         self._id = lattice_id
-        universe_ids.append(lattice_id)
+        UNIVERSE_IDS.append(lattice_id)
 
     else:
       msg = 'Unable to set a non-integer Lattice ID {0}'.format(lattice_id)
@@ -955,7 +952,7 @@ class Lattice(Universe):
     if not isinstance(offset, (tuple, list, np.ndarray)):
       msg = 'Unable to set Lattice ID={0} offset to {1} since it ' \
           'is not a Python tuple/list or NumPy array'.\
-          format(self._id, origin)
+          format(self._id, offset)
       raise ValueError(msg)
 
     elif len(offset) != 3 and len(offset) != 2:
@@ -1171,19 +1168,19 @@ class Lattice(Universe):
     distance_z = math.fabs(math.fabs(z) - self._dimension[2]*self._width[2]*0.5\
                              - self._offset[2])
 
-    if distance_x < on_lattice_cell_thresh:
+    if distance_x < ON_LATTICE_CELL_THRESH:
       if x > 0:
         lat_x = self._dimension[0] - 1
       else:
         lat_x = 0
 
-    if distance_y < on_lattice_cell_thresh:
+    if distance_y < ON_LATTICE_CELL_THRESH:
       if y > 0:
         lat_y = self._dimension[1] - 1
       else:
         lat_y = 0
 
-    if distance_z < on_lattice_cell_thresh:
+    if distance_z < ON_LATTICE_CELL_THRESH:
       if z > 0:
         lat_z = self._dimension[2] - 1
       else:
