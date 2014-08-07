@@ -433,15 +433,14 @@ def plot_segments(segments, geometry, plane='xy', offset=0.,
 
   print('Plotting the Segments...')
 
-  # Get the number of Cells filled with Materials
-  cells = geometry.getAllMaterialCells()
-  num_cells = len(cells)
+  # Get the number of regions
+  num_regions = geometry._num_regions
 
   # Create array of equally spaced randomized floats as a color map for plots
   # Seed the NumPy random number generator to ensure reproducible color maps
   numpy.random.seed(1)
   color_map = list()
-  for i in xrange(num_cells):
+  for i in xrange(num_regions):
     color_map.append(np.random.rand(4))
 
   # Initialize a NumPy array for the segment colors
@@ -454,18 +453,18 @@ def plot_segments(segments, geometry, plane='xy', offset=0.,
   for i in xrange(len(segments)):
     if plane == 'xy':
       x,y = segments[i]._start._coords[:2]
-      cell = geometry.findCell(x=x, y=y, z=offset)
+      region_id = segments[i]._region_id
       segments[i] = segments[i].getXYCoords()
     elif plane == 'xz':
       x,z = segments[i]._start._coords[::2]
-      cell = geometry.findCell(x=x, y=offset, z=z)
+      region_id = segments[i]._region_id
       segments[i] = segments[i].getXZCoords()
     else:
       y,z = segments[i]._start._coords[1:]
-      cell = geometry.findCell(x=offset, y=y, z=z)
+      region_id = segments[i]._region_id
       segments[i] = segments[i].getYZCoords()
 
-    colors.append(color_map[cell._id % num_cells])
+    colors.append(color_map[region_id % num_regions])
   colors = np.array(colors)
 
   # Plot a 2D color map of the segments

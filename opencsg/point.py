@@ -200,10 +200,14 @@ class Segment(object):
       self.setEnd(end)
 
     if not region_id is None:
+      self.setRegion(region_id)
+    else:
       x,y,z = self._start._coords
-      self.setRegion(geometry.getRegionID(x=x,y=y,z=z))
+      self.setRegion(geometry.getRegionId(x=x,y=y,z=z))
 
     if not cell is None:
+      self.setCell(cell)
+    else:
       x,y,z = self._start._coords
       self.setCell(geometry.findCell(x=x,y=y,z=z))
 
@@ -258,7 +262,7 @@ class Segment(object):
     self._region_id = region_id
 
   def setCell(self, cell):
-    if not isinstance(cell, Cell):
+    if not str(type(cell)) == '<class \'opencsg.universe.Cell\'>':
       msg = 'Unable to set cell for segment to {0} since it is ' \
             'not a cell object'.format(cell)
       raise ValueError(msg)
@@ -282,3 +286,8 @@ class Segment(object):
     string = 'Surface\n'
     string += '{0: <16}{1}{2}\n'.format('\tStart', '=\t', self._start._coords)
     string += '{0: <16}{1}{2}\n'.format('\tEnd', '=\t', self._end._coords)
+    string += '{0: <16}{1}{2}\n'.format('\tRegion Id', '=\t', self._region_id)
+    string += '{0: <16}{1}{2}\n'.format('\tLength', '=\t', self._length)
+    return string
+
+
