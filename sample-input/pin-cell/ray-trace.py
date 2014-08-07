@@ -62,7 +62,7 @@ universes[1].addCell(cells[2])
 
 print('Meshing the Cells...')
 
-'''
+
 mesh = RadialMesh()
 mesh.setNumRings(3)
 mesh.setMaxRadius(1.0)
@@ -78,7 +78,7 @@ new_cells = mesh.subdivideCell(cell=cells[1], universe=universes[0])
 
 mesh = SectorMesh(num_sectors=8)
 mesh.subdivideUniverse(universe=universes[0])
-'''
+
 
 ###############################################################################
 ###########################   Creating Lattices   #############################
@@ -112,7 +112,7 @@ geometry.setVolume(volume=16., tolerance=1e-1)
 
 print('Tracing Sample Rays...')
 
-segments = geometry.traceSampleRays(num_rays=50000)
+segments = geometry.traceSampleRays(num_rays=1000)
 
 
 ###############################################################################

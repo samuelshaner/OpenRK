@@ -403,6 +403,8 @@ class Geometry(object):
 
     x, y, z = point._coords
     cell = self.findCoords(x=x, y=y, z=z).getTailNode()._cell
+    if cell is None:
+      return None
     surfaces = cell._surfaces
     points = []
 

@@ -383,11 +383,11 @@ def plot_neighbor_cells(geometry, plane='xy', offset=0.,
 def plot_segments(segments, geometry, plane='xy', offset=0.,
                   gridsize=250, linewidths=1):
 
-  global subdirectory
+  global SUBDIRECTORY
 
   # Make directory if it does not exist
-  if not os.path.exists(subdirectory):
-    os.makedirs(subdirectory)
+  if not os.path.exists(SUBDIRECTORY):
+    os.makedirs(SUBDIRECTORY)
 
   # Error checking
   for segment in segments:
@@ -476,7 +476,7 @@ def plot_segments(segments, geometry, plane='xy', offset=0.,
   plt.ylim(coords['y'][0], coords['y'][-1])
   plt.title('Segments ' + plane)
   ax.margins(0)
-  filename = subdirectory + 'segments-' + plane + '.png'
+  filename = SUBDIRECTORY + 'segments-' + plane + '.png'
   fig.savefig(filename, bbox_inches='tight')
 
 def get_pixel_coords(geometry, plane, offset, gridsize):
