@@ -108,6 +108,22 @@ class Direction(object):
       self.setW(w)
 
 
+  def __deepcopy__(self, memo):
+
+    existing = memo.get(self)
+
+    # If this is the first time we have tried to copy this object, create a copy
+    if existing is None:
+
+      clone = type(self).__new__(type(self))
+      clone._comps = copy.deepcopy(self._comps)
+      return clone
+
+    # If this object has been copied before, return the first copy made
+    else:
+      return existing
+
+
   def setComps(self, comps):
 
     if not isinstance(comps, tuple) and len(comps) != 3:
@@ -193,6 +209,26 @@ class Segment(object):
 
     if not (start is None and end is None):
       self._length = start.distanceToPoint(end)
+
+
+  def __deepcopy__(self, memo):
+
+    existing = memo.get(self)
+
+    # If this is the first time we have tried to copy this object, create a copy
+    if existing is None:
+
+      clone = type(self).__new__(type(self))
+      clone._start = copy.deepcopy(self._start)
+      clone._end = copy.deepcopy(self._end)
+      clone._region_id = copy.deepcopy(self._region_id)
+      clone._cell = copy.deepcopy(self._cell)
+      clone._length = copy.deepcopy(self._length)
+      return clone
+
+    # If this object has been copied before, return the first copy made
+    else:
+      return existing
 
 
   def setStart(self, start):
