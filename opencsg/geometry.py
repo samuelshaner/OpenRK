@@ -437,7 +437,7 @@ class Geometry(object):
     segment = Segment(self, start=point, end=intersect)
     return segment
 
-  def traceSampleRays(self, num_rays=1000):
+  def generateRays(self, num_rays=1000):
 
     rays = dict()
     bounds = self.getBounds()
@@ -466,6 +466,9 @@ class Geometry(object):
       direction = Direction(u=u, v=v, w=w)
       rays[point] = direction
 
+    return rays
+
+  def traceRays(self, rays):
     segments = []
     while rays != {}:
       points = rays.keys()
@@ -479,6 +482,7 @@ class Geometry(object):
           intersect.setCoords(intersect._coords + tiny_bit*rays[ray]._comps)
           rays[intersect] = rays[ray]
           del rays[ray]
+
     return segments
 
   def getNeighbors(self, region_id):
