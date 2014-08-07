@@ -3,7 +3,7 @@ __email__ = 'wboyd@mit.edu'
 
 
 from opencsg.material import Material
-from opencsg.surface import Surface, on_surface_thresh
+from opencsg.surface import Surface, ON_SURFACE_THRESH
 from opencsg.point import Point
 from opencsg.checkvalue import *
 import numpy as np
