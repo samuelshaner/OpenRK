@@ -25,10 +25,7 @@ boundaries = dict()
 
 width = lattice_width * 3.
 
-boundaries['X-Min'] = opencsg.XPlane(x0=-width / 2.)
-boundaries['X-Max'] = opencsg.XPlane(x0=width / 2.)
-boundaries['Y-Min'] = opencsg.YPlane(y0=-width / 2.)
-boundaries['Y-Max'] = opencsg.YPlane(y0=width / 2.)
+boundaries['Box'] = opencsg.ZSquarePrism(boundary='reflective', R=width/2.)
 boundaries['Z-Min'] = opencsg.ZPlane(z0=-slice_height / 2.)
 boundaries['Z-Max'] = opencsg.ZPlane(z0=slice_height / 2.)
 
@@ -96,10 +93,7 @@ root_cell = opencsg.Cell(name='Root Cell', fill=lattice)
 root_universe.addCell(root_cell)
 
 # Append the bounding surfaces for the Geometry to the root Cell
-root_cell.addSurface(surface=boundaries['X-Min'], halfspace=+1)
-root_cell.addSurface(surface=boundaries['X-Max'], halfspace=-1)
-root_cell.addSurface(surface=boundaries['Y-Min'], halfspace=+1)
-root_cell.addSurface(surface=boundaries['Y-Max'], halfspace=-1)
+root_cell.addSurface(surface=boundaries['Box'], halfspace=-1)
 root_cell.addSurface(surface=boundaries['Z-Min'], halfspace=+1)
 root_cell.addSurface(surface=boundaries['Z-Max'], halfspace=-1)
 

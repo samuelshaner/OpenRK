@@ -8,7 +8,7 @@ from infermc.multigroupxs import xs_types
 
 groups = group_structures['CASMO']['2-group']
 
-batches = range(10, 75, 5)
+batches = range(110, 1005, 5)
 #batches = [10]
 
 for batch in batches:
