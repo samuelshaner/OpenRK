@@ -17,6 +17,12 @@ SURFACE_IDS = list()
 # A static variable for auto-generated Surface IDs
 AUTO_SURFACE_ID = 10000
 
+def reset_auto_surface_id():
+  global AUTO_SURFACE_ID, SURFACE_IDS
+  AUTO_SURFACE_ID = 10000
+  SURFACE_IDS = list()
+
+
 # The Surface boundary conditions
 BOUNDARY_TYPES = ['interface', 'vacuum', 'reflective']
 

@@ -23,6 +23,11 @@ UNIVERSE_IDS = list()
 # A static variable for auto-generated Universe IDs
 AUTO_UNIVERSE_ID = 10000
 
+def reset_auto_universe_id():
+  global AUTO_UNIVERSE_ID, UNIVERSE_IDS
+  AUTO_UNIVERSE_ID = 10000
+  UNIVERSE_IDS = list()
+
 MAX_FLOAT = np.finfo(np.float64).max
 MIN_FLOAT = np.finfo(np.float64).min
 
@@ -1322,10 +1327,15 @@ class Lattice(Universe):
 
 
 # Lists of all IDs for all Cells created
-cell_ids = list()
+CELL_IDS = list()
 
 # A static variable for auto-generated Cell IDs
-auto_cell_id = 10000
+AUTO_CELL_ID = 10000
+
+def reset_auto_cell_id():
+  global AUTO_CELL_ID, CELL_IDS
+  AUTO_CELL_ID = 10000
+  CELL_IDS = list()
 
 
 class Cell(object):
@@ -1485,22 +1495,22 @@ class Cell(object):
 
   def setId(self, cell_id=None):
 
-    global cell_ids
+    global CELL_IDS
 
     if cell_id is None:
-      global auto_cell_id
-      self._id = auto_cell_id
-      cell_ids.append(auto_cell_id)
-      auto_cell_id += 1
+      global AUTO_CELL_ID
+      self._id = AUTO_CELL_ID
+      CELL_IDS.append(AUTO_CELL_ID)
+      AUTO_CELL_ID += 1
 
     # Check that the ID is an integer and wasn't already used
     elif is_integer(cell_id):
 
       # If the Cell already has an ID, remove it from global list
       if not self._id is None:
-        cell_ids.remove(self._id)
+        CELL_IDS.remove(self._id)
 
-      if cell_id in cell_ids:
+      if cell_id in CELL_IDS:
         msg = 'Unable to set Cell ID to {0} since a Cell with this ID was ' \
               'already initialized'.format(cell_id)
         raise ValueError(msg)
@@ -1512,7 +1522,7 @@ class Cell(object):
 
       else:
         self._id = cell_id
-        cell_ids.append(cell_id)
+        CELL_IDS.append(cell_id)
 
     else:
       msg = 'Unable to set Cell ID to a non-integer {0}'.format(cell_id)

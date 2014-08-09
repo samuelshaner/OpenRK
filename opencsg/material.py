@@ -11,6 +11,11 @@ MATERIAL_IDS = list()
 # A static variable for auto-generated Material IDs
 AUTO_MATERIAL_ID = 10000
 
+def reset_auto_material_id():
+  global AUTO_MATERIAL_ID, MATERIAL_IDS
+  AUTO_MATERIAL_ID = 10000
+  MATERIAL_IDS = list()
+
 
 class Material(object):
 

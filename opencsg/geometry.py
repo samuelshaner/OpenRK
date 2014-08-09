@@ -2,8 +2,16 @@ __author__ = 'Will Boyd'
 __email__ = 'wboyd@mit.edu'
 
 
+import opencsg
 from opencsg.universe import *
 from opencsg.point import Point
+
+
+def reset_auto_ids():
+  opencsg.reset_auto_material_id()
+  opencsg.reset_auto_surface_id()
+  opencsg.reset_auto_cell_id()
+  opencsg.reset_auto_universe_id()
 
 
 class Geometry(object):
