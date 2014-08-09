@@ -146,7 +146,6 @@ class Geometry(object):
     return bounds
 
 
-
   def getAllCells(self):
 
     if self._root_universe is None:
@@ -261,6 +260,19 @@ class Geometry(object):
       volume = cell._volume
 
       self._region_volumes[region] = volume
+
+
+  def updateBoundingBoxes(self):
+
+    if self._root_universe is None:
+      msg = 'Unable to get the bounds since the Geometry does not ' \
+            'contain the base Universe ID=0'
+      raise ValueError(msg)
+
+    cells = self.getAllCells()
+
+    for cell_id, cell in cells.items():
+      cell.findBoundingBox()
 
 
   def initializeCellOffsets(self):
