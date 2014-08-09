@@ -32,7 +32,7 @@ class Material(object):
 
   def __deepcopy__(self, memo):
 
-    existing = memo.get(self)
+    existing = memo.get(id(self))
 
     # If this is the first time we have tried to copy this object, create a copy
     if existing is None:
@@ -40,6 +40,8 @@ class Material(object):
       clone = type(self).__new__(type(self))
       clone._id = self._id
       clone._name = self._name
+
+      memo[id(self)] = clone
 
       return clone
 

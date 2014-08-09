@@ -76,7 +76,7 @@ class Surface(object):
 
   def __deepcopy__(self, memo):
 
-    existing = memo.get(self)
+    existing = memo.get(id(self))
 
     # If this is the first time we have tried to copy this object, create a copy
     if existing is None:
@@ -86,8 +86,15 @@ class Surface(object):
       clone._name = self._name
       clone._type = self._type
       clone._boundary_type = self._boundary_type
-      clone._neighbor_cells = copy.deepcopy(self._neighbor_cells)
-      clone._coeffs = copy.deepcopy(self._coeffs)
+      clone._coeffs = copy.deepcopy(self._coeffs, memo)
+
+      clone._neighbor_cells = dict()
+      clone._neighbor_cells[-1] = set()
+      clone._neighbor_cells[+1] = set()
+
+      for halfspace in [+1, -1]:
+        for cell in self._neighbor_cells[halfspace]:
+          clone._neighbor_cells[halfspace] = copy.deepcopy(cell, memo)
 
       clone._max_x = self._max_x
       clone._min_x = self._min_x
@@ -95,6 +102,8 @@ class Surface(object):
       clone._min_y = self._min_y
       clone._max_z = self._max_z
       clone._min_z = self._min_z
+
+      memo[id(self)] = clone
 
       return clone
 

@@ -57,7 +57,7 @@ class Universe(object):
 
   def __deepcopy__(self, memo):
 
-    existing = memo.get(self)
+    existing = memo.get(id(self))
 
     # If this is the first time we have tried to copy this object, create a copy
     if existing is None:
@@ -65,10 +65,16 @@ class Universe(object):
       clone = type(self).__new__(type(self))
       clone._id = self._id
       clone._name = self._name
-      clone._cells = copy.deepcopy(self._cells)
-      clone._cell_offsets = copy.deepcopy(self._cell_offsets)
+
+      clone._cells = dict()
+      for cell_id in self._cells:
+        clone._cells[cell_id] = copy.deepcopy(self._cells[cell_id], memo)
+
+      clone._cell_offsets = copy.deepcopy(self._cell_offsets, memo)
       clone._num_regions = self._num_regions
       clone._volume = self._volume
+
+      memo[id(self)] = clone
 
       return clone
 
@@ -576,7 +582,7 @@ class Lattice(Universe):
 
   def __deepcopy__(self, memo):
 
-    existing = memo.get(self)
+    existing = memo.get(id(self))
 
     # If this is the first time we have tried to copy this object, create a copy
     if existing is None:
@@ -587,12 +593,21 @@ class Lattice(Universe):
       clone._type = self._type
       clone._dimension = self._dimension
       clone._width = self._width
-      clone._universes = copy.deepcopy(self._universes)
-      clone._cell_offsets = copy.deepcopy(self._cell_offsets)
+
+      clone._universes = np.empty(self._universes.shape, dtype=Universe)
+      for i in range(self._dimension[0]):
+        for j in range(self._dimension[1]):
+          for k in range(self._dimension[2]):
+            universe = self._universes[k][j][i]
+            clone._universes[k,j,i] = copy.deepcopy(universe, memo)
+
+      clone._cell_offsets = copy.deepcopy(self._cell_offsets, memo)
       clone._num_regions = self._num_regions
-      clone._offset = copy.deepcopy(self._offset)
-      clone._neighbor_universes = copy.deepcopy(self._neighbor_universes)
+      clone._offset = copy.deepcopy(self._offset, memo)
+      clone._neighbor_universes = copy.deepcopy(self._neighbor_universes, memo)
       clone._neighbor_depth = self._neighbor_depth
+
+      memo[id(self)] = clone
 
       return clone
 
@@ -1381,7 +1396,7 @@ class Cell(object):
 
   def __deepcopy__(self, memo):
 
-    existing = memo.get(self)
+    existing = memo.get(id(self))
 
     # If this is the first time we have tried to copy this object, create a copy
     if existing is None:
@@ -1389,13 +1404,19 @@ class Cell(object):
       clone = type(self).__new__(type(self))
       clone._id = self._id
       clone._name = self._name
-      clone._fill = self._fill
+      clone._fill = copy.deepcopy(self._fill, memo)
       clone._type = self._type
       clone._num_subcells = self._num_subcells
       clone._volume_fraction = self._volume_fraction
       clone._volume = self._volume
-      clone._neighbor_cells = copy.deepcopy(self._neighbor_cells)
-      clone._surfaces = copy.deepcopy(self._surfaces)
+      clone._neighbor_cells = copy.deepcopy(self._neighbor_cells, memo)
+
+      clone._surfaces = dict()
+      for surface_id in self._surfaces.keys():
+        surface = self._surfaces[surface_id][0]
+        halfspace =self._surfaces[surface_id][1]
+        clone_surface = copy.deepcopy(surface)
+        clone._surfaces[surface_id] = (clone_surface, halfspace)
 
       clone._max_x = self._max_x
       clone._min_x = self._min_x
@@ -1403,6 +1424,8 @@ class Cell(object):
       clone._min_y = self._min_y
       clone._max_z = self._max_z
       clone._min_z = self._min_z
+
+      memo[id(self)] = clone
 
       return clone
 
@@ -2073,16 +2096,18 @@ class LocalCoords(object):
 
   def __deepcopy__(self, memo):
 
-    existing = memo.get(self)
+    existing = memo.get(id(self))
 
     # If this is the first time we have tried to copy this object, create a copy
     if existing is None:
 
       clone = type(self).__new__(type(self))
-      clone._point = copy.deepcopy(self._point)
+      clone._point = copy.deepcopy(self._point, memo)
       clone._type = self._type
-      clone._next = copy.deepcopy(self._next)
-      clone._prev = copy.deepcopy(self._prev)
+      clone._next = copy.deepcopy(self._next, memo)
+      clone._prev = copy.deepcopy(self._prev, memo)
+
+      memo[id(self)] = clone
 
       return clone
 
@@ -2204,14 +2229,16 @@ class UnivCoords(LocalCoords):
 
   def __deepcopy__(self, memo):
 
-    existing = memo.get(self)
+    existing = memo.get(id(self))
 
     # If this is the first time we have tried to copy this object, create a copy
     if existing is None:
 
-      clone = super(UnivCoords, self)._deepcopy(self, memo)
-      clone._universe = copy.deepcopy(self._universe)
-      clone._cell = copy.deepcopy(self._cell)
+      clone = super(UnivCoords, self).__deepcopy__(self, memo)
+      clone._universe = copy.deepcopy(self._universe, memo)
+      clone._cell = copy.deepcopy(self._cell, memo)
+
+      memo[id(self)] = clone
 
       return clone
 
@@ -2341,16 +2368,18 @@ class LatCoords(LocalCoords):
 
   def __deepcopy__(self, memo):
 
-    existing = memo.get(self)
+    existing = memo.get(id(self))
 
     # If this is the first time we have tried to copy this object, create a copy
     if existing is None:
 
-      clone = super(LatCoords, self)._deepcopy(self, memo)
-      clone._lattice = copy.deepcopy(self._lattice)
+      clone = super(LatCoords, self).__deepcopy__(self, memo)
+      clone._lattice = copy.deepcopy(self._lattice, memo)
       clone._lat_x = self._lat_x
       clone._lat_y = self._lat_y
       clone._lat_z = self._lat_z
+
+      memo[id(self)] = clone
 
       return clone
 
