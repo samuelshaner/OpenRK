@@ -1077,9 +1077,9 @@ class Lattice(Universe):
     volume_fraction = np.float64(1. / (self._dimension[0] * self._dimension[1] \
                                          * self._dimension[2]))
 
-    for i in xrange(self._dimension[0]):
-      for j in xrange(self._dimension[1]):
-        for k in xrange(self._dimension[2]):
+    for i in range(self._dimension[0]):
+      for j in range(self._dimension[1]):
+        for k in range(self._dimension[2]):
           universe = self._universes[k][j][i]
           universe.computeVolumeFractions(volume=(volume * volume_fraction),
                                           tolerance=tolerance)
@@ -1097,9 +1097,9 @@ class Lattice(Universe):
     # The cell offsets have not yet been initialized
     count = 0
 
-    for i in xrange(self._dimension[0]):
-      for j in xrange(self._dimension[1]):
-        for k in xrange(self._dimension[2]):
+    for i in range(self._dimension[0]):
+      for j in range(self._dimension[1]):
+        for k in range(self._dimension[2]):
           self._cell_offsets[k][j][i] = count
           self._universes[k][j][i].initializeCellOffsets()
           count += self._universes[k][j][i]._num_regions
@@ -1955,7 +1955,7 @@ class Cell(object):
       y = np.nan_to_num(y)
       z = np.nan_to_num(z)
 
-      for i in xrange(num_samples):
+      for i in range(num_samples):
 
         point.setX(x[i])
         point.setY(y[i])
