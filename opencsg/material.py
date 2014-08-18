@@ -50,6 +50,22 @@ class Material(object):
       return existing
 
 
+  def __gt__(self, other):
+    return (id(self) > id(other))
+
+
+  def __ge__(self, other):
+    return (id(self) >= id(other))
+
+
+  def __lt__(self, other):
+    return (id(self) < id(other))
+
+
+  def __le__(self, other):
+    return (id(self) <= id(other))
+
+
   def setId(self, material_id=None):
 
     global MATERIAL_IDS

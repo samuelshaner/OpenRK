@@ -6,11 +6,11 @@ from opencsg.material import Material
 from opencsg.surface import Surface, ON_SURFACE_THRESH
 from opencsg.point import Point
 from opencsg.checkvalue import *
-import numpy as np
-import math
 from collections import OrderedDict
+from hashlib import sha1
+import numpy as np
 from numpy.lib.stride_tricks import as_strided
-import copy
+import copy, math
 
 
 # Error threshold for determining how close to the boundary of a Lattice cell
@@ -81,6 +81,22 @@ class Universe(object):
     # If this object has been copied before, return the first copy made
     else:
       return existing
+
+
+  def __gt__(self, other):
+    return (id(self) > id(other))
+
+
+  def __ge__(self, other):
+    return (id(self) >= id(other))
+
+
+  def __lt__(self, other):
+    return (id(self) < id(other))
+
+
+  def __le__(self, other):
+    return (id(self) <= id(other))
 
 
   def getAllCells(self):
@@ -808,8 +824,8 @@ class Lattice(Universe):
 
     neighbors_universes = self.getNeighbors(lat_x, lat_y, lat_z)
     neighbors_universes.sort()
-    neighbors_universes.flags.writeable = False
-    neighbors_hash = hash(neighbors_universes.data)
+    raw_data = neighbors_universes.view()
+    neighbors_hash = int(sha1(raw_data).hexdigest(), 16)
     return neighbors_hash
 
 
@@ -817,8 +833,8 @@ class Lattice(Universe):
 
     neighbors_universes = self.getUniqueNeighbors(lat_x, lat_y, lat_z)
     neighbors_universes.sort()
-    neighbors_universes.flags.writeable = False
-    neighbors_hash = hash(neighbors_universes.data)
+    raw_data = neighbors_universes.view()
+    neighbors_hash = int(sha1(raw_data).hexdigest(), 16)
     return neighbors_hash
 
 
@@ -1434,6 +1450,22 @@ class Cell(object):
       return existing
 
 
+  def __gt__(self, other):
+    return (id(self) > id(other))
+
+
+  def __ge__(self, other):
+    return (id(self) >= id(other))
+
+
+  def __lt__(self, other):
+    return (id(self) < id(other))
+
+
+  def __le__(self, other):
+    return (id(self) <= id(other))
+
+
   def getMaxX(self):
     return self._max_x
 
@@ -1503,16 +1535,16 @@ class Cell(object):
   def getNeighborsHash(self):
     neighbor_cells = np.copy(self.getNeighbors())
     neighbor_cells.sort()
-    neighbor_cells.flags.writeable = False
-    neighbors_hash = hash(neighbor_cells.data)
+    raw_data = neighbor_cells.view()
+    neighbors_hash = int(sha1(raw_data).hexdigest(), 16)
     return neighbors_hash
 
 
   def getUniqueNeighborsHash(self):
     neighbor_cells = np.copy(self.getUniqueNeighbors())
     neighbor_cells.sort()
-    neighbor_cells.flags.writeable = False
-    neighbors_hash = hash(neighbor_cells.data)
+    raw_data = neighbor_cells.view()
+    neighbors_hash = int(sha1(raw_data).hexdigest(), 16)
     return neighbors_hash
 
 

@@ -112,6 +112,22 @@ class Surface(object):
       return existing
 
 
+  def __gt__(self, other):
+    return (id(self) > id(other))
+
+
+  def __ge__(self, other):
+    return (id(self) >= id(other))
+
+
+  def __lt__(self, other):
+    return (id(self) < id(other))
+
+
+  def __le__(self, other):
+    return (id(self) <= id(other))
+
+
   def getMaxX(self, halfspace=None):
     return self._max_x
 
