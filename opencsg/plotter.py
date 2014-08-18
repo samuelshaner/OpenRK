@@ -20,16 +20,16 @@ import numpy.random
 import os
 
 ## A static variable for the output directory in which to save plots
-subdirectory = "plots/"
+SUBDIRECTORY = "plots/"
 
 
 def plot_cells(geometry, plane='xy', offset=0., gridsize=250):
 
-  global subdirectory
+  global SUBDIRECTORY
 
   # Make directory if it does not exist
-  if not os.path.exists(subdirectory):
-    os.makedirs(subdirectory)
+  if not os.path.exists(SUBDIRECTORY):
+    os.makedirs(SUBDIRECTORY)
 
   # Error checking
   if not isinstance(geometry, Geometry):
@@ -102,7 +102,7 @@ def plot_cells(geometry, plane='xy', offset=0., gridsize=250):
   plt.imshow(surface, extent=coords['bounds'],
              interpolation='nearest', cmap=cmap)
   plt.title('Cells ' + plane)
-  filename = subdirectory + 'cells-' + plane + '.png'
+  filename = SUBDIRECTORY + 'cells-' + plane + '.png'
   fig.savefig(filename, bbox_inches='tight')
   plt.close(fig)
 
@@ -110,11 +110,11 @@ def plot_cells(geometry, plane='xy', offset=0., gridsize=250):
 
 def plot_materials(geometry, plane='xy', offset=0., gridsize=250):
 
-  global subdirectory
+  global SUBDIRECTORY
 
   # Make directory if it does not exist
-  if not os.path.exists(subdirectory):
-    os.makedirs(subdirectory)
+  if not os.path.exists(SUBDIRECTORY):
+    os.makedirs(SUBDIRECTORY)
 
   # Error checking
   if not isinstance(geometry, Geometry):
@@ -187,18 +187,18 @@ def plot_materials(geometry, plane='xy', offset=0., gridsize=250):
   plt.imshow(surface, extent=coords['bounds'],
              interpolation='nearest', cmap=cmap)
   plt.title('Materials ' + plane)
-  filename = subdirectory + 'materials-' + plane + '.png'
+  filename = SUBDIRECTORY + 'materials-' + plane + '.png'
   fig.savefig(filename, bbox_inches='tight')
   plt.close(fig)
 
 
 def plot_regions(geometry, plane='xy', offset=0., gridsize=250):
 
-  global subdirectory
+  global SUBDIRECTORY
 
   # Make directory if it does not exist
-  if not os.path.exists(subdirectory):
-    os.makedirs(subdirectory)
+  if not os.path.exists(SUBDIRECTORY):
+    os.makedirs(SUBDIRECTORY)
 
   # Error checking
   if not isinstance(geometry, Geometry):
@@ -271,7 +271,7 @@ def plot_regions(geometry, plane='xy', offset=0., gridsize=250):
   plt.imshow(surface, extent=coords['bounds'],
              interpolation='nearest', cmap=cmap)
   plt.title('Regions ' + plane)
-  filename = subdirectory + 'regions-' + plane + '.png'
+  filename = SUBDIRECTORY + 'regions-' + plane + '.png'
   fig.savefig(filename, bbox_inches='tight')
   plt.close(fig)
 
@@ -279,11 +279,11 @@ def plot_regions(geometry, plane='xy', offset=0., gridsize=250):
 def plot_neighbor_cells(geometry, plane='xy', offset=0.,
                         gridsize=250, unique=False):
 
-  global subdirectory
+  global SUBDIRECTORY
 
   # Make directory if it does not exist
-  if not os.path.exists(subdirectory):
-    os.makedirs(subdirectory)
+  if not os.path.exists(SUBDIRECTORY):
+    os.makedirs(SUBDIRECTORY)
 
   # Error checking
   if not isinstance(geometry, Geometry):
@@ -371,10 +371,10 @@ def plot_neighbor_cells(geometry, plane='xy', offset=0.,
 
   if unique:
     plt.title('Unique Neighbor Cells ' + plane)
-    filename = subdirectory + 'unique-neighbor-cells-' + plane + '.png'
+    filename = SUBDIRECTORY + 'unique-neighbor-cells-' + plane + '.png'
   else:
     plt.title('Neighbor Cells ' + plane)
-    filename = subdirectory + 'neighbor-cells-' + plane + '.png'
+    filename = SUBDIRECTORY + 'neighbor-cells-' + plane + '.png'
 
   fig.savefig(filename, bbox_inches='tight')
   plt.close(fig)

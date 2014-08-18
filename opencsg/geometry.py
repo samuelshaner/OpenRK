@@ -2,8 +2,16 @@ __author__ = 'Will Boyd'
 __email__ = 'wboyd@mit.edu'
 
 
+import opencsg
 from opencsg.universe import *
 from opencsg.point import Point
+
+
+def reset_auto_ids():
+  opencsg.reset_auto_material_id()
+  opencsg.reset_auto_surface_id()
+  opencsg.reset_auto_cell_id()
+  opencsg.reset_auto_universe_id()
 
 
 class Geometry(object):
@@ -35,22 +43,24 @@ class Geometry(object):
 
   def __deepcopy__(self, memo):
 
-    existing = memo.get(self)
+    existing = memo.get(id(self))
 
     # If this is the first time we have tried to copy this object, create a copy
     if existing is None:
 
       clone = type(self).__new__(type(self))
-      clone._root_universe = copy.deepcopy(self._root_universe)
+      clone._root_universe = copy.deepcopy(self._root_universe, memo)
       clone._num_regions = self._num_regions
       clone._volume = self._volume
-      clone._region_volumes = copy.deepcopy(self._region_volumes)
+      clone._region_volumes = copy.deepcopy(self._region_volumes, memo)
       clone._num_neighbors = self._num_neighbors
-      clone._neighbor_ids = copy.deepcopy(self._neighbor_ids)
-      clone._num_unique_neighbors = copy.deepcopy(self._num_unique_neighbors)
-      clone._unique_neighbor_ids = copy.deepcopy(self._unique_neighbor_ids)
-      clone._regions_to_neighbors = copy.deepcopy(self._regions_to_neighbors)
-      clone._regions_to_unique_neighbors = copy.deepcopy(self._regions_to_unique_neighbors)
+      clone._neighbor_ids = copy.deepcopy(self._neighbor_ids, memo)
+      clone._num_unique_neighbors = copy.deepcopy(self._num_unique_neighbors, memo)
+      clone._unique_neighbor_ids = copy.deepcopy(self._unique_neighbor_ids, memo)
+      clone._regions_to_neighbors = copy.deepcopy(self._regions_to_neighbors, memo)
+      clone._regions_to_unique_neighbors = copy.deepcopy(self._regions_to_unique_neighbors, memo)
+
+      memo[id(self)] = clone
 
       return clone
 
@@ -134,7 +144,6 @@ class Geometry(object):
               self._root_universe.getMaxZ()]
 
     return bounds
-
 
 
   def getAllCells(self):
@@ -251,6 +260,19 @@ class Geometry(object):
       volume = cell._volume
 
       self._region_volumes[region] = volume
+
+
+  def updateBoundingBoxes(self):
+
+    if self._root_universe is None:
+      msg = 'Unable to get the bounds since the Geometry does not ' \
+            'contain the base Universe ID=0'
+      raise ValueError(msg)
+
+    cells = self.getAllCells()
+
+    for cell_id, cell in cells.items():
+      cell.findBoundingBox()
 
 
   def initializeCellOffsets(self):

@@ -3,7 +3,7 @@ __email__ = 'wboyd@mit.edu'
 
 
 from opencsg.material import Material
-from opencsg.surface import Surface, on_surface_thresh
+from opencsg.surface import Surface, ON_SURFACE_THRESH
 from opencsg.point import Point
 from opencsg.checkvalue import *
 import numpy as np
@@ -15,16 +15,21 @@ import copy
 
 # Error threshold for determining how close to the boundary of a Lattice cell
 # a Point needs to be to be considered on it
-on_lattice_cell_thresh = 1e-12
+ON_LATTICE_CELL_THRESH = 1e-12
 
 # Lists of all IDs for all Universes created
-universe_ids = list()
+UNIVERSE_IDS = list()
 
 # A static variable for auto-generated Universe IDs
-auto_universe_id = 10000
+AUTO_UNIVERSE_ID = 10000
 
-max_float = np.finfo(np.float64).max
-min_float = np.finfo(np.float64).min
+def reset_auto_universe_id():
+  global AUTO_UNIVERSE_ID, UNIVERSE_IDS
+  AUTO_UNIVERSE_ID = 10000
+  UNIVERSE_IDS = list()
+
+MAX_FLOAT = np.finfo(np.float64).max
+MIN_FLOAT = np.finfo(np.float64).min
 
 
 class Universe(object):
@@ -52,7 +57,7 @@ class Universe(object):
 
   def __deepcopy__(self, memo):
 
-    existing = memo.get(self)
+    existing = memo.get(id(self))
 
     # If this is the first time we have tried to copy this object, create a copy
     if existing is None:
@@ -60,10 +65,16 @@ class Universe(object):
       clone = type(self).__new__(type(self))
       clone._id = self._id
       clone._name = self._name
-      clone._cells = copy.deepcopy(self._cells)
-      clone._cell_offsets = copy.deepcopy(self._cell_offsets)
+
+      clone._cells = dict()
+      for cell_id in self._cells:
+        clone._cells[cell_id] = copy.deepcopy(self._cells[cell_id], memo)
+
+      clone._cell_offsets = copy.deepcopy(self._cell_offsets, memo)
       clone._num_regions = self._num_regions
       clone._volume = self._volume
+
+      memo[id(self)] = clone
 
       return clone
 
@@ -119,7 +130,7 @@ class Universe(object):
 
   def getMaxX(self):
 
-    max_x = min_float
+    max_x = MIN_FLOAT
 
     for cell_id in self._cells:
 
@@ -132,7 +143,7 @@ class Universe(object):
 
   def getMaxY(self):
 
-    max_y = min_float
+    max_y = MIN_FLOAT
 
     for cell_id in self._cells:
 
@@ -145,7 +156,7 @@ class Universe(object):
 
   def getMaxZ(self):
 
-    max_z = min_float
+    max_z = MIN_FLOAT
 
     for cell_id in self._cells:
 
@@ -158,7 +169,7 @@ class Universe(object):
 
   def getMinX(self):
 
-    min_x = max_float
+    min_x = MAX_FLOAT
 
     for cell_id in self._cells:
 
@@ -171,7 +182,7 @@ class Universe(object):
 
   def getMinY(self):
 
-    min_y = max_float
+    min_y = MAX_FLOAT
 
     for cell_id in self._cells:
 
@@ -184,7 +195,7 @@ class Universe(object):
 
   def getMinZ(self):
 
-    min_z = max_float
+    min_z = MAX_FLOAT
 
     for cell_id in self._cells:
 
@@ -269,22 +280,22 @@ class Universe(object):
 
   def setId(self, universe_id=None):
 
-    global universe_ids
+    global UNIVERSE_IDS
 
     if universe_id is None:
-      global auto_universe_id
-      self._id = auto_universe_id
-      universe_ids.append(auto_universe_id)
-      auto_universe_id += 1
+      global AUTO_UNIVERSE_ID
+      self._id = AUTO_UNIVERSE_ID
+      UNIVERSE_IDS.append(AUTO_UNIVERSE_ID)
+      AUTO_UNIVERSE_ID += 1
 
     # Check that the ID is an integer and wasn't already used
     elif is_integer(universe_id):
 
       # If the Universe already has an ID, remove it from global list
       if not self._id is None:
-        universe_ids.remove(self._id)
+        UNIVERSE_IDS.remove(self._id)
 
-      if universe_id in universe_ids:
+      if universe_id in UNIVERSE_IDS:
         msg = 'Unable to set Universe ID to {0} since a Universe with this ' \
               'ID was already initialized'.format(universe_id)
         raise ValueError(msg)
@@ -296,7 +307,7 @@ class Universe(object):
 
       else:
         self._id = universe_id
-        universe_ids.append(universe_id)
+        UNIVERSE_IDS.append(universe_id)
 
     else:
       msg = 'Unable to set Universe ID to a non-integer {0}'.format(universe_id)
@@ -571,7 +582,7 @@ class Lattice(Universe):
 
   def __deepcopy__(self, memo):
 
-    existing = memo.get(self)
+    existing = memo.get(id(self))
 
     # If this is the first time we have tried to copy this object, create a copy
     if existing is None:
@@ -582,12 +593,21 @@ class Lattice(Universe):
       clone._type = self._type
       clone._dimension = self._dimension
       clone._width = self._width
-      clone._universes = copy.deepcopy(self._universes)
-      clone._cell_offsets = copy.deepcopy(self._cell_offsets)
+
+      clone._universes = np.empty(self._universes.shape, dtype=Universe)
+      for i in range(self._dimension[0]):
+        for j in range(self._dimension[1]):
+          for k in range(self._dimension[2]):
+            universe = self._universes[k][j][i]
+            clone._universes[k,j,i] = copy.deepcopy(universe, memo)
+
+      clone._cell_offsets = copy.deepcopy(self._cell_offsets, memo)
       clone._num_regions = self._num_regions
-      clone._offset = copy.deepcopy(self._offset)
-      clone._neighbor_universes = copy.deepcopy(self._neighbor_universes)
+      clone._offset = copy.deepcopy(self._offset, memo)
+      clone._neighbor_universes = copy.deepcopy(self._neighbor_universes, memo)
       clone._neighbor_depth = self._neighbor_depth
+
+      memo[id(self)] = clone
 
       return clone
 
@@ -884,22 +904,22 @@ class Lattice(Universe):
 
   def setId(self, lattice_id=None):
 
-    global universe_ids
+    global UNIVERSE_IDS
 
     if lattice_id is None:
-      global auto_universe_id
-      self._id = auto_universe_id
-      universe_ids.append(auto_universe_id)
-      auto_universe_id += 1
+      global AUTO_UNIVERSE_ID
+      self._id = AUTO_UNIVERSE_ID
+      UNIVERSE_IDS.append(AUTO_UNIVERSE_ID)
+      AUTO_UNIVERSE_ID += 1
 
     # Check that the ID is an integer and wasn't already used
     elif is_integer(lattice_id):
 
       # If the Lattice already has an ID, remove it from global list
       if not self._id is None:
-        universe_ids.remove(self._id)
+        UNIVERSE_IDS.remove(self._id)
 
-      if lattice_id in universe_ids:
+      if lattice_id in UNIVERSE_IDS:
         msg = 'Unable to set Lattice ID to {0} since a Lattice ' \
               'with this ID was already initialized'.format(lattice_id)
         raise ValueError(msg)
@@ -911,7 +931,7 @@ class Lattice(Universe):
 
       else:
         self._id = lattice_id
-        universe_ids.append(lattice_id)
+        UNIVERSE_IDS.append(lattice_id)
 
     else:
       msg = 'Unable to set a non-integer Lattice ID {0}'.format(lattice_id)
@@ -949,7 +969,7 @@ class Lattice(Universe):
     if not isinstance(offset, (tuple, list, np.ndarray)):
       msg = 'Unable to set Lattice ID={0} offset to {1} since it ' \
           'is not a Python tuple/list or NumPy array'.\
-          format(self._id, origin)
+          format(self._id, offset)
       raise ValueError(msg)
 
     elif len(offset) != 3 and len(offset) != 2:
@@ -1026,7 +1046,7 @@ class Lattice(Universe):
 
     # Initialize width array to infinity by default
     self._width = np.zeros(3, dtype=np.float64)
-    self._width[:] = max_float
+    self._width[:] = MAX_FLOAT
 
     for i in range(len(width)):
       self._width[i] = width[i]
@@ -1054,15 +1074,15 @@ class Lattice(Universe):
 
           universe = self._universes[k][j][i]
 
-          if self._width[0] != max_float:
+          if self._width[0] != MAX_FLOAT:
             universe.setMaxX(self._width[0]/2.)
             universe.setMinX(-self._width[0]/2.)
 
-          if self._width[1] != max_float:
+          if self._width[1] != MAX_FLOAT:
             universe.setMaxY(self._width[1]/2.)
             universe.setMinY(-self._width[1]/2.)
 
-          if self._width[2] != max_float:
+          if self._width[2] != MAX_FLOAT:
             universe.setMaxZ(self._width[2]/2.)
             universe.setMinZ(-self._width[2]/2.)
 
@@ -1167,19 +1187,19 @@ class Lattice(Universe):
     distance_z = math.fabs(math.fabs(z) - self._dimension[2]*self._width[2]*0.5\
                              - self._offset[2])
 
-    if distance_x < on_lattice_cell_thresh:
+    if distance_x < ON_LATTICE_CELL_THRESH:
       if x > 0:
         lat_x = self._dimension[0] - 1
       else:
         lat_x = 0
 
-    if distance_y < on_lattice_cell_thresh:
+    if distance_y < ON_LATTICE_CELL_THRESH:
       if y > 0:
         lat_y = self._dimension[1] - 1
       else:
         lat_y = 0
 
-    if distance_z < on_lattice_cell_thresh:
+    if distance_z < ON_LATTICE_CELL_THRESH:
       if z > 0:
         lat_z = self._dimension[2] - 1
       else:
@@ -1322,10 +1342,15 @@ class Lattice(Universe):
 
 
 # Lists of all IDs for all Cells created
-cell_ids = list()
+CELL_IDS = list()
 
 # A static variable for auto-generated Cell IDs
-auto_cell_id = 10000
+AUTO_CELL_ID = 10000
+
+def reset_auto_cell_id():
+  global AUTO_CELL_ID, CELL_IDS
+  AUTO_CELL_ID = 10000
+  CELL_IDS = list()
 
 
 class Cell(object):
@@ -1358,12 +1383,12 @@ class Cell(object):
     self.setId(cell_id)
     self.setName(name)
 
-    self.setMaxX(max_float)
-    self.setMaxY(max_float)
-    self.setMaxZ(max_float)
-    self.setMinX(min_float)
-    self.setMinY(min_float)
-    self.setMinZ(min_float)
+    self.setMaxX(MAX_FLOAT)
+    self.setMaxY(MAX_FLOAT)
+    self.setMaxZ(MAX_FLOAT)
+    self.setMinX(MIN_FLOAT)
+    self.setMinY(MIN_FLOAT)
+    self.setMinZ(MIN_FLOAT)
 
     if not fill is None:
       self.setFill(fill)
@@ -1371,7 +1396,7 @@ class Cell(object):
 
   def __deepcopy__(self, memo):
 
-    existing = memo.get(self)
+    existing = memo.get(id(self))
 
     # If this is the first time we have tried to copy this object, create a copy
     if existing is None:
@@ -1379,13 +1404,19 @@ class Cell(object):
       clone = type(self).__new__(type(self))
       clone._id = self._id
       clone._name = self._name
-      clone._fill = self._fill
+      clone._fill = copy.deepcopy(self._fill, memo)
       clone._type = self._type
       clone._num_subcells = self._num_subcells
       clone._volume_fraction = self._volume_fraction
       clone._volume = self._volume
-      clone._neighbor_cells = copy.deepcopy(self._neighbor_cells)
-      clone._surfaces = copy.deepcopy(self._surfaces)
+      clone._neighbor_cells = copy.deepcopy(self._neighbor_cells, memo)
+
+      clone._surfaces = dict()
+      for surface_id in self._surfaces.keys():
+        surface = self._surfaces[surface_id][0]
+        halfspace =self._surfaces[surface_id][1]
+        clone_surface = copy.deepcopy(surface)
+        clone._surfaces[surface_id] = (clone_surface, halfspace)
 
       clone._max_x = self._max_x
       clone._min_x = self._min_x
@@ -1393,6 +1424,8 @@ class Cell(object):
       clone._min_y = self._min_y
       clone._max_z = self._max_z
       clone._min_z = self._min_z
+
+      memo[id(self)] = clone
 
       return clone
 
@@ -1485,22 +1518,22 @@ class Cell(object):
 
   def setId(self, cell_id=None):
 
-    global cell_ids
+    global CELL_IDS
 
     if cell_id is None:
-      global auto_cell_id
-      self._id = auto_cell_id
-      cell_ids.append(auto_cell_id)
-      auto_cell_id += 1
+      global AUTO_CELL_ID
+      self._id = AUTO_CELL_ID
+      CELL_IDS.append(AUTO_CELL_ID)
+      AUTO_CELL_ID += 1
 
     # Check that the ID is an integer and wasn't already used
     elif is_integer(cell_id):
 
       # If the Cell already has an ID, remove it from global list
       if not self._id is None:
-        cell_ids.remove(self._id)
+        CELL_IDS.remove(self._id)
 
-      if cell_id in cell_ids:
+      if cell_id in CELL_IDS:
         msg = 'Unable to set Cell ID to {0} since a Cell with this ID was ' \
               'already initialized'.format(cell_id)
         raise ValueError(msg)
@@ -1512,7 +1545,7 @@ class Cell(object):
 
       else:
         self._id = cell_id
-        cell_ids.append(cell_id)
+        CELL_IDS.append(cell_id)
 
     else:
       msg = 'Unable to set Cell ID to a non-integer {0}'.format(cell_id)
@@ -1810,12 +1843,12 @@ class Cell(object):
 
   def findBoundingBox(self):
 
-    self.setMaxX(max_float)
-    self.setMaxY(max_float)
-    self.setMaxZ(max_float)
-    self.setMinX(min_float)
-    self.setMinY(min_float)
-    self.setMinZ(min_float)
+    self.setMaxX(MAX_FLOAT)
+    self.setMaxY(MAX_FLOAT)
+    self.setMaxZ(MAX_FLOAT)
+    self.setMinX(MIN_FLOAT)
+    self.setMinY(MIN_FLOAT)
+    self.setMinZ(MIN_FLOAT)
 
     for surface_id in self._surfaces:
       surface = self._surfaces[surface_id][0]
@@ -1829,35 +1862,35 @@ class Cell(object):
       min_y = surface.getMinY(halfspace=halfspace)
       min_z = surface.getMinZ(halfspace=halfspace)
 
-      if max_x != max_float and max_x < self._max_x:
+      if max_x != MAX_FLOAT and max_x < self._max_x:
         self.setMaxX(max_x)
-      if max_y != max_float and max_y < self._max_y:
+      if max_y != MAX_FLOAT and max_y < self._max_y:
         self.setMaxY(max_y)
-      if max_z != max_float and max_z < self._max_z:
+      if max_z != MAX_FLOAT and max_z < self._max_z:
         self.setMaxZ(max_z)
 
-      if min_x != min_float and min_x > self._min_x:
+      if min_x != MIN_FLOAT and min_x > self._min_x:
         self.setMinX(min_x)
-      if min_y != min_float and min_y > self._min_y:
+      if min_y != MIN_FLOAT and min_y > self._min_y:
         self.setMinY(min_y)
-      if min_z != min_float and min_z > self._min_z:
+      if min_z != MIN_FLOAT and min_z > self._min_z:
         self.setMinZ(min_z)
 
     # If we could not find a bounds for any dimension, readjust
     # it to +/- infinity
-    if self._max_x == min_float:
-      self.setMaxX(max_float)
-    if self._max_y == min_float:
-      self.setMaxY(max_float)
-    if self._max_z == min_float:
-      self.setMaxZ(max_float)
+    if self._max_x == MIN_FLOAT:
+      self.setMaxX(MAX_FLOAT)
+    if self._max_y == MIN_FLOAT:
+      self.setMaxY(MAX_FLOAT)
+    if self._max_z == MIN_FLOAT:
+      self.setMaxZ(MAX_FLOAT)
 
-    if self._min_x == max_float:
-      self.setMinX(min_float)
-    if self._min_y == max_float:
-      self.setMinY(min_float)
-    if self._min_z == max_float:
-      self.setMinZ(min_float)
+    if self._min_x == MAX_FLOAT:
+      self.setMinX(MIN_FLOAT)
+    if self._min_y == MAX_FLOAT:
+      self.setMinY(MIN_FLOAT)
+    if self._min_z == MAX_FLOAT:
+      self.setMinZ(MIN_FLOAT)
 
 
   def buildNeighbors(self):
@@ -1928,17 +1961,17 @@ class Cell(object):
     # Compute the volume/area of the bounding box we sample from
     box_volume = np.float64(1.)
 
-    if self._min_x > min_float and self._max_x < max_float:
+    if self._min_x > MIN_FLOAT and self._max_x < MAX_FLOAT:
       box_volume *= (self._max_x - self._min_x)
-    if self._min_y > min_float and self._max_y < max_float:
+    if self._min_y > MIN_FLOAT and self._max_y < MAX_FLOAT:
       box_volume *= (self._max_y - self._min_y)
-    if self._min_z > min_float and self._max_z < max_float:
+    if self._min_z > MIN_FLOAT and self._max_z < MAX_FLOAT:
       box_volume *= (self._max_z - self._min_z)
 
     # Initialize variables
     counter = 0.
     tot_samples = 0.
-    uncertainty = max_float
+    uncertainty = MAX_FLOAT
 
     while (uncertainty > tolerance):
 
@@ -2063,16 +2096,18 @@ class LocalCoords(object):
 
   def __deepcopy__(self, memo):
 
-    existing = memo.get(self)
+    existing = memo.get(id(self))
 
     # If this is the first time we have tried to copy this object, create a copy
     if existing is None:
 
       clone = type(self).__new__(type(self))
-      clone._point = copy.deepcopy(self._point)
+      clone._point = copy.deepcopy(self._point, memo)
       clone._type = self._type
-      clone._next = copy.deepcopy(self._next)
-      clone._prev = copy.deepcopy(self._prev)
+      clone._next = copy.deepcopy(self._next, memo)
+      clone._prev = copy.deepcopy(self._prev, memo)
+
+      memo[id(self)] = clone
 
       return clone
 
@@ -2194,14 +2229,16 @@ class UnivCoords(LocalCoords):
 
   def __deepcopy__(self, memo):
 
-    existing = memo.get(self)
+    existing = memo.get(id(self))
 
     # If this is the first time we have tried to copy this object, create a copy
     if existing is None:
 
-      clone = super(UnivCoords, self)._deepcopy(self, memo)
-      clone._universe = copy.deepcopy(self._universe)
-      clone._cell = copy.deepcopy(self._cell)
+      clone = super(UnivCoords, self).__deepcopy__(self, memo)
+      clone._universe = copy.deepcopy(self._universe, memo)
+      clone._cell = copy.deepcopy(self._cell, memo)
+
+      memo[id(self)] = clone
 
       return clone
 
@@ -2331,16 +2368,18 @@ class LatCoords(LocalCoords):
 
   def __deepcopy__(self, memo):
 
-    existing = memo.get(self)
+    existing = memo.get(id(self))
 
     # If this is the first time we have tried to copy this object, create a copy
     if existing is None:
 
-      clone = super(LatCoords, self)._deepcopy(self, memo)
-      clone._lattice = copy.deepcopy(self._lattice)
+      clone = super(LatCoords, self).__deepcopy__(self, memo)
+      clone._lattice = copy.deepcopy(self._lattice, memo)
       clone._lat_x = self._lat_x
       clone._lat_y = self._lat_y
       clone._lat_z = self._lat_z
+
+      memo[id(self)] = clone
 
       return clone
 
