@@ -118,7 +118,7 @@ class XSTallyExtractor(object):
       for filter in filters:
 
         if filter._type == 'material':
-          material_ids = filter._bin_edges
+          material_ids = filter._bins
 
           # Build maps for all materials to this Tally
           for material_id in material_ids:
@@ -140,7 +140,7 @@ class XSTallyExtractor(object):
       for filter in filters:
 
         if filter._type == 'universe':
-          universe_ids = filter._bin_edges
+          universe_ids = filter._bins
 
           # Build maps for all universes to this Tally
           for universe_id in universe_ids:
@@ -162,7 +162,7 @@ class XSTallyExtractor(object):
       for filter in filters:
 
         if filter._type == 'cell':
-          cell_ids = filter._bin_edges
+          cell_ids = filter._bins
 
           # Build maps for all cells to this Tally
           for cell_id in cell_ids:
@@ -188,7 +188,7 @@ class XSTallyExtractor(object):
       for filter in filters:
 
         if filter._type == 'distribcell':
-          distribcell_ids = filter._bin_edges
+          distribcell_ids = filter._bins
 
           # Build maps for all distribcells to this Tally
           for distribcell_id in distribcell_ids:
@@ -250,22 +250,22 @@ class XSTallyExtractor(object):
 
       if filter._type == 'material':
         tallies = self._materials_to_tallies
-        domain_id = filter._bin_edges[0]
+        domain_id = filter._bins[0]
         break
 
       elif filter._type == 'cell':
         tallies = self._cells_to_tallies
-        domain_id = filter._bin_edges[0]
+        domain_id = filter._bins[0]
         break
 
       elif filter._type == 'distribcell':
         tallies = self._distribcells_to_tallies
-        domain_id = filter._bin_edges[0]
+        domain_id = filter._bins[0]
         break
 
       elif filter._type == 'universe':
         tallies = self._universes_to_tallies
-        domain_id = filter._bin_edges[0]
+        domain_id = filter._bins[0]
         break
 
     # Iterate over all tallies to find the appropriate one
@@ -385,8 +385,8 @@ class XSTallyExtractor(object):
 
     # Create energy and domain filters to search for
     group_edges = energy_groups._group_edges
-    filters.append(openmc.Filter(type='energy', bin_edges=group_edges))
-    filters.append(openmc.Filter(type=domain_type, bin_edges=domain._id))
+    filters.append(openmc.Filter(type='energy', bins=group_edges))
+    filters.append(openmc.Filter(type=domain_type, bins=domain._id))
 
 
     if xs_type == 'total':
@@ -480,7 +480,7 @@ class XSTallyExtractor(object):
       # Get the Tally objects needed to compute the scatter matrix
       flux = self.getTally('flux', filters, estimator='analog')
 
-      filters.append(openmc.Filter(type='energyout', bin_edges=group_edges))
+      filters.append(openmc.Filter(type='energyout', bins=group_edges))
       nu_scatter = self.getTally('nu-scatter', filters, estimator='analog')
 
       # Initialize a MultiGroupXS object
@@ -494,7 +494,7 @@ class XSTallyExtractor(object):
       # Get the Tally objects needed to compute chi
       nu_fission_in = self.getTally('nu-fission', filters, estimator='analog')
 
-      energyout_filter = openmc.Filter(type='energyout', bin_edges=group_edges)
+      energyout_filter = openmc.Filter(type='energyout', bins=group_edges)
       filters.pop(0)
       filters.append(energyout_filter)
       nu_fission_out = self.getTally('nu-fission', filters, estimator='analog')
