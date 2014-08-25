@@ -298,8 +298,6 @@ class MultiGroupXS(object):
       subdomain_index = 0
 
     if metric == 'mean':
-#      if str(self._xs[0, subdomain_index, group_index]) == '[ inf  nan]':
-#        print self._domain, self._domain_type, self._xs_type
       return self._xs[0, subdomain_index, group_index]
     else:
       return self._xs[1, subdomain_index, group_index]
