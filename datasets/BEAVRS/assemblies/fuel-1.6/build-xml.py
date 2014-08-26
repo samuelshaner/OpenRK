@@ -72,16 +72,10 @@ tally_factory = XSTallyFactory(openmc_geometry)
 
 groups = group_structures['CASMO']['2-group']
 
-#tally_factory.createAllXS(groups, domain_type='distribcell')
-#tally_factory.createAllXS(groups, domain_type='material')
-#tally_factory.createAllXS(groups, domain_type='cell')
-#tally_factory.createAllXS(groups, domain_type='universe')
-
-from datasets.BEAVRS.nuclides import *
-tally_factory.createAllMicroXS(groups, domain_type='distribcell', nuclides=nuclides.values())
-tally_factory.createAllMicroXS(groups, domain_type='material', nuclides=nuclides.values())
-tally_factory.createAllMicroXS(groups, domain_type='cell', nuclides=nuclides.values())
-tally_factory.createAllMicroXS(groups, domain_type='universe', nuclides=nuclides.values())
+tally_factory.createAllMicroXS(groups, domain_type='distribcell')
+tally_factory.createAllMicroXS(groups, domain_type='material')
+tally_factory.createAllMicroXS(groups, domain_type='cell')
+tally_factory.createAllMicroXS(groups, domain_type='universe')
 
 tally_factory.createTalliesFile()
 
@@ -90,8 +84,8 @@ tally_factory.createTalliesFile()
 #########################   Plotting the Geometry  ############################
 ###############################################################################
 
-plotter.plot_neighbor_cells(geometry)
-plotter.plot_neighbor_cells(geometry, unique=True)
+#plotter.plot_neighbor_cells(geometry)
+#plotter.plot_neighbor_cells(geometry, unique=True)
 #plotter.plot_regions(geometry)
 #plotter.plot_materials(geometry)
 #plotter.plot_cells(geometry)

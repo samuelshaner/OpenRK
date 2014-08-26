@@ -37,19 +37,6 @@ class MicroXS(MultiGroupXS):
       self.addNuclide(nuclide)
 
 
-  def extractNuclidesFromDomain(self):
-
-    if self._domain is None:
-
-    nuclides = self._domain.getAllNuclides()
-
-    if len(self._tallies) == 0:
-      msg = 'Unable to add Nuclides to MicroXS since its ' \
-            'Tallies have not yet been created'
-      raise ValueError(msg)
-
-
-
   def addNuclidesToTallies(self):
 
     if len(self._tallies) == 0:

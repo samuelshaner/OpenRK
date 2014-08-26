@@ -84,7 +84,7 @@ class XSTallyFactory(object):
 
 
   def createMicroXS(self, xs_type, energy_groups, domain,
-               domain_type='distribcell', nuclides=[]):
+               domain_type='distribcell', nuclides=None):
 
     if not is_string(xs_type):
       msg = 'The XSTallyBuilder is unable to create cross-section type {0} ' \
@@ -109,6 +109,11 @@ class XSTallyFactory(object):
             'type'.format(xs_type, domain_type, domain._id)
       raise ValueError(msg)
 
+    # Add all of the Nuclides in the domain to the MicroXS
+    if nuclides is None:
+      nuclides = domain.getAllNuclides()
+      nuclides = nuclides.values()
+
     elif not isinstance(nuclides, (np.ndarray, list, tuple)):
       msg = 'The XSTallyBuilder is unable to create cross-section ' \
             'type {0} in {1} {2} for nuclides {3} since it is not ' \
@@ -122,8 +127,6 @@ class XSTallyFactory(object):
               'type {0} in {1} {2} for nuclide {3} since it is not an OpenMC ' \
               'nuclide'.format(xs_type, domain_type, domain._id, nuclide)
         raise ValueError(msg)
-
-
 
     if xs_type == 'total':
       xs = MicroTotalXS(domain, domain_type, energy_groups, nuclides)
@@ -175,7 +178,7 @@ class XSTallyFactory(object):
 
 
   def createAllMicroXS(self, energy_groups, domain_type='distribcell',
-                       nuclides=[]):
+                       nuclides=None):
 
     if not domain_type in domain_types:
       msg = 'The XSTallyBuilder is unable to create all micro cross-sections ' \
