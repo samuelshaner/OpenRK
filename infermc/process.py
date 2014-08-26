@@ -1,7 +1,6 @@
 import opencsg
 from openmc.opencsg_compatible import get_opencsg_geometry
 from infermc.multigroupxs import *
-import copy
 
 
 def get_path(coords):

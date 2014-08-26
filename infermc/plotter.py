@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 from infermc.process import *
 from infermc.multigroupxs import *
 from opencsg.checkvalue import *
-from statepoint import StatePoint
+from openmc.statepoint import StatePoint
 import numpy as np
 import numpy.random
 import os

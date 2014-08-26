@@ -794,18 +794,15 @@ class TotalXS(MultiGroupXS):
     flux = np.array([flux_mean, flux_std_dev])
     total = np.array([total_mean, total_std_dev])
 
-    # Set any zero fluxes and reaction rates to a negative value
-    flux_indices = flux[0, ...] == 0.
-    total_indices = total[0, ...] == 0
-    flux[:, flux_indices] = -1.
-    total[:, total_indices] = -1.
+    # Set any zero fluxes to a negative value
+    flux[0, flux[0, ...] == 0.] = -1.
+    flux[1, flux[0, ...] == 0.] = 0.
 
     # Compute the xs with uncertainty propagation
     self._xs = uncorr_divide_by_array(total, flux)
 
-    # For any region without flux or reaction rate, convert xs to zero
-    self._xs[:, flux_indices] = 0.
-    self._xs[:, total_indices] = 0.
+    # For any region without flux, convert xs to zero
+    self._xs[:, flux[0, ...] == 0.] = 0.
 
     # Correct -0.0 to +0.0
     self._xs += 0.
@@ -891,21 +888,14 @@ class TransportXS(MultiGroupXS):
     scatter1 = np.array([scatter1_mean, scatter1_std_dev])
 
     # Set any zero fluxes to a negative value
-    flux_indices = flux[0, ...] == 0.
-    flux[:, flux_indices] = -1.
-
-    delta = uncorr_sub(total, scatter1)
-
-    # Set any zero reaction rates to a negative value
-    delta_indices = delta[0, ...] == 0.
-    delta[:, delta_indices] = -1.
+    flux[0, flux[0, ...] == 0.] = -1.
+    flux[1, flux[0, ...] == 0.] = 0.
 
     # Compute the xs with uncertainty propagation
-    self._xs = uncorr_divide_by_array(delta, flux)
+    self._xs = uncorr_divide_by_array(uncorr_sub(total, scatter1), flux)
 
-    # For any region without flux or reaction rate, convert xs to zero
-    self._xs[:, flux_indices] = 0.
-    self._xs[:, delta_indices] = 0.
+    # For any region without flux, convert xs to zero
+    self._xs[:, flux[0, ...] == 0.] = 0.
 
     # Correct -0.0 to +0.0
     self._xs += 0.
@@ -974,18 +964,15 @@ class AbsorptionXS(MultiGroupXS):
     flux = np.array([flux_mean, flux_std_dev])
     absorption = np.array([absorption_mean, absorption_std_dev])
 
-    # Set any zero fluxes and reaction rates to a negative value
-    flux_indices = flux[0, ...] == 0.
-    absorption_indices = absorption[0, ...] == 0.
-    flux[:, flux_indices] = -1.
-    absorption[:, absorption_indices] = -1.
+    # Set any zero fluxes to a negative value
+    flux[0, flux[0, ...] == 0.] = -1.
+    flux[1, flux[0, ...] == 0.] = 0.
 
     # Compute the xs with uncertainty propagation
     self._xs = uncorr_divide_by_array(absorption, flux)
 
     # For any region without flux, convert xs to zero
-    self._xs[:, flux_indices] = 0.
-    self._xs[:, absorption_indices] = 0.
+    self._xs[:, flux[0, ...] == 0.] = 0.
 
     # Correct -0.0 to +0.0
     self._xs += 0.
@@ -1054,18 +1041,15 @@ class FissionXS(MultiGroupXS):
     flux = np.array([flux_mean, flux_std_dev])
     fission = np.array([fission_mean, fission_std_dev])
 
-    # Set any zero fluxes and reaction rates to a negative value
-    flux_indices = flux[0, ...] == 0.
-    fission_indices = fission[0, ...] == 0.
-    flux[:, flux_indices] = -1.
-    fission[:, fission_indices] = -1.
+    # Set any zero fluxes to a negative value
+    flux[0, flux[0, ...] == 0.] = -1.
+    flux[1, flux[0, ...] == 0.] = 0.
 
     # Compute the xs with uncertainty propagation
     self._xs = uncorr_divide_by_array(fission, flux)
 
-    # For any region without flux or reaction rate, convert xs to zero
-    self._xs[:, flux_indices] = 0.
-    self._xs[:, fission_indices] = 0.
+    # For any region without flux, convert xs to zero
+    self._xs[:, flux[0, ...] == 0.] = 0.
 
     # Correct -0.0 to +0.0
     self._xs += 0.
@@ -1134,18 +1118,15 @@ class NuFissionXS(MultiGroupXS):
     flux = np.array([flux_mean, flux_std_dev])
     nu_fission = np.array([nu_fission_mean, nu_fission_std_dev])
 
-    # Set any zero fluxes and reaction rates to a negative value
-    flux_indices = flux[0, ...] == 0.
-    nu_fission_indices = nu_fission[0, ...] == 0.
-    flux[:, flux_indices] = -1.
-    nu_fission[:, nu_fission_indices] = -1.
+    # Set any zero fluxes to a negative value
+    flux[0, flux[0, ...] == 0.] = -1.
+    flux[1, flux[0, ...] == 0.] = 0.
 
     # Compute the xs with uncertainty propagation
     self._xs = uncorr_divide_by_array(nu_fission, flux)
 
-    # For any region without flux or reaction rate, convert xs to zero
-    self._xs[:, flux_indices] = 0.
-    self._xs[:, nu_fission_indices] = 0.
+    # For any region without flux, convert xs to zero
+    self._xs[:, flux[0, ...] == 0.] = 0.
 
     # Correct -0.0 to +0.0
     self._xs += 0.
@@ -1214,18 +1195,15 @@ class ScatterXS(MultiGroupXS):
     flux = np.array([flux_mean, flux_std_dev])
     scatter = np.array([scatter_mean, scatter_std_dev])
 
-    # Set any zero fluxes and reaction rates to a negative value
-    flux_indices = flux[0, ...] == 0.
-    scatter_indices = scatter[0, ...] == 0.
-    flux[:, flux_indices] = -1.
-    scatter[:, scatter_indices] = -1.
+    # Set any zero fluxes to a negative value
+    flux[0, flux[0, ...] == 0.] = -1.
+    flux[1, flux[0, ...] == 0.] = 0.
 
     # Compute the xs with uncertainty propagation
     self._xs = uncorr_divide_by_array(scatter, flux)
 
-    # For any region without flux or reaction rate convert xs to zero
-    self._xs[:, flux_indices] = 0.
-    self._xs[:, scatter_indices] = 0.
+    # For any region without flux, convert xs to zero
+    self._xs[:, flux[0, ...] == 0.] = 0.
 
     # Correct -0.0 to +0.0
     self._xs += 0.
@@ -1296,18 +1274,15 @@ class NuScatterXS(MultiGroupXS):
     flux = np.array([flux_mean, flux_std_dev])
     nu_scatter = np.array([nu_scatter_mean, nu_scatter_std_dev])
 
-    # Set any zero fluxes and reaction rates to a negative value
-    flux_indices = flux[0, ...] == 0.
-    nu_scatter_indices = nu_scatter[0, ...] == 0.
-    flux[:, flux_indices] = -1.
-    nu_scatter[:, nu_scatter_indices] = -1.
+    # Set any zero fluxes to a negative value
+    flux[0, flux[0, ...] == 0.] = -1.
+    flux[1, flux[0, ...] == 0.] = 0.
 
     # Compute the xs with uncertainty propagation
     self._xs = uncorr_divide_by_array(nu_scatter, flux)
 
-    # For any region without flux or reaction rate, convert xs to zero
-    self._xs[:, flux_indices] = 0.
-    self._xs[:, nu_scatter_indices] = 0.
+    # For any region without flux, convert xs to zero
+    self._xs[:, flux[0, ...] == 0.] = 0.
 
     # Reverse array so that it is ordered intuitively from high to low energy
     # Correct -0.0 to +0.0
@@ -1380,11 +1355,9 @@ class ScatterMatrixXS(MultiGroupXS):
     flux = np.array([flux_mean, flux_std_dev])
     nu_scatter = np.array([nu_scatter_mean, nu_scatter_std_dev])
 
-    # Set any zero fluxes or reaction rates to a negative value
-    flux_indices = flux[0, ...] == 0.
-    nu_scatter_indices = nu_scatter[0, ...] == 0.
-    flux[:, flux_indices] = -1.
-    nu_scatter[:, nu_scatter_indices] = -1.
+    # Set any zero fluxes to a negative value
+    flux[0, flux[0, ...] == 0.] = -1.
+    flux[1, flux[0, ...] == 0.] = 0.
 
     # Tile the flux into a 3D array corresponding to the nu-scatter array
     flux = np.reshape(flux, (2, num_subdomains, self._num_groups, 1))
@@ -1394,9 +1367,8 @@ class ScatterMatrixXS(MultiGroupXS):
     # Compute the xs with uncertainty propagation
     self._xs = uncorr_divide_by_array(nu_scatter, flux)
 
-    # For any region without flux or reaction rate, convert xs to zero
-    self._xs[:, flux_indices] = 0.
-    self._xs[:, nu_scatter_indices] = 0.
+    # For any region without flux, convert xs to zero
+    self._xs[:, flux[0, ...] == 0.] = 0.
 
     # Correct -0.0 to +0.0
     self._xs += 0.
