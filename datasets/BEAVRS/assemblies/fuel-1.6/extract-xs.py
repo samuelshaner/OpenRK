@@ -7,7 +7,7 @@ from infermc.plotter import scatter_multigroup_xs
 
 
 batches = range(10, 55, 5)
-#batches = [10]
+batches = [10]
 
 groups = group_structures['CASMO']['2-group']
 
