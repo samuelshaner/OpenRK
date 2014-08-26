@@ -16,7 +16,7 @@ opencsg_materials = dict()
 ################################################################################
 
 openmc_materials['1.6% Fuel'] = Material(name='1.6% Fuel')
-openmc_materials['1.6% Fuel'].setDensity(10.31341, 'g/cm3')
+openmc_materials['1.6% Fuel'].setDensity('g/cm3', 10.31341)
 openmc_materials['1.6% Fuel'].addNuclide(nuclides['U-234'], 3.0131e-6)
 openmc_materials['1.6% Fuel'].addNuclide(nuclides['U-235'], 3.7503e-4)
 openmc_materials['1.6% Fuel'].addNuclide(nuclides['U-238'], 2.2625e-2)
@@ -30,7 +30,7 @@ openmc_materials['1.6% Fuel'].addNuclide(nuclides['O-16'], 4.6007e-2)
 ################################################################################
 
 openmc_materials['2.4% Fuel'] = Material(name='2.4% Fuel')
-openmc_materials['2.4% Fuel'].setDensity(10.29748, 'g/cm3')
+openmc_materials['2.4% Fuel'].setDensity('g/cm3', 10.29748)
 openmc_materials['2.4% Fuel'].addNuclide(nuclides['U-234'], 4.4842E-6)
 openmc_materials['2.4% Fuel'].addNuclide(nuclides['U-235'], 5.5814e-4)
 openmc_materials['2.4% Fuel'].addNuclide(nuclides['U-238'], 2.2407e-2)
@@ -44,7 +44,7 @@ openmc_materials['2.4% Fuel'].addNuclide(nuclides['O-16'], 4.5940e-2)
 ################################################################################
 
 openmc_materials['3.1% Fuel'] = Material(name='3.1% Fuel')
-openmc_materials['3.1% Fuel'].setDensity(10.30166, 'g/cm3')
+openmc_materials['3.1% Fuel'].setDensity('g/cm3', 10.30166)
 openmc_materials['3.1% Fuel'].addNuclide(nuclides['U-234'], 5.7987e-6)
 openmc_materials['3.1% Fuel'].addNuclide(nuclides['U-235'], 7.2175e-4)
 openmc_materials['3.1% Fuel'].addNuclide(nuclides['U-238'], 2.2253e-2)
@@ -58,7 +58,7 @@ openmc_materials['3.1% Fuel'].addNuclide(nuclides['O-16'], 4.5940e-2)
 ################################################################################
 
 openmc_materials['Borated Water'] = Material(name='Borated Water')
-openmc_materials['Borated Water'].setDensity(0.740582, 'g/cm3')
+openmc_materials['Borated Water'].setDensity('g/cm3', 0.740582)
 openmc_materials['Borated Water'].addNuclide(nuclides['B-10'], 8.0042e-6)
 openmc_materials['Borated Water'].addNuclide(nuclides['B-11'], 3.2218e-5)
 openmc_materials['Borated Water'].addNuclide(nuclides['H-1'], 4.9457e-2)
@@ -73,7 +73,7 @@ openmc_materials['Borated Water'].addNuclide(nuclides['O-16'], 2.4732e-2)
 ################################################################################
 
 openmc_materials['Helium'] = Material(name='Gap')
-openmc_materials['Helium'].setDensity(0.001598, 'g/cm3')
+openmc_materials['Helium'].setDensity('g/cm3', 0.001598)
 openmc_materials['Helium'].addNuclide(nuclides['He-4'], 2.4044e-4)
 
 
@@ -82,7 +82,7 @@ openmc_materials['Helium'].addNuclide(nuclides['He-4'], 2.4044e-4)
 ################################################################################
 
 openmc_materials['Zircaloy'] = Material(name='Zircaloy')
-openmc_materials['Zircaloy'].setDensity(6.55, 'g/cm3')
+openmc_materials['Zircaloy'].setDensity('g/cm3', 6.55)
 openmc_materials['Zircaloy'].addNuclide(nuclides['Cr-50'], 3.2962e-6)
 openmc_materials['Zircaloy'].addNuclide(nuclides['Cr-52'], 6.3564e-5)
 openmc_materials['Zircaloy'].addNuclide(nuclides['Cr-53'], 7.2076e-6)
@@ -116,7 +116,7 @@ openmc_materials['Zircaloy'].addNuclide(nuclides['O-16'], 3.0818e-4)
 ################################################################################
 
 openmc_materials['Air'] = Material(name='Air')
-openmc_materials['Air'].setDensity(0.000616, 'g/cm3')
+openmc_materials['Air'].setDensity('g/cm3', 0.000616)
 openmc_materials['Air'].addNuclide(nuclides['N-14'], 1.9681e-5)
 openmc_materials['Air'].addNuclide(nuclides['N-15'], 7.1900e-8)
 openmc_materials['Air'].addNuclide(nuclides['Ar-36'], 7.9414e-10)
@@ -136,7 +136,7 @@ openmc_materials['Air'].addNuclide(nuclides['O-16'], 5.2993e-6)
 ################################################################################
 
 openmc_materials['Boro. Glass'] = Material(name='Borosilicate Glass')
-openmc_materials['Boro. Glass'].setDensity(2.26000, 'g/cm3')
+openmc_materials['Boro. Glass'].setDensity('g/cm3', 2.26000)
 openmc_materials['Boro. Glass'].addNuclide(nuclides['B-10'], 9.6506e-4)
 openmc_materials['Boro. Glass'].addNuclide(nuclides['B-11'], 3.9189e-3)
 openmc_materials['Boro. Glass'].addNuclide(nuclides['Al-27'], 1.7352e-3)
@@ -153,7 +153,7 @@ openmc_materials['Boro. Glass'].addNuclide(nuclides['O-16'], 4.6624e-2)
 ################################################################################
 
 openmc_materials['Steel'] = Material(name='Stainless Steel')
-openmc_materials['Steel'].setDensity(8.0300, 'g/cm3')
+openmc_materials['Steel'].setDensity('g/cm3', 8.0300)
 openmc_materials['Steel'].addNuclide(nuclides['Si-28'], 9.5274e-4)
 openmc_materials['Steel'].addNuclide(nuclides['Si-29'], 4.8400e-5)
 openmc_materials['Steel'].addNuclide(nuclides['Si-30'], 3.1943e-5)
