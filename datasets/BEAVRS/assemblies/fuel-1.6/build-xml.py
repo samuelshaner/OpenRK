@@ -72,10 +72,10 @@ tally_factory = XSTallyFactory(openmc_geometry)
 
 groups = group_structures['CASMO']['2-group']
 
-tally_factory.createAllMicroXS(groups, domain_type='distribcell')
-tally_factory.createAllMicroXS(groups, domain_type='material')
-tally_factory.createAllMicroXS(groups, domain_type='cell')
-tally_factory.createAllMicroXS(groups, domain_type='universe')
+tally_factory.createAllXS(groups, domain_type='distribcell')
+tally_factory.createAllXS(groups, domain_type='material')
+tally_factory.createAllXS(groups, domain_type='cell')
+tally_factory.createAllXS(groups, domain_type='universe')
 
 tally_factory.createTalliesFile()
 
