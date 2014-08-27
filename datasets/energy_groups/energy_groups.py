@@ -14,25 +14,25 @@ casmo = dict()
 
 # 2-group structure
 casmo['2-group'] = EnergyGroups()
-group_edges = np.array([0., 0.625e-6, 10.])
+group_edges = np.array([0., 0.625e-6, 20.])
 casmo['2-group'].setGroupEdges(group_edges)
 
 # 4-group structure
 casmo['4-group'] = EnergyGroups()
-group_edges = np.array([0., 0.625e-6, 5.53e-3, 821.e-3, 10.])
+group_edges = np.array([0., 0.625e-6, 5.53e-3, 821.e-3, 20.])
 casmo['4-group'].setGroupEdges(group_edges)
 
 # 8-group structure
 casmo['8-group'] = EnergyGroups()
 group_edges = np.array([0., 0.058e-6, 0.14e-6, 0.28e-6,
-                        0.625e-6, 4.e-6, 5.53e-3, 821.e-3, 10.])
+                        0.625e-6, 4.e-6, 5.53e-3, 821.e-3, 20.])
 casmo['8-group'].setGroupEdges(group_edges)
 
 # 12-group structure
 casmo['12-group'] = EnergyGroups()
 group_edges = np.array([0., 0.03e-6, 0.058e-6, 0.14e-6,
                         0.28e-6, 0.35e-6, 0.625e-6, 4.e-6,
-                        48.052e-6, 5.53e-3, 821.e-3, 2.231, 10.])
+                        48.052e-6, 5.53e-3, 821.e-3, 2.231, 20.])
 casmo['12-group'].setGroupEdges(group_edges)
 
 # 16-group structure
@@ -40,7 +40,7 @@ casmo['16-group'] = EnergyGroups()
 group_edges = np.array([0., 0.03e-6, 0.058e-6, 0.14e-6,
                         0.28e-6, 0.35e-6, 0.625e-6, 0.85e-6,
                         0.972e-6, 1.02e-6, 1.097e-6, 1.15e-6,
-                        1.3e-6, 4.e-6, 5.53e-3, 821.e-3, 10.])
+                        1.3e-6, 4.e-6, 5.53e-3, 821.e-3, 20.])
 casmo['16-group'].setGroupEdges(group_edges)
 
 # 18-group structure
@@ -48,7 +48,7 @@ casmo['18-group'] = EnergyGroups()
 group_edges = np.array([0., 0.058e-6, 0.14e-6, 0.28e-6, 0.625e-6,
                         0.972e-6, 1.15e-6, 1.855e-6, 4.e-6, 9.877e-6,
                         15.968e-6, 148.73e-6, 5.53e-3, 9.118e-3,
-                        111.e-3, 500.e-3, 821.e-3, 2.231, 10.])
+                        111.e-3, 500.e-3, 821.e-3, 2.231, 20.])
 casmo['18-group'].setGroupEdges(group_edges)
 
 # 25-group structure
@@ -58,7 +58,7 @@ group_edges = np.array([0., 0.03e-6, 0.058e-6, 0.14e-6, 0.28e-6,
                         1.097e-6, 1.15e-6, 1.855e-6, 4.e-6,
                         9.877e-6, 15.968e-6, 148.73e-6, 5.53e-3,
                         9.118e-3, 111.e-3, 500.e-3, 821.e-3,
-                        1.353, 2.231, 3.679, 6.0655, 10.])
+                        1.353, 2.231, 3.679, 6.0655, 20.])
 casmo['25-group'].setGroupEdges(group_edges)
 
 # 40-group structure
@@ -72,7 +72,7 @@ group_edges = np.array([0., 0.015e-6, 0.03e-6, 0.042e-6,
                         3.3e-6, 4.e-6, 9.877e-6, 15.968e-6,
                         27.7e-6, 48.052e-6, 148.73e-6, 5.53e-3,
                         9.118e-3, 111.e-3, 500.e-3, 821.e-3,
-                        1.353, 2.231, 3.679, 6.0655, 10.])
+                        1.353, 2.231, 3.679, 6.0655, 20.])
 casmo['40-group'].setGroupEdges(group_edges)
 
 # 70-group structure
@@ -93,7 +93,7 @@ group_edges = np.array([0., 0.005e-6, 0.01e-6, 0.015e-6,
                         906.90002e-6, 1.4251e-3, 2.2395e-3, 3.5191e-3,
                         5.53e-3, 9.118e-3, 15.03e-3, 24.78e-3, 40.85e-3,
                         67.34e-3, 111.e-3, 183.e-3, 302.5e-3, 500.e-3,
-                        821.e-3, 1.353, 2.231, 3.679, 6.0655, 10.])
+                        821.e-3, 1.353, 2.231, 3.679, 6.0655, 20.])
 casmo['70-group'].setGroupEdges(group_edges)
 
 
