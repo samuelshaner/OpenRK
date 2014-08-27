@@ -111,7 +111,11 @@ class XSTallyExtractor(object):
   def _buildMaterialTallyMaps(self):
 
     # Create a mapping of Tally locations to location IDs to Tally IDs to scores
-    for tally_id, tally in self._statepoint._tallies.iteritems():
+    for tally_id, tally in self._statepoint._tallies.items():
+
+      # Store a list of the Tally scores
+      self._tallies_to_scores[tally._id] = tally._scores
+
       filters = tally._filters
 
       for filter in filters:
@@ -133,7 +137,11 @@ class XSTallyExtractor(object):
   def _buildUniverseTallyMaps(self):
 
     # Create a mapping of Tally locations to location IDs to Tally IDs to scores
-    for tally_id, tally in self._statepoint._tallies.iteritems():
+    for tally_id, tally in self._statepoint._tallies.items():
+
+      # Store a list of the Tally scores
+      self._tallies_to_scores[tally._id] = tally._scores
+
       filters = tally._filters
 
       for filter in filters:
@@ -155,7 +163,11 @@ class XSTallyExtractor(object):
   def _buildCellTallyMaps(self):
 
     # Create a mapping of Tally locations to location IDs to Tally IDs to scores
-    for tally_id, tally in self._statepoint._tallies.iteritems():
+    for tally_id, tally in self._statepoint._tallies.items():
+
+      # Store a list of the Tally scores
+      self._tallies_to_scores[tally._id] = tally._scores
+
       filters = tally._filters
 
       for filter in filters:
@@ -177,7 +189,7 @@ class XSTallyExtractor(object):
   def _buildDistribcellTallyMaps(self):
 
     # Create a mapping of Tally locations to location IDs to Tally IDs to scores
-    for tally_id, tally in self._statepoint._tallies.iteritems():
+    for tally_id, tally in self._statepoint._tallies.items():
 
       # Store a list of the Tally scores
       self._tallies_to_scores[tally._id] = tally._scores
@@ -214,14 +226,14 @@ class XSTallyExtractor(object):
 
   def getPath(self, region):
 
+    num_regions = self._opencsg_geometry._num_regions
+
     if not is_integer(region):
       msg = 'Unable to get the path for region {0} which is not an ' \
             'integer'.format(region)
       raise ValueError(msg)
 
-    num_regions = self._opencsg_geometry._num_regions
-
-    if region > num_regions:
+    elif region > num_regions:
       msg = 'Unable to get path for region {0} since it the Geometry only ' \
             'contains {1} regions'.format(region, num_regions)
       raise ValueError(msg)
@@ -234,7 +246,8 @@ class XSTallyExtractor(object):
     return self._all_paths[region]
 
 
-  def getTally(self, score, filters, estimator='tracklength', label=''):
+  def getTally(self, score, filters, nuclides=['total'],
+               estimator='tracklength', label=''):
 
     if self._statepoint is None:
       msg = 'Unable to get Tally since statepoint attribute has not been set'
@@ -294,13 +307,23 @@ class XSTallyExtractor(object):
       # Iterate over the Filters requested by the user
       for filter in filters:
 
-        # If the test Tally does not contains this filter, break
+        # If the test Tally does not contains this Filter, break
         if not filter in test_tally._filters:
           contains_filters = False
           break
 
-      # If the Tally contained all of the filters, then return this Tally
-      if contains_filters:
+      contains_nuclides = True
+
+      # Iterate over the Nuclides requested by the user
+      for nuclide in nuclides:
+
+        # If the test Tally does not contains this Nuclide, break
+        if not nuclide in test_tally._nuclides:
+          contains_nuclides = False
+          break
+
+      # If the Tally contained all Filters and Nuclides, return the Tally
+      if contains_filters and contains_nuclides:
         tally = test_tally
         break
 

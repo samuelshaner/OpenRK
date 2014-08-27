@@ -297,8 +297,11 @@ class MultiGroupXS(object):
     else:
       subdomain_index = 0
 
+    # Batch mean
     if metric == 'mean':
       return self._xs[0, subdomain_index, group_index]
+
+    # Batch standard deviation
     else:
       return self._xs[1, subdomain_index, group_index]
 
@@ -338,7 +341,6 @@ class MultiGroupXS(object):
     filename = directory + '/' + filename + '.pkl'
     filename = filename.replace(' ', '-')
     pickle.dump(xs_results, open(filename, 'wb'))
-
 
 
   def restoreFromFile(self, filename, directory='.'):
@@ -784,12 +786,12 @@ class TotalXS(MultiGroupXS):
 
     # Get the number of domains
     num_subdomains = flux_tally._mean.shape[0] / self._num_groups
-    newshape = (num_subdomains, self._num_groups)
+    new_shape = (num_subdomains, self._num_groups)
 
-    flux_mean = np.reshape(flux_mean, newshape)
-    total_mean = np.reshape(total_mean, newshape)
-    flux_std_dev = np.reshape(flux_std_dev, newshape)
-    total_std_dev = np.reshape(total_std_dev, newshape)
+    flux_mean = np.reshape(flux_mean, new_shape)
+    total_mean = np.reshape(total_mean, new_shape)
+    flux_std_dev = np.reshape(flux_std_dev, new_shape)
+    total_std_dev = np.reshape(total_std_dev, new_shape)
 
     flux = np.array([flux_mean, flux_std_dev])
     total = np.array([total_mean, total_std_dev])
@@ -811,7 +813,6 @@ class TotalXS(MultiGroupXS):
     self._xs += 0.
 
     # Reverse array so that it is ordered intuitively from high to low energy
-    # Codes such as OpenMOC expect cross-sections ordered in this way
     self._xs = self._xs[..., ::-1]
 
 
@@ -877,14 +878,14 @@ class TransportXS(MultiGroupXS):
 
     # Get the number of domains and create a new array shape
     num_subdomains = flux_tally._mean.shape[0] / self._num_groups
-    newshape = (num_subdomains, self._num_groups)
+    new_shape = (num_subdomains, self._num_groups)
 
-    flux_mean = np.reshape(flux_mean, newshape)
-    total_mean = np.reshape(total_mean, newshape)
-    scatter1_mean = np.reshape(scatter1_mean, newshape)
-    flux_std_dev = np.reshape(flux_std_dev, newshape)
-    total_std_dev = np.reshape(total_std_dev, newshape)
-    scatter1_std_dev = np.reshape(scatter1_std_dev, newshape)
+    flux_mean = np.reshape(flux_mean, new_shape)
+    total_mean = np.reshape(total_mean, new_shape)
+    scatter1_mean = np.reshape(scatter1_mean, new_shape)
+    flux_std_dev = np.reshape(flux_std_dev, new_shape)
+    total_std_dev = np.reshape(total_std_dev, new_shape)
+    scatter1_std_dev = np.reshape(scatter1_std_dev, new_shape)
 
     flux = np.array([flux_mean, flux_std_dev])
     total = np.array([total_mean, total_std_dev])
@@ -911,7 +912,6 @@ class TransportXS(MultiGroupXS):
     self._xs += 0.
 
     # Reverse array so that it is ordered intuitively from high to low energy
-    # Codes such as OpenMOC expect cross-sections ordered in this way
     self._xs = self._xs[..., ::-1]
 
 
@@ -964,12 +964,12 @@ class AbsorptionXS(MultiGroupXS):
 
     # Get the number of domains
     num_subdomains = flux_tally._mean.shape[0] / self._num_groups
-    newshape = (num_subdomains, self._num_groups)
+    new_shape = (num_subdomains, self._num_groups)
 
-    flux_mean = np.reshape(flux_mean, newshape)
-    absorption_mean = np.reshape(absorption_mean, newshape)
-    flux_std_dev = np.reshape(flux_std_dev, newshape)
-    absorption_std_dev = np.reshape(absorption_std_dev, newshape)
+    flux_mean = np.reshape(flux_mean, new_shape)
+    absorption_mean = np.reshape(absorption_mean, new_shape)
+    flux_std_dev = np.reshape(flux_std_dev, new_shape)
+    absorption_std_dev = np.reshape(absorption_std_dev, new_shape)
 
     flux = np.array([flux_mean, flux_std_dev])
     absorption = np.array([absorption_mean, absorption_std_dev])
@@ -991,7 +991,6 @@ class AbsorptionXS(MultiGroupXS):
     self._xs += 0.
 
     # Reverse array so that it is ordered intuitively from high to low energy
-    # Codes such as OpenMOC expect cross-sections ordered in this way
     self._xs = self._xs[..., ::-1]
 
 
@@ -1044,12 +1043,12 @@ class FissionXS(MultiGroupXS):
 
     # Get the number of domains
     num_subdomains = flux_tally._mean.shape[0] / self._num_groups
-    newshape = (num_subdomains, self._num_groups)
+    new_shape = (num_subdomains, self._num_groups)
 
-    flux_mean = np.reshape(flux_mean, newshape)
-    fission_mean = np.reshape(fission_mean, newshape)
-    flux_std_dev = np.reshape(flux_std_dev, newshape)
-    fission_std_dev = np.reshape(fission_std_dev, newshape)
+    flux_mean = np.reshape(flux_mean, new_shape)
+    fission_mean = np.reshape(fission_mean, new_shape)
+    flux_std_dev = np.reshape(flux_std_dev, new_shape)
+    fission_std_dev = np.reshape(fission_std_dev, new_shape)
 
     flux = np.array([flux_mean, flux_std_dev])
     fission = np.array([fission_mean, fission_std_dev])
@@ -1071,7 +1070,6 @@ class FissionXS(MultiGroupXS):
     self._xs += 0.
 
     # Reverse array so that it is ordered intuitively from high to low energy
-    # Codes such as OpenMOC expect cross-sections ordered in this way
     self._xs = self._xs[..., ::-1]
 
 
@@ -1124,12 +1122,12 @@ class NuFissionXS(MultiGroupXS):
 
     # Get the number of domains
     num_subdomains = flux_tally._mean.shape[0] / self._num_groups
-    newshape = (num_subdomains, self._num_groups)
+    new_shape = (num_subdomains, self._num_groups)
 
-    flux_mean = np.reshape(flux_mean, newshape)
-    nu_fission_mean = np.reshape(nu_fission_mean, newshape)
-    flux_std_dev = np.reshape(flux_std_dev, newshape)
-    nu_fission_std_dev = np.reshape(nu_fission_std_dev, newshape)
+    flux_mean = np.reshape(flux_mean, new_shape)
+    nu_fission_mean = np.reshape(nu_fission_mean, new_shape)
+    flux_std_dev = np.reshape(flux_std_dev, new_shape)
+    nu_fission_std_dev = np.reshape(nu_fission_std_dev, new_shape)
 
     flux = np.array([flux_mean, flux_std_dev])
     nu_fission = np.array([nu_fission_mean, nu_fission_std_dev])
@@ -1151,7 +1149,6 @@ class NuFissionXS(MultiGroupXS):
     self._xs += 0.
 
     # Reverse array so that it is ordered intuitively from high to low energy
-    # Codes such as OpenMOC expect cross-sections ordered in this way
     self._xs = self._xs[..., ::-1]
 
 
@@ -1204,12 +1201,12 @@ class ScatterXS(MultiGroupXS):
 
     # Get the number of domains
     num_subdomains = flux_tally._mean.shape[0] / self._num_groups
-    newshape = (num_subdomains, self._num_groups)
+    new_shape = (num_subdomains, self._num_groups)
 
-    flux_mean = np.reshape(flux_mean, newshape)
-    scatter_mean = np.reshape(scatter_mean, newshape)
-    flux_std_dev = np.reshape(flux_std_dev, newshape)
-    scatter_std_dev = np.reshape(scatter_std_dev, newshape)
+    flux_mean = np.reshape(flux_mean, new_shape)
+    scatter_mean = np.reshape(scatter_mean, new_shape)
+    flux_std_dev = np.reshape(flux_std_dev, new_shape)
+    scatter_std_dev = np.reshape(scatter_std_dev, new_shape)
 
     flux = np.array([flux_mean, flux_std_dev])
     scatter = np.array([scatter_mean, scatter_std_dev])
@@ -1231,7 +1228,6 @@ class ScatterXS(MultiGroupXS):
     self._xs += 0.
 
     # Reverse array so that it is ordered intuitively from high to low energy
-    # Codes such as OpenMOC expect cross-sections ordered in this way
     self._xs = self._xs[..., ::-1]
 
 
@@ -1286,12 +1282,12 @@ class NuScatterXS(MultiGroupXS):
 
     # Get the number of domains
     num_subdomains = flux_tally._mean.shape[0] / self._num_groups
-    newshape = (num_subdomains, self._num_groups)
+    new_shape = (num_subdomains, self._num_groups)
 
-    flux_mean = np.reshape(flux_mean, newshape)
-    nu_scatter_mean = np.reshape(nu_scatter_mean, newshape)
-    flux_std_dev = np.reshape(flux_std_dev, newshape)
-    nu_scatter_std_dev = np.reshape(nu_scatter_std_dev, newshape)
+    flux_mean = np.reshape(flux_mean, new_shape)
+    nu_scatter_mean = np.reshape(nu_scatter_mean, new_shape)
+    flux_std_dev = np.reshape(flux_std_dev, new_shape)
+    nu_scatter_std_dev = np.reshape(nu_scatter_std_dev, new_shape)
 
     flux = np.array([flux_mean, flux_std_dev])
     nu_scatter = np.array([nu_scatter_mean, nu_scatter_std_dev])
@@ -1309,11 +1305,10 @@ class NuScatterXS(MultiGroupXS):
     self._xs[:, flux_indices] = 0.
     self._xs[:, nu_scatter_indices] = 0.
 
-    # Reverse array so that it is ordered intuitively from high to low energy
     # Correct -0.0 to +0.0
     self._xs += 0.
 
-    # Codes such as OpenMOC expect cross-sections ordered in this way
+    # Reverse array so that it is ordered intuitively from high to low energy
     self._xs = self._xs[..., ::-1]
 
 
@@ -1370,12 +1365,12 @@ class ScatterMatrixXS(MultiGroupXS):
 
     # Get the number of domains
     num_subdomains = flux_tally._mean.shape[0] / self._num_groups
-    newshape = (num_subdomains, self._num_groups, self._num_groups)
+    new_shape = (num_subdomains, self._num_groups, self._num_groups)
 
-    flux_mean = np.reshape(flux_mean, newshape[0:2])
-    nu_scatter_mean = np.reshape(nu_scatter_mean, newshape)
-    flux_std_dev = np.reshape(flux_std_dev, newshape[0:2])
-    nu_scatter_std_dev = np.reshape(nu_scatter_std_dev, newshape)
+    flux_mean = np.reshape(flux_mean, new_shape[0:2])
+    nu_scatter_mean = np.reshape(nu_scatter_mean, new_shape)
+    flux_std_dev = np.reshape(flux_std_dev, new_shape[0:2])
+    nu_scatter_std_dev = np.reshape(nu_scatter_std_dev, new_shape)
 
     flux = np.array([flux_mean, flux_std_dev])
     nu_scatter = np.array([nu_scatter_mean, nu_scatter_std_dev])
@@ -1402,7 +1397,6 @@ class ScatterMatrixXS(MultiGroupXS):
     self._xs += 0.
 
     # Reverse array so that it is ordered intuitively from high to low energy
-    # Codes such as OpenMOC expect cross-sections ordered in this way
     self._xs = self._xs[..., ::-1, ::-1]
 
 
@@ -1583,18 +1577,18 @@ class Chi(MultiGroupXS):
 
     # Get the number of domains
     num_subdomains = nu_fission_in_tally._mean.shape[0] / self._num_groups
-    newshape = (num_subdomains, self._num_groups)
+    new_shape = (num_subdomains, self._num_groups)
 
-    nu_fission_in_mean = np.reshape(nu_fission_in_mean, newshape)
-    nu_fission_out_mean = np.reshape(nu_fission_out_mean, newshape)
-    nu_fission_in_std_dev = np.reshape(nu_fission_in_std_dev, newshape)
-    nu_fission_out_std_dev = np.reshape(nu_fission_out_std_dev, newshape)
+    nu_fission_in_mean = np.reshape(nu_fission_in_mean, new_shape)
+    nu_fission_out_mean = np.reshape(nu_fission_out_mean, new_shape)
+    nu_fission_in_std_dev = np.reshape(nu_fission_in_std_dev, new_shape)
+    nu_fission_out_std_dev = np.reshape(nu_fission_out_std_dev, new_shape)
 
     nu_fission_in = np.array([nu_fission_in_mean, nu_fission_in_std_dev])
     nu_fission_out = np.array([nu_fission_out_mean, nu_fission_out_std_dev])
 
     # Compute the xs with uncertainty propagation
-    norm = nu_fission_in[0, ...].sum()
+    norm = nu_fission_in[:].sum()
 
     # If the xs are from a non-fissionable domain
     if norm == 0.:
@@ -1603,18 +1597,29 @@ class Chi(MultiGroupXS):
     # If the xs are from a fissionable domain
     else:
 
+      # Set any zero reaction rates to a negative value
+      nu_fission_in_indices = nu_fission_in[0, :, :] == 0.
+      nu_fission_in[0, nu_fission_in_indices] = -1.
+
       # FIXME - uncertainty propagation
       self._xs = uncorr_divide_by_scalar(nu_fission_out,
                                          nu_fission_in.sum(2)[0, :, np.newaxis])
 
+      norm = self._xs.sum(2)[0, :, np.newaxis]
+
+      # Set any norms to a negative value
+      norm_indices = norm == 0.
+      norm[norm_indices] = -1.
+
       # Normalize chi to 1.0
       # FIXME - uncertainty propagation
-      self._xs = uncorr_divide_by_scalar(self._xs,
-                                         self._xs.sum(2)[0, :, np.newaxis])
+      self._xs = uncorr_divide_by_scalar(self._xs, norm)
+
+      # For any region without flux or reaction rate, convert xs to zero
+      self._xs[..., norm_indices] = 0.
 
       # Correct -0.0 to +0.0
       self._xs += 0.
 
       # Reverse array so that it is ordered intuitively from high to low energy
-      # Codes such as OpenMOC expect cross-sections ordered in this way
       self._xs = self._xs[..., ::-1]

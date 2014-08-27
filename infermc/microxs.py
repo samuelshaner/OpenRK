@@ -1,5 +1,6 @@
 from infermc.multigroupxs import *
 import openmc
+import numpy as np
 
 
 class MicroXS(MultiGroupXS):
@@ -14,6 +15,45 @@ class MicroXS(MultiGroupXS):
 
     if not nuclides is None:
       self.addNuclides(nuclides)
+
+
+  #FIXME
+  def computeXS(self):
+
+    # Define a routine to convert 0 to 1
+    nonzero = lambda val: 1 if not val else val
+
+    num_nuclides = self.getNumNuclides()
+    num_subdomains = self.getNumSubdomains()
+
+    # Reshape xs array to be indexed by (domain, nuclide, group)
+    new_shape = (nonzero(num_subdomains),
+                 nonzero(num_nuclides),
+                 nonzero(self._num_groups))
+
+    self._xs = np.reshape(self._xs, new_shape)
+
+
+  #FIXME
+#  def getXS(self, group, nuclide, subdomain=None, metric='mean'):
+
+  # FIXME
+#  def dumpToFile(self, filename='multigroupxs', directory='multigroupxs'):
+
+  # FIXME
+#  def restoreFromFile(self, filename, directory='.'):
+
+  #FIXME:
+#  def exportSubdomainResults(self, subdomain=None, filename='multigroupxs',
+#                             directory='multigroupxs', format='hdf5',
+#                             append=True, uncertainties=False):
+
+  # FIXME
+#  def printPDF(self, subdomain=None, filename='multigroupxs', directory='.',
+#               uncertainties=False):
+
+  # FIXME
+#  def printXS(self, subdomain=None):
 
 
   def addNuclide(self, nuclide):

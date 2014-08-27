@@ -12,7 +12,7 @@ from infermc.build import *
 # OpenMC simulation parameters
 batches = 30
 inactive = 5
-particles = 1000
+particles = 100
 
 
 ###############################################################################
@@ -79,6 +79,6 @@ tally_factory.createAllXS(groups, domain_type='universe')
 
 tally_factory.createTalliesFile()
 
-import opencsg.plotter as plotter
-plotter.plot_neighbor_cells(geometry)
+#import opencsg.plotter as plotter
+#plotter.plot_neighbor_cells(geometry)
 #plotter.plot_materials(geometry)

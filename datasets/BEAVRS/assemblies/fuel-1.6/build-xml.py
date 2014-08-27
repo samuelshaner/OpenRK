@@ -11,9 +11,9 @@ import opencsg.plotter as plotter
 ###############################################################################
 
 # OpenMC simulation parameters
-batches = 50
+batches = 30
 inactive = 5
-particles = 1000
+particles = 100
 
 
 ###############################################################################
@@ -76,6 +76,11 @@ tally_factory.createAllXS(groups, domain_type='distribcell')
 tally_factory.createAllXS(groups, domain_type='material')
 tally_factory.createAllXS(groups, domain_type='cell')
 tally_factory.createAllXS(groups, domain_type='universe')
+
+#tally_factory.createAllMicroXS(groups, domain_type='distribcell')
+#tally_factory.createAllMicroXS(groups, domain_type='material')
+#tally_factory.createAllMicroXS(groups, domain_type='cell')
+#tally_factory.createAllMicroXS(groups, domain_type='universe')
 
 tally_factory.createTalliesFile()
 
