@@ -1,14 +1,13 @@
+import openmc
 import opencsg
-from openmc.opencsg_compatible import get_opencsg_geometry
 from infermc.multigroupxs import *
 
+# Type-checking support
+from typecheck import accepts, Or, Exact, Self
 
+
+@accepts(opencsg.LocalCoords)
 def get_path(coords):
-
-  if not isinstance(coords, opencsg.LocalCoords):
-    msg = 'Unable to get the path with {0} which is not an ' \
-          'OpenCSG LocalCoords object'.format(coords)
-    raise ValueError(msg)
 
   # Build "path" from LocalCoords
   path = list()
@@ -76,15 +75,16 @@ class XSTallyExtractor(object):
     self._multigroup_xs = dict()
 
     if not statepoint is None:
-      self.setStatePoint(statepoint)
+      self.statepoint = statepoint
 
 
-  def setStatePoint(self, statepoint):
+  @property
+  def statepoint(self):
+    return self._statepoint
 
-    if not isinstance(statepoint, openmc.statepoint.StatePoint):
-      msg = 'Unable to set the statepoint for a TallyExtractor to {0} ' \
-            'since it is not a StatePoint class object'.format(statepoint)
-      raise ValueError(msg)
+  @statepoint.setter
+  @accepts(Self(), openmc.statepoint.StatePoint)
+  def statepoint(self, statepoint):
 
     self._statepoint = statepoint
     self._statepoint.read_results()
@@ -93,7 +93,7 @@ class XSTallyExtractor(object):
     # Retrieve the OpenMC Geometry from the statepoint and convert it
     # into an OpenCSG geometry object using the compatibility module
     self._openmc_geometry = self._statepoint._geometry
-    self._opencsg_geometry = get_opencsg_geometry(self._openmc_geometry)
+    self._opencsg_geometry = openmc.get_opencsg_geometry(self._openmc_geometry)
 
     # Build maps to optimize tally lookups
     self._buildTallyMaps()
@@ -224,28 +224,13 @@ class XSTallyExtractor(object):
       self._all_paths[region] = get_path(coord)
 
 
+  @accepts(Self(), int)
   def getPath(self, region):
-
-    num_regions = self._opencsg_geometry._num_regions
-
-    if not is_integer(region):
-      msg = 'Unable to get the path for region {0} which is not an ' \
-            'integer'.format(region)
-      raise ValueError(msg)
-
-    elif region > num_regions:
-      msg = 'Unable to get path for region {0} since it the Geometry only ' \
-            'contains {1} regions'.format(region, num_regions)
-      raise ValueError(msg)
-
-    elif region < 0:
-      msg = 'Unable to get the path for region {0} which is a negative ' \
-            'integer'.format(region)
-      raise ValueError(msg)
-
     return self._all_paths[region]
 
 
+  @accepts(Self(), str, [openmc.Filter], [Or(Exact('total'), openmc.Nuclide)],
+           Or(Exact('analog'), ('tracklength')), str)
   def getTally(self, score, filters, nuclides=['total'],
                estimator='tracklength', label=''):
 
@@ -331,18 +316,21 @@ class XSTallyExtractor(object):
     return tally
 
 
+  @accepts(Self(), EnergyGroups, domain_types_check)
   def extractAllMultiGroupXS(self, energy_groups, domain_type='distribcell'):
 
     for xs_type in xs_types:
       self.extractMultiGroupXS(xs_type, energy_groups, domain_type)
 
 
+  @accepts(Self(), EnergyGroups, domain_types_check)
   def extractAllMicroXS(self, energy_groups, domain_type='distribcell'):
 
     for xs_type in xs_types:
       self.extractMicroXS(xs_type, energy_groups, domain_type)
 
 
+  @accepts(Self(), xs_types_check, EnergyGroups, domain_types_check)
   def extractMultiGroupXS(self, xs_type, energy_groups, domain_type='distribcell'):
 
     # Add nested dictionary for this domain type if needed
@@ -373,6 +361,7 @@ class XSTallyExtractor(object):
       self._multigroup_xs[domain_type][domain._id][xs_type] = xs
 
 
+  @accepts(Self(), xs_types_check, EnergyGroups, domain_types_check)
   def extractMicroXS(self, xs_type, energy_groups, domain_type='distribcell'):
 
     # Add nested dictionary for this domain type if needed
@@ -403,6 +392,7 @@ class XSTallyExtractor(object):
       self._multigroup_xs[domain_type][domain._id][xs_type] = xs
 
 
+  @accepts(Self(), xs_types_check, EnergyGroups, domains_check, domain_types_check)
   def createMultiGroupXS(self, xs_type, energy_groups,
                          domain, domain_type='distribcell'):
 
@@ -410,28 +400,6 @@ class XSTallyExtractor(object):
       msg = 'Unable to get cross-sections since the TallyExtractor ' \
             'statepoint attribute has not been set'
       raise ValueError(msg)
-
-    elif not xs_type in xs_types:
-      msg = 'Unable to get {0} cross-sections since it is not a ' \
-            'valid cross-section type'.format(xs_type)
-      raise ValueError(msg)
-
-    elif not isinstance(energy_groups, EnergyGroups):
-      msg = 'Unable to get group cross-sections with energy groups ' \
-            '{0} since it is not an EnergyGroups object'.format(energy_groups)
-      raise ValueError(msg)
-
-    elif not isinstance(domain, (openmc.Material, openmc.Cell,
-                                 openmc.Universe, openmc.Mesh)):
-      msg = 'Unable to get group cross-sections for domain ' \
-            '{0} since it is not a valid domain'.format(domain)
-      raise ValueError(msg)
-
-    elif not domain_type in domain_types:
-      msg = 'Unable to get group cross-sections for domain type ' \
-            '{0} since it is not a supported domain type'.format(domain_type)
-      raise ValueError(msg)
-
 
     # Initialize a list of filters
     filters = list()
@@ -475,7 +443,6 @@ class XSTallyExtractor(object):
       multigroup_xs = AbsorptionXS(domain, domain_type, energy_groups)
       multigroup_xs._tallies['flux'] = flux
       multigroup_xs._tallies['absorption'] = absorption
-
 
     elif xs_type == 'fission':
 
@@ -576,35 +543,13 @@ class XSTallyExtractor(object):
     return multigroup_xs
 
 
-  def createMicroXS(self, xs_type, energy_groups,
-                   domain, domain_type='distribcell'):
+  @accepts(Self(), xs_types_check, EnergyGroups, domains_check, domain_types_check)
+  def createMicroXS(self, xs_type, energy_groups, domain, domain_type='distribcell'):
 
     if self._statepoint is None:
       msg = 'Unable to get cross-sections since the TallyExtractor ' \
             'statepoint attribute has not been set'
       raise ValueError(msg)
-
-    elif not xs_type in xs_types:
-      msg = 'Unable to get {0} cross-sections since it is not a ' \
-            'valid cross-section type'.format(xs_type)
-      raise ValueError(msg)
-
-    elif not isinstance(energy_groups, EnergyGroups):
-      msg = 'Unable to get group cross-sections with energy groups ' \
-            '{0} since it is not an EnergyGroups object'.format(energy_groups)
-      raise ValueError(msg)
-
-    elif not isinstance(domain, (openmc.Material, openmc.Cell,
-                                 openmc.Universe, openmc.Mesh)):
-      msg = 'Unable to get group cross-sections for domain ' \
-            '{0} since it is not a valid domain'.format(domain)
-      raise ValueError(msg)
-
-    elif not domain_type in domain_types:
-      msg = 'Unable to get group cross-sections for domain type ' \
-            '{0} since it is not a supported domain type'.format(domain_type)
-      raise ValueError(msg)
-
 
     # Initialize a list of filters
     filters = list()
@@ -651,7 +596,6 @@ class XSTallyExtractor(object):
       multigroup_xs = AbsorptionXS(domain, domain_type, energy_groups)
       multigroup_xs._tallies['flux'] = flux
       multigroup_xs._tallies['absorption'] = absorption
-
 
     elif xs_type == 'fission':
 
@@ -752,6 +696,7 @@ class XSTallyExtractor(object):
     return multigroup_xs
 
 
+  @accepts(Self(), xs_types_check, domains_check, domain_types_check)
   def getMultiGroupXS(self, xs_type, domain, domain_type):
 
     # Check that MultiGroupXS for the input parameters has been created

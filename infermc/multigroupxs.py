@@ -1,8 +1,11 @@
-from infermc.checkvalue import *
+from infermc.checktype import *
 from infermc.uncorr_math import *
 import openmc
 import numpy as np
 import os
+
+# Type-checking support
+from typecheck import accepts, Or, Exact, Self
 
 
 xs_types = ['total',
@@ -14,13 +17,20 @@ xs_types = ['total',
             'fission',
             'nu-fission',
             'chi']
-#            'diffusion'
+#            'diffusion']
 
 domain_types = ['cell',
                 'distribcell',
                 'universe',
-                'material']
-#               'mesh'
+                'material',
+                'mesh']
+
+domains = [openmc.Cell, openmc.Universe, openmc.Material, openmc.Mesh]
+
+# For use with typecheck module
+xs_types_check = Or(*[Exact(xs_type) for xs_type in xs_types])
+domain_types_check = Or(*[Exact(domain_type) for domain_type in domain_types])
+domains_check = Or(*[domain for domain in domains])
 
 
 class EnergyGroups(object):
@@ -31,120 +41,55 @@ class EnergyGroups(object):
     self._num_groups = None
 
 
-  def setGroupEdges(self, edges):
+  @property
+  def group_edges(self):
+    return self._group_edges
 
-    if not isinstance(edges, (tuple, list, np.ndarray)):
-      msg = 'Unable to set energy group edges from {0} which ' \
-            'is not a Python tuple/list or NumPy array'.format(edges)
-      raise ValueError(msg)
 
-    for i, edge in enumerate(edges):
-
-      if not is_integer(edge) and not is_float(edge):
-        msg = 'Unable to set energy group edge = {0} which is ' \
-              'not an integer or floating point value'.format(edge)
-        raise ValueError(msg)
-
-      if i > 0 and edges[i] <= edges[i-1]:
-        msg = 'Unable to set energy group edges with {0} for edge {1} ' \
-              'and {2} for edge {3}'.format(edges[i], i, edges[i-1], i-1)
-        raise ValueError(msg)
-
+  @group_edges.setter
+  @accepts(Self(), Or(list, tuple, np.ndarray))
+  def group_edges(self, edges):
     self._group_edges = np.array(edges)
     self._num_groups = len(edges)-1
 
 
+  @accepts(Self(), Or(int, float), Or(int, float), int,
+           Or(Exact('linear'), Exact('logarithmic')))
   def generateBinEdges(self, start, stop, num_groups, type='linear'):
-
-    if not is_integer(start) and not is_float(start):
-      msg = 'Unable to generate energy group edges with start = {0} ' \
-            'which is not an integer or floating point value'.format(start)
-      raise ValueError(msg)
-
-    if not is_integer(stop) and not is_float(stop):
-      msg = 'Unable to generate energy group edges with stop = {0} ' \
-            'which is not an integer or floating point value'.format(stop)
-      raise ValueError(msg)
-
-    if not is_integer(num_groups):
-      msg = 'Unable to generate energy group edges with num groups = {0} ' \
-            'which is not an integer value'.format(num_groups)
-      raise ValueError(msg)
-
-    if not type in ['linear', 'logarithmic']:
-      msg = 'Unable to generate energy group edges with type = {0} which is ' \
-            'neither linear nor logarithmic'.format(type)
-      raise ValueError(msg)
-
-    if start < 0.:
-      msg = 'Unable to generate energy group edges with start = {0} which is ' \
-           'a negative value'.format(start)
-      raise ValueError(msg)
-
-    if stop < 0.:
-      msg = 'Unable to generate energy group edges with stop = {0} which is ' \
-            'a negative value'.format(stop)
-      raise ValueError(msg)
-
-    if start >= stop:
-      msg = 'Unable to generate energy group edges with start = {0} which is ' \
-           'greater than stop = {1}'.format(start, stop)
-      raise ValueError(msg)
-
-    if num_groups < 0.:
-      msg = 'Unable to generate energy group edges with num groups {0} ' \
-            'which is a negative value'.format(num_groups)
-      raise ValueError(msg)
 
     self._num_groups = num_groups
 
     if type == 'linear':
       self._group_edges = np.linspace(start, stop, num_groups+1)
-
     else:
       self._group_edges = np.logspace(np.log(start), np.log(stop), num_groups+1)
 
 
+  @accepts(Self(), Or(int, float))
   def getGroup(self, energy):
 
     # Assumes energy is in eV
-
-    if not is_integer(energy) and not is_float(energy):
-      msg = 'Unable to get energy group for energy {0} since it is ' \
-            'neither an integer or floating point value'.format(energy)
-      raise ValueError(msg)
 
     if self._group_edges is None:
       msg = 'Unable to get energy group for energy {0} eV since ' \
             'the group edges have not yet been set'.format(energy)
       raise ValueError(msg)
 
-    # Loop over all edges and search for the group for this energy
-    for i, edge in enumerate(self._group_edges):
-
-      if energy <= edge:
-        return self._num_groups - i
-
-    msg = 'Unable to find energy group for energy {0} eV since it does not ' \
-          'lie within the bounds of the energy group edges'.format(energy)
-    raise ValueError(msg)
+    index = np.where(self._group_edges > energy)[0]
+    group = self._num_groups - index
+    return group
 
 
+  @accepts(Self(), int)
   def getGroupBounds(self, group):
 
-    if not is_integer(group):
-      msg = 'Unable to get energy group bounds for group {0} since it ' \
-            'is not an integer value'.format(group)
-      raise ValueError(msg)
-
-    elif group < 1 or group > self._num_groups:
-      msg = 'Unable to get energy group bounds for group {0} since it ' \
-            'is outside the range of energy groups'.format(group)
+    if self._group_edges is None:
+      msg = 'Unable to get energy group bounds for group {0} since ' \
+            'the group edges have not yet been set'.format(group)
       raise ValueError(msg)
 
     lower = self._group_edges[self._num_groups-group]
     upper = self._group_edges[self._num_groups-group+1]
-
     return (lower, upper)
 
 
@@ -169,33 +114,40 @@ class MultiGroupXS(object):
     self._subdomain_offsets = dict()
 
     if not domain_type is None:
-      self.setDomainType(domain_type)
+      self.domain_type = domain_type
 
     if not domain is None:
-      self.setDomain(domain)
+      self.domain = domain
 
     if not energy_groups is None:
-      self.setEnergyGroups(energy_groups)
+      self.energy_groups = energy_groups
 
 
-  def setEnergyGroups(self, energy_groups):
+  @property
+  def energy_groups(self):
+    return self._energy_groups
 
-    if not isinstance(energy_groups, EnergyGroups):
-      msg = 'Unable to set the energy groups to {0} which is not an ' \
-            'EnergyGroups object'.format(energy_groups)
-      raise ValueError(msg)
 
+  @energy_groups.setter
+  @accepts(Self(), EnergyGroups)
+  def energy_groups(self, energy_groups):
     self._energy_groups = energy_groups
     self._num_groups = energy_groups._num_groups
 
 
-  def setDomain(self, domain):
+  @property
+  def num_groups(self):
+    return self._num_groups
 
-    if not isinstance(domain, (openmc.Material, openmc.Cell,
-                               openmc.Universe, openmc.Mesh)):
-      msg = 'Unable to set the domain to {0} which is not an OpenMC ' \
-            'Material, Cell, Universe or Mesh object'.format(domain)
-      raise ValueError(msg)
+
+  @property
+  def domain(self):
+    return self._domain
+
+
+  @domain.setter
+  @accepts(Self(), domains_check)
+  def domain(self, domain):
 
     self._domain = domain
 
@@ -203,13 +155,14 @@ class MultiGroupXS(object):
       self._subdomain_offsets[domain._id] = 0
 
 
-  def setDomainType(self, domain_type):
+  @property
+  def domain_type(self):
+    return self._domain_type
 
-    if not domain_type in domain_types:
-      msg = 'Unable to set the domain type to {0} which is ' \
-            'not a supported domain type'.format(domain_type)
-      raise ValueError(msg)
 
+  @domain_type.setter
+  @accepts(Self(), domain_types_check)
+  def domain_type(self, domain_type):
     self._domain_type = domain_type
 
 
@@ -225,18 +178,8 @@ class MultiGroupXS(object):
       self._offset = domain_filter._offset
 
 
+  @accepts(Self(), int, int)
   def setSubDomainOffset(self, domain_id, offset):
-
-    if not is_integer(domain_id):
-      msg = 'Unable to set the domain offset for domain {0} which is not ' \
-            'an integer value'.format(domain_id)
-      raise ValueError(msg)
-
-    elif not is_integer(offset):
-      msg = 'Unable to set the domain offset for domain {0} to offset {1} ' \
-            'which is not an integer'.format(domain_id, offset)
-      raise ValueError(msg)
-
     self._subdomain_offsets[domain_id] = offset
 
 
@@ -257,33 +200,10 @@ class MultiGroupXS(object):
     return
 
 
+  @accepts(Self(), int, Or(Exact(None), int), str)
   def getXS(self, group, subdomain=None, metric='mean'):
 
-    if not is_integer(group):
-      msg = 'Unable to get cross-section for non-integer group {0}'.format(group)
-      raise ValueError(msg)
-
-    elif group < 1 or group > self._num_groups:
-      msg = 'Unable to get cross-section for non-integer group {0} ' \
-            'which is oustide the energy group bound'.format(group)
-      raise ValueError(msg)
-
-    if not subdomain is None and not subdomain in self._subdomain_offsets.keys():
-      msg = 'Unable to get cross-section for domain {0} since it is ' \
-            'not one of the domain offsets'.format(subdomain)
-      raise ValueError(msg)
-
-    elif subdomain is None and self._domain_type == 'distribcell':
-      msg = 'Unable to get cross-section for a distribcell ' \
-            'since no subdomain was provided'
-      raise ValueError(msg)
-
-    elif not metric in ['mean', 'std_dev']:
-      msg = 'Unable to get cross-section for metric {0} which is not ' \
-            '\'mean\' or \'std_dev\''.format(metric)
-      raise ValueError(msg)
-
-    elif self._xs is None:
+    if self._xs is None:
       msg = 'Unable to get cross-section since it has not been computed'
       raise ValueError(msg)
 
@@ -306,17 +226,8 @@ class MultiGroupXS(object):
       return self._xs[1, subdomain_index, group_index]
 
 
+  @accepts(Self(), str, str)
   def dumpToFile(self, filename='multigroupxs', directory='multigroupxs'):
-
-    if not is_string(filename):
-      msg = 'Unable to dump cross-section to filename={0} ' \
-            'since it is not a string'.format(filename)
-      raise ValueError(msg)
-
-    elif not is_string(directory):
-      msg = 'Unable to dump cross-section to directory={0} ' \
-            'since it is not a string'.format(directory)
-      raise ValueError(msg)
 
     import pickle
 
@@ -343,17 +254,8 @@ class MultiGroupXS(object):
     pickle.dump(xs_results, open(filename, 'wb'))
 
 
+  @accepts(Self(), str, str)
   def restoreFromFile(self, filename, directory='.'):
-
-    if not is_string(filename):
-      msg = 'Unable to import cross-section from filename={0} ' \
-            'since it is not a string'.format(filename)
-      raise ValueError(msg)
-
-    elif not is_string(directory):
-      msg = 'Unable to import cross-section from directory={0} ' \
-            'since it is not a string'.format(directory)
-      raise ValueError(msg)
 
     import pickle
     import os.path
@@ -382,9 +284,9 @@ class MultiGroupXS(object):
 
     # Store the MultiGroupXS class attributes
     self._xs_type = xs_type
-    self.setDomainType(domain_type)
-    self.setDomain(domain)
-    self.setEnergyGroups(energy_groups)
+    self.domain_type = domain_type
+    self.domain = domain
+    self.energy_groups = energy_groups
     self._tallies = tallies
     self._xs = xs
     self._offset = offset
@@ -393,55 +295,19 @@ class MultiGroupXS(object):
 
 
   #FIXME: Modularize!!!
+  @accepts(Self(), Or(Exact(None), int), str, str, str, bool, bool)
   def exportSubdomainResults(self, subdomain=None, filename='multigroupxs',
                              directory='multigroupxs', format='hdf5',
                              append=True, uncertainties=False):
 
-    if not subdomain is None and not subdomain in self._subdomain_offsets.keys():
-      msg = 'Unable to export cross-section for domain {0} since it is ' \
-            'not one of the domain offsets'.format(subdomain)
-      raise ValueError(msg)
-
-    elif subdomain is None and self._domain_type == 'distribcell':
-      msg = 'Unable to export cross-section for a distribcell ' \
-            'since no subdomain was provided'
-      raise ValueError(msg)
-
-    elif not is_string(filename):
-      msg = 'Unable to export cross-section to filename={0} ' \
-            'since it is not a string'.format(filename)
-      raise ValueError(msg)
-
-    elif not is_string(directory):
-      msg = 'Unable to export cross-section to directory={0} ' \
-            'since it is not a string'.format(directory)
-      raise ValueError(msg)
-
-    elif not format in ['hdf5', 'pkl', 'latex']:
-      msg = 'Unable to export cross-section to format {0} ' \
-            'since it is not supported'.format(format)
-      raise ValueError(msg)
-
-    elif not isinstance(append, (bool, np.bool)):
-      msg = 'Unable to export cross-section since the append ' \
-            'parameters is not True/False'.format(append)
-      raise ValueError(msg)
-
-    elif not isinstance(uncertainties, (bool, np.bool)):
-      msg = 'Unable to export cross-section since the uncertainties ' \
-            'parameters is not True/False'.format(uncertainties)
-      raise ValueError(msg)
-
-    elif self._xs is None:
+    if self._xs is None:
       msg = 'Unable to export cross-section {0} since it has not yet ' \
             'been computed'.format(self._xs_type)
       raise ValueError(msg)
 
-
     # Make directory if it does not exist
     if not os.path.exists(directory):
       os.makedirs(directory)
-
 
     # HDF5 binary file
     if format == 'hdf5':
@@ -640,35 +506,11 @@ class MultiGroupXS(object):
       xs_results.close()
 
 
+  @accepts(Self(), Or(Exact(None), int), str, str, bool)
   def printPDF(self, subdomain=None, filename='multigroupxs', directory='.',
                uncertainties=False):
 
-    if not subdomain is None and not subdomain in self._subdomain_offsets.keys():
-      msg = 'Unable to print PDF for cross-section for domain {0} since it is ' \
-            'not one of the domain offsets'.format(subdomain)
-      raise ValueError(msg)
-
-    elif subdomain is None and self._domain_type == 'distribcell':
-      msg = 'Unable to print PDF for cross-section for a distribcell ' \
-            'since no subdomain was provided'
-      raise ValueError(msg)
-
-    elif not is_string(filename):
-      msg = 'Unable to print PDF for cross-section to filename={0} ' \
-            'since it is not a string'.format(filename)
-      raise ValueError(msg)
-
-    elif not is_string(directory):
-      msg = 'Unable to print PDF for cross-section to directory={0} ' \
-            'since it is not a string'.format(directory)
-      raise ValueError(msg)
-
-    elif not isinstance(uncertainties, (bool, np.bool)):
-      msg = 'Unable to print PDF for cross-section since the uncertainties ' \
-            'parameters is not True/False'.format(uncertainties)
-      raise ValueError(msg)
-
-    elif self._xs is None:
+    if self._xs is None:
       msg = 'Unable to print PDF for cross-section {0} since it has not yet ' \
             'been computed'.format(self._xs_type)
       raise ValueError(msg)
@@ -695,19 +537,10 @@ class MultiGroupXS(object):
     os.system('rm {0}.tex {0}.aux {0}.log'.format(filename))
 
 
+  @accepts(Self(), Or(Exact(None), int))
   def printXS(self, subdomain=None):
 
-    if not subdomain is None and not subdomain in self._subdomain_offsets.keys():
-      msg = 'Unable to print cross-section for domain {0} since it is ' \
-            'not one of the domain offsets'.format(subdomain)
-      raise ValueError(msg)
-
-    elif subdomain is None and self._domain_type == 'distribcell':
-      msg = 'Unable to print cross-section for a distribcell ' \
-            'since no subdomain was provided'
-      raise ValueError(msg)
-
-    elif self._xs is None:
+    if self._xs is None:
       msg = 'Unable to print cross-section {0} since it has not yet ' \
             'been computed'.format(self._xs_type)
       raise ValueError(msg)
