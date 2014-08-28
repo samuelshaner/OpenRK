@@ -788,10 +788,10 @@ class TotalXS(MultiGroupXS):
     num_subdomains = flux_tally._mean.shape[0] / self._num_groups
     new_shape = (num_subdomains, self._num_groups)
 
-    flux_mean = np.reshape(flux_mean, new_shape)
-    total_mean = np.reshape(total_mean, new_shape)
-    flux_std_dev = np.reshape(flux_std_dev, new_shape)
-    total_std_dev = np.reshape(total_std_dev, new_shape)
+#    flux_mean = np.reshape(flux_mean, new_shape)
+#    total_mean = np.reshape(total_mean, new_shape)
+#    flux_std_dev = np.reshape(flux_std_dev, new_shape)
+#    total_std_dev = np.reshape(total_std_dev, new_shape)
 
     flux = np.array([flux_mean, flux_std_dev])
     total = np.array([total_mean, total_std_dev])
@@ -880,12 +880,12 @@ class TransportXS(MultiGroupXS):
     num_subdomains = flux_tally._mean.shape[0] / self._num_groups
     new_shape = (num_subdomains, self._num_groups)
 
-    flux_mean = np.reshape(flux_mean, new_shape)
-    total_mean = np.reshape(total_mean, new_shape)
-    scatter1_mean = np.reshape(scatter1_mean, new_shape)
-    flux_std_dev = np.reshape(flux_std_dev, new_shape)
-    total_std_dev = np.reshape(total_std_dev, new_shape)
-    scatter1_std_dev = np.reshape(scatter1_std_dev, new_shape)
+#    flux_mean = np.reshape(flux_mean, new_shape)
+#    total_mean = np.reshape(total_mean, new_shape)
+#    scatter1_mean = np.reshape(scatter1_mean, new_shape)
+#    flux_std_dev = np.reshape(flux_std_dev, new_shape)
+#    total_std_dev = np.reshape(total_std_dev, new_shape)
+#    scatter1_std_dev = np.reshape(scatter1_std_dev, new_shape)
 
     flux = np.array([flux_mean, flux_std_dev])
     total = np.array([total_mean, total_std_dev])
@@ -966,10 +966,10 @@ class AbsorptionXS(MultiGroupXS):
     num_subdomains = flux_tally._mean.shape[0] / self._num_groups
     new_shape = (num_subdomains, self._num_groups)
 
-    flux_mean = np.reshape(flux_mean, new_shape)
-    absorption_mean = np.reshape(absorption_mean, new_shape)
-    flux_std_dev = np.reshape(flux_std_dev, new_shape)
-    absorption_std_dev = np.reshape(absorption_std_dev, new_shape)
+#    flux_mean = np.reshape(flux_mean, new_shape)
+#    absorption_mean = np.reshape(absorption_mean, new_shape)
+#    flux_std_dev = np.reshape(flux_std_dev, new_shape)
+#    absorption_std_dev = np.reshape(absorption_std_dev, new_shape)
 
     flux = np.array([flux_mean, flux_std_dev])
     absorption = np.array([absorption_mean, absorption_std_dev])
@@ -1045,10 +1045,10 @@ class FissionXS(MultiGroupXS):
     num_subdomains = flux_tally._mean.shape[0] / self._num_groups
     new_shape = (num_subdomains, self._num_groups)
 
-    flux_mean = np.reshape(flux_mean, new_shape)
-    fission_mean = np.reshape(fission_mean, new_shape)
-    flux_std_dev = np.reshape(flux_std_dev, new_shape)
-    fission_std_dev = np.reshape(fission_std_dev, new_shape)
+ #   flux_mean = np.reshape(flux_mean, new_shape)
+ #   fission_mean = np.reshape(fission_mean, new_shape)
+ #   flux_std_dev = np.reshape(flux_std_dev, new_shape)
+ #   fission_std_dev = np.reshape(fission_std_dev, new_shape)
 
     flux = np.array([flux_mean, flux_std_dev])
     fission = np.array([fission_mean, fission_std_dev])
@@ -1124,10 +1124,10 @@ class NuFissionXS(MultiGroupXS):
     num_subdomains = flux_tally._mean.shape[0] / self._num_groups
     new_shape = (num_subdomains, self._num_groups)
 
-    flux_mean = np.reshape(flux_mean, new_shape)
-    nu_fission_mean = np.reshape(nu_fission_mean, new_shape)
-    flux_std_dev = np.reshape(flux_std_dev, new_shape)
-    nu_fission_std_dev = np.reshape(nu_fission_std_dev, new_shape)
+#    flux_mean = np.reshape(flux_mean, new_shape)
+#    nu_fission_mean = np.reshape(nu_fission_mean, new_shape)
+#    flux_std_dev = np.reshape(flux_std_dev, new_shape)
+#    nu_fission_std_dev = np.reshape(nu_fission_std_dev, new_shape)
 
     flux = np.array([flux_mean, flux_std_dev])
     nu_fission = np.array([nu_fission_mean, nu_fission_std_dev])
@@ -1203,10 +1203,10 @@ class ScatterXS(MultiGroupXS):
     num_subdomains = flux_tally._mean.shape[0] / self._num_groups
     new_shape = (num_subdomains, self._num_groups)
 
-    flux_mean = np.reshape(flux_mean, new_shape)
-    scatter_mean = np.reshape(scatter_mean, new_shape)
-    flux_std_dev = np.reshape(flux_std_dev, new_shape)
-    scatter_std_dev = np.reshape(scatter_std_dev, new_shape)
+#    flux_mean = np.reshape(flux_mean, new_shape)
+#    scatter_mean = np.reshape(scatter_mean, new_shape)
+#    flux_std_dev = np.reshape(flux_std_dev, new_shape)
+#    scatter_std_dev = np.reshape(scatter_std_dev, new_shape)
 
     flux = np.array([flux_mean, flux_std_dev])
     scatter = np.array([scatter_mean, scatter_std_dev])
@@ -1284,10 +1284,10 @@ class NuScatterXS(MultiGroupXS):
     num_subdomains = flux_tally._mean.shape[0] / self._num_groups
     new_shape = (num_subdomains, self._num_groups)
 
-    flux_mean = np.reshape(flux_mean, new_shape)
-    nu_scatter_mean = np.reshape(nu_scatter_mean, new_shape)
-    flux_std_dev = np.reshape(flux_std_dev, new_shape)
-    nu_scatter_std_dev = np.reshape(nu_scatter_std_dev, new_shape)
+#    flux_mean = np.reshape(flux_mean, new_shape)
+#    nu_scatter_mean = np.reshape(nu_scatter_mean, new_shape)
+#    flux_std_dev = np.reshape(flux_std_dev, new_shape)
+#    nu_scatter_std_dev = np.reshape(nu_scatter_std_dev, new_shape)
 
     flux = np.array([flux_mean, flux_std_dev])
     nu_scatter = np.array([nu_scatter_mean, nu_scatter_std_dev])
@@ -1367,10 +1367,10 @@ class ScatterMatrixXS(MultiGroupXS):
     num_subdomains = flux_tally._mean.shape[0] / self._num_groups
     new_shape = (num_subdomains, self._num_groups, self._num_groups)
 
-    flux_mean = np.reshape(flux_mean, new_shape[0:2])
-    nu_scatter_mean = np.reshape(nu_scatter_mean, new_shape)
-    flux_std_dev = np.reshape(flux_std_dev, new_shape[0:2])
-    nu_scatter_std_dev = np.reshape(nu_scatter_std_dev, new_shape)
+#    flux_mean = np.reshape(flux_mean, new_shape[0:2])
+#    nu_scatter_mean = np.reshape(nu_scatter_mean, new_shape)
+#    flux_std_dev = np.reshape(flux_std_dev, new_shape[0:2])
+#    nu_scatter_std_dev = np.reshape(nu_scatter_std_dev, new_shape)
 
     flux = np.array([flux_mean, flux_std_dev])
     nu_scatter = np.array([nu_scatter_mean, nu_scatter_std_dev])
@@ -1382,22 +1382,22 @@ class ScatterMatrixXS(MultiGroupXS):
     nu_scatter[:, nu_scatter_indices] = -1.
 
     # Tile the flux into a 3D array corresponding to the nu-scatter array
-    flux = np.reshape(flux, (2, num_subdomains, self._num_groups, 1))
+#    flux = np.reshape(flux, (2, num_subdomains, self._num_groups, 1))
     # FIXME: should axis=2 or axis=3?
-    flux = np.repeat(flux, self._num_groups, axis=3)
+#    flux = np.repeat(flux, self._num_groups, axis=3)
 
     # Compute the xs with uncertainty propagation
-    self._xs = uncorr_divide_by_array(nu_scatter, flux)
+#    self._xs = uncorr_divide_by_array(nu_scatter, flux)
 
     # For any region without flux or reaction rate, convert xs to zero
-    self._xs[:, flux_indices] = 0.
-    self._xs[:, nu_scatter_indices] = 0.
+#    self._xs[:, flux_indices] = 0.
+#    self._xs[:, nu_scatter_indices] = 0.
 
     # Correct -0.0 to +0.0
-    self._xs += 0.
+#    self._xs += 0.
 
     # Reverse array so that it is ordered intuitively from high to low energy
-    self._xs = self._xs[..., ::-1, ::-1]
+#    self._xs = self._xs[..., ::-1, ::-1]
 
 
   def printXS(self, subdomain=None):
@@ -1579,10 +1579,10 @@ class Chi(MultiGroupXS):
     num_subdomains = nu_fission_in_tally._mean.shape[0] / self._num_groups
     new_shape = (num_subdomains, self._num_groups)
 
-    nu_fission_in_mean = np.reshape(nu_fission_in_mean, new_shape)
-    nu_fission_out_mean = np.reshape(nu_fission_out_mean, new_shape)
-    nu_fission_in_std_dev = np.reshape(nu_fission_in_std_dev, new_shape)
-    nu_fission_out_std_dev = np.reshape(nu_fission_out_std_dev, new_shape)
+#    nu_fission_in_mean = np.reshape(nu_fission_in_mean, new_shape)
+#    nu_fission_out_mean = np.reshape(nu_fission_out_mean, new_shape)
+#    nu_fission_in_std_dev = np.reshape(nu_fission_in_std_dev, new_shape)
+#    nu_fission_out_std_dev = np.reshape(nu_fission_out_std_dev, new_shape)
 
     nu_fission_in = np.array([nu_fission_in_mean, nu_fission_in_std_dev])
     nu_fission_out = np.array([nu_fission_out_mean, nu_fission_out_std_dev])
@@ -1605,6 +1605,7 @@ class Chi(MultiGroupXS):
       self._xs = uncorr_divide_by_scalar(nu_fission_out,
                                          nu_fission_in.sum(2)[0, :, np.newaxis])
 
+      # Compute the total across all groups per subdomain
       norm = self._xs.sum(2)[0, :, np.newaxis]
 
       # Set any norms to a negative value

@@ -306,8 +306,6 @@ class XSTallyExtractor(object):
 
       # Iterate over the Filters requested by the user
       for filter in filters:
-
-        # If the test Tally does not contains this Filter, break
         if not filter in test_tally._filters:
           contains_filters = False
           break
@@ -316,8 +314,6 @@ class XSTallyExtractor(object):
 
       # Iterate over the Nuclides requested by the user
       for nuclide in nuclides:
-
-        # If the test Tally does not contains this Nuclide, break
         if not nuclide in test_tally._nuclides:
           contains_nuclides = False
           break
@@ -339,6 +335,12 @@ class XSTallyExtractor(object):
 
     for xs_type in xs_types:
       self.extractMultiGroupXS(xs_type, energy_groups, domain_type)
+
+
+  def extractAllMicroXS(self, energy_groups, domain_type='distribcell'):
+
+    for xs_type in xs_types:
+      self.extractMicroXS(xs_type, energy_groups, domain_type)
 
 
   def extractMultiGroupXS(self, xs_type, energy_groups, domain_type='distribcell'):
@@ -370,6 +372,35 @@ class XSTallyExtractor(object):
       # Store a handle to the MultiGroupXS object in the nested dictionary
       self._multigroup_xs[domain_type][domain._id][xs_type] = xs
 
+
+  def extractMicroXS(self, xs_type, energy_groups, domain_type='distribcell'):
+
+    # Add nested dictionary for this domain type if needed
+    if not domain_type in self._multigroup_xs.keys():
+      self._multigroup_xs[domain_type] = dict()
+
+    # Get a list of the domains for this domain type to iterate over
+    if domain_type == 'material':
+      domains = self._openmc_geometry.getAllMaterials()
+
+    elif domain_type == 'universe':
+      domains = self._openmc_geometry.getAllMaterialUniverses()
+
+    elif domain_type == 'cell' or domain_type == 'distribcell':
+      domains = self._openmc_geometry.getAllMaterialCells()
+
+    # Iterate and create the MultiGroupXS for each domain
+    for domain in domains:
+
+      # Add nested dictionary for this domain if needed
+      if not domain._id in self._multigroup_xs[domain_type].keys():
+        self._multigroup_xs[domain_type][domain._id] = dict()
+
+      # Build the MultiGroupXS for this domain
+      xs = self.createMicroXS(xs_type, energy_groups, domain, domain_type)
+
+      # Store a handle to the MultiGroupXS object in the nested dictionary
+      self._multigroup_xs[domain_type][domain._id][xs_type] = xs
 
 
   def createMultiGroupXS(self, xs_type, energy_groups,
@@ -410,7 +441,6 @@ class XSTallyExtractor(object):
     filters.append(openmc.Filter(type='energy', bins=group_edges))
     filters.append(openmc.Filter(type=domain_type, bins=domain._id))
 
-
     if xs_type == 'total':
 
       # Get the Tally objects needed to compute the total xs
@@ -421,7 +451,6 @@ class XSTallyExtractor(object):
       multigroup_xs = TotalXS(domain, domain_type, energy_groups)
       multigroup_xs._tallies['flux'] = flux
       multigroup_xs._tallies['total'] = total
-
 
     elif xs_type == 'transport':
 
@@ -435,7 +464,6 @@ class XSTallyExtractor(object):
       multigroup_xs._tallies['flux'] = flux
       multigroup_xs._tallies['total'] = total
       multigroup_xs._tallies['scatter-1'] = scatter1
-
 
     elif xs_type == 'absorption':
 
@@ -460,7 +488,6 @@ class XSTallyExtractor(object):
       multigroup_xs._tallies['flux'] = flux
       multigroup_xs._tallies['fission'] = fission
 
-
     elif xs_type == 'nu-fission':
 
       # Get the Tally objects needed to compute the nu-fission xs
@@ -471,7 +498,6 @@ class XSTallyExtractor(object):
       multigroup_xs = NuFissionXS(domain, domain_type, energy_groups)
       multigroup_xs._tallies['flux'] = flux
       multigroup_xs._tallies['nu-fission'] = nu_fission
-
 
     elif xs_type == 'scatter':
 
@@ -484,7 +510,6 @@ class XSTallyExtractor(object):
       multigroup_xs._tallies['flux'] = flux
       multigroup_xs._tallies['scatter'] = scatter
 
-
     elif xs_type == 'nu-scatter':
 
       # Get the Tally objects needed to compute the nu-scatter xs
@@ -495,7 +520,6 @@ class XSTallyExtractor(object):
       multigroup_xs = NuScatterXS(domain, domain_type, energy_groups)
       multigroup_xs._tallies['flux'] = flux
       multigroup_xs._tallies['nu-scatter'] = nu_scatter
-
 
     elif xs_type == 'scatter matrix':
 
@@ -509,7 +533,6 @@ class XSTallyExtractor(object):
       multigroup_xs = ScatterMatrixXS(domain, domain_type, energy_groups)
       multigroup_xs._tallies['flux'] = flux
       multigroup_xs._tallies['nu-scatter'] = nu_scatter
-
 
     elif xs_type == 'chi':
 
@@ -526,16 +549,12 @@ class XSTallyExtractor(object):
       multigroup_xs._tallies['nu-fission-in'] = nu_fission_in
       multigroup_xs._tallies['nu-fission-out'] = nu_fission_out
 
-
     elif xs_type == 'diffusion':
       msg = 'Unable to get diffusion coefficient'
       raise ValueError(msg)
 
-
     # Compute the cross-section
     multigroup_xs.computeXS()
-
-
 
     # Build offsets such that a user can query the MultiGroupXS for any region
     if domain_type == 'distribcell':
@@ -554,6 +573,181 @@ class XSTallyExtractor(object):
           offset = self._openmc_geometry.getOffset(path, domain_offset)
           multigroup_xs.setSubDomainOffset(region, offset)
 
+    return multigroup_xs
+
+
+  def createMicroXS(self, xs_type, energy_groups,
+                   domain, domain_type='distribcell'):
+
+    if self._statepoint is None:
+      msg = 'Unable to get cross-sections since the TallyExtractor ' \
+            'statepoint attribute has not been set'
+      raise ValueError(msg)
+
+    elif not xs_type in xs_types:
+      msg = 'Unable to get {0} cross-sections since it is not a ' \
+            'valid cross-section type'.format(xs_type)
+      raise ValueError(msg)
+
+    elif not isinstance(energy_groups, EnergyGroups):
+      msg = 'Unable to get group cross-sections with energy groups ' \
+            '{0} since it is not an EnergyGroups object'.format(energy_groups)
+      raise ValueError(msg)
+
+    elif not isinstance(domain, (openmc.Material, openmc.Cell,
+                                 openmc.Universe, openmc.Mesh)):
+      msg = 'Unable to get group cross-sections for domain ' \
+            '{0} since it is not a valid domain'.format(domain)
+      raise ValueError(msg)
+
+    elif not domain_type in domain_types:
+      msg = 'Unable to get group cross-sections for domain type ' \
+            '{0} since it is not a supported domain type'.format(domain_type)
+      raise ValueError(msg)
+
+
+    # Initialize a list of filters
+    filters = list()
+
+    # Create energy and domain filters to search for
+    group_edges = energy_groups._group_edges
+    filters.append(openmc.Filter(type='energy', bins=group_edges))
+    filters.append(openmc.Filter(type=domain_type, bins=domain._id))
+
+    # Extract a Python list of all Nuclides in the domain of interest
+    nuclides = domain.getAllNuclides().values()
+
+    if xs_type == 'total':
+
+      # Get the Tally objects needed to compute the total xs
+      flux = self.getTally('flux', filters)
+      total = self.getTally('total', filters, nuclides)
+
+      # Initialize a MultiGroupXS object
+      multigroup_xs = TotalXS(domain, domain_type, energy_groups)
+      multigroup_xs._tallies['flux'] = flux
+      multigroup_xs._tallies['total'] = total
+
+    elif xs_type == 'transport':
+
+      # Get the Tally objects needed to compute the transport xs
+      flux = self.getTally('flux', filters, estimator='analog')
+      total = self.getTally('total', filters, nuclides, estimator='analog')
+      scatter1 = self.getTally('scatter-1', filters, nuclides, estimator='analog')
+
+      # Initialize a MultiGroupXS object
+      multigroup_xs = TransportXS(domain, domain_type, energy_groups)
+      multigroup_xs._tallies['flux'] = flux
+      multigroup_xs._tallies['total'] = total
+      multigroup_xs._tallies['scatter-1'] = scatter1
+
+    elif xs_type == 'absorption':
+
+      # Get the Tally objects needed to compute the absorption xs
+      flux = self.getTally('flux', filters)
+      absorption = self.getTally('absorption', filters, nuclides)
+
+      # Initialize a MultiGroupXS object
+      multigroup_xs = AbsorptionXS(domain, domain_type, energy_groups)
+      multigroup_xs._tallies['flux'] = flux
+      multigroup_xs._tallies['absorption'] = absorption
+
+
+    elif xs_type == 'fission':
+
+      # Get the Tally objects needed to compute the fission xs
+      flux = self.getTally('flux', filters)
+      fission = self.getTally('fission', filters, nuclides)
+
+      # Initialize a MultiGroupXS object
+      multigroup_xs = FissionXS(domain, domain_type, energy_groups)
+      multigroup_xs._tallies['flux'] = flux
+      multigroup_xs._tallies['fission'] = fission
+
+    elif xs_type == 'nu-fission':
+
+      # Get the Tally objects needed to compute the nu-fission xs
+      flux = self.getTally('flux', filters)
+      nu_fission = self.getTally('nu-fission', filters, nuclides)
+
+      # Initialize a MultiGroupXS object
+      multigroup_xs = NuFissionXS(domain, domain_type, energy_groups)
+      multigroup_xs._tallies['flux'] = flux
+      multigroup_xs._tallies['nu-fission'] = nu_fission
+
+    elif xs_type == 'scatter':
+
+      # Get the Tally objects needed to compute the scatter xs
+      flux = self.getTally('flux', filters)
+      scatter = self.getTally('scatter', filters, nuclides)
+
+      # Initialize a MultiGroupXS object
+      multigroup_xs = ScatterXS(domain, domain_type, energy_groups)
+      multigroup_xs._tallies['flux'] = flux
+      multigroup_xs._tallies['scatter'] = scatter
+
+    elif xs_type == 'nu-scatter':
+
+      # Get the Tally objects needed to compute the nu-scatter xs
+      flux = self.getTally('flux', filters, estimator='analog')
+      nu_scatter = self.getTally('nu-scatter', filters, nuclides, estimator='analog')
+
+      # Initialize a MultiGroupXS object
+      multigroup_xs = NuScatterXS(domain, domain_type, energy_groups)
+      multigroup_xs._tallies['flux'] = flux
+      multigroup_xs._tallies['nu-scatter'] = nu_scatter
+
+    elif xs_type == 'scatter matrix':
+
+      # Get the Tally objects needed to compute the scatter matrix
+      flux = self.getTally('flux', filters, estimator='analog')
+
+      filters.append(openmc.Filter(type='energyout', bins=group_edges))
+      nu_scatter = self.getTally('nu-scatter', filters, nuclides, estimator='analog')
+
+      # Initialize a MultiGroupXS object
+      multigroup_xs = ScatterMatrixXS(domain, domain_type, energy_groups)
+      multigroup_xs._tallies['flux'] = flux
+      multigroup_xs._tallies['nu-scatter'] = nu_scatter
+
+    elif xs_type == 'chi':
+
+      # Get the Tally objects needed to compute chi
+      nu_fission_in = self.getTally('nu-fission', filters, nuclides, estimator='analog')
+
+      energyout_filter = openmc.Filter(type='energyout', bins=group_edges)
+      filters.pop(0)
+      filters.append(energyout_filter)
+      nu_fission_out = self.getTally('nu-fission', filters, nuclides, estimator='analog')
+
+      # Initialize a MultiGroupXS object
+      multigroup_xs = Chi(domain, domain_type, energy_groups)
+      multigroup_xs._tallies['nu-fission-in'] = nu_fission_in
+      multigroup_xs._tallies['nu-fission-out'] = nu_fission_out
+
+    elif xs_type == 'diffusion':
+      msg = 'Unable to get diffusion coefficient'
+      raise ValueError(msg)
+
+    # Compute the cross-section
+    multigroup_xs.computeXS()
+
+    # Build offsets such that a user can query the MultiGroupXS for any region
+    if domain_type == 'distribcell':
+
+      multigroup_xs.findDomainOffset()
+      domain_offset = multigroup_xs._offset
+
+      # "Cache" a dictionary of region IDs to offsets
+      num_regions = self._opencsg_geometry._num_regions
+
+      for region in range(num_regions):
+        path = self.getPath(region)
+        cell_id = path[-1]
+
+        if cell_id == domain._id:
+          offset = self._openmc_geometry.getOffset(path, domain_offset)
+          multigroup_xs.setSubDomainOffset(region, offset)
 
     return multigroup_xs
 

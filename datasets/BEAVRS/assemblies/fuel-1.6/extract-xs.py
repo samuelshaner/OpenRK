@@ -23,9 +23,12 @@ for batch in batches:
   # Initialize an InferMC XSTallyExtractor object to compute cross-sections
   extractor = XSTallyExtractor(statepoint)
 
+  extractor.extractAllMicroXS(groups, 'material')
+  extractor.extractAllMicroXS(groups, 'distribcell')
+
+  '''
   extractor.extractAllMultiGroupXS(groups, 'material')
   extractor.extractAllMultiGroupXS(groups, 'distribcell')
-
 
   for xs_type in xs_types:
 
@@ -36,5 +39,6 @@ for batch in batches:
                             domain_types=['distribcell', 'material'],
                             colors=['neighbors', 'material'], extension='png',
                             filename='{0}-{1}-batches'.format(xs_type,batch))
+  '''
 
   openmc.reset_auto_ids()
