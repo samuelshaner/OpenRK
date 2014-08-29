@@ -1,11 +1,8 @@
-from infermc.checktype import *
-from infermc.uncorr_math import *
-import openmc
-import numpy as np
-import os
-
-# Type-checking support
 from typecheck import accepts, Or, Exact, Self
+import openmc
+import infermc
+import numpy as np
+import os, abc
 
 
 xs_types = ['total',
@@ -33,68 +30,20 @@ domain_types_check = Or(*[Exact(domain_type) for domain_type in domain_types])
 domains_check = Or(*[domain for domain in domains])
 
 
-class EnergyGroups(object):
-
-  def __init__(self):
-
-    self._group_edges = None
-    self._num_groups = None
-
-
-  @property
-  def group_edges(self):
-    return self._group_edges
-
-
-  @group_edges.setter
-  @accepts(Self(), Or(list, tuple, np.ndarray))
-  def group_edges(self, edges):
-    self._group_edges = np.array(edges)
-    self._num_groups = len(edges)-1
-
-
-  @accepts(Self(), Or(int, float), Or(int, float), int,
-           Or(Exact('linear'), Exact('logarithmic')))
-  def generateBinEdges(self, start, stop, num_groups, type='linear'):
-
-    self._num_groups = num_groups
-
-    if type == 'linear':
-      self._group_edges = np.linspace(start, stop, num_groups+1)
-    else:
-      self._group_edges = np.logspace(np.log(start), np.log(stop), num_groups+1)
-
-
-  @accepts(Self(), Or(int, float))
-  def getGroup(self, energy):
-
-    # Assumes energy is in eV
-
-    if self._group_edges is None:
-      msg = 'Unable to get energy group for energy {0} eV since ' \
-            'the group edges have not yet been set'.format(energy)
-      raise ValueError(msg)
-
-    index = np.where(self._group_edges > energy)[0]
-    group = self._num_groups - index
-    return group
-
-
-  @accepts(Self(), int)
-  def getGroupBounds(self, group):
-
-    if self._group_edges is None:
-      msg = 'Unable to get energy group bounds for group {0} since ' \
-            'the group edges have not yet been set'.format(group)
-      raise ValueError(msg)
-
-    lower = self._group_edges[self._num_groups-group]
-    upper = self._group_edges[self._num_groups-group+1]
-    return (lower, upper)
-
+def flip_axis(arr, axis=0):
+    ''' Flip contents of `axis` in array `arr`
+    Taken verbatim from:
+    https://github.com/nipy/nibabel/blob/master/nibabel/orientations.py
+    '''
+    arr = np.asanyarray(arr)
+    arr = arr.swapaxes(0, axis)
+    arr = np.flipud(arr)
+    return arr.swapaxes(axis, 0)
 
 
 class MultiGroupXS(object):
+
+  __metaclass__ = abc.ABCMeta
 
   def __init__(self, domain=None, domain_type=None, energy_groups=None):
 
@@ -129,7 +78,7 @@ class MultiGroupXS(object):
 
 
   @energy_groups.setter
-  @accepts(Self(), EnergyGroups)
+  @accepts(Self(), infermc.EnergyGroups)
   def energy_groups(self, energy_groups):
     self._energy_groups = energy_groups
     self._num_groups = energy_groups._num_groups
@@ -168,7 +117,7 @@ class MultiGroupXS(object):
 
   def findDomainOffset(self):
 
-    if self._domain_type in ['material', 'cell', 'universe']:
+    if self._domain_type in ['material', 'cell', 'universe', 'mesh']:
       self._offset = 0
 
     # Distribcell tallies
@@ -183,7 +132,10 @@ class MultiGroupXS(object):
     self._subdomain_offsets[domain_id] = offset
 
 
-  def createTallies(self):
+  @abc.abstractmethod
+  @accepts(Self(), [str], [[openmc.Filter]], [str],
+           Or(Exact('analog'), Exact('tracklength')), )
+  def createTallies(self, scores, filters, keys, estimator):
 
     if self._energy_groups is None:
       msg = 'Unable to create Tallies since the energy groups has not been set'
@@ -197,7 +149,70 @@ class MultiGroupXS(object):
       msg = 'Unable to create Tallies since the domain type has not been set'
       raise ValueError(msg)
 
-    return
+    # Create a domain Filter object
+    domain_filter = openmc.Filter(self._domain_type, self._domain._id)
+
+    # Create a label for the Tallies
+    label = '{0} groups'.format(self._num_groups)
+
+    for i, score in enumerate(scores):
+      key = keys[i]
+      self._tallies[key] = openmc.Tally(label=label)
+      self._tallies[key].addScore(score)
+      self._tallies[key].setEstimator(estimator)
+      self._tallies[key].addFilter(domain_filter)
+
+      # Add all non-domain specific Filters (ie, energy) to the Tally
+      for filter in filters[i]:
+        self._tallies[key].addFilter(filter)
+
+
+  @abc.abstractmethod
+  def computeXS(self):
+
+    if self._tallies is None:
+      msg = 'Unable to compute cross-section without any Tallies'
+      raise ValueError(msg)
+
+    tally_data = dict()
+    zero_indices = dict()
+
+    for key, tally in self._tallies.items():
+
+      # Get the Tally batch mean and std. dev.
+      mean = tally._mean
+      std_dev = tally._std_dev
+
+      # Determine shape of the Tally data from its Filters, Nuclides and scores
+      new_shape = tuple()
+      energy_axes = list()
+
+      for i, filter in enumerate(tally._filters):
+        new_shape += (filter.getNumBins(), )
+
+        if 'energy' in filter._type:
+          energy_axes.append(i)
+
+      num_nuclides = tally.getNumNuclides()
+      num_scores = tally.getNumScoreBins()
+      new_shape += (num_nuclides, num_scores)
+
+      # Reshape the array
+      mean = np.reshape(mean, new_shape)
+      std_dev = np.reshape(std_dev, new_shape)
+
+      # Reverse arrays so they are ordered from high to low energy
+      for energy_axis in energy_axes:
+        mean = flip_axis(mean, axis=energy_axis)
+        std_dev = flip_axis(std_dev, axis=energy_axis)
+
+      # Get the array of indices of zero elements
+      zero_indices[key] = mean[...] == 0.
+
+      # Store the tally data to the dictionary
+      tally_data[key] = np.array([mean, std_dev])
+
+    return tally_data, zero_indices
 
 
   @accepts(Self(), int, Or(Exact(None), int), str)
@@ -577,77 +592,44 @@ class TotalXS(MultiGroupXS):
     super(TotalXS, self).__init__(domain, domain_type, energy_groups)
     self._xs_type = 'total'
 
+
   def createTallies(self):
 
-    super(TotalXS, self).createTallies()
+    # Create a list of scores for each Tally to be created
+    scores = ['flux', 'total']
+    estimator = 'tracklength'
+    keys = scores
 
-    # Create Filter objects
+    # Create the non-domain specific Filters for the Tallies
     group_edges = self._energy_groups._group_edges
     energy_filter = openmc.Filter('energy', group_edges)
-    domain_filter = openmc.Filter(self._domain_type, self._domain._id)
+    filters = [[energy_filter], [energy_filter]]
 
-    # Build a Tally label string
-    label = '{0} groups'.format(self._num_groups)
-
-    flux = openmc.Tally()
-    flux.addScore('flux')
-    flux.addFilter(domain_filter)
-    flux.addFilter(energy_filter)
-    flux.setLabel(label)
-    self._tallies['flux'] = flux
-
-    total = openmc.Tally()
-    total.addScore('total')
-    total.addFilter(domain_filter)
-    total.addFilter(energy_filter)
-    total.setLabel(label)
-    self._tallies['total'] = total
+    # Intialize the Tallies
+    super(TotalXS, self).createTallies(scores, filters, keys, estimator)
 
 
   def computeXS(self):
 
-    # TODO: Error checking...
+    # Extract and clean the Tally data
+    tally_data, zero_indices = super(TotalXS, self).computeXS()
+    total = tally_data['total']
+    flux = tally_data['flux']
 
-    # Find the flux, total Tallies
-    flux_tally = self._tallies['flux']
-    total_tally = self._tallies['total']
-
-    flux_mean = flux_tally._mean
-    total_mean = total_tally._mean
-    flux_std_dev = flux_tally._std_dev
-    total_std_dev = total_tally._std_dev
-
-    # Get the number of domains
-    num_subdomains = flux_tally._mean.shape[0] / self._num_groups
-    new_shape = (num_subdomains, self._num_groups)
-
-#    flux_mean = np.reshape(flux_mean, new_shape)
-#    total_mean = np.reshape(total_mean, new_shape)
-#    flux_std_dev = np.reshape(flux_std_dev, new_shape)
-#    total_std_dev = np.reshape(total_std_dev, new_shape)
-
-    flux = np.array([flux_mean, flux_std_dev])
-    total = np.array([total_mean, total_std_dev])
-
-    # Set any zero fluxes and reaction rates to a negative value
-    flux_indices = flux[0, ...] == 0.
-    total_indices = total[0, ...] == 0
-    flux[:, flux_indices] = -1.
-    total[:, total_indices] = -1.
+    # Set any subdomain's zero fluxes and reaction rates to a negative value
+    flux[:, zero_indices['flux']] = -1.
+    total[:, zero_indices['total']] = -1.
 
     # Compute the xs with uncertainty propagation
-    self._xs = uncorr_divide_by_array(total, flux)
+    self._xs = infermc.uncorr_math.divide_by_array(total, flux)
 
     # For any region without flux or reaction rate, convert xs to zero
-    self._xs[:, flux_indices] = 0.
-    self._xs[:, total_indices] = 0.
+    all_zero_indices = np.logical_or(zero_indices['flux'],
+                                     zero_indices['total'])
+    self._xs[:, all_zero_indices] = 0.
 
     # Correct -0.0 to +0.0
     self._xs += 0.
-
-    # Reverse array so that it is ordered intuitively from high to low energy
-    self._xs = self._xs[..., ::-1]
-
 
 
 class TransportXS(MultiGroupXS):
@@ -656,97 +638,49 @@ class TransportXS(MultiGroupXS):
     super(TransportXS, self).__init__(domain, domain_type, energy_groups)
     self._xs_type = 'transport'
 
+
   def createTallies(self):
 
-    super(TransportXS, self).createTallies()
+    # Create a list of scores for each Tally to be created
+    scores = ['flux', 'total', 'scatter-1']
+    estimator = 'analog'
+    keys = scores
 
-    # Create Filter objects
+    # Create the non-domain specific Filters for the Tallies
     group_edges = self._energy_groups._group_edges
     energy_filter = openmc.Filter('energy', group_edges)
-    domain_filter = openmc.Filter(self._domain_type, self._domain._id)
+    filters = [[energy_filter], [energy_filter], [energy_filter]]
 
-    # Build a Tally label string
-    label = '{0} groups'.format(self._num_groups)
-
-    flux = openmc.Tally()
-    flux.addScore('flux')
-    flux.addFilter(domain_filter)
-    flux.addFilter(energy_filter)
-    flux.setLabel(label)
-    flux.setEstimator('analog')
-    self._tallies['flux'] = flux
-
-    total = openmc.Tally()
-    total.addScore('total')
-    total.addFilter(domain_filter)
-    total.addFilter(energy_filter)
-    total.setLabel(label)
-    total.setEstimator('analog')
-    self._tallies['total'] = total
-
-    scatter1 = openmc.Tally()
-    scatter1.addScore('scatter-1')
-    scatter1.addFilter(domain_filter)
-    scatter1.addFilter(energy_filter)
-    scatter1.setLabel(label)
-    scatter1.setEstimator('analog')
-    self._tallies['scatter-1'] = scatter1
+    # Intialize the Tallies
+    super(TransportXS, self).createTallies(scores, filters, keys, estimator)
 
 
   def computeXS(self):
 
-    # TODO: Error checking...
-
-    # Find the flux, total, and scatter-1 Tallies
-    flux_tally = self._tallies['flux']
-    total_tally = self._tallies['total']
-    scatter1_tally = self._tallies['scatter-1']
-
-    flux_mean = flux_tally._mean
-    total_mean = total_tally._mean
-    scatter1_mean = scatter1_tally._mean
-    flux_std_dev = flux_tally._std_dev
-    total_std_dev = total_tally._std_dev
-    scatter1_std_dev = scatter1_tally._std_dev
-
-    # Get the number of domains and create a new array shape
-    num_subdomains = flux_tally._mean.shape[0] / self._num_groups
-    new_shape = (num_subdomains, self._num_groups)
-
-#    flux_mean = np.reshape(flux_mean, new_shape)
-#    total_mean = np.reshape(total_mean, new_shape)
-#    scatter1_mean = np.reshape(scatter1_mean, new_shape)
-#    flux_std_dev = np.reshape(flux_std_dev, new_shape)
-#    total_std_dev = np.reshape(total_std_dev, new_shape)
-#    scatter1_std_dev = np.reshape(scatter1_std_dev, new_shape)
-
-    flux = np.array([flux_mean, flux_std_dev])
-    total = np.array([total_mean, total_std_dev])
-    scatter1 = np.array([scatter1_mean, scatter1_std_dev])
+    # Extract and clean the Tally data
+    tally_data, zero_indices = super(TransportXS, self).computeXS()
+    total = tally_data['total']
+    scatter1 = tally_data['scatter-1']
+    flux = tally_data['flux']
 
     # Set any zero fluxes to a negative value
-    flux_indices = flux[0, ...] == 0.
-    flux[:, flux_indices] = -1.
+    flux[:, zero_indices['flux']] = -1.
 
-    delta = uncorr_sub(total, scatter1)
+    delta = infermc.uncorr_math.sub(total, scatter1)
 
-    # Set any zero reaction rates to a negative value
+    # Set any subdomain's zero reaction rates to a negative value
     delta_indices = delta[0, ...] == 0.
     delta[:, delta_indices] = -1.
 
     # Compute the xs with uncertainty propagation
-    self._xs = uncorr_divide_by_array(delta, flux)
+    self._xs = infermc.uncorr_math.divide_by_array(delta, flux)
 
     # For any region without flux or reaction rate, convert xs to zero
-    self._xs[:, flux_indices] = 0.
-    self._xs[:, delta_indices] = 0.
+    all_zero_indices = np.logical_or(zero_indices['flux'], delta_indices)
+    self._xs[:, all_zero_indices] = 0.
 
     # Correct -0.0 to +0.0
     self._xs += 0.
-
-    # Reverse array so that it is ordered intuitively from high to low energy
-    self._xs = self._xs[..., ::-1]
-
 
 
 class AbsorptionXS(MultiGroupXS):
@@ -755,76 +689,44 @@ class AbsorptionXS(MultiGroupXS):
     super(AbsorptionXS, self).__init__(domain, domain_type, energy_groups)
     self._xs_type = 'absorption'
 
+
   def createTallies(self):
 
-    super(AbsorptionXS, self).createTallies()
+    # Create a list of scores for each Tally to be created
+    scores = ['flux', 'absorption']
+    estimator = 'tracklength'
+    keys = scores
 
-    # Create Filter objects
+    # Create the non-domain specific Filters for the Tallies
     group_edges = self._energy_groups._group_edges
     energy_filter = openmc.Filter('energy', group_edges)
-    domain_filter = openmc.Filter(self._domain_type, self._domain._id)
+    filters = [[energy_filter], [energy_filter]]
 
-    # Build a Tally label string
-    label = '{0} groups'.format(self._num_groups)
-
-    flux = openmc.Tally()
-    flux.addScore('flux')
-    flux.addFilter(domain_filter)
-    flux.addFilter(energy_filter)
-    flux.setLabel(label)
-    self._tallies['flux'] = flux
-
-    absorption = openmc.Tally()
-    absorption.addScore('absorption')
-    absorption.addFilter(domain_filter)
-    absorption.addFilter(energy_filter)
-    absorption.setLabel(label)
-    self._tallies['absorption'] = absorption
+    # Intialize the Tallies
+    super(AbsorptionXS, self).createTallies(scores, filters, keys, estimator)
 
 
   def computeXS(self):
 
-    # TODO: Error checking...
+    # Extract and clean the Tally data
+    tally_data, zero_indices = super(AbsorptionXS, self).computeXS()
+    absorption = tally_data['absorption']
+    flux = tally_data['flux']
 
-    # Find the flux, total Tallies
-    flux_tally = self._tallies['flux']
-    absorption_tally = self._tallies['absorption']
-
-    flux_mean = flux_tally._mean
-    absorption_mean = absorption_tally._mean
-    flux_std_dev = flux_tally._std_dev
-    absorption_std_dev = absorption_tally._std_dev
-
-    # Get the number of domains
-    num_subdomains = flux_tally._mean.shape[0] / self._num_groups
-    new_shape = (num_subdomains, self._num_groups)
-
-#    flux_mean = np.reshape(flux_mean, new_shape)
-#    absorption_mean = np.reshape(absorption_mean, new_shape)
-#    flux_std_dev = np.reshape(flux_std_dev, new_shape)
-#    absorption_std_dev = np.reshape(absorption_std_dev, new_shape)
-
-    flux = np.array([flux_mean, flux_std_dev])
-    absorption = np.array([absorption_mean, absorption_std_dev])
-
-    # Set any zero fluxes and reaction rates to a negative value
-    flux_indices = flux[0, ...] == 0.
-    absorption_indices = absorption[0, ...] == 0.
-    flux[:, flux_indices] = -1.
-    absorption[:, absorption_indices] = -1.
+    # Set any subdomain's zero fluxes and reaction rates to a negative value
+    flux[:, zero_indices['flux']] = -1.
+    absorption[:, zero_indices['absorption']] = -1.
 
     # Compute the xs with uncertainty propagation
-    self._xs = uncorr_divide_by_array(absorption, flux)
+    self._xs = infermc.uncorr_math.divide_by_array(absorption, flux)
 
-    # For any region without flux, convert xs to zero
-    self._xs[:, flux_indices] = 0.
-    self._xs[:, absorption_indices] = 0.
+    # For any region without flux or reaction rate, convert xs to zero
+    all_zero_indices = np.logical_or(zero_indices['flux'],
+                                     zero_indices['absorption'])
+    self._xs[:, all_zero_indices] = 0.
 
     # Correct -0.0 to +0.0
     self._xs += 0.
-
-    # Reverse array so that it is ordered intuitively from high to low energy
-    self._xs = self._xs[..., ::-1]
 
 
 
@@ -834,76 +736,44 @@ class FissionXS(MultiGroupXS):
     super(FissionXS, self).__init__(domain, domain_type, energy_groups)
     self._xs_type = 'fission'
 
+
   def createTallies(self):
 
-    super(FissionXS, self).createTallies()
+    # Create a list of scores for each Tally to be created
+    scores = ['flux', 'fission']
+    estimator = 'tracklength'
+    keys = scores
 
-    # Create Filter objects
+    # Create the non-domain specific Filters for the Tallies
     group_edges = self._energy_groups._group_edges
     energy_filter = openmc.Filter('energy', group_edges)
-    domain_filter = openmc.Filter(self._domain_type, self._domain._id)
+    filters = [[energy_filter], [energy_filter]]
 
-    # Build a Tally label string
-    label = '{0} groups'.format(self._num_groups)
-
-    flux = openmc.Tally()
-    flux.addScore('flux')
-    flux.addFilter(domain_filter)
-    flux.addFilter(energy_filter)
-    flux.setLabel(label)
-    self._tallies['flux'] = flux
-
-    fission = openmc.Tally()
-    fission.addScore('fission')
-    fission.addFilter(domain_filter)
-    fission.addFilter(energy_filter)
-    fission.setLabel(label)
-    self._tallies['fission'] = fission
+    # Intialize the Tallies
+    super(FissionXS, self).createTallies(scores, filters, keys, estimator)
 
 
   def computeXS(self):
 
-    # TODO: Error checking...
+    # Extract and clean the Tally data
+    tally_data, zero_indices = super(FissionXS, self).computeXS()
+    fission = tally_data['fission']
+    flux = tally_data['flux']
 
-    # Find the flux, fission Tallies
-    flux_tally = self._tallies['flux']
-    fission_tally = self._tallies['fission']
-
-    flux_mean = flux_tally._mean
-    fission_mean = fission_tally._mean
-    flux_std_dev = flux_tally._std_dev
-    fission_std_dev = fission_tally._std_dev
-
-    # Get the number of domains
-    num_subdomains = flux_tally._mean.shape[0] / self._num_groups
-    new_shape = (num_subdomains, self._num_groups)
-
- #   flux_mean = np.reshape(flux_mean, new_shape)
- #   fission_mean = np.reshape(fission_mean, new_shape)
- #   flux_std_dev = np.reshape(flux_std_dev, new_shape)
- #   fission_std_dev = np.reshape(fission_std_dev, new_shape)
-
-    flux = np.array([flux_mean, flux_std_dev])
-    fission = np.array([fission_mean, fission_std_dev])
-
-    # Set any zero fluxes and reaction rates to a negative value
-    flux_indices = flux[0, ...] == 0.
-    fission_indices = fission[0, ...] == 0.
-    flux[:, flux_indices] = -1.
-    fission[:, fission_indices] = -1.
+    # Set any subdomain's zero fluxes and reaction rates to a negative value
+    flux[:, zero_indices['flux']] = -1.
+    fission[:, zero_indices['fission']] = -1.
 
     # Compute the xs with uncertainty propagation
-    self._xs = uncorr_divide_by_array(fission, flux)
+    self._xs = infermc.uncorr_math.divide_by_array(fission, flux)
 
     # For any region without flux or reaction rate, convert xs to zero
-    self._xs[:, flux_indices] = 0.
-    self._xs[:, fission_indices] = 0.
+    all_zero_indices = np.logical_or(zero_indices['flux'],
+                                     zero_indices['fission'])
+    self._xs[:, all_zero_indices] = 0.
 
     # Correct -0.0 to +0.0
     self._xs += 0.
-
-    # Reverse array so that it is ordered intuitively from high to low energy
-    self._xs = self._xs[..., ::-1]
 
 
 
@@ -915,74 +785,41 @@ class NuFissionXS(MultiGroupXS):
 
   def createTallies(self):
 
-    super(NuFissionXS, self).createTallies()
+    # Create a list of scores for each Tally to be created
+    scores = ['flux', 'nu-fission']
+    estimator = 'tracklength'
+    keys = scores
 
-    # Create Filter objects
+    # Create the non-domain specific Filters for the Tallies
     group_edges = self._energy_groups._group_edges
     energy_filter = openmc.Filter('energy', group_edges)
-    domain_filter = openmc.Filter(self._domain_type, self._domain._id)
+    filters = [[energy_filter], [energy_filter]]
 
-    # Build a Tally label string
-    label = '{0} groups'.format(self._num_groups)
-
-    flux = openmc.Tally()
-    flux.addScore('flux')
-    flux.addFilter(domain_filter)
-    flux.addFilter(energy_filter)
-    flux.setLabel(label)
-    self._tallies['flux'] = flux
-
-    nu_fission = openmc.Tally()
-    nu_fission.addScore('nu-fission')
-    nu_fission.addFilter(domain_filter)
-    nu_fission.addFilter(energy_filter)
-    nu_fission.setLabel(label)
-    self._tallies['nu-fission'] = nu_fission
+    # Intialize the Tallies
+    super(NuFissionXS, self).createTallies(scores, filters, keys, estimator)
 
 
   def computeXS(self):
 
-    # TODO: Error checking...
+    # Extract and clean the Tally data
+    tally_data, zero_indices = super(NuFissionXS, self).computeXS()
+    nu_fission = tally_data['nu-fission']
+    flux = tally_data['flux']
 
-    # Find the flux, nu-fission Tallies
-    flux_tally = self._tallies['flux']
-    nu_fission_tally = self._tallies['nu-fission']
-
-    flux_mean = flux_tally._mean
-    nu_fission_mean = nu_fission_tally._mean
-    flux_std_dev = flux_tally._std_dev
-    nu_fission_std_dev = nu_fission_tally._std_dev
-
-    # Get the number of domains
-    num_subdomains = flux_tally._mean.shape[0] / self._num_groups
-    new_shape = (num_subdomains, self._num_groups)
-
-#    flux_mean = np.reshape(flux_mean, new_shape)
-#    nu_fission_mean = np.reshape(nu_fission_mean, new_shape)
-#    flux_std_dev = np.reshape(flux_std_dev, new_shape)
-#    nu_fission_std_dev = np.reshape(nu_fission_std_dev, new_shape)
-
-    flux = np.array([flux_mean, flux_std_dev])
-    nu_fission = np.array([nu_fission_mean, nu_fission_std_dev])
-
-    # Set any zero fluxes and reaction rates to a negative value
-    flux_indices = flux[0, ...] == 0.
-    nu_fission_indices = nu_fission[0, ...] == 0.
-    flux[:, flux_indices] = -1.
-    nu_fission[:, nu_fission_indices] = -1.
+    # Set any subdomain's zero fluxes and reaction rates to a negative value
+    flux[:, zero_indices['flux']] = -1.
+    nu_fission[:, zero_indices['nu-fission']] = -1.
 
     # Compute the xs with uncertainty propagation
-    self._xs = uncorr_divide_by_array(nu_fission, flux)
+    self._xs = infermc.uncorr_math.divide_by_array(nu_fission, flux)
 
     # For any region without flux or reaction rate, convert xs to zero
-    self._xs[:, flux_indices] = 0.
-    self._xs[:, nu_fission_indices] = 0.
+    all_zero_indices = np.logical_or(zero_indices['flux'],
+                                     zero_indices['nu-fission'])
+    self._xs[:, all_zero_indices] = 0.
 
     # Correct -0.0 to +0.0
     self._xs += 0.
-
-    # Reverse array so that it is ordered intuitively from high to low energy
-    self._xs = self._xs[..., ::-1]
 
 
 
@@ -994,74 +831,41 @@ class ScatterXS(MultiGroupXS):
 
   def createTallies(self):
 
-    super(ScatterXS, self).createTallies()
+    # Create a list of scores for each Tally to be created
+    scores = ['flux', 'scatter']
+    estimator = 'tracklength'
+    keys = scores
 
-    # Create Filter objects
+    # Create the non-domain specific Filters for the Tallies
     group_edges = self._energy_groups._group_edges
     energy_filter = openmc.Filter('energy', group_edges)
-    domain_filter = openmc.Filter(self._domain_type, self._domain._id)
+    filters = [[energy_filter], [energy_filter]]
 
-    # Build a Tally label string
-    label = '{0} groups'.format(self._num_groups)
-
-    flux = openmc.Tally()
-    flux.addScore('flux')
-    flux.addFilter(domain_filter)
-    flux.addFilter(energy_filter)
-    flux.setLabel(label)
-    self._tallies['flux'] = flux
-
-    scatter = openmc.Tally()
-    scatter.addScore('scatter')
-    scatter.addFilter(domain_filter)
-    scatter.addFilter(energy_filter)
-    scatter.setLabel(label)
-    self._tallies['scatter'] = scatter
+    # Intialize the Tallies
+    super(ScatterXS, self).createTallies(scores, filters, keys, estimator)
 
 
   def computeXS(self):
 
-    # TODO: Error checking...
+    # Extract and clean the Tally data
+    tally_data, zero_indices = super(ScatterXS, self).computeXS()
+    scatter = tally_data['scatter']
+    flux = tally_data['flux']
 
-    # Find the flux, scatter Tallies
-    flux_tally = self._tallies['flux']
-    scatter_tally = self._tallies['scatter']
-
-    flux_mean = flux_tally._mean
-    scatter_mean = scatter_tally._mean
-    flux_std_dev = flux_tally._std_dev
-    scatter_std_dev = scatter_tally._std_dev
-
-    # Get the number of domains
-    num_subdomains = flux_tally._mean.shape[0] / self._num_groups
-    new_shape = (num_subdomains, self._num_groups)
-
-#    flux_mean = np.reshape(flux_mean, new_shape)
-#    scatter_mean = np.reshape(scatter_mean, new_shape)
-#    flux_std_dev = np.reshape(flux_std_dev, new_shape)
-#    scatter_std_dev = np.reshape(scatter_std_dev, new_shape)
-
-    flux = np.array([flux_mean, flux_std_dev])
-    scatter = np.array([scatter_mean, scatter_std_dev])
-
-    # Set any zero fluxes and reaction rates to a negative value
-    flux_indices = flux[0, ...] == 0.
-    scatter_indices = scatter[0, ...] == 0.
-    flux[:, flux_indices] = -1.
-    scatter[:, scatter_indices] = -1.
+    # Set any subdomain's zero fluxes and reaction rates to a negative value
+    flux[:, zero_indices['flux']] = -1.
+    scatter[:, zero_indices['scatter']] = -1.
 
     # Compute the xs with uncertainty propagation
-    self._xs = uncorr_divide_by_array(scatter, flux)
+    self._xs = infermc.uncorr_math.divide_by_array(scatter, flux)
 
-    # For any region without flux or reaction rate convert xs to zero
-    self._xs[:, flux_indices] = 0.
-    self._xs[:, scatter_indices] = 0.
+    # For any region without flux or reaction rate, convert xs to zero
+    all_zero_indices = np.logical_or(zero_indices['flux'],
+                                     zero_indices['scatter'])
+    self._xs[:, all_zero_indices] = 0.
 
     # Correct -0.0 to +0.0
     self._xs += 0.
-
-    # Reverse array so that it is ordered intuitively from high to low energy
-    self._xs = self._xs[..., ::-1]
 
 
 
@@ -1073,76 +877,41 @@ class NuScatterXS(MultiGroupXS):
 
   def createTallies(self):
 
-    super(NuScatterXS, self).createTallies()
+    # Create a list of scores for each Tally to be created
+    scores = ['flux', 'nu-scatter']
+    estimator = 'analog'
+    keys = scores
 
-    # Create Filter objects
+    # Create the non-domain specific Filters for the Tallies
     group_edges = self._energy_groups._group_edges
     energy_filter = openmc.Filter('energy', group_edges)
-    domain_filter = openmc.Filter(self._domain_type, self._domain._id)
+    filters = [[energy_filter], [energy_filter]]
 
-    # Build a Tally label string
-    label = '{0} groups'.format(self._num_groups)
-
-    flux = openmc.Tally()
-    flux.addScore('flux')
-    flux.addFilter(domain_filter)
-    flux.addFilter(energy_filter)
-    flux.setLabel(label)
-    flux.setEstimator('analog')
-    self._tallies['flux'] = flux
-
-    nu_scatter = openmc.Tally()
-    nu_scatter.addScore('nu-scatter')
-    nu_scatter.addFilter(domain_filter)
-    nu_scatter.addFilter(energy_filter)
-    nu_scatter.setLabel(label)
-    nu_scatter.setEstimator('analog')
-    self._tallies['nu-scatter'] = nu_scatter
+    # Intialize the Tallies
+    super(NuScatterXS, self).createTallies(scores, filters, keys, estimator)
 
 
   def computeXS(self):
 
-    # TODO: Error checking...
+    # Extract and clean the Tally data
+    tally_data, zero_indices = super(NuScatterXS, self).computeXS()
+    nu_scatter = tally_data['nu-scatter']
+    flux = tally_data['flux']
 
-    # Find the flux, nu-scatter Tallies
-    flux_tally = self._tallies['flux']
-    nu_scatter_tally = self._tallies['nu-scatter']
-
-    flux_mean = flux_tally._mean
-    nu_scatter_mean = nu_scatter_tally._mean
-    flux_std_dev = flux_tally._std_dev
-    nu_scatter_std_dev = nu_scatter_tally._std_dev
-
-    # Get the number of domains
-    num_subdomains = flux_tally._mean.shape[0] / self._num_groups
-    new_shape = (num_subdomains, self._num_groups)
-
-#    flux_mean = np.reshape(flux_mean, new_shape)
-#    nu_scatter_mean = np.reshape(nu_scatter_mean, new_shape)
-#    flux_std_dev = np.reshape(flux_std_dev, new_shape)
-#    nu_scatter_std_dev = np.reshape(nu_scatter_std_dev, new_shape)
-
-    flux = np.array([flux_mean, flux_std_dev])
-    nu_scatter = np.array([nu_scatter_mean, nu_scatter_std_dev])
-
-    # Set any zero fluxes and reaction rates to a negative value
-    flux_indices = flux[0, ...] == 0.
-    nu_scatter_indices = nu_scatter[0, ...] == 0.
-    flux[:, flux_indices] = -1.
-    nu_scatter[:, nu_scatter_indices] = -1.
+    # Set any subdomain's zero fluxes and reaction rates to a negative value
+    flux[:, zero_indices['flux']] = -1.
+    nu_scatter[:, zero_indices['nu-scatter']] = -1.
 
     # Compute the xs with uncertainty propagation
-    self._xs = uncorr_divide_by_array(nu_scatter, flux)
+    self._xs = infermc.uncorr_math.divide_by_array(nu_scatter, flux)
 
     # For any region without flux or reaction rate, convert xs to zero
-    self._xs[:, flux_indices] = 0.
-    self._xs[:, nu_scatter_indices] = 0.
+    all_zero_indices = np.logical_or(zero_indices['flux'],
+                                     zero_indices['nu-scatter'])
+    self._xs[:, all_zero_indices] = 0.
 
     # Correct -0.0 to +0.0
     self._xs += 0.
-
-    # Reverse array so that it is ordered intuitively from high to low energy
-    self._xs = self._xs[..., ::-1]
 
 
 
@@ -1152,100 +921,54 @@ class ScatterMatrixXS(MultiGroupXS):
     super(ScatterMatrixXS, self).__init__(domain, domain_type, energy_groups)
     self._xs_type = 'scatter matrix'
 
+
   def createTallies(self):
 
-    super(ScatterMatrixXS, self).createTallies()
+    # Create a list of scores for each Tally to be created
+    scores = ['flux', 'nu-scatter']
+    estimator = 'analog'
+    keys = scores
 
-    # Create Filter objects
+    # Create the non-domain specific Filters for the Tallies
     group_edges = self._energy_groups._group_edges
     energy_filter = openmc.Filter('energy', group_edges)
     energyout_filter = openmc.Filter('energyout', group_edges)
-    domain_filter = openmc.Filter(self._domain_type, self._domain._id)
+    filters = [[energy_filter], [energy_filter, energyout_filter]]
 
-    # Build a Tally label string
-    label = '{0} groups'.format(self._num_groups)
-
-    flux = openmc.Tally()
-    flux.addScore('flux')
-    flux.addFilter(domain_filter)
-    flux.addFilter(energy_filter)
-    flux.setLabel(label)
-    flux.setEstimator('analog')
-    self._tallies['flux'] = flux
-
-    nu_scatter = openmc.Tally()
-    nu_scatter.addScore('nu-scatter')
-    nu_scatter.addFilter(domain_filter)
-    nu_scatter.addFilter(energy_filter)
-    nu_scatter.addFilter(energyout_filter)
-    nu_scatter.setLabel(label)
-    nu_scatter.setEstimator('analog')
-    self._tallies['nu-scatter'] = nu_scatter
+    # Intialize the Tallies
+    super(ScatterMatrixXS, self).createTallies(scores, filters, keys, estimator)
 
 
   def computeXS(self):
 
-    # TODO: Error checking...
+    # Extract and clean the Tally data
+    tally_data, zero_indices = super(ScatterMatrixXS, self).computeXS()
+    nu_scatter = tally_data['nu-scatter']
+    flux = tally_data['flux']
 
-    # Find the flux, nu-scatter Tallies
-    flux_tally = self._tallies['flux']
-    nu_scatter_tally = self._tallies['nu-scatter']
+    # Set any subdomain's zero fluxes and reaction rates to a negative value
+    flux[:, zero_indices['flux']] = -1.
+    nu_scatter[:, zero_indices['nu-scatter']] = -1.
 
-    flux_mean = flux_tally._mean
-    nu_scatter_mean = nu_scatter_tally._mean
-    flux_std_dev = flux_tally._std_dev
-    nu_scatter_std_dev = nu_scatter_tally._std_dev
-
-    # Get the number of domains
-    num_subdomains = flux_tally._mean.shape[0] / self._num_groups
-    new_shape = (num_subdomains, self._num_groups, self._num_groups)
-
-#    flux_mean = np.reshape(flux_mean, new_shape[0:2])
-#    nu_scatter_mean = np.reshape(nu_scatter_mean, new_shape)
-#    flux_std_dev = np.reshape(flux_std_dev, new_shape[0:2])
-#    nu_scatter_std_dev = np.reshape(nu_scatter_std_dev, new_shape)
-
-    flux = np.array([flux_mean, flux_std_dev])
-    nu_scatter = np.array([nu_scatter_mean, nu_scatter_std_dev])
-
-    # Set any zero fluxes or reaction rates to a negative value
-    flux_indices = flux[0, ...] == 0.
-    nu_scatter_indices = nu_scatter[0, ...] == 0.
-    flux[:, flux_indices] = -1.
-    nu_scatter[:, nu_scatter_indices] = -1.
-
-    # Tile the flux into a 3D array corresponding to the nu-scatter array
-#    flux = np.reshape(flux, (2, num_subdomains, self._num_groups, 1))
-    # FIXME: should axis=2 or axis=3?
-#    flux = np.repeat(flux, self._num_groups, axis=3)
+    # Tile the flux to correspond to the nu-scatter array
+    flux = np.repeat(flux[:,:,np.newaxis,:,:], self._num_groups, axis=2)
 
     # Compute the xs with uncertainty propagation
-#    self._xs = uncorr_divide_by_array(nu_scatter, flux)
+    self._xs = infermc.uncorr_math.divide_by_array(nu_scatter, flux)
 
     # For any region without flux or reaction rate, convert xs to zero
-#    self._xs[:, flux_indices] = 0.
-#    self._xs[:, nu_scatter_indices] = 0.
+    all_zero_indices = np.logical_or(zero_indices['flux'][...,np.newaxis],
+                                     zero_indices['nu-scatter'])
+    self._xs[:, all_zero_indices] = 0.
 
     # Correct -0.0 to +0.0
-#    self._xs += 0.
-
-    # Reverse array so that it is ordered intuitively from high to low energy
-#    self._xs = self._xs[..., ::-1, ::-1]
+    self._xs += 0.
 
 
+  @accepts(Self(), Or(Exact(None), int))
   def printXS(self, subdomain=None):
 
-    if not subdomain is None and not subdomain in self._subdomain_offsets.keys():
-      msg = 'Unable to print cross-section for domain {0} since it is ' \
-            'not one of the domain offsets'.format(subdomain)
-      raise ValueError(msg)
-
-    elif subdomain is None and self._domain_type == 'distribcell':
-      msg = 'Unable to print cross-section for a distribcell ' \
-            'since no subdomain was provided'
-      raise ValueError(msg)
-
-    elif self._xs is None:
+    if self._xs is None:
       msg = 'Unable to print cross-section {0} since it has not yet ' \
             'been computed'.format(self._xs_type)
       raise ValueError(msg)
@@ -1282,40 +1005,10 @@ class ScatterMatrixXS(MultiGroupXS):
 
     print(string)
 
-
+  @accepts(Self(), int, int, Or(Exact(None),int), str)
   def getXS(self, in_group, out_group, subdomain=None, metric='mean'):
 
-    if not is_integer(in_group) or not is_integer(out_group):
-      msg = 'Unable to get cross-section for non-integer in-scatter' \
-            'group {0} and out-scatter group {1}'.format(in_group, out_group)
-      raise ValueError(msg)
-
-    elif in_group < 1 or in_group > self._num_groups:
-      msg = 'Unable to get cross-section for non-integer in-scatter group ' \
-            '{0} which is oustide the energy group bound'.format(in_group)
-      raise ValueError(msg)
-
-    elif out_group < 1 or out_group > self._num_groups:
-      msg = 'Unable to get cross-section for non-integer out-scatter group ' \
-            '{0} which is oustide the energy group bound'.format(out_group)
-      raise ValueError(msg)
-
-    if not subdomain is None and not subdomain in self._subdomain_offsets.keys():
-      msg = 'Unable to get cross-section for domain {0} since it is ' \
-            'not one of the domain offsets'.format(subdomain)
-      raise ValueError(msg)
-
-    elif subdomain is None and self._domain_type == 'distribcell':
-      msg = 'Unable to get cross-section for a distribcell ' \
-            'since no subdomain was provided'
-      raise ValueError(msg)
-
-    elif not metric in ['mean', 'std_dev']:
-      msg = 'Unable to get cross-section for metric {0} which is not ' \
-            '\'mean\' or \'std_dev\''.format(metric)
-      raise ValueError(msg)
-
-    elif self._xs is None:
+    if self._xs is None:
       msg = 'Unable to get cross-section since it has not been computed'
       raise ValueError(msg)
 
@@ -1336,27 +1029,21 @@ class ScatterMatrixXS(MultiGroupXS):
       return self._xs[1, subdomain_index, in_group_index, out_group_index]
 
 
-
 class DiffusionCoeff(MultiGroupXS):
 
   def __init__(self, domain=None, domain_type=None, energy_groups=None):
     super(DiffusionCoeff, self).__init__(domain, domain_type, energy_groups)
     self._xs_type = 'diffusion'
 
+
   def createTallies(self):
-
-    super(DiffusionCoeff, self).createTallies()
-
     msg = 'DiffusionCoeff is not yet able to build tallies'
-    raise ValueError(msg)
+    raise NotImplementedError(msg)
+
 
   def computeXS(self):
-
-    # TODO: Error checking...
     msg = 'Unable to compute diffusion coeff'
-    raise ValueError(msg)
-
-
+    raise NotImplementedError(msg)
 
 
 class Chi(MultiGroupXS):
@@ -1365,95 +1052,52 @@ class Chi(MultiGroupXS):
     super(Chi, self).__init__(domain, domain_type, energy_groups)
     self._xs_type = 'chi'
 
+
   def createTallies(self):
 
-    super(Chi, self).createTallies()
+    # Create a list of scores for each Tally to be created
+    scores = ['nu-fission', 'nu-fission']
+    estimator = 'analog'
+    keys = ['nu-fission-in', 'nu-fission-out']
 
-    # Create Filter objects
+    # Create the non-domain specific Filters for the Tallies
     group_edges = self._energy_groups._group_edges
     energy_filter = openmc.Filter('energy', group_edges)
     energyout_filter = openmc.Filter('energyout', group_edges)
-    domain_filter = openmc.Filter(self._domain_type, self._domain._id)
+    filters = [[energy_filter], [energyout_filter]]
 
-    # Build a Tally label string
-    label = '{0} groups'.format(self._num_groups)
-
-    nu_fission_in = openmc.Tally()
-    nu_fission_in.addScore('nu-fission')
-    nu_fission_in.addFilter(domain_filter)
-    nu_fission_in.addFilter(energy_filter)
-    nu_fission_in.setEstimator('analog')
-    nu_fission_in.setLabel(label)
-    self._tallies['nu-fission-in'] = nu_fission_in
-
-    nu_fission_out = openmc.Tally()
-    nu_fission_out.addScore('nu-fission')
-    nu_fission_out.addFilter(domain_filter)
-    nu_fission_out.addFilter(energyout_filter)
-    nu_fission_out.setEstimator('analog')
-    nu_fission_out.setLabel(label)
-    self._tallies['nu-fission-out'] = nu_fission_out
+    # Intialize the Tallies
+    super(Chi, self).createTallies(scores, filters, keys, estimator)
 
 
   def computeXS(self):
 
-    # TODO: Error checking...
+    # Extract and clean the Tally data
+    tally_data, zero_indices = super(Chi, self).computeXS()
+    nu_fission_in = tally_data['nu-fission-in']
+    nu_fission_out = tally_data['nu-fission-out']
 
-    # Find the nu-fission Tallies
-    nu_fission_in_tally = self._tallies['nu-fission-in']
-    nu_fission_out_tally = self._tallies['nu-fission-out']
+    # Set any zero reaction rates to -1
+    nu_fission_in[0, zero_indices['nu-fission-in']] = -1.
 
-    nu_fission_in_mean = nu_fission_in_tally._mean
-    nu_fission_out_mean = nu_fission_out_tally._mean
-    nu_fission_in_std_dev = nu_fission_in_tally._std_dev
-    nu_fission_out_std_dev = nu_fission_out_tally._std_dev
+    # FIXME - uncertainty propagation
+    self._xs = infermc.uncorr_math.divide_by_scalar(nu_fission_out,
+                                   nu_fission_in.sum(2)[0, :, np.newaxis, ...])
 
-    # Get the number of domains
-    num_subdomains = nu_fission_in_tally._mean.shape[0] / self._num_groups
-    new_shape = (num_subdomains, self._num_groups)
+    # Compute the total across all groups per subdomain
+    # FIXME???? Indexing for (filters, nuclides, scores)
+    norm = self._xs.sum(2)[0, :, np.newaxis, ...]
 
-#    nu_fission_in_mean = np.reshape(nu_fission_in_mean, new_shape)
-#    nu_fission_out_mean = np.reshape(nu_fission_out_mean, new_shape)
-#    nu_fission_in_std_dev = np.reshape(nu_fission_in_std_dev, new_shape)
-#    nu_fission_out_std_dev = np.reshape(nu_fission_out_std_dev, new_shape)
+    # Set any zero norms (in non-fissionable domains) to -1
+    norm_indices = norm == 0.
+    norm[norm_indices] = -1.
 
-    nu_fission_in = np.array([nu_fission_in_mean, nu_fission_in_std_dev])
-    nu_fission_out = np.array([nu_fission_out_mean, nu_fission_out_std_dev])
+    # Normalize chi to 1.0
+    # FIXME - uncertainty propagation
+    self._xs = infermc.uncorr_math.divide_by_scalar(self._xs, norm)
 
-    # Compute the xs with uncertainty propagation
-    norm = nu_fission_in[:].sum()
+    # For any region without flux or reaction rate, convert xs to zero
+    self._xs[:, norm_indices] = 0.
 
-    # If the xs are from a non-fissionable domain
-    if norm == 0.:
-      self._xs = np.zeros(nu_fission_in.shape)
-
-    # If the xs are from a fissionable domain
-    else:
-
-      # Set any zero reaction rates to a negative value
-      nu_fission_in_indices = nu_fission_in[0, :, :] == 0.
-      nu_fission_in[0, nu_fission_in_indices] = -1.
-
-      # FIXME - uncertainty propagation
-      self._xs = uncorr_divide_by_scalar(nu_fission_out,
-                                         nu_fission_in.sum(2)[0, :, np.newaxis])
-
-      # Compute the total across all groups per subdomain
-      norm = self._xs.sum(2)[0, :, np.newaxis]
-
-      # Set any norms to a negative value
-      norm_indices = norm == 0.
-      norm[norm_indices] = -1.
-
-      # Normalize chi to 1.0
-      # FIXME - uncertainty propagation
-      self._xs = uncorr_divide_by_scalar(self._xs, norm)
-
-      # For any region without flux or reaction rate, convert xs to zero
-      self._xs[..., norm_indices] = 0.
-
-      # Correct -0.0 to +0.0
-      self._xs += 0.
-
-      # Reverse array so that it is ordered intuitively from high to low energy
-      self._xs = self._xs[..., ::-1]
+    # Correct -0.0 to +0.0
+    self._xs += 0.

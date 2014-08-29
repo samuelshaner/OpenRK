@@ -6,8 +6,8 @@ from infermc.multigroupxs import xs_types
 from infermc.plotter import scatter_multigroup_xs
 
 
-#batches = range(10, 35, 5)
-batches = [10]
+batches = range(10, 35, 5)
+#batches = [10]
 
 groups = group_structures['CASMO']['2-group']
 
@@ -23,10 +23,11 @@ for batch in batches:
   # Initialize an InferMC XSTallyExtractor object to compute cross-sections
   extractor = XSTallyExtractor(statepoint)
 
+  '''
   extractor.extractAllMicroXS(groups, 'material')
   extractor.extractAllMicroXS(groups, 'distribcell')
-
   '''
+
   extractor.extractAllMultiGroupXS(groups, 'material')
   extractor.extractAllMultiGroupXS(groups, 'distribcell')
 
@@ -34,11 +35,12 @@ for batch in batches:
 
     cells = extractor._opencsg_geometry.getAllMaterialCells()
 
-    if xs_type != 'scatter matrix':
+    if xs_type != 'scatter matrix' and xs_type != 'transport':
+      print xs_type
       scatter_multigroup_xs(extractor, xs_type,
                             domain_types=['distribcell', 'material'],
+                            energy_groups=(1,2),
                             colors=['neighbors', 'material'], extension='png',
-                            filename='{0}-{1}-batches'.format(xs_type,batch))
-  '''
+                            filename='{0}-{1}-batches'.format(xs_type, batch))
 
   openmc.reset_auto_ids()

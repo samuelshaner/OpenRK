@@ -96,8 +96,8 @@ def get_color_maps(geometry):
   return color_maps
 
 
-@accepts(XSTallyExtractor, xs_types_check, domain_types_check,
-         (int, int), [domain_types_check], str, str)
+@accepts(XSTallyExtractor, str, [str],
+         (int, int), [str], str, str)
 def scatter_multigroup_xs(extractor, xs_type, domain_types=['distribcell'],
                           energy_groups=(1,2), colors=['domain_type'],
                           filename='multigroup-xs', extension='png'):

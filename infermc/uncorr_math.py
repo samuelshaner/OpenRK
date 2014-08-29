@@ -13,7 +13,7 @@
 import numpy as np
 
 
-def uncorr_add(a, b):
+def add(a, b):
 
   # Extract the mean and standard deviation for a,b from NumPy arrays
   a_mean = a[0, ...]
@@ -29,7 +29,7 @@ def uncorr_add(a, b):
   return np.array([c_mean, c_std_dev])
 
 
-def uncorr_sub(a, b):
+def sub(a, b):
 
   # Extract the mean and standard deviation for a,b from NumPy arrays
   a_mean = a[0, ...]
@@ -45,7 +45,7 @@ def uncorr_sub(a, b):
   return np.array([c_mean, c_std_dev])
 
 
-def uncorr_multiply_by_array(a, b):
+def multiply_by_array(a, b):
 
   # Extract the mean and standard deviation for a,b from NumPy arrays
   a_mean = a[0, ...]
@@ -61,7 +61,7 @@ def uncorr_multiply_by_array(a, b):
   return np.array([c_mean, c_std_dev])
 
 
-def uncorr_multiply_by_scalar(a, b):
+def multiply_by_scalar(a, b):
 
   # Extract the mean and standard deviation for a from NumPy array
   a_mean = a[0, ...]
@@ -77,7 +77,7 @@ def uncorr_multiply_by_scalar(a, b):
   return np.array([c_mean, c_std_dev])
 
 
-def uncorr_divide_by_array(a, b):
+def divide_by_array(a, b):
 
   # Extract the mean and standard deviation for a,b from NumPy arrays
   a_mean = a[0, ...]
@@ -93,7 +93,7 @@ def uncorr_divide_by_array(a, b):
   return np.array([c_mean, c_std_dev])
 
 
-def uncorr_divide_by_scalar(a, b):
+def divide_by_scalar(a, b):
 
   # Extract the mean and standard deviation for a from NumPy array
   a_mean = a[0, ...]

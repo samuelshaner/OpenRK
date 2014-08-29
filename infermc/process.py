@@ -1,6 +1,6 @@
 import openmc
 import opencsg
-from infermc.multigroupxs import *
+import infermc
 
 # Type-checking support
 from typecheck import accepts, Or, Exact, Self
@@ -316,21 +316,21 @@ class XSTallyExtractor(object):
     return tally
 
 
-  @accepts(Self(), EnergyGroups, domain_types_check)
+  @accepts(Self(), infermc.infermc.EnergyGroups, infermc.domain_types_check)
   def extractAllMultiGroupXS(self, energy_groups, domain_type='distribcell'):
 
-    for xs_type in xs_types:
+    for xs_type in infermc.xs_types:
       self.extractMultiGroupXS(xs_type, energy_groups, domain_type)
 
 
-  @accepts(Self(), EnergyGroups, domain_types_check)
+  @accepts(Self(), infermc.EnergyGroups, infermc.domain_types_check)
   def extractAllMicroXS(self, energy_groups, domain_type='distribcell'):
 
-    for xs_type in xs_types:
+    for xs_type in infermc.xs_types:
       self.extractMicroXS(xs_type, energy_groups, domain_type)
 
 
-  @accepts(Self(), xs_types_check, EnergyGroups, domain_types_check)
+  @accepts(Self(), infermc.infermc.xs_types_check, infermc.EnergyGroups, infermc.domain_types_check)
   def extractMultiGroupXS(self, xs_type, energy_groups, domain_type='distribcell'):
 
     # Add nested dictionary for this domain type if needed
@@ -361,7 +361,7 @@ class XSTallyExtractor(object):
       self._multigroup_xs[domain_type][domain._id][xs_type] = xs
 
 
-  @accepts(Self(), xs_types_check, EnergyGroups, domain_types_check)
+  @accepts(Self(), infermc.infermc.xs_types_check, infermc.EnergyGroups, infermc.domain_types_check)
   def extractMicroXS(self, xs_type, energy_groups, domain_type='distribcell'):
 
     # Add nested dictionary for this domain type if needed
@@ -392,7 +392,7 @@ class XSTallyExtractor(object):
       self._multigroup_xs[domain_type][domain._id][xs_type] = xs
 
 
-  @accepts(Self(), xs_types_check, EnergyGroups, domains_check, domain_types_check)
+  @accepts(Self(), infermc.infermc.xs_types_check, infermc.EnergyGroups, infermc.domains_check, infermc.domain_types_check)
   def createMultiGroupXS(self, xs_type, energy_groups,
                          domain, domain_type='distribcell'):
 
@@ -416,7 +416,7 @@ class XSTallyExtractor(object):
       total = self.getTally('total', filters)
 
       # Initialize a MultiGroupXS object
-      multigroup_xs = TotalXS(domain, domain_type, energy_groups)
+      multigroup_xs = infermc.TotalXS(domain, domain_type, energy_groups)
       multigroup_xs._tallies['flux'] = flux
       multigroup_xs._tallies['total'] = total
 
@@ -428,7 +428,7 @@ class XSTallyExtractor(object):
       scatter1 = self.getTally('scatter-1', filters, estimator='analog')
 
       # Initialize a MultiGroupXS object
-      multigroup_xs = TransportXS(domain, domain_type, energy_groups)
+      multigroup_xs = infermc.TransportXS(domain, domain_type, energy_groups)
       multigroup_xs._tallies['flux'] = flux
       multigroup_xs._tallies['total'] = total
       multigroup_xs._tallies['scatter-1'] = scatter1
@@ -440,7 +440,7 @@ class XSTallyExtractor(object):
       absorption = self.getTally('absorption', filters)
 
       # Initialize a MultiGroupXS object
-      multigroup_xs = AbsorptionXS(domain, domain_type, energy_groups)
+      multigroup_xs = infermc.AbsorptionXS(domain, domain_type, energy_groups)
       multigroup_xs._tallies['flux'] = flux
       multigroup_xs._tallies['absorption'] = absorption
 
@@ -451,7 +451,7 @@ class XSTallyExtractor(object):
       fission = self.getTally('fission', filters)
 
       # Initialize a MultiGroupXS object
-      multigroup_xs = FissionXS(domain, domain_type, energy_groups)
+      multigroup_xs = infermc.FissionXS(domain, domain_type, energy_groups)
       multigroup_xs._tallies['flux'] = flux
       multigroup_xs._tallies['fission'] = fission
 
@@ -462,7 +462,7 @@ class XSTallyExtractor(object):
       nu_fission = self.getTally('nu-fission', filters)
 
       # Initialize a MultiGroupXS object
-      multigroup_xs = NuFissionXS(domain, domain_type, energy_groups)
+      multigroup_xs = infermc.NuFissionXS(domain, domain_type, energy_groups)
       multigroup_xs._tallies['flux'] = flux
       multigroup_xs._tallies['nu-fission'] = nu_fission
 
@@ -473,7 +473,7 @@ class XSTallyExtractor(object):
       scatter = self.getTally('scatter', filters)
 
       # Initialize a MultiGroupXS object
-      multigroup_xs = ScatterXS(domain, domain_type, energy_groups)
+      multigroup_xs = infermc.ScatterXS(domain, domain_type, energy_groups)
       multigroup_xs._tallies['flux'] = flux
       multigroup_xs._tallies['scatter'] = scatter
 
@@ -484,7 +484,7 @@ class XSTallyExtractor(object):
       nu_scatter = self.getTally('nu-scatter', filters, estimator='analog')
 
       # Initialize a MultiGroupXS object
-      multigroup_xs = NuScatterXS(domain, domain_type, energy_groups)
+      multigroup_xs = infermc.NuScatterXS(domain, domain_type, energy_groups)
       multigroup_xs._tallies['flux'] = flux
       multigroup_xs._tallies['nu-scatter'] = nu_scatter
 
@@ -497,7 +497,7 @@ class XSTallyExtractor(object):
       nu_scatter = self.getTally('nu-scatter', filters, estimator='analog')
 
       # Initialize a MultiGroupXS object
-      multigroup_xs = ScatterMatrixXS(domain, domain_type, energy_groups)
+      multigroup_xs = infermc.ScatterMatrixXS(domain, domain_type, energy_groups)
       multigroup_xs._tallies['flux'] = flux
       multigroup_xs._tallies['nu-scatter'] = nu_scatter
 
@@ -512,7 +512,7 @@ class XSTallyExtractor(object):
       nu_fission_out = self.getTally('nu-fission', filters, estimator='analog')
 
       # Initialize a MultiGroupXS object
-      multigroup_xs = Chi(domain, domain_type, energy_groups)
+      multigroup_xs = infermc.Chi(domain, domain_type, energy_groups)
       multigroup_xs._tallies['nu-fission-in'] = nu_fission_in
       multigroup_xs._tallies['nu-fission-out'] = nu_fission_out
 
@@ -543,7 +543,7 @@ class XSTallyExtractor(object):
     return multigroup_xs
 
 
-  @accepts(Self(), xs_types_check, EnergyGroups, domains_check, domain_types_check)
+  @accepts(Self(), infermc.infermc.xs_types_check, infermc.EnergyGroups, infermc.domains_check, infermc.domain_types_check)
   def createMicroXS(self, xs_type, energy_groups, domain, domain_type='distribcell'):
 
     if self._statepoint is None:
@@ -569,7 +569,7 @@ class XSTallyExtractor(object):
       total = self.getTally('total', filters, nuclides)
 
       # Initialize a MultiGroupXS object
-      multigroup_xs = TotalXS(domain, domain_type, energy_groups)
+      multigroup_xs = infermc.TotalXS(domain, domain_type, energy_groups)
       multigroup_xs._tallies['flux'] = flux
       multigroup_xs._tallies['total'] = total
 
@@ -581,7 +581,7 @@ class XSTallyExtractor(object):
       scatter1 = self.getTally('scatter-1', filters, nuclides, estimator='analog')
 
       # Initialize a MultiGroupXS object
-      multigroup_xs = TransportXS(domain, domain_type, energy_groups)
+      multigroup_xs = infermc.TransportXS(domain, domain_type, energy_groups)
       multigroup_xs._tallies['flux'] = flux
       multigroup_xs._tallies['total'] = total
       multigroup_xs._tallies['scatter-1'] = scatter1
@@ -593,7 +593,7 @@ class XSTallyExtractor(object):
       absorption = self.getTally('absorption', filters, nuclides)
 
       # Initialize a MultiGroupXS object
-      multigroup_xs = AbsorptionXS(domain, domain_type, energy_groups)
+      multigroup_xs = infermc.AbsorptionXS(domain, domain_type, energy_groups)
       multigroup_xs._tallies['flux'] = flux
       multigroup_xs._tallies['absorption'] = absorption
 
@@ -604,7 +604,7 @@ class XSTallyExtractor(object):
       fission = self.getTally('fission', filters, nuclides)
 
       # Initialize a MultiGroupXS object
-      multigroup_xs = FissionXS(domain, domain_type, energy_groups)
+      multigroup_xs = infermc.FissionXS(domain, domain_type, energy_groups)
       multigroup_xs._tallies['flux'] = flux
       multigroup_xs._tallies['fission'] = fission
 
@@ -615,7 +615,7 @@ class XSTallyExtractor(object):
       nu_fission = self.getTally('nu-fission', filters, nuclides)
 
       # Initialize a MultiGroupXS object
-      multigroup_xs = NuFissionXS(domain, domain_type, energy_groups)
+      multigroup_xs = infermc.NuFissionXS(domain, domain_type, energy_groups)
       multigroup_xs._tallies['flux'] = flux
       multigroup_xs._tallies['nu-fission'] = nu_fission
 
@@ -626,7 +626,7 @@ class XSTallyExtractor(object):
       scatter = self.getTally('scatter', filters, nuclides)
 
       # Initialize a MultiGroupXS object
-      multigroup_xs = ScatterXS(domain, domain_type, energy_groups)
+      multigroup_xs = infermc.ScatterXS(domain, domain_type, energy_groups)
       multigroup_xs._tallies['flux'] = flux
       multigroup_xs._tallies['scatter'] = scatter
 
@@ -637,7 +637,7 @@ class XSTallyExtractor(object):
       nu_scatter = self.getTally('nu-scatter', filters, nuclides, estimator='analog')
 
       # Initialize a MultiGroupXS object
-      multigroup_xs = NuScatterXS(domain, domain_type, energy_groups)
+      multigroup_xs = infermc.NuScatterXS(domain, domain_type, energy_groups)
       multigroup_xs._tallies['flux'] = flux
       multigroup_xs._tallies['nu-scatter'] = nu_scatter
 
@@ -650,7 +650,7 @@ class XSTallyExtractor(object):
       nu_scatter = self.getTally('nu-scatter', filters, nuclides, estimator='analog')
 
       # Initialize a MultiGroupXS object
-      multigroup_xs = ScatterMatrixXS(domain, domain_type, energy_groups)
+      multigroup_xs = infermc.ScatterMatrixXS(domain, domain_type, energy_groups)
       multigroup_xs._tallies['flux'] = flux
       multigroup_xs._tallies['nu-scatter'] = nu_scatter
 
@@ -665,7 +665,7 @@ class XSTallyExtractor(object):
       nu_fission_out = self.getTally('nu-fission', filters, nuclides, estimator='analog')
 
       # Initialize a MultiGroupXS object
-      multigroup_xs = Chi(domain, domain_type, energy_groups)
+      multigroup_xs = infermc.Chi(domain, domain_type, energy_groups)
       multigroup_xs._tallies['nu-fission-in'] = nu_fission_in
       multigroup_xs._tallies['nu-fission-out'] = nu_fission_out
 
@@ -696,7 +696,7 @@ class XSTallyExtractor(object):
     return multigroup_xs
 
 
-  @accepts(Self(), xs_types_check, domains_check, domain_types_check)
+  @accepts(Self(), infermc.xs_types_check, int, infermc.domain_types_check)
   def getMultiGroupXS(self, xs_type, domain, domain_type):
 
     # Check that MultiGroupXS for the input parameters has been created

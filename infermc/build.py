@@ -1,6 +1,6 @@
 from openmc import Nuclide, Geometry
 from openmc.tallies import TalliesFile
-from infermc.multigroupxs import *
+import infermc
 from infermc.microxs import *
 
 # Type-checking support
@@ -30,29 +30,29 @@ class XSTallyFactory(object):
     self._geometry = geometry
 
 
-  @accepts(Self(), str, EnergyGroups, domains_check, domain_types_check)
+  @accepts(Self(), str, infermc.EnergyGroups, infermc.domains_check, infermc.domain_types_check)
   def createXS(self, xs_type, energy_groups, domain, domain_type='distribcell'):
 
     if xs_type == 'total':
-      xs = TotalXS(domain, domain_type, energy_groups)
+      xs = infermc.TotalXS(domain, domain_type, energy_groups)
     elif xs_type == 'transport':
-      xs = TransportXS(domain, domain_type, energy_groups)
+      xs = infermc.TransportXS(domain, domain_type, energy_groups)
     elif xs_type == 'absorption':
-      xs = AbsorptionXS(domain, domain_type, energy_groups)
+      xs = infermc.AbsorptionXS(domain, domain_type, energy_groups)
     elif xs_type == 'fission':
-      xs = FissionXS(domain, domain_type, energy_groups)
+      xs = infermc.FissionXS(domain, domain_type, energy_groups)
     elif xs_type == 'nu-fission':
-      xs = NuFissionXS(domain, domain_type, energy_groups)
+      xs = infermc.NuFissionXS(domain, domain_type, energy_groups)
     elif xs_type == 'scatter':
-      xs = ScatterXS(domain, domain_type, energy_groups)
+      xs = infermc.ScatterXS(domain, domain_type, energy_groups)
     elif xs_type == 'nu-scatter':
-      xs = NuScatterXS(domain, domain_type, energy_groups)
+      xs = infermc.NuScatterXS(domain, domain_type, energy_groups)
     elif xs_type == 'scatter matrix':
-      xs = ScatterMatrixXS(domain, domain_type, energy_groups)
+      xs = infermc.ScatterMatrixXS(domain, domain_type, energy_groups)
     elif xs_type == 'diffusion':
-      xs = DiffusionCoeff(domain, domain_type, energy_groups)
+      xs = infermc.DiffusionCoeff(domain, domain_type, energy_groups)
     elif xs_type == 'chi':
-      xs = Chi(domain, domain_type, energy_groups)
+      xs = infermc.Chi(domain, domain_type, energy_groups)
     else:
       msg = 'The XSTallyBuilder is unable to create cross-section type ' \
             '{0} which is not one of the supported types'.format(xs_type)
@@ -63,8 +63,8 @@ class XSTallyFactory(object):
     self._all_xs.append(xs)
 
 
-  @accepts(Self(), str, EnergyGroups, domains_check,
-           domain_types_check, Or(Exact(None), [Nuclide]))
+  @accepts(Self(), str, infermc.EnergyGroups, infermc.domains_check,
+           infermc.domain_types_check, Or(Exact(None), [Nuclide]))
   def createMicroXS(self, xs_type, energy_groups, domain,
                     domain_type='distribcell', nuclides=None):
 
@@ -103,7 +103,7 @@ class XSTallyFactory(object):
     self._all_xs.append(xs)
 
 
-  @accepts(Self(), EnergyGroups, domain_types_check)
+  @accepts(Self(), infermc.EnergyGroups, infermc.domain_types_check)
   def createAllXS(self, energy_groups, domain_type='distribcell'):
 
     if domain_type == 'distribcell' or domain_type == 'cell':
@@ -114,11 +114,11 @@ class XSTallyFactory(object):
       domains = self._geometry.getAllMaterials()
 
     for domain in domains:
-      for xs_type in xs_types:
+      for xs_type in infermc.xs_types:
         self.createXS(xs_type, energy_groups, domain, domain_type)
 
 
-  @accepts(Self(), EnergyGroups, domain_types_check, Or(Exact(None), [Nuclide]))
+  @accepts(Self(), infermc.EnergyGroups, infermc.domain_types_check, Or(Exact(None), [Nuclide]))
   def createAllMicroXS(self, energy_groups, domain_type='distribcell',
                        nuclides=None):
 
@@ -130,7 +130,7 @@ class XSTallyFactory(object):
       domains = self._geometry.getAllMaterials()
 
     for domain in domains:
-      for xs_type in xs_types:
+      for xs_type in infermc.xs_types:
         self.createMicroXS(xs_type, energy_groups, domain, domain_type, nuclides)
 
 

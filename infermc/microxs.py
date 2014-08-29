@@ -1,11 +1,14 @@
-from infermc.multigroupxs import *
 import openmc
+import infermc
 import numpy as np
 
+# Type-checking support
+from typecheck import accepts, Or, Exact, Self
 
-class MicroXS(MultiGroupXS):
 
-  def __init__(self, domain=None, domain_type=None, \
+class MicroXS(infermc.MultiGroupXS):
+
+  def __init__(self, domain=None, domain_type=None,
                energy_groups=None, nuclides=None):
 
     super(MicroXS, self).__init__(domain, domain_type, energy_groups)
@@ -56,23 +59,13 @@ class MicroXS(MultiGroupXS):
 #  def printXS(self, subdomain=None):
 
 
+  @accepts(Self(), openmc.Nuclide)
   def addNuclide(self, nuclide):
-
-    if not isinstance(nuclide, openmc.Nuclide):
-      msg = 'Unable to add Nuclide {0} to MicroXS since ' \
-            'it is not an OpenMC Nuclide'.format(nuclide)
-      raise ValueError(msg)
-
     self._nuclides.append(nuclide)
 
 
+  @accepts(Self(), Or(list, tuple, np.ndarray))
   def addNuclides(self, nuclides):
-
-    if not isinstance(nuclides, (np.ndarray, list, tuple)):
-      msg = 'Unable to add Nuclides {0} to MicroXS since it is not a ' \
-            'NumPy array or Python tuple list of Nuclides'.format(nuclides)
-      raise ValueError(msg)
-
     for nuclide in nuclides:
       self.addNuclide(nuclide)
 
@@ -96,111 +89,91 @@ class MicroXS(MultiGroupXS):
         tally.addNuclide(nuclide)
 
 
-class MicroTotalXS(MicroXS, TotalXS):
+class MicroTotalXS(MicroXS, infermc.TotalXS):
 
   def createTallies(self):
 
-    # Create the flux and total reaction rate Tallies
+    # Create flux and total reaction rate Tallies for all Nuclides
     super(MicroTotalXS, self).createTallies()
-
-    # Add all nuclides to the Tallies
     self.addNuclidesToTallies()
 
 
-class MicroTransportXS(MicroXS, TransportXS):
+class MicroTransportXS(MicroXS, infermc.TransportXS):
 
   def createTallies(self):
 
-    # Create the flux and total and scatter-p1 reaction rate Tallies
+    # Create flux, total and scatter-p1 reaction rate Tallies for all Nuclides
     super(MicroTransportXS, self).createTallies()
-
-    # Add all nuclides to the Tallies
     self.addNuclidesToTallies()
 
 
-class MicroAbsorptionXS(MicroXS, AbsorptionXS):
+class MicroAbsorptionXS(MicroXS, infermc.AbsorptionXS):
 
   def createTallies(self):
 
-    # Create the flux and absorption reaction rate Tallies
+    # Create flux and absorption reaction rate Tallies for all Nuclides
     super(MicroAbsorptionXS, self).createTallies()
-
-    # Add all nuclides to the Tallies
     self.addNuclidesToTallies()
 
 
-class MicroFissionXS(MicroXS, FissionXS):
+class MicroFissionXS(MicroXS, infermc.FissionXS):
 
   def createTallies(self):
 
-    # Create the flux and fission reaction rate Tallies
+    # Create flux and fission reaction rate Tallies for all Nuclides
     super(MicroFissionXS, self).createTallies()
-
-    # Add all nuclides to the Tallies
     self.addNuclidesToTallies()
 
 
-class MicroNuFissionXS(MicroXS, NuFissionXS):
+class MicroNuFissionXS(MicroXS, infermc.NuFissionXS):
 
   def createTallies(self):
 
-    # Create the flux and nu-fission reaction rate Tallies
+    # Create flux and nu-fission reaction rate Tallies for all Nuclides
     super(MicroNuFissionXS, self).createTallies()
-
-    # Add all nuclides to the Tallies
     self.addNuclidesToTallies()
 
 
-class MicroScatterXS(MicroXS, ScatterXS):
+class MicroScatterXS(MicroXS, infermc.ScatterXS):
 
   def createTallies(self):
 
-    # Create the flux and scatter reaction rate Tallies
+    # Create flux and scatter reaction rate Tallies for all Nuclides
     super(MicroScatterXS, self).createTallies()
-
-    # Add all nuclides to the Tallies
     self.addNuclidesToTallies()
 
 
-class MicroNuScatterXS(MicroXS, NuScatterXS):
+class MicroNuScatterXS(MicroXS, infermc.NuScatterXS):
 
   def createTallies(self):
 
-    # Create the flux and nu-scatter reaction rate Tallies
+    # Create flux and nu-scatter reaction rate Tallies for all Nuclides
     super(MicroNuScatterXS, self).createTallies()
-
-    # Add all nuclides to the Tallies
     self.addNuclidesToTallies()
 
 
-class MicroScatterMatrixXS(MicroXS, ScatterMatrixXS):
+class MicroScatterMatrixXS(MicroXS, infermc.ScatterMatrixXS):
 
   def createTallies(self):
 
-    # Create the flux and scatter reaction rate Tallies
+    # Create flux and scatter reaction rate Tallies for all Nuclides
     super(MicroScatterMatrixXS, self).createTallies()
-
-    # Add all nuclides to the Tallies
     self.addNuclidesToTallies()
 
 
-class MicroDiffusionCoeff(MicroXS, DiffusionCoeff):
+class MicroDiffusionCoeff(MicroXS, infermc.DiffusionCoeff):
 
   def createTallies(self):
 
-    # Create the flux and  reaction rate Tallies
+    # Create flux and reaction rate Tallies for all Nuclides
     super(MicroDiffusionCoeff, self).createTallies()
-
-    # Add all nuclides to the Tallies
     self.addNuclidesToTallies()
 
 
-class MicroChi(MicroXS, Chi):
+class MicroChi(MicroXS, infermc.Chi):
 
   def createTallies(self):
 
-    # Create the flux and nu-fission reaction rate Tallies
+    # Create flux and nu-fission reaction rate Tallies for all Nuclides
     super(MicroChi, self).createTallies()
-
-    # Add all nuclides to the Tallies
     self.addNuclidesToTallies()
