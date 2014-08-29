@@ -1,8 +1,10 @@
-from typecheck import accepts, Or, Exact, Self
 import openmc
 import infermc
 import numpy as np
 import os, abc
+
+# Type-checking support
+from typecheck import accepts, Or, Exact, Self
 
 
 xs_types = ['total',
@@ -193,9 +195,7 @@ class MultiGroupXS(object):
         if 'energy' in filter._type:
           energy_axes.append(i)
 
-      num_nuclides = tally.getNumNuclides()
-      num_scores = tally.getNumScoreBins()
-      new_shape += (num_nuclides, num_scores)
+      new_shape += (tally.getNumNuclides(), )
 
       # Reshape the array
       mean = np.reshape(mean, new_shape)
@@ -232,13 +232,42 @@ class MultiGroupXS(object):
     else:
       subdomain_index = 0
 
-    # Batch mean
     if metric == 'mean':
-      return self._xs[0, subdomain_index, group_index]
-
-    # Batch standard deviation
+      return self._xs[0, subdomain_index, group_index, :]
+    elif metric == 'std_dev':
+      return self._xs[1, subdomain_index, group_index, :]
     else:
-      return self._xs[1, subdomain_index, group_index]
+      msg = 'Unable to get cross-section value for metric {0} ' \
+            'since it is not supported'.format(metric)
+      raise ValueError(msg)
+
+
+  @accepts(Self(), Or(Exact(None), int))
+  def printXS(self, subdomain=None):
+
+    if self._xs is None:
+      msg = 'Unable to print cross-section {0} since it has not yet ' \
+            'been computed'.format(self._xs_type)
+      raise ValueError(msg)
+
+    string = 'Multi-Group XS\n'
+    string += '{0: <16}{1}{2}\n'.format('\tType', '=\t', self._xs_type)
+    string += '{0: <16}{1}{2}\n'.format('\tDomain Type', '=\t', self._domain_type)
+    string += '{0: <16}{1}{2}\n'.format('\tDomain ID', '=\t', self._domain._id)
+
+    string += '{0: <16}\n'.format('\tCross-Sections [cm^-1]:')
+
+    # Loop over energy groups ranges
+    for group in range(1,self._num_groups+1):
+      bounds = self._energy_groups.getGroupBounds(group)
+      string += '{0: <12}Group {1} [{2: <10} - ' \
+                '{3: <10}MeV]:\t'.format('', group, bounds[0], bounds[1])
+      average = self.getXS(group, subdomain, 'mean')
+      std_dev = self.getXS(group, subdomain, 'std_dev')
+      string += '{:.2e}+/-{:.2e}'.format(average, std_dev)
+      string += '\n'
+
+    print(string)
 
 
   @accepts(Self(), str, str)
@@ -270,7 +299,7 @@ class MultiGroupXS(object):
 
 
   @accepts(Self(), str, str)
-  def restoreFromFile(self, filename, directory='.'):
+  def restoreFromFile(self, filename, directory='multigroupxs'):
 
     import pickle
     import os.path
@@ -551,39 +580,6 @@ class MultiGroupXS(object):
 
     os.system('rm {0}.tex {0}.aux {0}.log'.format(filename))
 
-
-  @accepts(Self(), Or(Exact(None), int))
-  def printXS(self, subdomain=None):
-
-    if self._xs is None:
-      msg = 'Unable to print cross-section {0} since it has not yet ' \
-            'been computed'.format(self._xs_type)
-      raise ValueError(msg)
-
-    string = 'Multi-Group XS\n'
-    string += '{0: <16}{1}{2}\n'.format('\tType', '=\t', self._xs_type)
-    string += '{0: <16}{1}{2}\n'.format('\tDomain Type', '=\t', self._domain_type)
-    string += '{0: <16}{1}{2}\n'.format('\tDomain ID', '=\t', self._domain._id)
-
-    # Compute the subdomain index into the array
-    if self._domain_type == 'distribcell':
-      subdomain_index = self._subdomain_offsets[subdomain]
-    else:
-      subdomain_index = 0
-
-    string += '{0: <16}\n'.format('\tCross-Sections [cm^-1]:')
-
-    # Loop over energy groups ranges
-    for group in range(1,self._num_groups+1):
-      bounds = self._energy_groups.getGroupBounds(group)
-      string += '{0: <12}Group {1} [{2: <10} - ' \
-                '{3: <10}MeV]:\t'.format('', group, bounds[0], bounds[1])
-      average = self._xs[0, subdomain_index, group-1]
-      std_dev = self._xs[1, subdomain_index, group-1]
-      string += '{:.2e}+/-{:.2e}'.format(average, std_dev)
-      string += '\n'
-
-    print(string)
 
 
 class TotalXS(MultiGroupXS):
@@ -978,12 +974,6 @@ class ScatterMatrixXS(MultiGroupXS):
     string += '{0: <16}{1}{2}\n'.format('\tDomain Type', '=\t', self._domain_type)
     string += '{0: <16}{1}{2}\n'.format('\tDomain ID', '=\t', self._domain._id)
 
-    # Compute the subdomain index into the array
-    if self._domain_type == 'distribcell':
-      subdomain_index = self._subdomain_offsets[subdomain]
-    else:
-      subdomain_index = 0
-
     string += '{0: <16}\n'.format('\tEnergy Groups:')
 
     # Loop over energy groups ranges
@@ -998,8 +988,8 @@ class ScatterMatrixXS(MultiGroupXS):
     for in_group in range(1,self._num_groups+1):
       for out_group in range(1,self._num_groups+1):
         string += '{0: <12}Group {1} -> Group {2}:\t\t'.format('', in_group, out_group)
-        average = self._xs[0, subdomain_index, in_group-1, out_group-1]
-        std_dev = self._xs[1, subdomain_index, in_group-1, out_group-1]
+        average = self.getXS(group, subdomain, in_group, out_group, 'mean')
+        std_dev = self.getXS(group, subdomain, in_group, out_group, 'std_dev')
         string += '{:.2e}+/-{:.2e}'.format(average, std_dev)
         string += '\n'
 
@@ -1024,9 +1014,13 @@ class ScatterMatrixXS(MultiGroupXS):
       subdomain_index = 0
 
     if metric == 'mean':
-      return self._xs[0, subdomain_index, in_group_index, out_group_index]
+      return self._xs[0, subdomain_index, in_group_index, out_group_index, :]
+    elif metric == 'std_dev':
+      return self._xs[1, subdomain_index, in_group_index, out_group_index, :]
     else:
-      return self._xs[1, subdomain_index, in_group_index, out_group_index]
+      msg = 'Unable to get cross-section value for metric {0} ' \
+            'since it is not supported'.format(metric)
+      raise ValueError(msg)
 
 
 class DiffusionCoeff(MultiGroupXS):
@@ -1085,7 +1079,6 @@ class Chi(MultiGroupXS):
                                    nu_fission_in.sum(2)[0, :, np.newaxis, ...])
 
     # Compute the total across all groups per subdomain
-    # FIXME???? Indexing for (filters, nuclides, scores)
     norm = self._xs.sum(2)[0, :, np.newaxis, ...]
 
     # Set any zero norms (in non-fissionable domains) to -1

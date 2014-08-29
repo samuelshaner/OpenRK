@@ -20,31 +20,90 @@ class MicroXS(infermc.MultiGroupXS):
       self.addNuclides(nuclides)
 
 
-  #FIXME
-  def computeXS(self):
+  @accepts(Self(), int, openmc.Nuclide, Or(Exact(None), int), str)
+  def getXS(self, group, nuclide, subdomain=None, metric='mean'):
 
-    # Define a routine to convert 0 to 1
-    nonzero = lambda val: 1 if not val else val
+    # Get the cross-sections for all Nuclides
+    xs = super(MicroXS, self).getXS(group, subdomain, metric)
 
-    num_nuclides = self.getNumNuclides()
-    num_subdomains = self.getNumSubdomains()
-
-    # Reshape xs array to be indexed by (domain, nuclide, group)
-    new_shape = (nonzero(num_subdomains),
-                 nonzero(num_nuclides),
-                 nonzero(self._num_groups))
-
-    self._xs = np.reshape(self._xs, new_shape)
+    # Get index of the Nuclide in array and return the corresponding value
+    nuclide_index = self._nuclides.index(nuclide)
+    return xs[nuclide_index]
 
 
-  #FIXME
-#  def getXS(self, group, nuclide, subdomain=None, metric='mean'):
+  @accepts(Self(), Or(str, openmc.Nuclide), Or(Exact(None), int))
+  def printXS(self, nuclide='all', subdomain=None):
 
-  # FIXME
-#  def dumpToFile(self, filename='multigroupxs', directory='multigroupxs'):
+    if self._xs is None:
+      msg = 'Unable to print cross-section {0} since it has not yet ' \
+            'been computed'.format(self._xs_type)
+      raise ValueError(msg)
 
-  # FIXME
-#  def restoreFromFile(self, filename, directory='.'):
+    if isinstance(nuclide, openmc.Nuclide):
+      nuclides = [nuclide]
+    else:
+      nuclides = self._nuclides
+
+    string = 'Micro XS\n'
+    string += '{0: <16}{1}{2}\n'.format('\tType', '=\t', self._xs_type)
+    string += '{0: <16}{1}{2}\n'.format('\tDomain Type', '=\t', self._domain_type)
+    string += '{0: <16}{1}{2}\n'.format('\tDomain ID', '=\t', self._domain._id)
+
+    string += '{0: <16}\n'.format('\tCross-Sections [barns]:')
+
+    # Loop over energy groups ranges
+    for nuclide in nuclides:
+      string += '{0: <16}{1}{2}\n'.format('\tNuclide', '=\t', nuclide._name)
+
+      for group in range(1,self._num_groups+1):
+        bounds = self._energy_groups.getGroupBounds(group)
+        string += '{0: <12}Group {1} [{2: <10} - ' \
+                  '{3: <10}MeV]:\t'.format('', group, bounds[0], bounds[1])
+        average = self.getXS(group, nuclide, subdomain, 'mean')
+        std_dev = self.getXS(group, nuclide, subdomain, 'std_dev')
+        string += '{:.2e}+/-{:.2e}'.format(average, std_dev)
+        string += '\n'
+
+      string += '\n'
+
+    print(string)
+
+
+  @accepts(Self(), str, str)
+  def dumpToFile(self, filename='multigroupxs', directory='multigroupxs'):
+
+    # Export all data to the file except for the Nuclides
+    super(MicroXS, self).dumpToFile(filename, directory)
+
+    import pickle
+
+    filename = directory + '/' + filename + '.pkl'
+    filename = filename.replace(' ', '-')
+
+    # Load pickle file, append the Nuclides, and save it to the file
+    xs_results = pickle.load(open(filename, 'rb'))
+    xs_results['nuclides'] = self._nuclides
+    pickle.dump(xs_results, open(filename, 'wb'))
+
+
+  @accepts(Self(), str, str)
+  def restoreFromFile(self, filename, directory='multigroupxs'):
+
+    # Import all data from the file except for the Nuclides
+    super(MicroXS, self).restoreFromFile(filename, directory)
+
+    import pickle
+
+    filename = directory + '/' + filename + '.pkl'
+    filename = filename.replace(' ', '-')
+
+    # Load the pickle file into a dictionary
+    xs_results = pickle.load(open(filename, 'rb'))
+
+    # Extract the Nuclides and store them to the class attribute
+    nuclides = xs_results['nuclides']
+    self._nuclides = nuclides
+
 
   #FIXME:
 #  def exportSubdomainResults(self, subdomain=None, filename='multigroupxs',
@@ -54,9 +113,6 @@ class MicroXS(infermc.MultiGroupXS):
   # FIXME
 #  def printPDF(self, subdomain=None, filename='multigroupxs', directory='.',
 #               uncertainties=False):
-
-  # FIXME
-#  def printXS(self, subdomain=None):
 
 
   @accepts(Self(), openmc.Nuclide)
@@ -92,8 +148,6 @@ class MicroXS(infermc.MultiGroupXS):
 class MicroTotalXS(MicroXS, infermc.TotalXS):
 
   def createTallies(self):
-
-    # Create flux and total reaction rate Tallies for all Nuclides
     super(MicroTotalXS, self).createTallies()
     self.addNuclidesToTallies()
 
@@ -101,8 +155,6 @@ class MicroTotalXS(MicroXS, infermc.TotalXS):
 class MicroTransportXS(MicroXS, infermc.TransportXS):
 
   def createTallies(self):
-
-    # Create flux, total and scatter-p1 reaction rate Tallies for all Nuclides
     super(MicroTransportXS, self).createTallies()
     self.addNuclidesToTallies()
 
@@ -110,8 +162,6 @@ class MicroTransportXS(MicroXS, infermc.TransportXS):
 class MicroAbsorptionXS(MicroXS, infermc.AbsorptionXS):
 
   def createTallies(self):
-
-    # Create flux and absorption reaction rate Tallies for all Nuclides
     super(MicroAbsorptionXS, self).createTallies()
     self.addNuclidesToTallies()
 
@@ -119,8 +169,6 @@ class MicroAbsorptionXS(MicroXS, infermc.AbsorptionXS):
 class MicroFissionXS(MicroXS, infermc.FissionXS):
 
   def createTallies(self):
-
-    # Create flux and fission reaction rate Tallies for all Nuclides
     super(MicroFissionXS, self).createTallies()
     self.addNuclidesToTallies()
 
@@ -128,8 +176,6 @@ class MicroFissionXS(MicroXS, infermc.FissionXS):
 class MicroNuFissionXS(MicroXS, infermc.NuFissionXS):
 
   def createTallies(self):
-
-    # Create flux and nu-fission reaction rate Tallies for all Nuclides
     super(MicroNuFissionXS, self).createTallies()
     self.addNuclidesToTallies()
 
@@ -137,8 +183,6 @@ class MicroNuFissionXS(MicroXS, infermc.NuFissionXS):
 class MicroScatterXS(MicroXS, infermc.ScatterXS):
 
   def createTallies(self):
-
-    # Create flux and scatter reaction rate Tallies for all Nuclides
     super(MicroScatterXS, self).createTallies()
     self.addNuclidesToTallies()
 
@@ -146,8 +190,6 @@ class MicroScatterXS(MicroXS, infermc.ScatterXS):
 class MicroNuScatterXS(MicroXS, infermc.NuScatterXS):
 
   def createTallies(self):
-
-    # Create flux and nu-scatter reaction rate Tallies for all Nuclides
     super(MicroNuScatterXS, self).createTallies()
     self.addNuclidesToTallies()
 
@@ -155,17 +197,71 @@ class MicroNuScatterXS(MicroXS, infermc.NuScatterXS):
 class MicroScatterMatrixXS(MicroXS, infermc.ScatterMatrixXS):
 
   def createTallies(self):
-
-    # Create flux and scatter reaction rate Tallies for all Nuclides
     super(MicroScatterMatrixXS, self).createTallies()
     self.addNuclidesToTallies()
+
+
+  @accepts(Self(), int, int, openmc.Nuclide, Or(Exact(None), int), str)
+  def getXS(self, in_group, out_group, nuclide, subdomain=None, metric='mean'):
+
+    # Get the cross-sections for all Nuclides
+    xs = super(MicroXS, self).getXS(in_group, out_group, subdomain, metric)
+
+    # Get index of the Nuclide in array and return the corresponding value
+    nuclide_index = self._nuclides.index(nuclide)
+    return xs[nuclide_index]
+
+
+  @accepts(Self(), Or(str, openmc.Nuclide), Or(Exact(None), int))
+  def printXS(self, nuclide='all', subdomain=None):
+
+    if self._xs is None:
+      msg = 'Unable to print cross-section {0} since it has not yet ' \
+            'been computed'.format(self._xs_type)
+      raise ValueError(msg)
+
+    if isinstance(nuclide, openmc.Nuclide):
+      nuclides = [nuclide]
+    else:
+      nuclides = self._nuclides
+
+    string = 'Micro XS\n'
+    string += '{0: <16}{1}{2}\n'.format('\tType', '=\t', self._xs_type)
+    string += '{0: <16}{1}{2}\n'.format('\tDomain Type', '=\t', self._domain_type)
+    string += '{0: <16}{1}{2}\n'.format('\tDomain ID', '=\t', self._domain._id)
+
+    string += '{0: <16}\n'.format('\tEnergy Groups:')
+
+    # Loop over energy groups ranges
+    for group in range(1,self._num_groups+1):
+      bounds = self._energy_groups.getGroupBounds(group)
+      string += '{0: <12}Group {1} [{2: <10} - ' \
+                '{3: <10}MeV]\n'.format('', group, bounds[0], bounds[1])
+
+    string += '{0: <16}\n'.format('\tCross-Sections [barns]:')
+
+    # Loop over energy groups ranges
+    for nuclide in nuclides:
+      string += '{0: <16}{1}{2}\n'.format('\tNuclide', '=\t', nuclide._name)
+
+      # Loop over energy groups ranges
+      for in_group in range(1,self._num_groups+1):
+        for out_group in range(1,self._num_groups+1):
+          string += '{0: <12}Group {1} -> Group {2}:\t\t'.format('', in_group, out_group)
+          average = self.getXS(in_group, out_group, nuclide, subdomain, 'mean')
+          std_dev = self.getXS(in_group, out_group, nuclide, subdomain, 'std_dev')
+          string += '{:.2e}+/-{:.2e}'.format(average, std_dev)
+          string += '\n'
+
+
+      string += '\n'
+
+    print(string)
 
 
 class MicroDiffusionCoeff(MicroXS, infermc.DiffusionCoeff):
 
   def createTallies(self):
-
-    # Create flux and reaction rate Tallies for all Nuclides
     super(MicroDiffusionCoeff, self).createTallies()
     self.addNuclidesToTallies()
 
@@ -173,7 +269,5 @@ class MicroDiffusionCoeff(MicroXS, infermc.DiffusionCoeff):
 class MicroChi(MicroXS, infermc.Chi):
 
   def createTallies(self):
-
-    # Create flux and nu-fission reaction rate Tallies for all Nuclides
     super(MicroChi, self).createTallies()
     self.addNuclidesToTallies()

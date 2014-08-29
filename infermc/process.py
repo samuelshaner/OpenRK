@@ -569,7 +569,7 @@ class XSTallyExtractor(object):
       total = self.getTally('total', filters, nuclides)
 
       # Initialize a MultiGroupXS object
-      multigroup_xs = infermc.TotalXS(domain, domain_type, energy_groups)
+      multigroup_xs = infermc.MicroTotalXS(domain, domain_type, energy_groups)
       multigroup_xs._tallies['flux'] = flux
       multigroup_xs._tallies['total'] = total
 
@@ -581,7 +581,7 @@ class XSTallyExtractor(object):
       scatter1 = self.getTally('scatter-1', filters, nuclides, estimator='analog')
 
       # Initialize a MultiGroupXS object
-      multigroup_xs = infermc.TransportXS(domain, domain_type, energy_groups)
+      multigroup_xs = infermc.MicroTransportXS(domain, domain_type, energy_groups)
       multigroup_xs._tallies['flux'] = flux
       multigroup_xs._tallies['total'] = total
       multigroup_xs._tallies['scatter-1'] = scatter1
@@ -593,7 +593,7 @@ class XSTallyExtractor(object):
       absorption = self.getTally('absorption', filters, nuclides)
 
       # Initialize a MultiGroupXS object
-      multigroup_xs = infermc.AbsorptionXS(domain, domain_type, energy_groups)
+      multigroup_xs = infermc.MicroAbsorptionXS(domain, domain_type, energy_groups)
       multigroup_xs._tallies['flux'] = flux
       multigroup_xs._tallies['absorption'] = absorption
 
@@ -604,7 +604,7 @@ class XSTallyExtractor(object):
       fission = self.getTally('fission', filters, nuclides)
 
       # Initialize a MultiGroupXS object
-      multigroup_xs = infermc.FissionXS(domain, domain_type, energy_groups)
+      multigroup_xs = infermc.MicroFissionXS(domain, domain_type, energy_groups)
       multigroup_xs._tallies['flux'] = flux
       multigroup_xs._tallies['fission'] = fission
 
@@ -615,7 +615,7 @@ class XSTallyExtractor(object):
       nu_fission = self.getTally('nu-fission', filters, nuclides)
 
       # Initialize a MultiGroupXS object
-      multigroup_xs = infermc.NuFissionXS(domain, domain_type, energy_groups)
+      multigroup_xs = infermc.MicroNuFissionXS(domain, domain_type, energy_groups)
       multigroup_xs._tallies['flux'] = flux
       multigroup_xs._tallies['nu-fission'] = nu_fission
 
@@ -626,7 +626,7 @@ class XSTallyExtractor(object):
       scatter = self.getTally('scatter', filters, nuclides)
 
       # Initialize a MultiGroupXS object
-      multigroup_xs = infermc.ScatterXS(domain, domain_type, energy_groups)
+      multigroup_xs = infermc.MicroScatterXS(domain, domain_type, energy_groups)
       multigroup_xs._tallies['flux'] = flux
       multigroup_xs._tallies['scatter'] = scatter
 
@@ -637,7 +637,7 @@ class XSTallyExtractor(object):
       nu_scatter = self.getTally('nu-scatter', filters, nuclides, estimator='analog')
 
       # Initialize a MultiGroupXS object
-      multigroup_xs = infermc.NuScatterXS(domain, domain_type, energy_groups)
+      multigroup_xs = infermc.MicroNuScatterXS(domain, domain_type, energy_groups)
       multigroup_xs._tallies['flux'] = flux
       multigroup_xs._tallies['nu-scatter'] = nu_scatter
 
@@ -650,7 +650,7 @@ class XSTallyExtractor(object):
       nu_scatter = self.getTally('nu-scatter', filters, nuclides, estimator='analog')
 
       # Initialize a MultiGroupXS object
-      multigroup_xs = infermc.ScatterMatrixXS(domain, domain_type, energy_groups)
+      multigroup_xs = infermc.MicroScatterMatrixXS(domain, domain_type, energy_groups)
       multigroup_xs._tallies['flux'] = flux
       multigroup_xs._tallies['nu-scatter'] = nu_scatter
 
@@ -665,7 +665,7 @@ class XSTallyExtractor(object):
       nu_fission_out = self.getTally('nu-fission', filters, nuclides, estimator='analog')
 
       # Initialize a MultiGroupXS object
-      multigroup_xs = infermc.Chi(domain, domain_type, energy_groups)
+      multigroup_xs = infermc.MicroChi(domain, domain_type, energy_groups)
       multigroup_xs._tallies['nu-fission-in'] = nu_fission_in
       multigroup_xs._tallies['nu-fission-out'] = nu_fission_out
 
@@ -674,6 +674,7 @@ class XSTallyExtractor(object):
       raise ValueError(msg)
 
     # Compute the cross-section
+    multigroup_xs.addNuclides(nuclides)
     multigroup_xs.computeXS()
 
     # Build offsets such that a user can query the MultiGroupXS for any region
