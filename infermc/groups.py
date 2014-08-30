@@ -60,3 +60,30 @@ class EnergyGroups(object):
     lower = self._group_edges[self._num_groups-group]
     upper = self._group_edges[self._num_groups-group+1]
     return (lower, upper)
+
+
+  @accepts(Self(), Or(str, list, tuple, np.ndarray))
+  def getGroupIndices(self, groups='all'):
+
+    if self._group_edges is None:
+      msg = 'Unable to get energy group indices for groups {0} since ' \
+            'the group edges have not yet been set'.format(groups)
+      raise ValueError(msg)
+
+    if groups == 'all':
+      indices = np.arange(self._num_groups)
+
+    else:
+
+      indices = np.zeros(len(groups), dtype=np.int64)
+
+      for i, group in enumerate(groups):
+
+        if group > 0 and group <= self._num_groups:
+          indices[i] = group - 1
+        else:
+          msg = 'Unable to get energy group index for group {0} since ' \
+                'it is outside the group bounds'.format(group)
+          raise ValueError(msg)
+
+    return indices

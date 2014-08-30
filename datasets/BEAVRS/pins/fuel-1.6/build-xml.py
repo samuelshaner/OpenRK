@@ -72,6 +72,7 @@ tally_factory = XSTallyFactory(openmc_geometry)
 
 groups = group_structures['CASMO']['2-group']
 
+
 '''
 tally_factory.createAllXS(groups, domain_type='distribcell')
 tally_factory.createAllXS(groups, domain_type='material')

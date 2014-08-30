@@ -24,56 +24,63 @@ for batch in batches:
   # Initialize an InferMC XSTallyExtractor object to compute cross-sections
   extractor = XSTallyExtractor(statepoint)
 
+  ## MICROS
   extractor.extractAllMicroXS(groups, 'material')
   extractor.extractAllMicroXS(groups, 'distribcell')
 
-  domains = extractor._openmc_geometry.getAllMaterialCells()
-  domain_type = 'distribcell'
-
+  materials = extractor._openmc_geometry.getAllMaterials()
 
   # DUMP-TO-FILE and PRINT XS
-  for domain in domains:
+  for material in materials:
     for xs_type in xs_types:
-      xs = extractor._multigroup_xs[domain_type][domain._id][xs_type]
-      xs.dumpToFile(filename='material-{0}-{1}'.format(domain._id, xs_type))
-      xs.printXS(nuclide='all')
+      xs = extractor._multigroup_xs['material'][material._id][xs_type]
+      xs.dumpToFile(filename='material-{0}-{1}'.format(material._id, xs_type))
+      xs.printXS()
+      xs.exportResults()
+      xs.printPDF(filename='material-{0}-{1}'.format(material._id, xs_type))
 
 
   # RESTORE-FROM-FILE
-  for domain in domains:
+  for material in materials:
     for xs_type in xs_types:
 
       if xs_type == 'total':
-        xs = infermc.MicroTotalXS(domain, domain_type)
-        xs.restoreFromFile(filename='material-{0}-{1}'.format(domain._id, xs_type))
+        xs = infermc.MicroTotalXS(material, 'material')
+        xs.restoreFromFile(filename='material-{0}-{1}'.format(material._id, xs_type))
       elif xs_type == 'chi':
-        xs = infermc.MicroChi(domain, domain_type)
-        xs.restoreFromFile(filename='material-{0}-{1}'.format(domain._id, xs_type))
+        xs = infermc.MicroChi(material, 'material')
+        xs.restoreFromFile(filename='material-{0}-{1}'.format(material._id, xs_type))
       elif xs_type == 'transport':
-        xs = infermc.MicroTransportXS(domain, domain_type)
-        xs.restoreFromFile(filename='material-{0}-{1}'.format(domain._id, xs_type))
+        xs = infermc.MicroTransportXS(material, 'material')
+        xs.restoreFromFile(filename='material-{0}-{1}'.format(material._id, xs_type))
       elif xs_type == 'scatter-matrix':
-        xs = infermc.MicroScatterMatrixXS(domain, domain_type)
-        xs.restoreFromFile(filename='material-{0}-{1}'.format(domain._id, xs_type))
-
+        xs = infermc.MicroScatterMatrixXS(material, 'material')
+        xs.restoreFromFile(filename='material-{0}-{1}'.format(material._id, xs_type))
 
   '''
+  ## MACROS
   extractor.extractAllMultiGroupXS(groups, 'material')
   extractor.extractAllMultiGroupXS(groups, 'distribcell')
-  '''
 
-  '''
   for xs_type in xs_types:
 
-    cells = extractor._opencsg_geometry.getAllMaterialCells()
-
-    if xs_type != 'scatter matrix' and xs_type != 'transport':
-      print xs_type
+    if xs_type != 'scatter matrix':
       scatter_multigroup_xs(extractor, xs_type,
                             domain_types=['distribcell', 'material'],
-                            energy_groups=(1,2),
-                            colors=['neighbors', 'material'], extension='png',
-                            filename='{0}-{1}-batches'.format(xs_type, batch))
+                            colors=['neighbors', 'material'],
+                            filename='{0}-{1}-batches'.format(xs_type,batch))
+
+  materials = extractor._openmc_geometry.getAllMaterials()
+
+  # DUMP-TO-FILE and PRINT XS
+  for material in materials:
+    for xs_type in xs_types:
+      xs = extractor._multigroup_xs['material'][material._id][xs_type]
+      xs.dumpToFile(filename='material-{0}-{1}'.format(material._id, xs_type))
+      xs.printXS()
+      xs.exportResults()
+      xs.printPDF(filename='material-{0}-{1}'.format(material._id, xs_type))
   '''
 
   openmc.reset_auto_ids()
+  del extractor, statepoint

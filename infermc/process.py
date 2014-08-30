@@ -540,6 +540,9 @@ class XSTallyExtractor(object):
           offset = self._openmc_geometry.getOffset(path, domain_offset)
           multigroup_xs.setSubDomainOffset(region, offset)
 
+      else:
+        multigroup_xs.setSubDomainOffset(domain._id, 0)
+
     return multigroup_xs
 
 

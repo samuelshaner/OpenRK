@@ -9,8 +9,8 @@ import infermc
 
 groups = group_structures['CASMO']['2-group']
 
-batches = [10, 15, 20, 25, 30]
-#batches = [10]
+#batches = [10, 15, 20, 25, 30]
+batches = [10]
 
 for batch in batches:
 
@@ -24,18 +24,21 @@ for batch in batches:
   # Initialize an InferMC XSTallyExtractor object to compute cross-sections
   extractor = XSTallyExtractor(statepoint)
 
+
+  ## MICROS
   extractor.extractAllMicroXS(groups, 'material')
-#  extractor.extractAllMicroXS(groups, 'distribcell')
+  extractor.extractAllMicroXS(groups, 'distribcell')
 
   materials = extractor._openmc_geometry.getAllMaterials()
-
 
   # DUMP-TO-FILE and PRINT XS
   for material in materials:
     for xs_type in xs_types:
       xs = extractor._multigroup_xs['material'][material._id][xs_type]
       xs.dumpToFile(filename='material-{0}-{1}'.format(material._id, xs_type))
-      xs.printXS(nuclide='all')
+      xs.printXS()
+      xs.exportResults()
+      xs.printPDF(filename='material-{0}-{1}'.format(material._id, xs_type))
 
 
   # RESTORE-FROM-FILE
@@ -56,6 +59,7 @@ for batch in batches:
         xs.restoreFromFile(filename='material-{0}-{1}'.format(material._id, xs_type))
 
   '''
+  ## MACROS
   extractor.extractAllMultiGroupXS(groups, 'material')
   extractor.extractAllMultiGroupXS(groups, 'distribcell')
 
@@ -66,8 +70,19 @@ for batch in batches:
                             domain_types=['distribcell', 'material'],
                             colors=['neighbors', 'material'],
                             filename='{0}-{1}-batches'.format(xs_type,batch))
-  '''
 
+  materials = extractor._openmc_geometry.getAllMaterials()
+
+  # DUMP-TO-FILE and PRINT XS
+  for material in materials:
+    for xs_type in xs_types:
+      xs = extractor._multigroup_xs['material'][material._id][xs_type]
+      xs.dumpToFile(filename='material-{0}-{1}'.format(material._id, xs_type))
+      xs.printXS()
+      xs.exportResults()
+      xs.printPDF(filename='material-{0}-{1}'.format(material._id, xs_type))
+
+  '''
 
   openmc.reset_auto_ids()
   del extractor, statepoint

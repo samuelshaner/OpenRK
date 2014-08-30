@@ -1,6 +1,7 @@
 import openmc
 import infermc
 import numpy as np
+import os
 
 # Type-checking support
 from typecheck import accepts, Or, Exact, Self
@@ -15,55 +16,99 @@ class MicroXS(infermc.MultiGroupXS):
 
     # Initialize an empty list for OpenMC Nuclide objects
     self._nuclides = list()
+    self._num_nuclides = 0
 
     if not nuclides is None:
       self.addNuclides(nuclides)
 
 
-  @accepts(Self(), int, openmc.Nuclide, Or(Exact(None), int), str)
-  def getXS(self, group, nuclide, subdomain=None, metric='mean'):
-
-    # Get the cross-sections for all Nuclides
-    xs = super(MicroXS, self).getXS(group, subdomain, metric)
-
-    # Get index of the Nuclide in array and return the corresponding value
-    nuclide_index = self._nuclides.index(nuclide)
-    return xs[nuclide_index]
+  @accepts(Self(), openmc.Nuclide)
+  def addNuclide(self, nuclide):
+    self._nuclides.append(nuclide)
+    self._num_nuclides += 1
 
 
-  @accepts(Self(), Or(str, openmc.Nuclide), Or(Exact(None), int))
-  def printXS(self, nuclide='all', subdomain=None):
+  @accepts(Self(), Or(list, tuple, np.ndarray))
+  def addNuclides(self, nuclides):
+    for nuclide in nuclides:
+      self.addNuclide(nuclide)
 
-    if self._xs is None:
-      msg = 'Unable to print cross-section {0} since it has not yet ' \
-            'been computed'.format(self._xs_type)
-      raise ValueError(msg)
 
-    if isinstance(nuclide, openmc.Nuclide):
-      nuclides = [nuclide]
+  def addNuclidesToTallies(self):
+
+    for tally_id, tally in self._tallies.items():
+      if 'flux' in tally._scores:
+        continue
+      for nuclide in self._nuclides:
+        tally.addNuclide(nuclide)
+
+
+  @accepts(Self(), Or(str, tuple, list, np.ndarray))
+  def getNuclideIndices(self, nuclides='all'):
+
+    if nuclides == 'all':
+      indices = np.arange(self._num_nuclides)
+
     else:
-      nuclides = self._nuclides
+      indices = np.zeros(len(nuclides), dtype=np.int64)
+
+      for i, nuclide in enumerate(nuclides):
+        try:
+          indices[i] = self._nuclides.index(nuclide)
+        except ValueError:
+          msg = 'Unable to get index for Nuclide {0} since it is not one ' \
+                'of the Nuclides in the cross-section'.format(nuclide)
+          raise ValueError(msg)
+
+    return indices
+
+
+  @accepts(Self(), Or(str, tuple, list, np.ndarray),
+           Or(str, tuple, list, np.ndarray),
+           Or(str, tuple, list, np.ndarray), str)
+  def getXS(self, groups='all', nuclides='all', subdomains='all', metric='mean'):
+    xs = super(MicroXS, self).getXS(groups, subdomains, metric)
+    nuclides = self.getNuclideIndices(nuclides)
+    return xs[..., nuclides]
+
+
+  @accepts(Self(), Or(str, tuple, list, np.ndarray),
+           Or(str, tuple, list, np.ndarray))
+  def printXS(self, nuclides='all', subdomains='all'):
 
     string = 'Micro XS\n'
     string += '{0: <16}{1}{2}\n'.format('\tType', '=\t', self._xs_type)
     string += '{0: <16}{1}{2}\n'.format('\tDomain Type', '=\t', self._domain_type)
     string += '{0: <16}{1}{2}\n'.format('\tDomain ID', '=\t', self._domain._id)
 
-    string += '{0: <16}\n'.format('\tCross-Sections [barns]:')
+    if subdomains == 'all':
+      subdomains = self._subdomain_offsets.keys()
 
-    # Loop over energy groups ranges
-    for nuclide in nuclides:
-      string += '{0: <16}{1}{2}\n'.format('\tNuclide', '=\t', nuclide._name)
+    if nuclides == 'all':
+      nuclides = self._nuclides
 
-      for group in range(1,self._num_groups+1):
-        bounds = self._energy_groups.getGroupBounds(group)
-        string += '{0: <12}Group {1} [{2: <10} - ' \
-                  '{3: <10}MeV]:\t'.format('', group, bounds[0], bounds[1])
-        average = self.getXS(group, nuclide, subdomain, 'mean')
-        std_dev = self.getXS(group, nuclide, subdomain, 'std_dev')
-        string += '{:.2e}+/-{:.2e}'.format(average, std_dev)
+    # Loop over all subdomains
+    for subdomain in subdomains:
+
+      if self._domain_type == 'distribcell':
+        string += '{0: <16}{1}{2}\n'.format('\tSubdomain', '=\t', subdomain)
+
+      # Loop over all Nuclides
+      for nuclide in nuclides:
+        string += '{0: <16}{1}{2}\n'.format('\tNuclide', '=\t', nuclide._name)
+        string += '{0: <16}\n'.format('\tCross-Sections [barns]:')
+
+        # Loop over energy group ranges
+        for group in range(1,self._num_groups+1):
+          bounds = self._energy_groups.getGroupBounds(group)
+          string += '{0: <12}Group {1} [{2: <10} - ' \
+                    '{3: <10}MeV]:\t'.format('', group, bounds[0], bounds[1])
+          average = self.getXS([group], [nuclide], [subdomain], 'mean')
+          std_dev = self.getXS([group], [nuclide], [subdomain], 'std_dev')
+          string += '{:.2e}+/-{:.2e}'.format(average[0,0], std_dev[0,0])
+          string += '\n'
+
         string += '\n'
-
       string += '\n'
 
     print(string)
@@ -87,7 +132,7 @@ class MicroXS(infermc.MultiGroupXS):
 
 
   @accepts(Self(), str, str)
-  def restoreFromFile(self, filename, directory='multigroupxs'):
+  def restoreFromFile(self, filename='multigroupxs', directory='multigroupxs'):
 
     # Import all data from the file except for the Nuclides
     super(MicroXS, self).restoreFromFile(filename, directory)
@@ -102,47 +147,244 @@ class MicroXS(infermc.MultiGroupXS):
 
     # Extract the Nuclides and store them to the class attribute
     nuclides = xs_results['nuclides']
-    self._nuclides = nuclides
+    self.addNuclides(nuclides)
 
 
-  #FIXME:
-#  def exportSubdomainResults(self, subdomain=None, filename='multigroupxs',
-#                             directory='multigroupxs', format='hdf5',
-#                             append=True, uncertainties=False):
+  @accepts(Self(), Or(str, tuple, list, np.ndarray),
+           Or(str, tuple, list, np.ndarray), str, str, str, bool)
+  def exportResults(self, nuclides='all', subdomains='all',
+                    filename='multigroupxs', directory='multigroupxs',
+                    format='hdf5', append=True):
 
-  # FIXME
-#  def printPDF(self, subdomain=None, filename='multigroupxs', directory='.',
-#               uncertainties=False):
+    # Make directory if it does not exist
+    if not os.path.exists(directory):
+      os.makedirs(directory)
+
+    offsets = self.getSubdomainOffsets(subdomains)
+    subdomains = self.getSubdomains(offsets)
+    nuclides = self.getNuclideIndices(nuclides)
+
+    average = self._xs[infermc.metrics['mean'], offsets, ...]
+    average = average[..., nuclides]
+    std_dev = self._xs[infermc.metrics['std_dev'], offsets, ...]
+    std_dev = std_dev[..., nuclides]
+
+    # HDF5 binary file
+    if format == 'hdf5':
+
+      import h5py
+
+      filename = directory + '/' + filename + '.h5'
+      filename = filename.replace(' ', '-')
+
+      if append:
+        xs_results = h5py.File(filename, 'a')
+      else:
+        xs_results = h5py.File(filename, 'w')
+
+      # Create an HDF5 group within the file for the domain
+      domain_type_group = xs_results.require_group(self._domain_type)
+      group_name = '{0} {1}'.format(self._domain_type, self._domain._id)
+      domain_group = domain_type_group.require_group(group_name)
+
+      # Loop over all subdomains
+      for i, subdomain in enumerate(subdomains):
+
+        # Create an HDF5 group for the subdomain
+        if self._domain_type == 'distribcell':
+          group_name = '{0}'.format(subdomain)
+          subdomain_group = domain_group.require_group(group_name)
+        else:
+          subdomain_group = domain_group
+
+        # Loop over all Nuclides
+        for j, nuclide in enumerate(nuclides):
+
+          # Create an HDF5 group for the Nuclide and xs type
+          group_name = self._nuclides[nuclide]._name
+          nuclide_group = subdomain_group.require_group(group_name)
+          xs_group = nuclide_group.require_group(self._xs_type)
+
+          # Add MultiGroupXS results data to the HDF5 group
+          xs_group.require_dataset('average', dtype=np.float64,
+                                   shape=average[i, ..., j].shape,
+                                   data=average[i, ..., j])
+          xs_group.require_dataset('std. dev.', dtype=np.float64,
+                                   shape=std_dev[i, ..., j].shape,
+                                   data=std_dev[i, ..., j])
+
+      # Close the results HDF5 file
+      xs_results.close()
 
 
-  @accepts(Self(), openmc.Nuclide)
-  def addNuclide(self, nuclide):
-    self._nuclides.append(nuclide)
+    # Python pickle binary file
+    elif format == 'pkl':
+
+      import pickle
+
+      # Load the dictionary from the Pickle file
+      filename = directory + '/' + filename + '.pkl'
+      filename = filename.replace(' ', '-')
+
+      if os.path.exists(filename) and append:
+        xs_results = pickle.load(open(filename, 'rb'))
+      else:
+        xs_results = dict()
+
+      group_name = '{0} {1}'.format(self._domain_type, self._domain._id)
+
+      if not xs_results.has_key(group_name):
+        domain_group = dict()
+      else:
+        domain_group = xs_results[group_name]
+
+      # Loop over all subdomains
+      for i, subdomain in enumerate(subdomains):
+
+        # Create an HDF5 group for the subdomain
+        if self._domain_type == 'distribcell':
+          group_name = '{0}'.format(subdomain)
+
+          if not domain_group.has_key(group_name):
+            subdomain_group = domain_group[group_name] = dict()
+          else:
+            subdomain_group = domain_group[group_name]
+
+        else:
+          subdomain_group = domain_group
+
+        # Loop over all Nuclides
+        for nuclide in nuclides:
+
+          # Create an HDF5 group for the Nuclide and xs type
+          group_name = self._nuclides[nuclide]._name
+
+          if not subdomain_group.has_key(group_name):
+            nuclide_group = subdomain_group[group_name] = dict()
+          else:
+            nuclide_group = subdomain_group[group_name]
+
+          xs_group = nuclide_group[self._xs_type] = dict()
+
+          # Add MultiGroupXS results data to the dictionary
+          xs_group['average'] = average[i, ..., nuclide]
+          xs_group['std. dev.'] = std_dev[i, ..., nuclide]
+
+      # Pickle the MultiGroupXS results to a file
+      pickle.dump(xs_results, open(filename, 'wb'))
 
 
-  @accepts(Self(), Or(list, tuple, np.ndarray))
-  def addNuclides(self, nuclides):
-    for nuclide in nuclides:
-      self.addNuclide(nuclide)
+    # LaTeX script
+    elif format == 'latex':
+
+      import tabulate
+
+      # Load the LaTeX file
+      filename = directory + '/' + filename + '.tex'
+      filename = filename.replace(' ', '-')
+
+      if os.path.exists(filename) and append:
+
+        xs_results = open(filename, 'r')
+        lines = xs_results.readlines()
+        xs_results.close()
+        xs_results = open(filename, 'w')
+
+        for line in lines:
+          if line != '\\end{document}\n':
+            xs_results.write(line)
+
+      else:
+        xs_results = open(filename, 'w')
+        xs_results.write('\\documentclass[preview, 12pt, border=1mm]{standalone}\n')
+        xs_results.write('\\usepackage{caption}\n')
+        xs_results.write('\\begin{document}\n')
+
+      # Loop over all subdomains and Nuclides
+      for i, subdomain in enumerate(subdomains):
+        for nuclide in nuclides:
+
+          # Add MultiGroupXS results data to the table list
+          table = list()
+
+          if self._xs_type != 'scatter matrix':
+            headers = list()
+            headers.append('Group')
+            headers.append('Average XS')
+            headers.append('Std. Dev.')
+
+            for group in range(self._num_groups):
+              subtable = list()
+              subtable.append(group+1)
+              subtable.append(average[i, group, ..., nuclide])
+              subtable.append(std_dev[i, group, ..., nuclide])
+              table.append(subtable)
+
+          # Scattering matrix
+          else:
+            headers = list()
+            headers.append('Group In')
+            headers.append('Group Out')
+            headers.append('Average XS')
+            headers.append('Std. Dev.')
+
+            for in_group in range(self._num_groups):
+              for out_group in range(self._num_groups):
+                subtable = list()
+                subtable.append(in_group+1)
+                subtable.append(out_group+1)
+                subtable.append(average[i, in_group, out_group, ..., nuclide])
+                subtable.append(std_dev[i, in_group, out_group, ..., nuclide])
+                table.append(subtable)
+
+          if self._domain_type == 'distribcell':
+            caption = '\\caption{{{0} {1}, (subdomain {2}) {3} {4}}}'.format(
+              self._domain_type.capitalize(), self._domain._id, subdomain,
+              self._nuclides[nuclide]._name, infermc.greek[self._xs_type])
+          else:
+            caption = '\\caption{{{0} {1} {2} {3}}}'.format(
+              self._domain_type.capitalize(), subdomain,
+              self._nuclides[nuclide]._name, infermc.greek[self._xs_type])
+
+          # Write the MultiGroupXS results to a file
+          xs_results.write('\\begin{table}\n')
+          xs_results.write('\\begin{center}\n')
+          xs_results.write(tabulate.tabulate(table, headers, tablefmt='latex'))
+          xs_results.write(caption)
+          xs_results.write('\\end{center}\n')
+          xs_results.write('\\end{table}\n')
+          xs_results.write('\\\n')
+
+      xs_results.write('\\end{document}\n')
+      xs_results.close()
 
 
-  def addNuclidesToTallies(self):
+  @accepts(Self(), Or(str, tuple, list, np.ndarray),
+           Or(str, tuple, list, np.ndarray), str, str)
+  def printPDF(self, nuclides='all', subdomains='all',
+               filename='multigroupxs', directory='multigroupxs'):
 
-    if len(self._tallies) == 0:
-      msg = 'Unable to add Nuclides to MicroXS since its ' \
-            'Tallies have not yet been created'
-      raise ValueError(msg)
+    import subprocess
 
-    # Loop over all tallies
-    for tally_id, tally in self._tallies.items():
+    # Make directory if it does not exist
+    if not os.path.exists(directory):
+      os.makedirs(directory)
 
-      # If a flux Tally, do not add nuclides to it
-      if 'flux' in tally._scores:
-        continue
+    filename = filename.replace(' ', '-')
 
-      # Add all nuclides to this Tally
-      for nuclide in self._nuclides:
-        tally.addNuclide(nuclide)
+    # Generate LaTeX file
+    self.exportResults(nuclides, subdomains, filename, '.', 'latex', False)
+
+    # Compile LaTeX to PDF
+    FNULL = open(os.devnull, 'w')
+    subprocess.check_call('pdflatex {0}.tex'.format(filename),
+                          shell=True, stdout=FNULL)
+
+    # Move PDF to requested directory and cleanup temporary LaTeX files
+    if directory != '.':
+      os.system('mv {0}.pdf {1}'.format(filename, directory))
+
+    os.system('rm {0}.tex {0}.aux {0}.log'.format(filename))
 
 
 class MicroTotalXS(MicroXS, infermc.TotalXS):
@@ -201,35 +443,27 @@ class MicroScatterMatrixXS(MicroXS, infermc.ScatterMatrixXS):
     self.addNuclidesToTallies()
 
 
-  @accepts(Self(), int, int, openmc.Nuclide, Or(Exact(None), int), str)
-  def getXS(self, in_group, out_group, nuclide, subdomain=None, metric='mean'):
+  @accepts(Self(), Or(str, tuple, list, np.ndarray),
+           Or(str, tuple, list, np.ndarray),
+           Or(str, tuple, list, np.ndarray),
+           Or(str, tuple, list, np.ndarray), str)
+  def getXS(self, in_groups='all', out_groups='all', nuclides='all',
+            subdomains='all', metric='mean'):
 
-    # Get the cross-sections for all Nuclides
-    xs = super(MicroXS, self).getXS(in_group, out_group, subdomain, metric)
-
-    # Get index of the Nuclide in array and return the corresponding value
-    nuclide_index = self._nuclides.index(nuclide)
-    return xs[nuclide_index]
+    xs = super(MicroXS, self).getXS(in_groups, out_groups, subdomains, metric)
+    nuclides = self.getNuclideIndices(nuclides)
+    return xs[..., nuclides]
 
 
-  @accepts(Self(), Or(str, openmc.Nuclide), Or(Exact(None), int))
-  def printXS(self, nuclide='all', subdomain=None):
+  @accepts(Self(), Or(str, tuple, list, np.ndarray),
+           Or(str, tuple, list, np.ndarray))
+  def printXS(self, nuclides='all', subdomains='all'):
 
-    if self._xs is None:
-      msg = 'Unable to print cross-section {0} since it has not yet ' \
-            'been computed'.format(self._xs_type)
-      raise ValueError(msg)
-
-    if isinstance(nuclide, openmc.Nuclide):
-      nuclides = [nuclide]
-    else:
-      nuclides = self._nuclides
 
     string = 'Micro XS\n'
     string += '{0: <16}{1}{2}\n'.format('\tType', '=\t', self._xs_type)
     string += '{0: <16}{1}{2}\n'.format('\tDomain Type', '=\t', self._domain_type)
     string += '{0: <16}{1}{2}\n'.format('\tDomain ID', '=\t', self._domain._id)
-
     string += '{0: <16}\n'.format('\tEnergy Groups:')
 
     # Loop over energy groups ranges
@@ -238,22 +472,32 @@ class MicroScatterMatrixXS(MicroXS, infermc.ScatterMatrixXS):
       string += '{0: <12}Group {1} [{2: <10} - ' \
                 '{3: <10}MeV]\n'.format('', group, bounds[0], bounds[1])
 
-    string += '{0: <16}\n'.format('\tCross-Sections [barns]:')
+    if subdomains == 'all':
+      subdomains = self._subdomain_offsets.keys()
 
-    # Loop over energy groups ranges
-    for nuclide in nuclides:
-      string += '{0: <16}{1}{2}\n'.format('\tNuclide', '=\t', nuclide._name)
+    if nuclides == 'all':
+      nuclides = self._nuclides
+
+    for subdomain in subdomains:
+
+      if self._domain_type == 'distribcell':
+        string += '{0: <16}{1}{2}\n'.format('\tSubdomain', '=\t', subdomain)
 
       # Loop over energy groups ranges
-      for in_group in range(1,self._num_groups+1):
-        for out_group in range(1,self._num_groups+1):
-          string += '{0: <12}Group {1} -> Group {2}:\t\t'.format('', in_group, out_group)
-          average = self.getXS(in_group, out_group, nuclide, subdomain, 'mean')
-          std_dev = self.getXS(in_group, out_group, nuclide, subdomain, 'std_dev')
-          string += '{:.2e}+/-{:.2e}'.format(average, std_dev)
-          string += '\n'
+      for nuclide in nuclides:
+        string += '{0: <16}{1}{2}\n'.format('\tNuclide', '=\t', nuclide._name)
+        string += '{0: <16}\n'.format('\tCross-Sections [barns]:')
 
+        # Loop over energy groups ranges
+        for in_group in range(1,self._num_groups+1):
+          for out_group in range(1,self._num_groups+1):
+            string += '{0: <12}Group {1} -> Group {2}:\t\t'.format('', in_group, out_group)
+            average = self.getXS([in_group], [out_group], [nuclide], [subdomain], 'mean')
+            std_dev = self.getXS([in_group], [out_group], [nuclide], [subdomain], 'std_dev')
+            string += '{:.2e}+/-{:.2e}'.format(average[0,0], std_dev[0,0])
+            string += '\n'
 
+        string += '\n'
       string += '\n'
 
     print(string)

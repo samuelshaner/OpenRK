@@ -156,8 +156,8 @@ def scatter_multigroup_xs(extractor, xs_type, domain_types=['distribcell'],
         universe_id = path[-2]
 
         xs = extractor.getMultiGroupXS(xs_type, cell_id, 'distribcell')
-        data[domain_type][region, 0] = xs.getXS(energy_groups[0], region)
-        data[domain_type][region, 1] = xs.getXS(energy_groups[1], region)
+        data[domain_type][region, 0] = xs.getXS([energy_groups[0]], [region])
+        data[domain_type][region, 1] = xs.getXS([energy_groups[1]], [region])
 
         # Find color!!!
         if colors[i] == 'material':
@@ -200,8 +200,8 @@ def scatter_multigroup_xs(extractor, xs_type, domain_types=['distribcell'],
 
       for j, material_id in enumerate(materials):
         xs = extractor.getMultiGroupXS(xs_type, material_id, 'material')
-        data[domain_type][j, 0] = xs.getXS(energy_groups[0], material_id)
-        data[domain_type][j, 1] = xs.getXS(energy_groups[1], material_id)
+        data[domain_type][j, 0] = xs.getXS([energy_groups[0]], [material_id])
+        data[domain_type][j, 1] = xs.getXS([energy_groups[1]], [material_id])
 
         # Find color!!!
         if colors[i] == 'material':
@@ -219,8 +219,8 @@ def scatter_multigroup_xs(extractor, xs_type, domain_types=['distribcell'],
 
       for j, cell_id in enumerate(cells):
         xs = extractor.getMultiGroupXS(xs_type, cell_id, 'cell')
-        data[domain_type][j, 0] = xs.getXS(energy_groups[0], cell_id)
-        data[domain_type][j, 1] = xs.getXS(energy_groups[1], cell_id)
+        data[domain_type][j, 0] = xs.getXS([energy_groups[0]], [cell_id])
+        data[domain_type][j, 1] = xs.getXS([energy_groups[1]], [cell_id])
 
         # Find color!!!
         if colors[i] == 'material':
@@ -243,8 +243,8 @@ def scatter_multigroup_xs(extractor, xs_type, domain_types=['distribcell'],
 
       for j, universe_id in enumerate(universes):
         xs = extractor.getMultiGroupXS(xs_type, universe_id, 'universe')
-        data[domain_type][j, 0] = xs.getXS(energy_groups[0], universe_id)
-        data[domain_type][j, 1] = xs.getXS(energy_groups[1], universe_id)
+        data[domain_type][j, 0] = xs.getXS([energy_groups[0]], [universe_id])
+        data[domain_type][j, 1] = xs.getXS([energy_groups[1]], [universe_id])
 
         # Find color!!!
         if colors[i] == 'universe':

@@ -6,7 +6,7 @@ import os, abc
 # Type-checking support
 from typecheck import accepts, Or, Exact, Self
 
-
+# Supported cross-section types
 xs_types = ['total',
             'transport',
             'absorption',
@@ -18,18 +18,38 @@ xs_types = ['total',
             'chi']
 #            'diffusion']
 
+# Supported domain types
 domain_types = ['cell',
                 'distribcell',
                 'universe',
                 'material',
                 'mesh']
 
+# Supported domain objects
 domains = [openmc.Cell, openmc.Universe, openmc.Material, openmc.Mesh]
 
-# For use with typecheck module
+# Type collections for use with the typecheck module
 xs_types_check = Or(*[Exact(xs_type) for xs_type in xs_types])
 domain_types_check = Or(*[Exact(domain_type) for domain_type in domain_types])
 domains_check = Or(*[domain for domain in domains])
+
+# LaTeX Greek symbols for each cross-section type
+greek = dict()
+greek['total'] = '$\\Sigma_{t}$'
+greek['transport'] = '$\\Sigma_{tr}$'
+greek['absorption'] = '$\\Sigma_{a}$'
+greek['scatter'] = '$\\Sigma_{s}$'
+greek['nu-scatter'] = '$\\nu\\Sigma_{s}$'
+greek['scatter matrix'] = '$\\Sigma_{s}$'
+greek['fission'] = '$\\Sigma_{f}$'
+greek['nu-fission'] = '$\\nu\\Sigma_{f}$'
+greek['chi'] = '$\\chi$'
+greek['diffusion'] = '$D$'
+
+# Tally batch metrics
+metrics = dict()
+metrics['mean'] = 0
+metrics['std_dev'] = 1
 
 
 def flip_axis(arr, axis=0):
@@ -45,6 +65,7 @@ def flip_axis(arr, axis=0):
 
 class MultiGroupXS(object):
 
+  # This is an abstract class which cannot be instantiated
   __metaclass__ = abc.ABCMeta
 
   def __init__(self, domain=None, domain_type=None, energy_groups=None):
@@ -57,12 +78,11 @@ class MultiGroupXS(object):
     self._tallies = dict()
     self._xs = None
 
-    self._offset = None
-
     # A dictionary used to compute indices into the xs array
     # Keys   - Domain ID (ie, Material ID, Region ID for districell, etc)
     # Values - Offset/stride into xs array
     self._subdomain_offsets = dict()
+    self._offset = None
 
     if not domain_type is None:
       self.domain_type = domain_type
@@ -102,7 +122,7 @@ class MultiGroupXS(object):
 
     self._domain = domain
 
-    if self._domain_type in ['material', 'cell', 'universe']:
+    if self._domain_type in ['material', 'cell', 'universe', 'mesh']:
       self._subdomain_offsets[domain._id] = 0
 
 
@@ -185,7 +205,7 @@ class MultiGroupXS(object):
       mean = tally._mean
       std_dev = tally._std_dev
 
-      # Determine shape of the Tally data from its Filters, Nuclides and scores
+      # Determine shape of the Tally data from its Filters, Nuclides
       new_shape = tuple()
       energy_axes = list()
 
@@ -215,56 +235,93 @@ class MultiGroupXS(object):
     return tally_data, zero_indices
 
 
-  @accepts(Self(), int, Or(Exact(None), int), str)
-  def getXS(self, group, subdomain=None, metric='mean'):
+  @accepts(Self(), Or(str, tuple, list, np.ndarray))
+  def getSubdomainOffsets(self, subdomains='all'):
+
+    if subdomains == 'all':
+      offsets = self._subdomain_offsets.values()
+
+    else:
+      offsets = np.zeros(len(subdomains), dtype=np.int64)
+
+      for i, subdomain in enumerate(subdomains):
+        if self._subdomain_offsets.has_key(subdomain):
+          offsets[i] = self._subdomain_offsets[subdomain]
+        else:
+          msg = 'Unable to get subdomain index for subdomain {0} since it is ' \
+                'not one of the subdomains in the cross-section'.format(subdomain)
+          raise ValueError(msg)
+
+    return offsets
+
+
+  @accepts(Self(), Or(str, tuple, list, np.ndarray))
+  def getSubdomains(self, offsets='all'):
+
+    if offsets == 'all':
+      subdomains = self._subdomain_offsets.keys()
+
+    else:
+      subdomains = np.zeros(len(offsets), dtype=np.int64)
+
+      keys = self._subdomain_offsets.keys()
+      values = self._subdomain_offsets.values()
+
+      for i, offset in enumerate(offsets):
+        if offset in values:
+          subdomains[i] = keys[values.index(offset)]
+        else:
+          msg = 'Unable to get subdomain for offset {0} since it is ' \
+                'not one of the offsets in the cross-section'.format(offset)
+          raise ValueError(msg)
+
+    return subdomains
+
+
+  @accepts(Self(), Or(str, tuple, list, np.ndarray),
+           Or(str, tuple, list, np.ndarray), str)
+  def getXS(self, groups='all', subdomains='all', metric='mean'):
 
     if self._xs is None:
       msg = 'Unable to get cross-section since it has not been computed'
       raise ValueError(msg)
 
-    # Compute the energy group index into the array
-    # Subtract one from group number
-    group_index = group - 1
+    global metrics
+    groups = self._energy_groups.getGroupIndices(groups)
+    offsets = self.getSubdomainOffsets(subdomains)
 
-    # Compute the subdomain index into the array
-    if self._domain_type == 'distribcell':
-      subdomain_index = self._subdomain_offsets[subdomain]
-    else:
-      subdomain_index = 0
-
-    if metric == 'mean':
-      return self._xs[0, subdomain_index, group_index, :]
-    elif metric == 'std_dev':
-      return self._xs[1, subdomain_index, group_index, :]
-    else:
-      msg = 'Unable to get cross-section value for metric {0} ' \
-            'since it is not supported'.format(metric)
-      raise ValueError(msg)
+    return self._xs[metrics[metric], offsets, groups, ...]
 
 
-  @accepts(Self(), Or(Exact(None), int))
-  def printXS(self, subdomain=None):
-
-    if self._xs is None:
-      msg = 'Unable to print cross-section {0} since it has not yet ' \
-            'been computed'.format(self._xs_type)
-      raise ValueError(msg)
+  @accepts(Self(), Or(str, tuple, list, np.ndarray))
+  def printXS(self, subdomains='all'):
 
     string = 'Multi-Group XS\n'
     string += '{0: <16}{1}{2}\n'.format('\tType', '=\t', self._xs_type)
     string += '{0: <16}{1}{2}\n'.format('\tDomain Type', '=\t', self._domain_type)
     string += '{0: <16}{1}{2}\n'.format('\tDomain ID', '=\t', self._domain._id)
 
-    string += '{0: <16}\n'.format('\tCross-Sections [cm^-1]:')
+    if subdomains == 'all':
+      subdomains = self._subdomain_offsets.keys()
 
-    # Loop over energy groups ranges
-    for group in range(1,self._num_groups+1):
-      bounds = self._energy_groups.getGroupBounds(group)
-      string += '{0: <12}Group {1} [{2: <10} - ' \
-                '{3: <10}MeV]:\t'.format('', group, bounds[0], bounds[1])
-      average = self.getXS(group, subdomain, 'mean')
-      std_dev = self.getXS(group, subdomain, 'std_dev')
-      string += '{:.2e}+/-{:.2e}'.format(average, std_dev)
+    # Loop over all subdomains
+    for subdomain in subdomains:
+
+      if self._domain_type == 'distribcell':
+        string += '{0: <16}{1}{2}\n'.format('\tSubdomain', '=\t', subdomain)
+
+      string += '{0: <16}\n'.format('\tCross-Sections [cm^-1]:')
+
+      # Loop over energy groups ranges
+      for group in range(1,self._num_groups+1):
+        bounds = self._energy_groups.getGroupBounds(group)
+        string += '{0: <12}Group {1} [{2: <10} - ' \
+                  '{3: <10}MeV]:\t'.format('', group, bounds[0], bounds[1])
+        average = self.getXS([group], [subdomain], 'mean')
+        std_dev = self.getXS([group], [subdomain], 'std_dev')
+        string += '{:.2e}+/-{:.2e}'.format(average[0,0], std_dev[0,0])
+        string += '\n'
+
       string += '\n'
 
     print(string)
@@ -299,7 +356,7 @@ class MultiGroupXS(object):
 
 
   @accepts(Self(), str, str)
-  def restoreFromFile(self, filename, directory='multigroupxs'):
+  def restoreFromFile(self, filename='multigroupxs', directory='multigroupxs'):
 
     import pickle
     import os.path
@@ -337,21 +394,19 @@ class MultiGroupXS(object):
     self._subdomain_offsets = subdomain_offsets
 
 
-
-  #FIXME: Modularize!!!
-  @accepts(Self(), Or(Exact(None), int), str, str, str, bool, bool)
-  def exportSubdomainResults(self, subdomain=None, filename='multigroupxs',
-                             directory='multigroupxs', format='hdf5',
-                             append=True, uncertainties=False):
-
-    if self._xs is None:
-      msg = 'Unable to export cross-section {0} since it has not yet ' \
-            'been computed'.format(self._xs_type)
-      raise ValueError(msg)
+  @accepts(Self(), Or(str, tuple, list, np.ndarray), str, str, str, bool)
+  def exportResults(self, subdomains='all', filename='multigroupxs',
+                    directory='multigroupxs', format='hdf5', append=True):
 
     # Make directory if it does not exist
     if not os.path.exists(directory):
       os.makedirs(directory)
+
+    global metrics
+    offsets = self.getSubdomainOffsets(subdomains)
+    subdomains = self.getSubdomains(offsets)
+    average = self._xs[metrics['mean'], offsets, ...]
+    std_dev = self._xs[metrics['std_dev'], offsets, ...]
 
     # HDF5 binary file
     if format == 'hdf5':
@@ -366,30 +421,33 @@ class MultiGroupXS(object):
       else:
         xs_results = h5py.File(filename, 'w')
 
-      # Create an HDF5 group within the file for this particular MultiGroupXS
+      # Create an HDF5 group within the file for the domain
       domain_type_group = xs_results.require_group(self._domain_type)
-      domain_group = domain_type_group.require_group('Cell {0}'.format(self._domain._id))
-      xs_group = domain_group.require_group(self._xs_type)
+      group_name = '{0} {1}'.format(self._domain_type, self._domain._id)
+      domain_group = domain_type_group.require_group(group_name)
 
-      # Compute the subdomain index into the array
-      if self._domain_type == 'distribcell':
-        subdomain_index = self._subdomain_offsets[subdomain]
-      else:
-        subdomain_index = 0
+      # Loop over all subdomains
+      for i, subdomain in enumerate(subdomains):
 
-      # Add MultiGroupXS results data to the HDF5 group
-      average = self._xs[0, ...]
-      shape = average[subdomain_index,:].shape
-      xs_group.require_dataset('average', dtype=np.float64, shape=shape,
-                               data=average[subdomain_index,:])
+        # Create an HDF5 group for the subdomain and xs type
+        if self._domain_type == 'distribcell':
+          group_name = '{0}'.format(subdomain)
+          subdomain_group = domain_group.require_group(group_name)
+        else:
+          subdomain_group = domain_group
 
-      if uncertainties:
-        std_dev = self._xs[1, ...]
-        xs_group.require_dataset('std. dev.', dtype=np.float64, shape=shape,
-                                 data=std_dev[subdomain_index,:])
+        xs_group = subdomain_group.require_group(self._xs_type)
 
-      # Close the MultiGroup results HDF5 file
-      xs_results.close()
+        # Add MultiGroupXS results data to the HDF5 group
+        xs_group.require_dataset('average', dtype=np.float64,
+                                 shape=average[i, ...].shape,
+                                 data=average[i, ...])
+        xs_group.require_dataset('std. dev.', dtype=np.float64,
+                                 shape=std_dev[i, ...].shape,
+                                 data=std_dev[i, ...])
+
+        # Close the MultiGroup results HDF5 file
+        xs_results.close()
 
 
     # Python pickle binary file
@@ -406,32 +464,33 @@ class MultiGroupXS(object):
       else:
         xs_results = dict()
 
-      # Create a nested dictionary within the file for this particular MultiGroupXS
-      if not xs_results.has_key(self._domain_type):
-        domain_type_group = xs_results[self._domain_type] = dict()
+      group_name = '{0} {1}'.format(self._domain_type, self._domain._id)
+
+      if not xs_results.has_key(group_name):
+        domain_group = xs_results[group_name] = dict()
       else:
-        domain_type_group = xs_results[self._domain_type]
+        domain_group = xs_results[group_name]
 
-      if not domain_type_group.has_key('Cell {0}'.format(self._domain._id)):
-        domain_group = domain_type_group['Cell {0}'.format(self._domain._id)] = dict()
-      else:
-        domain_group = domain_type_group['Cell {0}'.format(self._domain._id)]
+      # Loop over all subdomains
+      for i, subdomain in enumerate(subdomains):
 
-      xs_group = domain_group[self._xs_type] = dict()
+        # Create an HDF5 group for the subdomain and xs type
+        if self._domain_type == 'distribcell':
+          group_name = '{0}'.format(subdomain)
 
-      # Compute the subdomain index into the array
-      if self._domain_type == 'distribcell':
-        subdomain_index = self._subdomain_offsets[subdomain]
-      else:
-        subdomain_index = 0
+          if not domain_group.has_key(group_name):
+            subdomain_group = domain_group[group_name] = dict()
+          else:
+            subdomain_group = domain_group[group_name]
 
-      # Add MultiGroupXS results data to the dictionary
-      average = self._xs[0, ...]
-      xs_group['average'] = average[subdomain_index,:]
+        else:
+          subdomain_group = domain_group
 
-      if uncertainties:
-        std_dev = self._xs[1, ...]
-        xs_group['std. dev.'] = std_dev[subdomain_index,:]
+        xs_group = subdomain_group[self._xs_type] = dict()
+
+        # Add MultiGroupXS results data to the dictionary
+        xs_group['average'] = average[i, ...]
+        xs_group['std. dev.'] = std_dev[i, ...]
 
       # Pickle the MultiGroupXS results to a file
       pickle.dump(xs_results, open(filename, 'wb'))
@@ -441,6 +500,7 @@ class MultiGroupXS(object):
     elif format == 'latex':
 
       import tabulate
+      global greek
 
       # Load the LaTeX file
       filename = directory + '/' + filename + '.tex'
@@ -463,101 +523,70 @@ class MultiGroupXS(object):
         xs_results.write('\\usepackage{caption}\n')
         xs_results.write('\\begin{document}\n')
 
-      # Compute the subdomain index into the array
-      if self._domain_type == 'distribcell':
-        subdomain_index = self._subdomain_offsets[subdomain]
-      else:
-        subdomain_index = 0
+      # Loop over all subdomains
+      for i, subdomain in enumerate(subdomains):
 
-      # Add MultiGroupXS results data to the table list
-      table = list()
-      average = self._xs[0, ...]
+        print i, subdomain
 
-      if uncertainties:
-        std_dev = self._xs[1, ...]
+        # Add MultiGroupXS results data to the table list
+        table = list()
 
-      if self._xs_type != 'scatter matrix':
-
-        headers = list()
-        headers.append('Group')
-        headers.append('Average XS')
-
-        if uncertainties:
+        if self._xs_type != 'scatter matrix':
+          headers = list()
+          headers.append('Group')
+          headers.append('Average XS')
           headers.append('Std. Dev.')
 
-        for group in range(self._num_groups):
-          subtable = list()
-          subtable.append(group+1)
-          subtable.append(average[subdomain_index,group])
-
-          if uncertainties:
-            subtable.append(std_dev[subdomain_index,group])
-
-          table.append(subtable)
-
-      # Scattering matrix
-      else:
-
-        headers = list()
-        headers.append('Group In')
-        headers.append('Group Out')
-        headers.append('Average XS')
-
-        if uncertainties:
-          headers.append('Std. Dev.')
-
-        for in_group in range(self._num_groups):
-          for out_group in range(self._num_groups):
-
+          for group in range(self._num_groups):
             subtable = list()
-            subtable.append(in_group+1)
-            subtable.append(out_group+1)
-            subtable.append(average[subdomain_index, in_group, out_group])
-
-            if uncertainties:
-              subtable.append(std_dev[subdomain_index, in_group, out_group])
-
+            subtable.append(group+1)
+            subtable.append(average[i, group, ...])
+            subtable.append(std_dev[i, group, ...])
             table.append(subtable)
 
-      greek = dict()
-      greek['total'] = '$\\Sigma_{t}$'
-      greek['transport'] = '$\\Sigma_{tr}$'
-      greek['absorption'] = '$\\Sigma_{a}$'
-      greek['scatter'] = '$\\Sigma_{s}$'
-      greek['nu-scatter'] = '$\\nu\\Sigma_{s}$'
-      greek['scatter matrix'] = '$\\Sigma_{s}$'
-      greek['chi'] = '$\\chi$'
-      greek['fission'] = '$\\Sigma_{f}$'
-      greek['nu-fission'] = '$\\nu\\Sigma_{f}$'
+        # Scattering matrix
+        else:
+          headers = list()
+          headers.append('Group In')
+          headers.append('Group Out')
+          headers.append('Average XS')
+          headers.append('Std. Dev.')
 
-      if subdomain is None:
-        caption = '\\caption{{{0} {1} {2}}}'.format(
-          self._domain_type.capitalize(), self._domain._id, greek[self._xs_type])
-      else:
-        caption = '\\caption{{{0} {1} (Region {2}) {3}}}'.format(
-          self._domain_type.capitalize(), self._domain._id,
-          subdomain, greek[self._xs_type])
+          for in_group in range(self._num_groups):
+            for out_group in range(self._num_groups):
+              subtable = list()
+              subtable.append(in_group+1)
+              subtable.append(out_group+1)
+              subtable.append(average[i, in_group, out_group, ...])
+              subtable.append(std_dev[i, in_group, out_group, ...])
+              table.append(subtable)
 
-      # Write the MultiGroupXS results to a file
-      xs_results.write('\\begin{table}\n')
-      xs_results.write('\\begin{center}\n')
-      xs_results.write(tabulate.tabulate(table, headers, tablefmt='latex'))
-      xs_results.write(caption)
-      xs_results.write('\\end{center}\n')
-      xs_results.write('\\end{table}\n')
+        if self._domain_type == 'distribcell':
+          caption = '\\caption{{{0} {1}, (subdomain {2}) {3}}}'.format(
+            self._domain_type.capitalize(), self._domain._id,
+            subdomain, greek[self._xs_type])
+        else:
+          caption = '\\caption{{{0} {1} {2}}}'.format(
+            self._domain_type.capitalize(), subdomain, greek[self._xs_type])
+
+        # Write the MultiGroupXS results to a file
+        xs_results.write('\\begin{table}\n')
+        xs_results.write('\\begin{center}\n')
+        xs_results.write(tabulate.tabulate(table, headers, tablefmt='latex'))
+        xs_results.write(caption)
+        xs_results.write('\\end{center}\n')
+        xs_results.write('\\end{table}\n')
+        xs_results.write('\\\n')
+
       xs_results.write('\\end{document}\n')
-
       xs_results.close()
 
 
-  @accepts(Self(), Or(Exact(None), int), str, str, bool)
-  def printPDF(self, subdomain=None, filename='multigroupxs', directory='.',
-               uncertainties=False):
+  @accepts(Self(), Or(str, tuple, list, np.ndarray), str, str)
+  def printPDF(self, subdomains='all', filename='multigroupxs',
+               directory='multigroupxs'):
 
-    if self._xs is None:
-      msg = 'Unable to print PDF for cross-section {0} since it has not yet ' \
-            'been computed'.format(self._xs_type)
-      raise ValueError(msg)
+    import subprocess
 
     # Make directory if it does not exist
     if not os.path.exists(directory):
@@ -566,20 +595,18 @@ class MultiGroupXS(object):
     filename = filename.replace(' ', '-')
 
     # Generate LaTeX file
-    self.exportSubdomainResults(subdomain, filename, '.',
-                                'latex', False, uncertainties)
+    self.exportResults(subdomains, filename, '.', 'latex', False)
 
     # Compile LaTeX to PDF
-    import subprocess
-    proc = subprocess.Popen(['pdflatex', '{0}.tex'.format(filename)])
-    proc.communicate()
+    FNULL = open(os.devnull, 'w')
+    subprocess.check_call('pdflatex {0}.tex'.format(filename),
+                          shell=True, stdout=FNULL)
 
     # Move PDF to requested directory and cleanup temporary LaTeX files
     if directory != '.':
       os.system('mv {0}.pdf {1}'.format(filename, directory))
 
     os.system('rm {0}.tex {0}.aux {0}.log'.format(filename))
-
 
 
 class TotalXS(MultiGroupXS):
@@ -725,7 +752,6 @@ class AbsorptionXS(MultiGroupXS):
     self._xs += 0.
 
 
-
 class FissionXS(MultiGroupXS):
 
   def __init__(self, domain=None, domain_type=None, energy_groups=None):
@@ -770,7 +796,6 @@ class FissionXS(MultiGroupXS):
 
     # Correct -0.0 to +0.0
     self._xs += 0.
-
 
 
 class NuFissionXS(MultiGroupXS):
@@ -818,7 +843,6 @@ class NuFissionXS(MultiGroupXS):
     self._xs += 0.
 
 
-
 class ScatterXS(MultiGroupXS):
 
   def __init__(self, domain=None, domain_type=None, energy_groups=None):
@@ -864,7 +888,6 @@ class ScatterXS(MultiGroupXS):
     self._xs += 0.
 
 
-
 class NuScatterXS(MultiGroupXS):
 
   def __init__(self, domain=None, domain_type=None, energy_groups=None):
@@ -908,7 +931,6 @@ class NuScatterXS(MultiGroupXS):
 
     # Correct -0.0 to +0.0
     self._xs += 0.
-
 
 
 class ScatterMatrixXS(MultiGroupXS):
@@ -961,13 +983,26 @@ class ScatterMatrixXS(MultiGroupXS):
     self._xs += 0.
 
 
-  @accepts(Self(), Or(Exact(None), int))
-  def printXS(self, subdomain=None):
+  @accepts(Self(), Or(str, tuple, list, np.ndarray),
+           Or(str, tuple, list, np.ndarray),
+           Or(str, tuple, list, np.ndarray), str)
+  def getXS(self, in_groups='all', out_groups='all',
+            subdomains='all', metric='mean'):
 
     if self._xs is None:
-      msg = 'Unable to print cross-section {0} since it has not yet ' \
-            'been computed'.format(self._xs_type)
+      msg = 'Unable to get cross-section since it has not been computed'
       raise ValueError(msg)
+
+    global metrics
+    in_groups = self._energy_groups.getGroupIndices(in_groups)
+    out_groups = self._energy_groups.getGroupIndices(out_groups)
+    offsets = self.getSubdomainOffsets(subdomains)
+
+    return self._xs[metrics[metric], offsets, in_groups, out_groups, ...]
+
+
+  @accepts(Self(), Or(str, tuple, list, np.ndarray))
+  def printXS(self, subdomains='all'):
 
     string = 'Multi-Group XS\n'
     string += '{0: <16}{1}{2}\n'.format('\tType', '=\t', self._xs_type)
@@ -982,45 +1017,28 @@ class ScatterMatrixXS(MultiGroupXS):
       string += '{0: <12}Group {1} [{2: <10} - ' \
                 '{3: <10}MeV]\n'.format('', group, bounds[0], bounds[1])
 
-    string += '{0: <16}\n'.format('\tCross-Sections [cm^-1]:')
+    if subdomains == 'all':
+      subdomains = self._subdomain_offsets.keys()
 
-    # Loop over energy groups ranges
-    for in_group in range(1,self._num_groups+1):
-      for out_group in range(1,self._num_groups+1):
-        string += '{0: <12}Group {1} -> Group {2}:\t\t'.format('', in_group, out_group)
-        average = self.getXS(group, subdomain, in_group, out_group, 'mean')
-        std_dev = self.getXS(group, subdomain, in_group, out_group, 'std_dev')
-        string += '{:.2e}+/-{:.2e}'.format(average, std_dev)
-        string += '\n'
+    for subdomain in subdomains:
+
+      if self._domain_type == 'distribcell':
+        string += '{0: <16}{1}{2}\n'.format('\tSubdomain', '=\t', subdomain)
+
+      string += '{0: <16}\n'.format('\tCross-Sections [cm^-1]:')
+
+      # Loop over energy groups ranges
+      for in_group in range(1,self._num_groups+1):
+        for out_group in range(1,self._num_groups+1):
+          string += '{0: <12}Group {1} -> Group {2}:\t\t'.format('', in_group, out_group)
+          average = self.getXS([in_group], [out_group], [subdomain], 'mean')
+          std_dev = self.getXS([in_group], [out_group], [subdomain], 'std_dev')
+          string += '{:.2e}+/-{:.2e}'.format(average[0,0], std_dev[0,0])
+          string += '\n'
+
+      string += '\n'
 
     print(string)
-
-  @accepts(Self(), int, int, Or(Exact(None),int), str)
-  def getXS(self, in_group, out_group, subdomain=None, metric='mean'):
-
-    if self._xs is None:
-      msg = 'Unable to get cross-section since it has not been computed'
-      raise ValueError(msg)
-
-    # Compute the in/out-scatter energy group indices into the array
-    # Subtract one from group number
-    in_group_index = in_group - 1
-    out_group_index = out_group - 1
-
-    # Compute the subdomain index into the array
-    if self._domain_type == 'distribcell':
-      subdomain_index = self._subdomain_offsets[subdomain]
-    else:
-      subdomain_index = 0
-
-    if metric == 'mean':
-      return self._xs[0, subdomain_index, in_group_index, out_group_index, :]
-    elif metric == 'std_dev':
-      return self._xs[1, subdomain_index, in_group_index, out_group_index, :]
-    else:
-      msg = 'Unable to get cross-section value for metric {0} ' \
-            'since it is not supported'.format(metric)
-      raise ValueError(msg)
 
 
 class DiffusionCoeff(MultiGroupXS):
