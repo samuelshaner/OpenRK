@@ -725,3 +725,23 @@ class XSTallyExtractor(object):
       raise ValueError(msg)
 
     return self._multigroup_xs[domain_type][domain][xs_type]
+
+
+  def checkXS(self):
+
+    for domain_type in self._multigroup_xs:
+      for domain_id in self._multigroup_xs[domain_type]:
+        print('{0} {1}'.format(domain_type, domain_id))
+        total_xs = self._multigroup_xs[domain_type][domain_id]['total']
+        total_xs = total_xs.getXS()
+
+        absorption_xs = self._multigroup_xs[domain_type][domain_id]['absorption']
+        scatter_xs = self._multigroup_xs[domain_type][domain_id]['scatter']
+
+        all_xs = absorption_xs.getXS()
+        all_xs += scatter_xs.getXS()
+
+        if not np.allclose(total_xs.ravel(), all_xs.ravel()):
+          print('The nuclide micro xs {0} in {1} {2} is not equal to the '
+                'total macro macro xs'.format(self._xs_type, self._domain_type,
+                                              self._domain._id))

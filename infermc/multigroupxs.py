@@ -290,7 +290,9 @@ class MultiGroupXS(object):
     groups = self._energy_groups.getGroupIndices(groups)
     offsets = self.getSubdomainOffsets(subdomains)
 
-    return self._xs[metrics[metric], offsets, groups, ...]
+    xs = self._xs[metrics[metric], offsets, ...]
+    xs = xs[..., groups, :]
+    return xs
 
 
   @accepts(Self(), Or(str, tuple, list, np.ndarray))
@@ -525,8 +527,6 @@ class MultiGroupXS(object):
 
       # Loop over all subdomains
       for i, subdomain in enumerate(subdomains):
-
-        print i, subdomain
 
         # Add MultiGroupXS results data to the table list
         table = list()
@@ -998,7 +998,9 @@ class ScatterMatrixXS(MultiGroupXS):
     out_groups = self._energy_groups.getGroupIndices(out_groups)
     offsets = self.getSubdomainOffsets(subdomains)
 
-    return self._xs[metrics[metric], offsets, in_groups, out_groups, ...]
+    xs = self._xs[metrics[metric], offsets, ...]
+    xs = xs[..., in_groups, out_groups, :]
+    return xs
 
 
   @accepts(Self(), Or(str, tuple, list, np.ndarray))

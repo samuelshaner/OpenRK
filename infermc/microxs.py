@@ -63,11 +63,9 @@ class MicroXS(infermc.MultiGroupXS):
     return indices
 
 
-  @accepts(Self(), Or(str, tuple, list, np.ndarray),
-           Or(str, tuple, list, np.ndarray))
-  def checkXS(self, groups='all', subdomains='all'):
+  def checkXS(self):
 
-    xs = super(MicroXS, self).getXS(groups, subdomains)
+    xs = super(MicroXS, self).getXS()
 
     if self._xs_type == 'chi':
       return
@@ -76,14 +74,12 @@ class MicroXS(infermc.MultiGroupXS):
     nuclide_indices = self.getNuclideIndices()
     nuclide_indices = nuclide_indices[nuclide_indices != total_index]
 
-    total = xs[..., total_index]
-    all_nuclides = xs[..., nuclide_indices].sum(axis=-1)
+    total_xs = xs[..., total_index]
+    all_xs = xs[..., nuclide_indices].sum(axis=-1)
 
-    if not np.allclose(total.ravel(), all_nuclides.ravel()):
+    if not np.allclose(total_xs.ravel(), all_xs.ravel()):
       print('The nuclide micro xs {0} in {1} {2} is not equal to the total macro ' \
             'macro xs'.format(self._xs_type, self._domain_type, self._domain._id))
-
-    return
 
 
   @accepts(Self(), Or(str, tuple, list, np.ndarray),
