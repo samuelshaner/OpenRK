@@ -22,13 +22,13 @@ class MicroXS(infermc.MultiGroupXS):
       self.addNuclides(nuclides)
 
 
-  @accepts(Self(), openmc.Nuclide)
+  @accepts(Self(), Or(str, openmc.Nuclide))
   def addNuclide(self, nuclide):
     self._nuclides.append(nuclide)
     self._num_nuclides += 1
 
 
-  @accepts(Self(), Or(list, tuple, np.ndarray))
+  @accepts(Self(), Or(str, list, tuple, np.ndarray))
   def addNuclides(self, nuclides):
     for nuclide in nuclides:
       self.addNuclide(nuclide)
@@ -61,6 +61,29 @@ class MicroXS(infermc.MultiGroupXS):
           raise ValueError(msg)
 
     return indices
+
+
+  @accepts(Self(), Or(str, tuple, list, np.ndarray),
+           Or(str, tuple, list, np.ndarray))
+  def checkXS(self, groups='all', subdomains='all'):
+
+    xs = super(MicroXS, self).getXS(groups, subdomains)
+
+    if self._xs_type == 'chi':
+      return
+
+    total_index = self.getNuclideIndices([openmc.Nuclide('total')])
+    nuclide_indices = self.getNuclideIndices()
+    nuclide_indices = nuclide_indices[nuclide_indices != total_index]
+
+    total = xs[..., total_index]
+    all_nuclides = xs[..., nuclide_indices].sum(axis=-1)
+
+    if not np.allclose(total.ravel(), all_nuclides.ravel()):
+      print('The nuclide micro xs {0} in {1} {2} is not equal to the total macro ' \
+            'macro xs'.format(self._xs_type, self._domain_type, self._domain._id))
+
+    return
 
 
   @accepts(Self(), Or(str, tuple, list, np.ndarray),

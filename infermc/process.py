@@ -1,6 +1,7 @@
 import openmc
 import opencsg
 import infermc
+import numpy as np
 
 # Type-checking support
 from typecheck import accepts, Or, Exact, Self
@@ -229,9 +230,9 @@ class XSTallyExtractor(object):
     return self._all_paths[region]
 
 
-  @accepts(Self(), str, [openmc.Filter], [Or(Exact('total'), openmc.Nuclide)],
+  @accepts(Self(), str, [openmc.Filter], Or(list, tuple, np.ndarray),
            Or(Exact('analog'), ('tracklength')), str)
-  def getTally(self, score, filters, nuclides=['total'],
+  def getTally(self, score, filters, nuclides=[],
                estimator='tracklength', label=''):
 
     if self._statepoint is None:
@@ -678,6 +679,7 @@ class XSTallyExtractor(object):
 
     # Compute the cross-section
     multigroup_xs.addNuclides(nuclides)
+    multigroup_xs.addNuclide(openmc.Nuclide('total'))
     multigroup_xs.computeXS()
 
     # Build offsets such that a user can query the MultiGroupXS for any region

@@ -72,6 +72,7 @@ class XSTallyFactory(object):
     if nuclides is None:
       nuclides = domain.getAllNuclides()
       nuclides = nuclides.values()
+      nuclides.append(openmc.Nuclide('total'))
 
     if xs_type == 'total':
       xs = MicroTotalXS(domain, domain_type, energy_groups, nuclides)
