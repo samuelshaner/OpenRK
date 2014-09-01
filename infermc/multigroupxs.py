@@ -562,11 +562,11 @@ class MultiGroupXS(object):
               table.append(subtable)
 
         if self._domain_type == 'distribcell':
-          caption = '\\caption{{{0} {1}, (subdomain {2}) {3}}}'.format(
+          caption = '\\caption{{{0} {1}, (subdomain {2}) {3} [cm$^-1]}}'.format(
             self._domain_type.capitalize(), self._domain._id,
             subdomain, greek[self._xs_type])
         else:
-          caption = '\\caption{{{0} {1} {2}}}'.format(
+          caption = '\\caption{{{0} {1} {2} [cm^-1]}}'.format(
             self._domain_type.capitalize(), subdomain, greek[self._xs_type])
 
         # Write the MultiGroupXS results to a file

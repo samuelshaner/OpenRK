@@ -366,11 +366,11 @@ class MicroXS(infermc.MultiGroupXS):
                 table.append(subtable)
 
           if self._domain_type == 'distribcell':
-            caption = '\\caption{{{0} {1}, (subdomain {2}) {3} {4}}}'.format(
+            caption = '\\caption{{{0} {1}, (subdomain {2}) {3} {4} [barns]}}'.format(
               self._domain_type.capitalize(), self._domain._id, subdomain,
               self._nuclides[nuclide]._name, greek[self._xs_type])
           else:
-            caption = '\\caption{{{0} {1} {2} {3}}}'.format(
+            caption = '\\caption{{{0} {1} {2} {3} [barns]}}'.format(
               self._domain_type.capitalize(), subdomain,
               self._nuclides[nuclide]._name, greek[self._xs_type])
 
