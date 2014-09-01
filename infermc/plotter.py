@@ -12,7 +12,7 @@ plt.ioff()
 
 import openmc
 import opencsg
-from infermc.process import XSTallyExtractor
+from infermc.process import XSTallyExtractor, MicroXSTallyExtractor
 import numpy as np
 import os
 
@@ -48,7 +48,8 @@ def get_color_maps(geometry):
   cells = geometry.getAllMaterialCells()
   universes = geometry.getAllMaterialUniverses()
 
-  num_materials = len(materials)
+#  num_materials = len(materials)
+  num_materials = max(materials.keys()) - min(materials.keys()) + 1
   num_cells = len(cells)
   num_universes = len(universes)
   num_regions = geometry._num_regions
@@ -62,44 +63,58 @@ def get_color_maps(geometry):
   # Keys    - color type string (ie, 'materials', 'cells', 'neighbors', etc.)
   # Values  - randomized NumPy array of floats in [0, 1)
   color_maps = dict()
+  range = dict()
 
   # Create color map for Materials
   np.random.seed(1)
   color_map = np.linspace(0., 1., num_materials, endpoint=False)
   np.random.shuffle(color_map)
   color_maps['material'] = color_map
+  range['material'] = num_materials
 
   # Create color map for Cells
   np.random.seed(1)
   color_map = np.linspace(0., 1., num_cells, endpoint=False)
   np.random.shuffle(color_map)
   color_maps['cell'] = color_map
+  range['cell'] = num_cells
+
+  # Create color map for Distribcells
+  np.random.seed(1)
+  color_map = np.linspace(0., 1., num_cells, endpoint=False)
+  np.random.shuffle(color_map)
+  color_maps['distribcell'] = color_map
+  range['distribcell'] = num_cells
 
   # Create color map for Universes
   np.random.seed(1)
   color_map = np.linspace(0., 1., num_universes, endpoint=False)
   np.random.shuffle(color_map)
   color_maps['universe'] = color_map
+  range['universe'] = num_universes
 
   # Create color map for Regions
   np.random.seed(1)
   color_map = np.linspace(0., 1., num_regions, endpoint=False)
   np.random.shuffle(color_map)
   color_maps['region'] = color_map
+  range['region'] = num_regions
 
   # Create color map for neighbor Cells/Universes
   np.random.seed(1)
   color_map = np.linspace(0., 1., num_neighbors, endpoint=False)
   np.random.shuffle(color_map)
   color_maps['neighbors'] = color_map
+  range['neighbors'] = num_neighbors
 
   # Create color map for neighbor Cells/Universes
   np.random.seed(1)
   color_map = np.linspace(0., 1., num_unique_neighbors, endpoint=False)
   np.random.shuffle(color_map)
   color_maps['unique neighbors'] = color_map
+  range['unique neighbors'] = num_unique_neighbors
 
-  return color_maps
+  return color_maps, range
 
 
 @accepts(XSTallyExtractor, str, [str], (int, int), [str], str, str)
@@ -126,7 +141,7 @@ def scatter_multigroup_xs(extractor, xs_type, domain_types=['distribcell'],
   geometry = extractor._opencsg_geometry
 
   # Get color maps for each domain within each domain type
-  color_maps = get_color_maps(geometry)
+  color_maps, range = get_color_maps(geometry)
 
   # Create a color for each type of domain
   domain_colors = np.linspace(0, 1, len(domain_types), endpoint=False)
@@ -158,7 +173,7 @@ def scatter_multigroup_xs(extractor, xs_type, domain_types=['distribcell'],
     # Counter for the number of subdomains within each domain
     subdomain_counter = 0
 
-    for j, domain_id in enumerate(domains[domain_type]):
+    for domain_id in domains[domain_type]:
 
       # Get the MultiGroupXS object for this domain
       xs = extractor.getMultiGroupXS(xs_type, domain_id, domain_type)
@@ -175,18 +190,18 @@ def scatter_multigroup_xs(extractor, xs_type, domain_types=['distribcell'],
       if colors[i] == 'neighbors':
         neighbors = map(geometry._regions_to_neighbors.get, subdomains)
         neighbor_ids = np.array(map(geometry._neighbor_ids.get, neighbors))
-        color = color_maps[colors[i]][neighbor_ids % num_domains[colors[i]]]
+        color = color_maps[colors[i]][neighbor_ids % range[colors[i]]]
         data[domain_type][offsets, 2] = color
 
       elif colors[i] == 'unique neighbors':
         neighbors = map(geometry._regions_to_unique_neighbors.get, subdomains)
         neighbor_ids = np.array(map(geometry._unique_neighbor_ids.get, neighbors))
-        color = color_maps[colors[i]][neighbor_ids % num_domains[colors[i]]]
+        color = color_maps[colors[i]][neighbor_ids % range[colors[i]]]
         data[domain_type][offsets, 2] = color
 
       elif colors[i] in ['material', 'cell', 'universe', 'distribcell']:
         color_id = xs._colors[colors[i]]
-        color = color_maps[colors[i]][color_id % num_domains[colors[i]]]
+        color = color_maps[colors[i]][color_id % range[colors[i]]]
         data[domain_type][offsets, 2] = color
 
       else:
@@ -194,7 +209,7 @@ def scatter_multigroup_xs(extractor, xs_type, domain_types=['distribcell'],
 
   fig = plt.figure()
 
-  for domain_type in domain_types:
+  for i, domain_type in enumerate(domain_types):
     plt.scatter(data[domain_type][:,0], data[domain_type][:,1],
                 c=data[domain_type][:,2], edgecolors='k',
                 s=SCATTER_SIZES[domain_type], picker=True)
@@ -204,6 +219,60 @@ def scatter_multigroup_xs(extractor, xs_type, domain_types=['distribcell'],
   plt.title('{0} {1} Cross-Section'.format(domain_type.capitalize(),
                                            xs_type.capitalize()))
   plt.grid()
+
+  filename = DIRECTORY + '/' + filename + '.' + extension
+
+  if extension is 'pkl':
+    import pickle
+    ax = plt.subplot(111)
+    pickle.dump(ax, file(filename, 'w'))
+  else:
+    plt.savefig(filename, bbox_inches='tight')
+
+  plt.close(fig)
+
+
+@accepts(MicroXSTallyExtractor, str, openmc.Nuclide,
+         [str], (int, int), str, str)
+def scatter_micro_xs(extractor, xs_type, nuclide, domain_types=['distribcell'],
+                     energy_groups=(1,2), filename='micro-xs', extension='png'):
+
+  global DIRECTORY
+  global SCATTER_SIZES
+
+  # Make directory if it does not exist
+  if not os.path.exists(DIRECTORY):
+    os.makedirs(DIRECTORY)
+
+  multigroup_xs = extractor._multigroup_xs
+
+  fig = plt.figure()
+  legend = list()
+
+  # Get color maps for each domain within each domain type
+  color_maps, range = get_color_maps(extractor._opencsg_geometry)
+
+  for domain_type in domain_types:
+
+    colors = iter(matplotlib.cm.hsv(np.linspace(0, 1, range[domain_type])))
+
+    for domain_id in multigroup_xs[domain_type].keys():
+
+      xs = extractor._multigroup_xs[domain_type][domain_id][xs_type]
+
+      if not xs.containsNuclide(nuclide):
+        continue
+
+      data = xs.getXS(groups=energy_groups, nuclides=[nuclide])
+      plt.scatter(data[:,0,:].ravel(), data[:,1,:].ravel(), color=next(colors),
+                  s=SCATTER_SIZES[domain_type], edgecolors='k', picker=True)
+      legend.append('{0} {1}'.format(domain_type.capitalize(), domain_id))
+
+  plt.xlabel('Group {0} [barns]'.format(energy_groups[0]))
+  plt.ylabel('Group {0} [barns]'.format(energy_groups[1]))
+  plt.title('{0} {1} Cross-Section'.format(nuclide._name, xs_type.capitalize()))
+  plt.grid()
+  plt.legend(legend)
 
   filename = DIRECTORY + '/' + filename + '.' + extension
 

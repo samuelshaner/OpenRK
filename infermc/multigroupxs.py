@@ -77,6 +77,7 @@ class MultiGroupXS(object):
     self._num_groups = None
     self._tallies = dict()
     self._xs = None
+    self._colors = dict()
 
     # A dictionary used to compute indices into the xs array
     # Keys   - Domain ID (ie, Material ID, Region ID for districell, etc)
@@ -124,10 +125,6 @@ class MultiGroupXS(object):
 
     if self._domain_type in ['material', 'cell', 'universe', 'mesh']:
       self._subdomain_offsets[domain._id] = 0
-
-
-    # FIXME
-    self._colors = dict()
 
     if self._domain_type == 'material':
       self._colors['material'] = self._domain._id

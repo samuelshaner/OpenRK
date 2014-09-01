@@ -58,6 +58,11 @@ class MicroXS(infermc.MultiGroupXS):
         tally.addNuclide(nuclide)
 
 
+  @accepts(Self(), openmc.Nuclide)
+  def containsNuclide(self, nuclide):
+    return (nuclide in self._nuclides)
+
+
   @accepts(Self(), Or(str, tuple, list, np.ndarray))
   def getNuclideIndices(self, nuclides='all'):
 

@@ -3,7 +3,7 @@ import openmc
 from openmc.statepoint import StatePoint
 from infermc.process import XSTallyExtractor, MicroXSTallyExtractor
 from infermc.multigroupxs import xs_types
-from infermc.plotter import scatter_multigroup_xs
+import infermc.plotter as plotter
 import infermc
 
 
@@ -21,12 +21,22 @@ for batch in batches:
   # Initialize a handle on the OpenMC statepoint file
   statepoint = openmc.statepoint.StatePoint(filename)
 
-  '''
   ## MICROS
   micro_extractor = MicroXSTallyExtractor(statepoint)
   micro_extractor.extractAllMultiGroupXS(groups, 'material')
   micro_extractor.extractAllMultiGroupXS(groups, 'distribcell')
   micro_extractor.checkXS()
+
+  nuclides = micro_extractor._openmc_geometry.getAllNuclides()
+
+  for xs_type in xs_types:
+
+    if xs_type != 'scatter matrix':
+
+      for nuclide_name, nuclide_tuple in nuclides.items():
+        plotter.scatter_micro_xs(micro_extractor, xs_type, nuclide_tuple[0],
+                              domain_types=['distribcell', 'material'],
+                              filename='{0}-{1}-{2}-batches'.format(nuclide_name, xs_type, batch))
 
   materials = micro_extractor._openmc_geometry.getAllMaterials()
 
@@ -37,29 +47,28 @@ for batch in batches:
       xs.dumpToFile(directory='micro', filename='material-{0}-{1}'.format(material._id, xs_type))
       xs.exportResults()
       xs.printPDF(directory='micro', filename='material-{0}-{1}'.format(material._id, xs_type))
-      xs.checkXS()
 
   # RESTORE-FROM-FILE
-  for material in materials:
-    for xs_type in xs_types:
+#  for material in materials:
+#    for xs_type in xs_types:
 
-      if xs_type == 'total':
-        xs = infermc.MicroTotalXS(material, 'material')
-        xs.restoreFromFile(directory='micro', filename='material-{0}-{1}'.format(material._id, xs_type))
-      elif xs_type == 'chi':
-        xs = infermc.MicroChi(material, 'material')
-        xs.restoreFromFile(directory='micro', filename='material-{0}-{1}'.format(material._id, xs_type))
-      elif xs_type == 'transport':
-        xs = infermc.MicroTransportXS(material, 'material')
-        xs.restoreFromFile(directory='micro', filename='material-{0}-{1}'.format(material._id, xs_type))
-      elif xs_type == 'scatter-matrix':
-        xs = infermc.MicroScatterMatrixXS(material, 'material')
-        xs.restoreFromFile(directory='micro', filename='material-{0}-{1}'.format(material._id, xs_type))
+#      if xs_type == 'total':
+#        xs = infermc.MicroTotalXS(material, 'material')
+#        xs.restoreFromFile(directory='micro', filename='material-{0}-{1}'.format(material._id, xs_type))
+#      elif xs_type == 'chi':
+#        xs = infermc.MicroChi(material, 'material')
+#        xs.restoreFromFile(directory='micro', filename='material-{0}-{1}'.format(material._id, xs_type))
+#      elif xs_type == 'transport':
+#        xs = infermc.MicroTransportXS(material, 'material')
+#        xs.restoreFromFile(directory='micro', filename='material-{0}-{1}'.format(material._id, xs_type))
+#      elif xs_type == 'scatter-matrix':
+#        xs = infermc.MicroScatterMatrixXS(material, 'material')
+#        xs.restoreFromFile(directory='micro', filename='material-{0}-{1}'.format(material._id, xs_type))
 
   openmc.reset_auto_ids()
   del micro_extractor, statepoint
-  '''
 
+  '''
   ## MACROS
   extractor = XSTallyExtractor(statepoint)
   extractor.extractAllMultiGroupXS(groups, 'material')
@@ -69,21 +78,22 @@ for batch in batches:
   for xs_type in xs_types:
 
     if xs_type != 'scatter matrix':
-      scatter_multigroup_xs(extractor, xs_type,
+      plotter.scatter_multigroup_xs(extractor, xs_type,
                             domain_types=['distribcell', 'material'],
-                            colors=['unique neighbors', 'material'],
+                            colors=['cell', 'material'],
                             filename='{0}-{1}-batches'.format(xs_type,batch))
 
-#  materials = extractor._openmc_geometry.getAllMaterials()
+  materials = extractor._openmc_geometry.getAllMaterials()
 
   # DUMP-TO-FILE and PRINT XS
-#  for material in materials:
-#    for xs_type in xs_types:
-#      xs = extractor._multigroup_xs['material'][material._id][xs_type]
-#      xs.dumpToFile(directory='macro', filename='material-{0}-{1}'.format(material._id, xs_type))
-#      xs.printXS()
-#      xs.exportResults()
-#      xs.printPDF(directory='macro', filename='material-{0}-{1}'.format(material._id, xs_type))
+  for material in materials:
+    for xs_type in xs_types:
+      xs = extractor._multigroup_xs['material'][material._id][xs_type]
+      xs.dumpToFile(directory='macro', filename='material-{0}-{1}'.format(material._id, xs_type))
+      xs.printXS()
+      xs.exportResults()
+      xs.printPDF(directory='macro', filename='material-{0}-{1}'.format(material._id, xs_type))
 
   openmc.reset_auto_ids()
   del extractor, statepoint
+  '''
