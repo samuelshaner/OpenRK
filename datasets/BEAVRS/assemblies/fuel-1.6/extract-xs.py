@@ -21,11 +21,12 @@ for batch in batches:
   # Initialize a handle on the OpenMC statepoint file
   statepoint = openmc.statepoint.StatePoint(filename)
 
+  '''
   ## MICROS
   micro_extractor = MicroXSTallyExtractor(statepoint)
   micro_extractor.extractAllMultiGroupXS(groups, 'material')
   micro_extractor.extractAllMultiGroupXS(groups, 'distribcell')
-#  micro_extractor.checkXS()
+  micro_extractor.checkXS()
 
   materials = micro_extractor._openmc_geometry.getAllMaterials()
 
@@ -34,7 +35,6 @@ for batch in batches:
     for xs_type in xs_types:
       xs = micro_extractor._multigroup_xs['material'][material._id][xs_type]
       xs.dumpToFile(directory='micro', filename='material-{0}-{1}'.format(material._id, xs_type))
-#      xs.printXS()
       xs.exportResults()
       xs.printPDF(directory='micro', filename='material-{0}-{1}'.format(material._id, xs_type))
       xs.checkXS()
@@ -56,8 +56,9 @@ for batch in batches:
         xs = infermc.MicroScatterMatrixXS(material, 'material')
         xs.restoreFromFile(directory='micro', filename='material-{0}-{1}'.format(material._id, xs_type))
 
-  '''
   openmc.reset_auto_ids()
+  del micro_extractor, statepoint
+  '''
 
   ## MACROS
   extractor = XSTallyExtractor(statepoint)
@@ -83,7 +84,6 @@ for batch in batches:
       xs.printXS()
       xs.exportResults()
       xs.printPDF(directory='macro', filename='material-{0}-{1}'.format(material._id, xs_type))
-  '''
 
   openmc.reset_auto_ids()
-  del micro_extractor, statepoint
+  del extractor, statepoint

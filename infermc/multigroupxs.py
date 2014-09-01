@@ -321,7 +321,7 @@ class MultiGroupXS(object):
                   '{3: <10}MeV]:\t'.format('', group, bounds[0], bounds[1])
         average = self.getXS([group], [subdomain], 'mean')
         std_dev = self.getXS([group], [subdomain], 'std_dev')
-        string += '{:.2e}+/-{:.2e}'.format(average[0,0], std_dev[0,0])
+        string += '{:.2e}+/-{:.2e}'.format(average[0,0,0], std_dev[0,0,0])
         string += '\n'
 
       string += '\n'
@@ -562,11 +562,11 @@ class MultiGroupXS(object):
               table.append(subtable)
 
         if self._domain_type == 'distribcell':
-          caption = '\\caption{{{0} {1}, (subdomain {2}) {3} [cm$^-1]}}'.format(
+          caption = '\\caption{{{0} {1}, (subdomain {2}) {3} [cm\char`\^-1]}}'.format(
             self._domain_type.capitalize(), self._domain._id,
             subdomain, greek[self._xs_type])
         else:
-          caption = '\\caption{{{0} {1} {2} [cm^-1]}}'.format(
+          caption = '\\caption{{{0} {1} {2} [cm\char`\^-1]}}'.format(
             self._domain_type.capitalize(), subdomain, greek[self._xs_type])
 
         # Write the MultiGroupXS results to a file
@@ -1035,7 +1035,7 @@ class ScatterMatrixXS(MultiGroupXS):
           string += '{0: <12}Group {1} -> Group {2}:\t\t'.format('', in_group, out_group)
           average = self.getXS([in_group], [out_group], [subdomain], 'mean')
           std_dev = self.getXS([in_group], [out_group], [subdomain], 'std_dev')
-          string += '{:.2e}+/-{:.2e}'.format(average[0,0], std_dev[0,0])
+          string += '{:.2e}+/-{:.2e}'.format(average[0,0,0], std_dev[0,0,0])
           string += '\n'
 
       string += '\n'
