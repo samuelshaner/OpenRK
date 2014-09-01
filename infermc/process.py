@@ -503,8 +503,8 @@ class XSTallyExtractor(object):
           offset = self._openmc_geometry.getOffset(path, domain_offset)
           multigroup_xs.setSubDomainOffset(region, offset)
 
-      else:
-        multigroup_xs.setSubDomainOffset(domain._id, 0)
+    else:
+      multigroup_xs.setSubDomainOffset(domain._id, 0)
 
     return multigroup_xs
 
@@ -747,6 +747,9 @@ class MicroXSTallyExtractor(XSTallyExtractor):
         if cell_id == domain._id:
           offset = self._openmc_geometry.getOffset(path, domain_offset)
           multigroup_xs.setSubDomainOffset(region, offset)
+
+    else:
+      multigroup_xs.setSubDomainOffset(domain._id, 0)
 
     return multigroup_xs
 

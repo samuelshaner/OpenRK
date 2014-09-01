@@ -114,7 +114,7 @@ class MicroXS(infermc.MultiGroupXS):
     for subdomain in subdomains:
 
       if self._domain_type == 'distribcell':
-        string += '{0: <16}{1}{2}\n'.format('\tSubdomain', '=\t', subdomain)
+        string += '{0: <16}{1}{2}\n'.format('\tSubDomain', '=\t', subdomain)
 
       # Loop over all Nuclides
       for nuclide in nuclides:
@@ -187,8 +187,8 @@ class MicroXS(infermc.MultiGroupXS):
     if not os.path.exists(directory):
       os.makedirs(directory)
 
-    offsets = self.getSubdomainOffsets(subdomains)
-    subdomains = self.getSubdomains(offsets)
+    offsets = self.getSubDomainOffsets(subdomains)
+    subdomains = self.getSubDomains(offsets)
     nuclides = self.getNuclideIndices(nuclides)
 
     average = self._xs[infermc.metrics['mean'], offsets, ...]
@@ -530,7 +530,7 @@ class MicroScatterMatrixXS(MicroXS, infermc.ScatterMatrixXS):
     for subdomain in subdomains:
 
       if self._domain_type == 'distribcell':
-        string += '{0: <16}{1}{2}\n'.format('\tSubdomain', '=\t', subdomain)
+        string += '{0: <16}{1}{2}\n'.format('\tSubDomain', '=\t', subdomain)
 
       # Loop over energy groups ranges
       for nuclide in nuclides:

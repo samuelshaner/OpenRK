@@ -1,19 +1,18 @@
 import matplotlib
-from opencsg import *
 
 # force headless backend, or set 'backend' to 'Agg'
 # in your ~/.matplotlib/matplotlibrc
-#matplotlib.use('Agg')
+matplotlib.use('Agg')
 
 import matplotlib.pyplot as plt
 
 # Force non-interactive mode, or set 'interactive' to False
 # in your ~/.matplotlib/matplotlibrc
-#plt.ioff()
+plt.ioff()
 
+import openmc
+import opencsg
 from infermc.process import XSTallyExtractor
-from infermc.multigroupxs import *
-from openmc.statepoint import StatePoint
 import numpy as np
 import os
 
@@ -21,15 +20,22 @@ import os
 from typecheck import accepts, Or, Exact
 
 
-## A static variable for the output directory in which to save plots
+# A static variable for the output directory in which to save plots
 DIRECTORY = "plots/"
 
-## List of supported file formats for saving Matplotlib figures
+# List of supported file formats for saving Matplotlib figures
 FILE_FORMATS = ['png', 'jpg', 'pdf', 'svg', 'eps', 'pkl']
+
+# Dictionary of data point sizes for each domain type
+SCATTER_SIZES = dict()
+SCATTER_SIZES['distribcell'] = 20
+SCATTER_SIZES['material'] = 100
+SCATTER_SIZES['cell'] = 100
+SCATTER_SIZES['universe'] = 100
 
 
 # Build color maps
-@accepts(Geometry)
+@accepts(opencsg.Geometry)
 def get_color_maps(geometry):
 
   # Initialize the offsets used for computing region IDs
@@ -96,13 +102,13 @@ def get_color_maps(geometry):
   return color_maps
 
 
-@accepts(XSTallyExtractor, str, [str],
-         (int, int), [str], str, str)
+@accepts(XSTallyExtractor, str, [str], (int, int), [str], str, str)
 def scatter_multigroup_xs(extractor, xs_type, domain_types=['distribcell'],
                           energy_groups=(1,2), colors=['domain_type'],
                           filename='multigroup-xs', extension='png'):
 
   global DIRECTORY
+  global SCATTER_SIZES
 
   # Make directory if it does not exist
   if not os.path.exists(DIRECTORY):
@@ -126,156 +132,72 @@ def scatter_multigroup_xs(extractor, xs_type, domain_types=['distribcell'],
   domain_colors = np.linspace(0, 1, len(domain_types), endpoint=False)
 
   # Get lists of all Materials, Cells, Universes
-  materials = geometry.getAllMaterials()
-  cells = geometry.getAllMaterialCells()
-  universes = geometry.getAllMaterialUniverses()
+  domains = dict()
+  domains['material'] = geometry.getAllMaterials()
+  domains['cell'] = geometry.getAllMaterialCells()
+  domains['universe'] = geometry.getAllMaterialUniverses()
+  domains['distribcell'] = geometry.getAllMaterialCells()
 
   # Get the number of Materials, Cells, Universes, etc.
-  num_materials = len(materials)
-  num_cells = len(cells)
-  num_universes = len(universes)
-  num_regions = geometry._num_regions
-  num_neighbors = geometry._num_neighbors
-  num_unique_neighbors = geometry._num_unique_neighbors
+  num_domains = dict()
+  num_domains['material'] = len(domains['material'])
+  num_domains['cell'] = len(domains['cell'])
+  num_domains['universe'] = len(domains['universe'])
+  num_domains['distribcell'] = geometry._num_regions
+  num_domains['neighbors'] = geometry._num_neighbors
+  num_domains['unique neighbors'] = geometry._num_unique_neighbors
 
-  # Initialize an empty dictionary of data
+  # Initialize an empty dictionary of data for each type of domain
   data = dict()
-
 
   for i, domain_type in enumerate(domain_types):
 
-    # Get the damn data
-    if domain_type == 'distribcell':
+    # Data is indexed by: (group #1, group #2, color)
+    data[domain_type] = np.zeros((num_domains[domain_type], 3))
 
-      # Data is indexed by: (group #1, group #2, color)
-      data[domain_type] = np.zeros((num_regions, 3))
+    # Counter for the number of subdomains within each domain
+    subdomain_counter = 0
 
-      for region in range(num_regions):
-        path = extractor.getPath(region)
-        cell_id = path[-1]
-        universe_id = path[-2]
+    for j, domain_id in enumerate(domains[domain_type]):
 
-        xs = extractor.getMultiGroupXS(xs_type, cell_id, 'distribcell')
-        data[domain_type][region, 0] = xs.getXS([energy_groups[0]], [region])
-        data[domain_type][region, 1] = xs.getXS([energy_groups[1]], [region])
+      # Get the MultiGroupXS object for this domain
+      xs = extractor.getMultiGroupXS(xs_type, domain_id, domain_type)
 
-        # Find color!!!
-        if colors[i] == 'material':
-          material_id = cells[cell_id]._fill._id
-          color = color_maps[colors[i]][material_id % num_materials]
-          data[domain_type][region, 2] = color
+      # Get subdomains IDs and their corresponding offsets and convert
+      # to indices for the data array
+      subdomains = xs.getSubDomains()
+      offsets = np.array(xs.getSubDomainOffsets()) + subdomain_counter
+      subdomain_counter += len(offsets)
 
-        elif colors[i] == 'cell':
-          color = color_maps[colors[i]][cell_id % num_cells]
-          data[domain_type][region, 2] = color
+      # Get the cross-section data for all subdomain and store to the array
+      data[domain_type][offsets, 0:2] = np.squeeze(xs.getXS(energy_groups))
 
-        elif colors[i] == 'distribcell':
-          color = color_maps[colors[i]][region % num_regions]
-          data[domain_type][region, 2] = color
+      if colors[i] == 'neighbors':
+        neighbors = map(geometry._regions_to_neighbors.get, subdomains)
+        neighbor_ids = np.array(map(geometry._neighbor_ids.get, neighbors))
+        color = color_maps[colors[i]][neighbor_ids % num_domains[colors[i]]]
+        data[domain_type][offsets, 2] = color
 
-        elif colors[i] == 'universe':
-          color = color_maps[colors[i]][universe_id % num_universes]
-          data[domain_type][region, 2] = color
+      elif colors[i] == 'unique neighbors':
+        neighbors = map(geometry._regions_to_unique_neighbors.get, subdomains)
+        neighbor_ids = np.array(map(geometry._unique_neighbor_ids.get, neighbors))
+        color = color_maps[colors[i]][neighbor_ids % num_domains[colors[i]]]
+        data[domain_type][offsets, 2] = color
 
-        elif colors[i] == 'neighbors':
-          neighbors = geometry._regions_to_neighbors[region]
-          neighbor_id = geometry._neighbor_ids[neighbors]
-          color = color_maps[colors[i]][neighbor_id % num_neighbors]
-          data[domain_type][region, 2] = color
+      elif colors[i] in ['material', 'cell', 'universe', 'distribcell']:
+        color_id = xs._colors[colors[i]]
+        color = color_maps[colors[i]][color_id % num_domains[colors[i]]]
+        data[domain_type][offsets, 2] = color
 
-        elif colors[i] == 'unique neighbors':
-          unique_neighbors = geometry._regions_to_unique_neighbors[region]
-          neighbor_id = geometry._unique_neighbor_ids[unique_neighbors]
-          color = color_maps[colors[i]][neighbor_id % num_unique_neighbors]
-          data[domain_type][region, 2] = color
-
-        else:
-          data[domain_type][region, 2] = domain_colors[i]
-
-
-    elif domain_type == 'material':
-
-      # Data is indexed by: (group #1, group #2, color)
-      data[domain_type] = np.zeros((num_materials, 3))
-
-      for j, material_id in enumerate(materials):
-        xs = extractor.getMultiGroupXS(xs_type, material_id, 'material')
-        data[domain_type][j, 0] = xs.getXS([energy_groups[0]], [material_id])
-        data[domain_type][j, 1] = xs.getXS([energy_groups[1]], [material_id])
-
-        # Find color!!!
-        if colors[i] == 'material':
-          color = color_maps[colors[i]][material_id % num_materials]
-          data[domain_type][j, 2] = color
-
-        else:
-          data[domain_type][j, 2] = domain_colors[i]
-
-
-    elif domain_type == 'cell':
-
-      # Data is indexed by: (group #1, group #2, color)
-      data[domain_type] = np.zeros((num_cells, 3))
-
-      for j, cell_id in enumerate(cells):
-        xs = extractor.getMultiGroupXS(xs_type, cell_id, 'cell')
-        data[domain_type][j, 0] = xs.getXS([energy_groups[0]], [cell_id])
-        data[domain_type][j, 1] = xs.getXS([energy_groups[1]], [cell_id])
-
-        # Find color!!!
-        if colors[i] == 'material':
-          material_id = cells[cell_id]._fill._id
-          color = color_maps[colors[i]][material_id % num_materials]
-          data[domain_type][j, 2] = color
-
-        elif colors[i] == 'cell':
-          color = color_maps[colors[i]][cell_id % num_cells]
-          data[domain_type][j, 2] = color
-
-        else:
-          data[domain_type][j, 2] = domain_colors[i]
-
-
-    elif domain_type == 'universe':
-
-      # Data is indexed by: (group #1, group #2, color)
-      data[domain_type] = np.zeros((num_universes, 3))
-
-      for j, universe_id in enumerate(universes):
-        xs = extractor.getMultiGroupXS(xs_type, universe_id, 'universe')
-        data[domain_type][j, 0] = xs.getXS([energy_groups[0]], [universe_id])
-        data[domain_type][j, 1] = xs.getXS([energy_groups[1]], [universe_id])
-
-        # Find color!!!
-        if colors[i] == 'universe':
-          color = color_maps[colors[i]][universe_id % num_universes]
-          data[domain_type][j, 2] = color
-
-        else:
-          data[domain_type][j, 2] = domain_colors[i]
-
-
-  # FIXME: Deal with scatter matrix!!
-
+      else:
+        data[domain_type][offsets, 2] = domain_colors[i]
 
   fig = plt.figure()
-  ax = fig.add_subplot(111)
 
-  if 'distribcell' in domain_types:
-    plt.scatter(data['distribcell'][:,0], data['distribcell'][:,1],
-                c=data['distribcell'][:,2], edgecolors='k', picker=True)
-
-  if 'material' in domain_types:
-    plt.scatter(data['material'][:,0], data['material'][:,1],
-                c=data['material'][:,2], edgecolors='k', s=80, picker=True)
-
-  if 'cell' in domain_types:
-    plt.scatter(data['material'][:,0], data['material'][:,1],
-                color=data['material'][:,2], edgecolors='k', s=80, picker=True)
-
-  if 'universe' in domain_types:
-    plt.scatter(data['universe'][:,0], data['universe'][:,1],
-                color=data['universe'][:,2], edgecolors='k', s=80, picker=True)
+  for domain_type in domain_types:
+    plt.scatter(data[domain_type][:,0], data[domain_type][:,1],
+                c=data[domain_type][:,2], edgecolors='k',
+                s=SCATTER_SIZES[domain_type], picker=True)
 
   plt.xlabel('Group {0} [cm^-1]'.format(energy_groups[0]))
   plt.ylabel('Group {0} [cm^-1]'.format(energy_groups[1]))

@@ -126,6 +126,25 @@ class MultiGroupXS(object):
       self._subdomain_offsets[domain._id] = 0
 
 
+    # FIXME
+    self._colors = dict()
+
+    if self._domain_type == 'material':
+      self._colors['material'] = self._domain._id
+
+    elif self._domain_type == 'cell':
+      self._colors['cell'] = self._domain._id
+      self._colors['material'] = self._domain._fill._id
+
+    elif self._domain_type == 'distribcell':
+      self._colors['distribcell'] = self._domain._id
+      self._colors['cell'] = self._domain._id
+      self._colors['material'] = self._domain._fill._id
+
+    elif self._domain_type == 'universe':
+      self._colors['universe'] = self._domain._id
+
+
   @property
   def domain_type(self):
     return self._domain_type
@@ -236,7 +255,7 @@ class MultiGroupXS(object):
 
 
   @accepts(Self(), Or(str, tuple, list, np.ndarray))
-  def getSubdomainOffsets(self, subdomains='all'):
+  def getSubDomainOffsets(self, subdomains='all'):
 
     if subdomains == 'all':
       offsets = self._subdomain_offsets.values()
@@ -256,7 +275,7 @@ class MultiGroupXS(object):
 
 
   @accepts(Self(), Or(str, tuple, list, np.ndarray))
-  def getSubdomains(self, offsets='all'):
+  def getSubDomains(self, offsets='all'):
 
     if offsets == 'all':
       subdomains = self._subdomain_offsets.keys()
@@ -288,7 +307,7 @@ class MultiGroupXS(object):
 
     global metrics
     groups = self._energy_groups.getGroupIndices(groups)
-    offsets = self.getSubdomainOffsets(subdomains)
+    offsets = self.getSubDomainOffsets(subdomains)
 
     xs = self._xs[metrics[metric], offsets, ...]
     xs = xs[..., groups, :]
@@ -310,7 +329,7 @@ class MultiGroupXS(object):
     for subdomain in subdomains:
 
       if self._domain_type == 'distribcell':
-        string += '{0: <16}{1}{2}\n'.format('\tSubdomain', '=\t', subdomain)
+        string += '{0: <16}{1}{2}\n'.format('\tSubDomain', '=\t', subdomain)
 
       string += '{0: <16}\n'.format('\tCross-Sections [cm^-1]:')
 
@@ -405,8 +424,8 @@ class MultiGroupXS(object):
       os.makedirs(directory)
 
     global metrics
-    offsets = self.getSubdomainOffsets(subdomains)
-    subdomains = self.getSubdomains(offsets)
+    offsets = self.getSubDomainOffsets(subdomains)
+    subdomains = self.getSubDomains(offsets)
     average = self._xs[metrics['mean'], offsets, ...]
     std_dev = self._xs[metrics['std_dev'], offsets, ...]
 
@@ -996,7 +1015,7 @@ class ScatterMatrixXS(MultiGroupXS):
     global metrics
     in_groups = self._energy_groups.getGroupIndices(in_groups)
     out_groups = self._energy_groups.getGroupIndices(out_groups)
-    offsets = self.getSubdomainOffsets(subdomains)
+    offsets = self.getSubDomainOffsets(subdomains)
 
     xs = self._xs[metrics[metric], offsets, ...]
     xs = xs[..., in_groups, out_groups, :]
@@ -1025,7 +1044,7 @@ class ScatterMatrixXS(MultiGroupXS):
     for subdomain in subdomains:
 
       if self._domain_type == 'distribcell':
-        string += '{0: <16}{1}{2}\n'.format('\tSubdomain', '=\t', subdomain)
+        string += '{0: <16}{1}{2}\n'.format('\tSubDomain', '=\t', subdomain)
 
       string += '{0: <16}\n'.format('\tCross-Sections [cm^-1]:')
 

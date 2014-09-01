@@ -7,8 +7,8 @@ from infermc.plotter import scatter_multigroup_xs
 import infermc
 
 
-batches = range(10, 35, 5)
-#batches = [10]
+#batches = range(10, 35, 5)
+batches = [10]
 
 groups = group_structures['CASMO']['2-group']
 
@@ -71,19 +71,19 @@ for batch in batches:
     if xs_type != 'scatter matrix':
       scatter_multigroup_xs(extractor, xs_type,
                             domain_types=['distribcell', 'material'],
-                            colors=['neighbors', 'material'],
+                            colors=['unique neighbors', 'material'],
                             filename='{0}-{1}-batches'.format(xs_type,batch))
 
-  materials = extractor._openmc_geometry.getAllMaterials()
+#  materials = extractor._openmc_geometry.getAllMaterials()
 
   # DUMP-TO-FILE and PRINT XS
-  for material in materials:
-    for xs_type in xs_types:
-      xs = extractor._multigroup_xs['material'][material._id][xs_type]
-      xs.dumpToFile(directory='macro', filename='material-{0}-{1}'.format(material._id, xs_type))
-      xs.printXS()
-      xs.exportResults()
-      xs.printPDF(directory='macro', filename='material-{0}-{1}'.format(material._id, xs_type))
+#  for material in materials:
+#    for xs_type in xs_types:
+#      xs = extractor._multigroup_xs['material'][material._id][xs_type]
+#      xs.dumpToFile(directory='macro', filename='material-{0}-{1}'.format(material._id, xs_type))
+#      xs.printXS()
+#      xs.exportResults()
+#      xs.printPDF(directory='macro', filename='material-{0}-{1}'.format(material._id, xs_type))
 
   openmc.reset_auto_ids()
   del extractor, statepoint
