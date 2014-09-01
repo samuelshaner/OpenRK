@@ -324,13 +324,6 @@ class XSTallyExtractor(object):
       self.extractMultiGroupXS(xs_type, energy_groups, domain_type)
 
 
-  @accepts(Self(), infermc.EnergyGroups, infermc.domain_types_check)
-  def extractAllMicroXS(self, energy_groups, domain_type='distribcell'):
-
-    for xs_type in infermc.xs_types:
-      self.extractMicroXS(xs_type, energy_groups, domain_type)
-
-
   @accepts(Self(), infermc.infermc.xs_types_check, infermc.EnergyGroups, infermc.domain_types_check)
   def extractMultiGroupXS(self, xs_type, energy_groups, domain_type='distribcell'):
 
@@ -357,37 +350,6 @@ class XSTallyExtractor(object):
 
       # Build the MultiGroupXS for this domain
       xs = self.createMultiGroupXS(xs_type, energy_groups, domain, domain_type)
-
-      # Store a handle to the MultiGroupXS object in the nested dictionary
-      self._multigroup_xs[domain_type][domain._id][xs_type] = xs
-
-
-  @accepts(Self(), infermc.infermc.xs_types_check, infermc.EnergyGroups, infermc.domain_types_check)
-  def extractMicroXS(self, xs_type, energy_groups, domain_type='distribcell'):
-
-    # Add nested dictionary for this domain type if needed
-    if not domain_type in self._multigroup_xs.keys():
-      self._multigroup_xs[domain_type] = dict()
-
-    # Get a list of the domains for this domain type to iterate over
-    if domain_type == 'material':
-      domains = self._openmc_geometry.getAllMaterials()
-
-    elif domain_type == 'universe':
-      domains = self._openmc_geometry.getAllMaterialUniverses()
-
-    elif domain_type == 'cell' or domain_type == 'distribcell':
-      domains = self._openmc_geometry.getAllMaterialCells()
-
-    # Iterate and create the MultiGroupXS for each domain
-    for domain in domains:
-
-      # Add nested dictionary for this domain if needed
-      if not domain._id in self._multigroup_xs[domain_type].keys():
-        self._multigroup_xs[domain_type][domain._id] = dict()
-
-      # Build the MultiGroupXS for this domain
-      xs = self.createMicroXS(xs_type, energy_groups, domain, domain_type)
 
       # Store a handle to the MultiGroupXS object in the nested dictionary
       self._multigroup_xs[domain_type][domain._id][xs_type] = xs
@@ -547,8 +509,93 @@ class XSTallyExtractor(object):
     return multigroup_xs
 
 
+  @accepts(Self(), infermc.xs_types_check, int, infermc.domain_types_check)
+  def getMultiGroupXS(self, xs_type, domain, domain_type):
+
+    # Check that MultiGroupXS for the input parameters has been created
+
+    if not domain_type in self._multigroup_xs.keys():
+      msg = 'Unable to get cross-section since no cross-sections for ' \
+            'domain type {0} have been created'.format(domain_type)
+      raise ValueError(msg)
+
+    # Check that the MultiGroupXS corresponding to this domain has been created
+    elif not domain in self._multigroup_xs[domain_type].keys():
+      msg = 'Unable to get cross-section since no cross-sections for ' \
+            'domain {0} {1} have been created'.format(domain_type, domain)
+      raise ValueError(msg)
+
+    elif not xs_type in self._multigroup_xs[domain_type][domain].keys():
+      msg = 'Unable to get cross-section since no cross-sections of type {0} ' \
+            'for domain {1} {2} have been created'.format(xs_type,
+                                                          domain_type, domain)
+      raise ValueError(msg)
+
+    return self._multigroup_xs[domain_type][domain][xs_type]
+
+
+  def checkXS(self):
+
+    for domain_type in self._multigroup_xs.keys():
+      for domain_id in self._multigroup_xs[domain_type].keys():
+        total_xs = self._multigroup_xs[domain_type][domain_id]['total']
+        total_xs = total_xs.getXS()
+
+        absorption_xs = self._multigroup_xs[domain_type][domain_id]['absorption']
+        scatter_xs = self._multigroup_xs[domain_type][domain_id]['scatter']
+
+        all_xs = absorption_xs.getXS()
+        all_xs += scatter_xs.getXS()
+
+        if not np.allclose(total_xs.ravel(), all_xs.ravel()):
+          print('The nuclide micro xs {0} in {1} {2} is not equal to the '
+                'total macro macro xs'.format(self._xs_type, self._domain_type,
+                                              self._domain._id))
+
+
+class MicroXSTallyExtractor(XSTallyExtractor):
+
+
+  @accepts(Self(), infermc.EnergyGroups, infermc.domain_types_check)
+  def extractAllMultiGroupXS(self, energy_groups, domain_type='distribcell'):
+
+    for xs_type in infermc.xs_types:
+      self.extractMultiGroupXS(xs_type, energy_groups, domain_type)
+
+
+  @accepts(Self(), infermc.infermc.xs_types_check, infermc.EnergyGroups, infermc.domain_types_check)
+  def extractMultiGroupXS(self, xs_type, energy_groups, domain_type='distribcell'):
+
+    # Add nested dictionary for this domain type if needed
+    if not domain_type in self._multigroup_xs.keys():
+      self._multigroup_xs[domain_type] = dict()
+
+    # Get a list of the domains for this domain type to iterate over
+    if domain_type == 'material':
+      domains = self._openmc_geometry.getAllMaterials()
+
+    elif domain_type == 'universe':
+      domains = self._openmc_geometry.getAllMaterialUniverses()
+
+    elif domain_type == 'cell' or domain_type == 'distribcell':
+      domains = self._openmc_geometry.getAllMaterialCells()
+
+    # Iterate and create the MultiGroupXS for each domain
+    for domain in domains:
+
+      # Add nested dictionary for this domain if needed
+      if not domain._id in self._multigroup_xs[domain_type].keys():
+        self._multigroup_xs[domain_type][domain._id] = dict()
+
+      # Build the MultiGroupXS for this domain
+      xs = self.createMultiGroupXS(xs_type, energy_groups, domain, domain_type)
+
+      # Store a handle to the MultiGroupXS object in the nested dictionary
+      self._multigroup_xs[domain_type][domain._id][xs_type] = xs
+
+
   @accepts(Self(), infermc.infermc.xs_types_check, infermc.EnergyGroups, infermc.domains_check, infermc.domain_types_check)
-  def createMicroXS(self, xs_type, energy_groups, domain, domain_type='distribcell'):
+  def createMultiGroupXS(self, xs_type, energy_groups, domain, domain_type='distribcell'):
 
     if self._statepoint is None:
       msg = 'Unable to get cross-sections since the TallyExtractor ' \
@@ -566,7 +613,7 @@ class XSTallyExtractor(object):
     # Extract a list of tuples of Nuclides and number densities (at/b-cm)
     # of all Nuclides in the domain of interest
     nuclides = domain.getAllNuclides().values()
-    tot_density = sum([nuclide[1] for nuclide in nuclides])
+    tot_density = 1.
 
     if xs_type == 'total':
 
@@ -704,45 +751,13 @@ class XSTallyExtractor(object):
     return multigroup_xs
 
 
-  @accepts(Self(), infermc.xs_types_check, int, infermc.domain_types_check)
-  def getMultiGroupXS(self, xs_type, domain, domain_type):
-
-    # Check that MultiGroupXS for the input parameters has been created
-
-    if not domain_type in self._multigroup_xs.keys():
-      msg = 'Unable to get cross-section since no cross-sections for ' \
-            'domain type {0} have been created'.format(domain_type)
-      raise ValueError(msg)
-
-    # Check that the MultiGroupXS corresponding to this domain has been created
-    elif not domain in self._multigroup_xs[domain_type].keys():
-      msg = 'Unable to get cross-section since no cross-sections for ' \
-            'domain {0} {1} have been created'.format(domain_type, domain)
-      raise ValueError(msg)
-
-    elif not xs_type in self._multigroup_xs[domain_type][domain].keys():
-      msg = 'Unable to get cross-section since no cross-sections of type {0} ' \
-            'for domain {1} {2} have been created'.format(xs_type,
-                                                          domain_type, domain)
-      raise ValueError(msg)
-
-    return self._multigroup_xs[domain_type][domain][xs_type]
-
-
   def checkXS(self):
 
-    for domain_type in self._multigroup_xs:
-      for domain_id in self._multigroup_xs[domain_type]:
-        total_xs = self._multigroup_xs[domain_type][domain_id]['total']
-        total_xs = total_xs.getXS()
+    super(MicroXSTallyExtractor, self).checkXS()
 
-        absorption_xs = self._multigroup_xs[domain_type][domain_id]['absorption']
-        scatter_xs = self._multigroup_xs[domain_type][domain_id]['scatter']
+    for domain_type in self._multigroup_xs.keys():
+      for domain_id in self._multigroup_xs[domain_type].keys():
+        for xs_type in self._multigroup_xs[domain_type][domain_id].keys():
+          xs = self._multigroup_xs[domain_type][domain_id][xs_type]
+          xs.checkXS()
 
-        all_xs = absorption_xs.getXS()
-        all_xs += scatter_xs.getXS()
-
-        if not np.allclose(total_xs.ravel(), all_xs.ravel()):
-          print('The nuclide micro xs {0} in {1} {2} is not equal to the '
-                'total macro macro xs'.format(self._xs_type, self._domain_type,
-                                              self._domain._id))

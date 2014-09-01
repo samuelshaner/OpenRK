@@ -1112,5 +1112,8 @@ class Chi(MultiGroupXS):
     # For any region without flux or reaction rate, convert xs to zero
     self._xs[:, norm_indices] = 0.
 
+    # FIXME - uncertainty propagation - this is just a temporary fix
+    self._xs[1, ...] = 0.
+
     # Correct -0.0 to +0.0
     self._xs += 0.

@@ -426,8 +426,10 @@ class MicroXS(infermc.MultiGroupXS):
     nuclide_indices = self.getNuclideIndices()
     nuclide_indices = nuclide_indices[nuclide_indices != total_index]
 
+    # Get the macroscopic cross-sections
     total_xs = xs[..., total_index]
-    all_xs = xs[..., nuclide_indices].sum(axis=-1)
+    all_xs = xs[..., nuclide_indices] * self._densities[:-1]
+    all_xs = all_xs.sum(axis=-1)
 
     if not np.allclose(total_xs.ravel(), all_xs.ravel()):
       print('The nuclide micro xs {0} in {1} {2} is not equal to the total macro ' \
