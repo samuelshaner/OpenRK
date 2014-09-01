@@ -6,6 +6,19 @@ import os
 # Type-checking support
 from typecheck import accepts, Or, Exact, Self
 
+# LaTeX Greek symbols for each cross-section type
+greek = dict()
+greek['total'] = '$\\sigma_{t}$'
+greek['transport'] = '$\\sigma_{tr}$'
+greek['absorption'] = '$\\sigma_{a}$'
+greek['scatter'] = '$\\sigma_{s}$'
+greek['nu-scatter'] = '$\\nu\\sigma_{s}$'
+greek['scatter matrix'] = '$\\sigma_{s}$'
+greek['fission'] = '$\\sigma_{f}$'
+greek['nu-fission'] = '$\\nu\\sigma_{f}$'
+greek['chi'] = '$\\chi$'
+greek['diffusion'] = '$D$'
+
 
 class MicroXS(infermc.MultiGroupXS):
 
@@ -14,17 +27,19 @@ class MicroXS(infermc.MultiGroupXS):
 
     super(MicroXS, self).__init__(domain, domain_type, energy_groups)
 
-    # Initialize an empty list for OpenMC Nuclide objects
+    # Initialize empty lists of Nuclides and number densities (at/b-cm)
     self._nuclides = list()
+    self._densities = np.zeros(0)
     self._num_nuclides = 0
 
     if not nuclides is None:
       self.addNuclides(nuclides)
 
 
-  @accepts(Self(), Or(str, openmc.Nuclide))
+  @accepts(Self(), Or(str, tuple))
   def addNuclide(self, nuclide):
-    self._nuclides.append(nuclide)
+    self._nuclides.append(nuclide[0])
+    self._densities = np.append(self._densities, nuclide[1])
     self._num_nuclides += 1
 
 
@@ -63,23 +78,12 @@ class MicroXS(infermc.MultiGroupXS):
     return indices
 
 
-  def checkXS(self):
+  def computeXS(self):
 
-    xs = super(MicroXS, self).getXS()
+    super(MicroXS, self).computeXS()
 
-    if self._xs_type == 'chi':
-      return
-
-    total_index = self.getNuclideIndices([openmc.Nuclide('total')])
-    nuclide_indices = self.getNuclideIndices()
-    nuclide_indices = nuclide_indices[nuclide_indices != total_index]
-
-    total_xs = xs[..., total_index]
-    all_xs = xs[..., nuclide_indices].sum(axis=-1)
-
-    if not np.allclose(total_xs.ravel(), all_xs.ravel()):
-      print('The nuclide micro xs {0} in {1} {2} is not equal to the total macro ' \
-            'macro xs'.format(self._xs_type, self._domain_type, self._domain._id))
+    # Divide out the densities to convert xs to barns
+    self._xs = infermc.uncorr_math.divide_by_scalar(self._xs, self._densities)
 
 
   @accepts(Self(), Or(str, tuple, list, np.ndarray),
@@ -124,7 +128,7 @@ class MicroXS(infermc.MultiGroupXS):
                     '{3: <10}MeV]:\t'.format('', group, bounds[0], bounds[1])
           average = self.getXS([group], [nuclide], [subdomain], 'mean')
           std_dev = self.getXS([group], [nuclide], [subdomain], 'std_dev')
-          string += '{:.2e}+/-{:.2e}'.format(average[0,0], std_dev[0,0])
+          string += '{:.2e}+/-{:.2e}'.format(average[0,0,0], std_dev[0,0,0])
           string += '\n'
 
         string += '\n'
@@ -147,6 +151,7 @@ class MicroXS(infermc.MultiGroupXS):
     # Load pickle file, append the Nuclides, and save it to the file
     xs_results = pickle.load(open(filename, 'rb'))
     xs_results['nuclides'] = self._nuclides
+    xs_results['densities'] = self._densities
     pickle.dump(xs_results, open(filename, 'wb'))
 
 
@@ -166,6 +171,9 @@ class MicroXS(infermc.MultiGroupXS):
 
     # Extract the Nuclides and store them to the class attribute
     nuclides = xs_results['nuclides']
+    densities = xs_results['densities']
+    num_nuclides = len(nuclides)
+    nuclides = [(nuclides[i], densities[i]) for i in range(num_nuclides)]
     self.addNuclides(nuclides)
 
 
@@ -297,6 +305,7 @@ class MicroXS(infermc.MultiGroupXS):
     elif format == 'latex':
 
       import tabulate
+      global greek
 
       # Load the LaTeX file
       filename = directory + '/' + filename + '.tex'
@@ -359,11 +368,11 @@ class MicroXS(infermc.MultiGroupXS):
           if self._domain_type == 'distribcell':
             caption = '\\caption{{{0} {1}, (subdomain {2}) {3} {4}}}'.format(
               self._domain_type.capitalize(), self._domain._id, subdomain,
-              self._nuclides[nuclide]._name, infermc.greek[self._xs_type])
+              self._nuclides[nuclide]._name, greek[self._xs_type])
           else:
             caption = '\\caption{{{0} {1} {2} {3}}}'.format(
               self._domain_type.capitalize(), subdomain,
-              self._nuclides[nuclide]._name, infermc.greek[self._xs_type])
+              self._nuclides[nuclide]._name, greek[self._xs_type])
 
           # Write the MultiGroupXS results to a file
           xs_results.write('\\begin{table}\n')
@@ -404,6 +413,25 @@ class MicroXS(infermc.MultiGroupXS):
       os.system('mv {0}.pdf {1}'.format(filename, directory))
 
     os.system('rm {0}.tex {0}.aux {0}.log'.format(filename))
+
+
+  def checkXS(self):
+
+    xs = super(MicroXS, self).getXS()
+
+    if self._xs_type == 'chi':
+      return
+
+    total_index = self.getNuclideIndices([openmc.Nuclide('total')])
+    nuclide_indices = self.getNuclideIndices()
+    nuclide_indices = nuclide_indices[nuclide_indices != total_index]
+
+    total_xs = xs[..., total_index]
+    all_xs = xs[..., nuclide_indices].sum(axis=-1)
+
+    if not np.allclose(total_xs.ravel(), all_xs.ravel()):
+      print('The nuclide micro xs {0} in {1} {2} is not equal to the total macro ' \
+            'macro xs'.format(self._xs_type, self._domain_type, self._domain._id))
 
 
 class MicroTotalXS(MicroXS, infermc.TotalXS):
@@ -513,7 +541,7 @@ class MicroScatterMatrixXS(MicroXS, infermc.ScatterMatrixXS):
             string += '{0: <12}Group {1} -> Group {2}:\t\t'.format('', in_group, out_group)
             average = self.getXS([in_group], [out_group], [nuclide], [subdomain], 'mean')
             std_dev = self.getXS([in_group], [out_group], [nuclide], [subdomain], 'std_dev')
-            string += '{:.2e}+/-{:.2e}'.format(average[0,0], std_dev[0,0])
+            string += '{:.2e}+/-{:.2e}'.format(average[0,0,0], std_dev[0,0,0])
             string += '\n'
 
         string += '\n'

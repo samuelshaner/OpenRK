@@ -35,10 +35,10 @@ for batch in batches:
   for material in materials:
     for xs_type in xs_types:
       xs = extractor._multigroup_xs['material'][material._id][xs_type]
-#      xs.dumpToFile(filename='material-{0}-{1}'.format(material._id, xs_type))
-#      xs.printXS()
-#      xs.exportResults()
-#      xs.printPDF(filename='material-{0}-{1}'.format(material._id, xs_type))
+      xs.dumpToFile(filename='material-{0}-{1}'.format(material._id, xs_type))
+      xs.printXS()
+      xs.exportResults()
+      xs.printPDF(filename='material-{0}-{1}'.format(material._id, xs_type))
       xs.checkXS()
 
 

@@ -300,7 +300,7 @@ class XSTallyExtractor(object):
 
       # Iterate over the Nuclides requested by the user
       for nuclide in nuclides:
-        if not nuclide in test_tally._nuclides:
+        if not nuclide[0] in test_tally._nuclides:
           contains_nuclides = False
           break
 
@@ -563,8 +563,10 @@ class XSTallyExtractor(object):
     filters.append(openmc.Filter(type='energy', bins=group_edges))
     filters.append(openmc.Filter(type=domain_type, bins=domain._id))
 
-    # Extract a Python list of all Nuclides in the domain of interest
+    # Extract a list of tuples of Nuclides and number densities (at/b-cm)
+    # of all Nuclides in the domain of interest
     nuclides = domain.getAllNuclides().values()
+    tot_density = sum([nuclide[1] for nuclide in nuclides])
 
     if xs_type == 'total':
 
@@ -679,7 +681,7 @@ class XSTallyExtractor(object):
 
     # Compute the cross-section
     multigroup_xs.addNuclides(nuclides)
-    multigroup_xs.addNuclide(openmc.Nuclide('total'))
+    multigroup_xs.addNuclide((openmc.Nuclide('total'), tot_density))
     multigroup_xs.computeXS()
 
     # Build offsets such that a user can query the MultiGroupXS for any region
@@ -731,7 +733,6 @@ class XSTallyExtractor(object):
 
     for domain_type in self._multigroup_xs:
       for domain_id in self._multigroup_xs[domain_type]:
-        print('{0} {1}'.format(domain_type, domain_id))
         total_xs = self._multigroup_xs[domain_type][domain_id]['total']
         total_xs = total_xs.getXS()
 
