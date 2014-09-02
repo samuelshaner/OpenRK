@@ -272,7 +272,7 @@ def scatter_micro_xs(extractor, xs_type, nuclide, domain_types=['distribcell'],
   plt.ylabel('Group {0} [barns]'.format(energy_groups[1]))
   plt.title('{0} {1} Cross-Section'.format(nuclide._name, xs_type.capitalize()))
   plt.grid()
-  plt.legend(legend)
+#  plt.legend(legend)
 
   filename = DIRECTORY + '/' + filename + '.' + extension
 

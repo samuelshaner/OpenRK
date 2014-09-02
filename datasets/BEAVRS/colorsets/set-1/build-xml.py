@@ -11,9 +11,9 @@ import opencsg.plotter as plotter
 ###############################################################################
 
 # OpenMC simulation parameters
-batches = 1000
+batches = 100
 inactive = 25
-particles = 10000
+particles = 100000
 
 
 ###############################################################################
@@ -70,15 +70,23 @@ plot_file.exportToXML()
 ###############################################################################
 
 tally_factory = XSTallyFactory(openmc_geometry)
+micro_tally_factory = MicroXSTallyFactory(openmc_geometry)
 
 groups = group_structures['CASMO']['2-group']
 
-tally_factory.createAllXS(groups, domain_type='distribcell')
-tally_factory.createAllXS(groups, domain_type='material')
-tally_factory.createAllXS(groups, domain_type='cell')
-tally_factory.createAllXS(groups, domain_type='universe')
-
+'''
+tally_factory.createAllMultiGroupXS(groups, domain_type='distribcell')
+tally_factory.createAllMultiGroupXS(groups, domain_type='material')
+tally_factory.createAllMultiGroupXS(groups, domain_type='cell')
+tally_factory.createAllMultiGroupXS(groups, domain_type='universe')
 tally_factory.createTalliesFile()
+'''
+
+micro_tally_factory.createAllMultiGroupXS(groups, domain_type='distribcell')
+micro_tally_factory.createAllMultiGroupXS(groups, domain_type='material')
+micro_tally_factory.createAllMultiGroupXS(groups, domain_type='cell')
+micro_tally_factory.createAllMultiGroupXS(groups, domain_type='universe')
+micro_tally_factory.createTalliesFile()
 
 
 ###############################################################################
