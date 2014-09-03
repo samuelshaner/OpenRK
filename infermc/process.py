@@ -747,6 +747,5 @@ class MicroXSTallyExtractor(XSTallyExtractor):
       for domain_id in self._multigroup_xs[domain_type].keys():
         for xs_type in self._multigroup_xs[domain_type][domain_id].keys():
           xs = self._multigroup_xs[domain_type][domain_id][xs_type]
-          print domain_type, domain_id
           xs.checkXS()
 
