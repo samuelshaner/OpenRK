@@ -40,6 +40,8 @@ class Geometry(object):
     self._regions_to_neighbors = dict()
     self._regions_to_unique_neighbors = dict()
 
+    self._all_cells = None
+
 
   def __deepcopy__(self, memo):
 
@@ -130,12 +132,6 @@ class Geometry(object):
 
 
   def getBounds(self):
-
-    if self._root_universe is None:
-      msg = 'Unable to get the bounds since the Geometry does not ' \
-            'contain the base Universe ID=0'
-      raise ValueError(msg)
-
     bounds = [self._root_universe.getMinX(),
               self._root_universe.getMaxX(),
               self._root_universe.getMinY(),
@@ -147,22 +143,13 @@ class Geometry(object):
 
 
   def getAllCells(self):
+    if self._all_cells is None:
+      self._all_cells = self._root_universe.getAllCells()
 
-    if self._root_universe is None:
-      msg = 'Unable to get all Cells since the Geometry does not ' \
-            'contain the base Universe ID=0'
-      raise ValueError(msg)
-
-    return self._root_universe.getAllCells()
+    return self._all_cells
 
 
   def getAllUniverses(self):
-
-    if self._root_universe is None:
-      msg = 'Unable to get all Universes since the Geometry does not ' \
-            'contain the base Universe ID=0'
-      raise ValueError(msg)
-
     return self._root_universe.getAllUniverses()
 
 
