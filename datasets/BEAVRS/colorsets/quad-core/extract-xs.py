@@ -7,8 +7,8 @@ import infermc.plotter as plotter
 import infermc
 
 
-#batches = range(25, 105, 5)
-batches = [55]
+batches = range(55, 255, 5)
+#batches = [55]
 
 groups = group_structures['CASMO']['2-group']
 
@@ -49,8 +49,9 @@ for batch in batches:
   openmc.reset_auto_ids()
   del micro_extractor, statepoint
 
-  '''
+
   ## MACROS
+  '''
   extractor = XSTallyExtractor(statepoint)
   extractor.extractAllMultiGroupXS(groups, 'material')
   extractor.extractAllMultiGroupXS(groups, 'distribcell')

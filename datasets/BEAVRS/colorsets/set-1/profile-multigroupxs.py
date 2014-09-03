@@ -28,7 +28,6 @@ def profile():
     micro_extractor.extractAllMultiGroupXS(groups, 'distribcell')
     micro_extractor.checkXS()
 
-    '''
     nuclides = micro_extractor._openmc_geometry.getAllNuclides()
 
     for xs_type in infermc.xs_types:
@@ -39,7 +38,7 @@ def profile():
           plotter.scatter_micro_xs(micro_extractor, xs_type, nuclide_tuple[0],
                                 domain_types=['distribcell', 'material'],
                                 filename='{0}-{1}-{2}-batches'.format(nuclide_name, xs_type, batch))
-    '''
+
 
 import cProfile
 cProfile.run('profile()', 'stats')

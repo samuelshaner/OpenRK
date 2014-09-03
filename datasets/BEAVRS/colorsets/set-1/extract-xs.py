@@ -7,8 +7,8 @@ import infermc.plotter as plotter
 import infermc
 
 
-#batches = range(30, 255, 5)
-batches = [30]
+batches = range(30, 255, 30)
+#batches = [30]
 
 groups = group_structures['CASMO']['2-group']
 
@@ -41,10 +41,10 @@ for batch in batches:
   materials = micro_extractor._openmc_geometry.getAllMaterials()
 
   # DUMP-TO-FILE and PRINT XS
-  for material in materials:
-    for xs_type in xs_types:
-      xs = micro_extractor._multigroup_xs['material'][material._id][xs_type]
-      xs.printPDF(directory='micro', filename='material-{0}-{1}'.format(material._id, xs_type))
+#  for material in materials:
+#    for xs_type in xs_types:
+#      xs = micro_extractor._multigroup_xs['material'][material._id][xs_type]
+#      xs.printPDF(directory='micro', filename='material-{0}-{1}'.format(material._id, xs_type))
 
   openmc.reset_auto_ids()
   del micro_extractor, statepoint
