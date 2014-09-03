@@ -883,18 +883,11 @@ class Lattice(Universe):
 
   def getAllCells(self):
 
-    if self._universes is None:
-      msg = 'Unable to get all Cells for Lattice ID={0} since the ' \
-            'universes array has not been set'.format(self._id)
-      raise ValueError(msg)
-
     cells = dict()
+    unique_universes = self.getUniqueUniverses()
 
-    for i in range(self._dimension[0]):
-      for j in range(self._dimension[1]):
-        for k in range(self._dimension[2]):
-          universe = self._universes[k][j][i]
-          cells.update(universe.getAllCells())
+    for universe_id, universe in unique_universes.items():
+      cells.update(universe.getAllCells())
 
     return cells
 
@@ -1492,15 +1485,10 @@ class Cell(object):
 
   def getAllCells(self):
 
-    if self._fill is None:
-      msg = 'Unable to get all Cells from Cell ID={0} since the fill ' \
-            'has not been set'.format(self._id)
-      raise ValueError(msg)
-
     cells = dict()
 
     if self._type == 'universe' or self._type == 'lattice':
-      cells.update(self._fill.getAllCells())
+      cells = self._fill.getAllCells()
 
     return cells
 
