@@ -3,8 +3,6 @@ import infermc
 import numpy as np
 import os
 
-# Type-checking support
-from typecheck import accepts, Or, Exact, Self
 
 # LaTeX Greek symbols for each cross-section type
 greek = dict()
@@ -36,14 +34,12 @@ class MicroXS(infermc.MultiGroupXS):
       self.addNuclides(nuclides)
 
 
-  @accepts(Self(), Or(str, tuple))
   def addNuclide(self, nuclide):
     self._nuclides.append(nuclide[0])
     self._densities = np.append(self._densities, nuclide[1])
     self._num_nuclides += 1
 
 
-  @accepts(Self(), Or(str, list, tuple, np.ndarray))
   def addNuclides(self, nuclides):
     for nuclide in nuclides:
       self.addNuclide(nuclide)
@@ -58,12 +54,10 @@ class MicroXS(infermc.MultiGroupXS):
         tally.addNuclide(nuclide)
 
 
-  @accepts(Self(), openmc.Nuclide)
   def containsNuclide(self, nuclide):
     return (nuclide in self._nuclides)
 
 
-  @accepts(Self(), Or(str, tuple, list, np.ndarray))
   def getNuclideIndices(self, nuclides='all'):
 
     if nuclides == 'all':
@@ -91,17 +85,12 @@ class MicroXS(infermc.MultiGroupXS):
     self._xs = infermc.uncorr_math.divide_by_scalar(self._xs, self._densities)
 
 
-  @accepts(Self(), Or(str, tuple, list, np.ndarray),
-           Or(str, tuple, list, np.ndarray),
-           Or(str, tuple, list, np.ndarray), str)
   def getXS(self, groups='all', nuclides='all', subdomains='all', metric='mean'):
     xs = super(MicroXS, self).getXS(groups, subdomains, metric)
     nuclides = self.getNuclideIndices(nuclides)
     return xs[..., nuclides]
 
 
-  @accepts(Self(), Or(str, tuple, list, np.ndarray),
-           Or(str, tuple, list, np.ndarray))
   def printXS(self, nuclides='all', subdomains='all'):
 
     string = 'Micro XS\n'
@@ -142,7 +131,6 @@ class MicroXS(infermc.MultiGroupXS):
     print(string)
 
 
-  @accepts(Self(), str, str)
   def dumpToFile(self, filename='multigroupxs', directory='multigroupxs'):
 
     # Export all data to the file except for the Nuclides
@@ -160,7 +148,6 @@ class MicroXS(infermc.MultiGroupXS):
     pickle.dump(xs_results, open(filename, 'wb'))
 
 
-  @accepts(Self(), str, str)
   def restoreFromFile(self, filename='multigroupxs', directory='multigroupxs'):
 
     # Import all data from the file except for the Nuclides
@@ -182,8 +169,6 @@ class MicroXS(infermc.MultiGroupXS):
     self.addNuclides(nuclides)
 
 
-  @accepts(Self(), Or(str, tuple, list, np.ndarray),
-           Or(str, tuple, list, np.ndarray), str, str, str, bool)
   def exportResults(self, nuclides='all', subdomains='all',
                     filename='multigroupxs', directory='multigroupxs',
                     format='hdf5', append=True):
@@ -392,8 +377,6 @@ class MicroXS(infermc.MultiGroupXS):
       xs_results.close()
 
 
-  @accepts(Self(), Or(str, tuple, list, np.ndarray),
-           Or(str, tuple, list, np.ndarray), str, str)
   def printPDF(self, nuclides='all', subdomains='all',
                filename='multigroupxs', directory='multigroupxs'):
 
@@ -497,10 +480,6 @@ class MicroScatterMatrixXS(MicroXS, infermc.ScatterMatrixXS):
     self.addNuclidesToTallies()
 
 
-  @accepts(Self(), Or(str, tuple, list, np.ndarray),
-           Or(str, tuple, list, np.ndarray),
-           Or(str, tuple, list, np.ndarray),
-           Or(str, tuple, list, np.ndarray), str)
   def getXS(self, in_groups='all', out_groups='all', nuclides='all',
             subdomains='all', metric='mean'):
 
@@ -509,8 +488,6 @@ class MicroScatterMatrixXS(MicroXS, infermc.ScatterMatrixXS):
     return xs[..., nuclides]
 
 
-  @accepts(Self(), Or(str, tuple, list, np.ndarray),
-           Or(str, tuple, list, np.ndarray))
   def printXS(self, nuclides='all', subdomains='all'):
 
 

@@ -1,4 +1,3 @@
-from typecheck import accepts, Or, Exact, Self
 import numpy as np
 
 
@@ -16,14 +15,11 @@ class EnergyGroups(object):
 
 
   @group_edges.setter
-  @accepts(Self(), Or(list, tuple, np.ndarray))
   def group_edges(self, edges):
     self._group_edges = np.array(edges)
     self._num_groups = len(edges)-1
 
 
-  @accepts(Self(), Or(int, float), Or(int, float), int,
-           Or(Exact('linear'), Exact('logarithmic')))
   def generateBinEdges(self, start, stop, num_groups, type='linear'):
 
     self._num_groups = num_groups
@@ -34,7 +30,6 @@ class EnergyGroups(object):
       self._group_edges = np.logspace(np.log(start), np.log(stop), num_groups+1)
 
 
-  @accepts(Self(), Or(int, float))
   def getGroup(self, energy):
 
     # Assumes energy is in eV
@@ -49,7 +44,6 @@ class EnergyGroups(object):
     return group
 
 
-  @accepts(Self(), int)
   def getGroupBounds(self, group):
 
     if self._group_edges is None:
@@ -62,7 +56,6 @@ class EnergyGroups(object):
     return (lower, upper)
 
 
-  @accepts(Self(), Or(str, list, tuple, np.ndarray))
   def getGroupIndices(self, groups='all'):
 
     if self._group_edges is None:

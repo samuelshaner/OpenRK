@@ -3,8 +3,6 @@ import infermc
 import numpy as np
 import os, abc
 
-# Type-checking support
-from typecheck import accepts, Or, Exact, Self
 
 # Supported cross-section types
 xs_types = ['total',
@@ -28,10 +26,6 @@ domain_types = ['cell',
 # Supported domain objects
 domains = [openmc.Cell, openmc.Universe, openmc.Material, openmc.Mesh]
 
-# Type collections for use with the typecheck module
-xs_types_check = Or(*[Exact(xs_type) for xs_type in xs_types])
-domain_types_check = Or(*[Exact(domain_type) for domain_type in domain_types])
-domains_check = Or(*[domain for domain in domains])
 
 # LaTeX Greek symbols for each cross-section type
 greek = dict()
@@ -101,7 +95,6 @@ class MultiGroupXS(object):
 
 
   @energy_groups.setter
-  @accepts(Self(), infermc.EnergyGroups)
   def energy_groups(self, energy_groups):
     self._energy_groups = energy_groups
     self._num_groups = energy_groups._num_groups
@@ -118,7 +111,6 @@ class MultiGroupXS(object):
 
 
   @domain.setter
-  @accepts(Self(), domains_check)
   def domain(self, domain):
 
     self._domain = domain
@@ -148,7 +140,6 @@ class MultiGroupXS(object):
 
 
   @domain_type.setter
-  @accepts(Self(), domain_types_check)
   def domain_type(self, domain_type):
     self._domain_type = domain_type
 
@@ -165,14 +156,11 @@ class MultiGroupXS(object):
       self._offset = domain_filter._offset
 
 
-  @accepts(Self(), int, int)
   def setSubDomainOffset(self, domain_id, offset):
     self._subdomain_offsets[domain_id] = offset
 
 
   @abc.abstractmethod
-  @accepts(Self(), [str], [[openmc.Filter]], [str],
-           Or(Exact('analog'), Exact('tracklength')), )
   def createTallies(self, scores, filters, keys, estimator):
 
     if self._energy_groups is None:
@@ -251,7 +239,6 @@ class MultiGroupXS(object):
     return tally_data, zero_indices
 
 
-  @accepts(Self(), Or(str, tuple, list, np.ndarray))
   def getSubDomainOffsets(self, subdomains='all'):
 
     if subdomains == 'all':
@@ -271,7 +258,6 @@ class MultiGroupXS(object):
     return offsets
 
 
-  @accepts(Self(), Or(str, tuple, list, np.ndarray))
   def getSubDomains(self, offsets='all'):
 
     if offsets == 'all':
@@ -294,8 +280,6 @@ class MultiGroupXS(object):
     return subdomains
 
 
-  @accepts(Self(), Or(str, tuple, list, np.ndarray),
-           Or(str, tuple, list, np.ndarray), str)
   def getXS(self, groups='all', subdomains='all', metric='mean'):
 
     if self._xs is None:
@@ -311,7 +295,6 @@ class MultiGroupXS(object):
     return xs
 
 
-  @accepts(Self(), Or(str, tuple, list, np.ndarray))
   def printXS(self, subdomains='all'):
 
     string = 'Multi-Group XS\n'
@@ -345,7 +328,6 @@ class MultiGroupXS(object):
     print(string)
 
 
-  @accepts(Self(), str, str)
   def dumpToFile(self, filename='multigroupxs', directory='multigroupxs'):
 
     import pickle
@@ -373,7 +355,6 @@ class MultiGroupXS(object):
     pickle.dump(xs_results, open(filename, 'wb'))
 
 
-  @accepts(Self(), str, str)
   def restoreFromFile(self, filename='multigroupxs', directory='multigroupxs'):
 
     import pickle
@@ -412,7 +393,6 @@ class MultiGroupXS(object):
     self._subdomain_offsets = subdomain_offsets
 
 
-  @accepts(Self(), Or(str, tuple, list, np.ndarray), str, str, str, bool)
   def exportResults(self, subdomains='all', filename='multigroupxs',
                     directory='multigroupxs', format='hdf5', append=True):
 
@@ -598,7 +578,6 @@ class MultiGroupXS(object):
       xs_results.close()
 
 
-  @accepts(Self(), Or(str, tuple, list, np.ndarray), str, str)
   def printPDF(self, subdomains='all', filename='multigroupxs',
                directory='multigroupxs'):
 
@@ -999,9 +978,6 @@ class ScatterMatrixXS(MultiGroupXS):
     self._xs += 0.
 
 
-  @accepts(Self(), Or(str, tuple, list, np.ndarray),
-           Or(str, tuple, list, np.ndarray),
-           Or(str, tuple, list, np.ndarray), str)
   def getXS(self, in_groups='all', out_groups='all',
             subdomains='all', metric='mean'):
 
@@ -1019,7 +995,6 @@ class ScatterMatrixXS(MultiGroupXS):
     return xs
 
 
-  @accepts(Self(), Or(str, tuple, list, np.ndarray))
   def printXS(self, subdomains='all'):
 
     string = 'Multi-Group XS\n'

@@ -1,10 +1,9 @@
 from datasets.energy_groups import group_structures
 import openmc
 from openmc.statepoint import StatePoint
-from infermc.process import XSTallyExtractor
-from infermc.multigroupxs import xs_types
-from infermc.plotter import scatter_multigroup_xs
-import numpy as np
+from infermc.process import MicroXSTallyExtractor
+import infermc
+import infermc.plotter as plotter
 
 
 def profile():
@@ -23,29 +22,22 @@ def profile():
     # Initialize a handle on the OpenMC statepoint file
     statepoint = openmc.statepoint.StatePoint(filename)
 
-    # Initialize an InferMC XSTallyExtractor object to compute cross-sections
-    extractor = XSTallyExtractor(statepoint)
+    ## MICROS
+    micro_extractor = MicroXSTallyExtractor(statepoint)
+    micro_extractor.extractAllMultiGroupXS(groups, 'material')
+    micro_extractor.extractAllMultiGroupXS(groups, 'distribcell')
+    micro_extractor.checkXS()
 
-    extractor.extractAllMultiGroupXS(groups, 'material')
-    extractor.extractAllMultiGroupXS(groups, 'distribcell')
+    nuclides = micro_extractor._openmc_geometry.getAllNuclides()
 
-    for xs_type in xs_types:
-
-      cells = extractor._opencsg_geometry.getAllMaterialCells()
-
-      for cell in cells:
-
-        xs = extractor.getMultiGroupXS(xs_type, cell._id, 'distribcell')
-        filename = 'cell-{0}-{1}'.format(cell._id, xs_type)
-        xs.dumpToFile(filename)
+    for xs_type in infermc.xs_types:
 
       if xs_type != 'scatter matrix':
-        scatter_multigroup_xs(extractor, xs_type,
-                              domain_types=['material', 'material'],
-                              colors=['unique neighbors', 'material'], extension='png',
-                              filename='{0}-{1}-batches'.format(xs_type,batch))
 
-    openmc.reset_auto_ids()
+        for nuclide_name, nuclide_tuple in nuclides.items():
+          plotter.scatter_micro_xs(micro_extractor, xs_type, nuclide_tuple[0],
+                                domain_types=['distribcell', 'material'],
+                                filename='{0}-{1}-{2}-batches'.format(nuclide_name, xs_type, batch))
 
 import cProfile
 cProfile.run('profile()', 'stats')

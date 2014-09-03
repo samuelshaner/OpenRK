@@ -7,7 +7,7 @@ import infermc.plotter as plotter
 import infermc
 
 
-#batches = range(25, 105, 5)
+#batches = range(30, 255, 5)
 batches = [30]
 
 groups = group_structures['CASMO']['2-group']

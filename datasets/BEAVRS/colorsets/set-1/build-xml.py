@@ -11,7 +11,7 @@ import opencsg.plotter as plotter
 ###############################################################################
 
 # OpenMC simulation parameters
-batches = 100
+batches = 250
 inactive = 25
 particles = 100000
 

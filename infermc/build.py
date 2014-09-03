@@ -3,9 +3,6 @@ from openmc.tallies import TalliesFile
 import infermc
 from infermc.microxs import *
 
-# Type-checking support
-from typecheck import accepts, Or, Exact, Self
-
 
 class XSTallyFactory(object):
 
@@ -25,12 +22,10 @@ class XSTallyFactory(object):
 
 
   @geometry.setter
-  @accepts(Self(), Geometry)
   def geometry(self, geometry):
     self._geometry = geometry
 
 
-  @accepts(Self(), str, infermc.EnergyGroups, infermc.domains_check, infermc.domain_types_check)
   def createMultiGroupXS(self, xs_type, energy_groups, domain,
                          domain_type='distribcell'):
 
@@ -64,7 +59,6 @@ class XSTallyFactory(object):
     self._all_xs.append(xs)
 
 
-  @accepts(Self(), infermc.EnergyGroups, infermc.domain_types_check)
   def createAllMultiGroupXS(self, energy_groups, domain_type='distribcell'):
 
     if domain_type == 'distribcell' or domain_type == 'cell':
@@ -95,8 +89,6 @@ class XSTallyFactory(object):
 class MicroXSTallyFactory(XSTallyFactory):
 
 
-  @accepts(Self(), str, infermc.EnergyGroups, infermc.domains_check,
-           infermc.domain_types_check, Or(Exact(None), [Nuclide]))
   def createMultiGroupXS(self, xs_type, energy_groups, domain,
                     domain_type='distribcell', nuclides=None):
 
@@ -135,7 +127,6 @@ class MicroXSTallyFactory(XSTallyFactory):
     self._all_xs.append(xs)
 
 
-  @accepts(Self(), infermc.EnergyGroups, infermc.domain_types_check, Or(Exact(None), [Nuclide]))
   def createAllMultiGroupXS(self, energy_groups, domain_type='distribcell',
                             nuclides=None):
 

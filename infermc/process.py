@@ -3,11 +3,7 @@ import opencsg
 import infermc
 import numpy as np
 
-# Type-checking support
-from typecheck import accepts, Or, Exact, Self
 
-
-@accepts(opencsg.LocalCoords)
 def get_path(coords):
 
   # Build "path" from LocalCoords
@@ -39,7 +35,7 @@ def get_path(coords):
     # Traverse LocalCoords linked list to next lowest nested universe
     coords = coords._next
 
-  return path
+  return tuple(path)
 
 
 
@@ -84,7 +80,6 @@ class XSTallyExtractor(object):
     return self._statepoint
 
   @statepoint.setter
-  @accepts(Self(), openmc.statepoint.StatePoint)
   def statepoint(self, statepoint):
 
     self._statepoint = statepoint
@@ -225,13 +220,10 @@ class XSTallyExtractor(object):
       self._all_paths[region] = get_path(coord)
 
 
-  @accepts(Self(), int)
   def getPath(self, region):
     return self._all_paths[region]
 
 
-  @accepts(Self(), str, [openmc.Filter], Or(list, tuple, np.ndarray),
-           Or(Exact('analog'), ('tracklength')), str)
   def getTally(self, score, filters, nuclides=[],
                estimator='tracklength', label=''):
 
@@ -317,14 +309,12 @@ class XSTallyExtractor(object):
     return tally
 
 
-  @accepts(Self(), infermc.infermc.EnergyGroups, infermc.domain_types_check)
   def extractAllMultiGroupXS(self, energy_groups, domain_type='distribcell'):
 
     for xs_type in infermc.xs_types:
       self.extractMultiGroupXS(xs_type, energy_groups, domain_type)
 
 
-  @accepts(Self(), infermc.infermc.xs_types_check, infermc.EnergyGroups, infermc.domain_types_check)
   def extractMultiGroupXS(self, xs_type, energy_groups, domain_type='distribcell'):
 
     # Add nested dictionary for this domain type if needed
@@ -355,7 +345,6 @@ class XSTallyExtractor(object):
       self._multigroup_xs[domain_type][domain._id][xs_type] = xs
 
 
-  @accepts(Self(), infermc.infermc.xs_types_check, infermc.EnergyGroups, infermc.domains_check, infermc.domain_types_check)
   def createMultiGroupXS(self, xs_type, energy_groups,
                          domain, domain_type='distribcell'):
 
@@ -509,7 +498,6 @@ class XSTallyExtractor(object):
     return multigroup_xs
 
 
-  @accepts(Self(), infermc.xs_types_check, int, infermc.domain_types_check)
   def getMultiGroupXS(self, xs_type, domain, domain_type):
 
     # Check that MultiGroupXS for the input parameters has been created
@@ -556,14 +544,12 @@ class XSTallyExtractor(object):
 class MicroXSTallyExtractor(XSTallyExtractor):
 
 
-  @accepts(Self(), infermc.EnergyGroups, infermc.domain_types_check)
   def extractAllMultiGroupXS(self, energy_groups, domain_type='distribcell'):
 
     for xs_type in infermc.xs_types:
       self.extractMultiGroupXS(xs_type, energy_groups, domain_type)
 
 
-  @accepts(Self(), infermc.infermc.xs_types_check, infermc.EnergyGroups, infermc.domain_types_check)
   def extractMultiGroupXS(self, xs_type, energy_groups, domain_type='distribcell'):
 
     # Add nested dictionary for this domain type if needed
@@ -594,7 +580,6 @@ class MicroXSTallyExtractor(XSTallyExtractor):
       self._multigroup_xs[domain_type][domain._id][xs_type] = xs
 
 
-  @accepts(Self(), infermc.infermc.xs_types_check, infermc.EnergyGroups, infermc.domains_check, infermc.domain_types_check)
   def createMultiGroupXS(self, xs_type, energy_groups, domain, domain_type='distribcell'):
 
     if self._statepoint is None:
@@ -762,5 +747,6 @@ class MicroXSTallyExtractor(XSTallyExtractor):
       for domain_id in self._multigroup_xs[domain_type].keys():
         for xs_type in self._multigroup_xs[domain_type][domain_id].keys():
           xs = self._multigroup_xs[domain_type][domain_id][xs_type]
+          print domain_type, domain_id
           xs.checkXS()
 

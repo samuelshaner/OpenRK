@@ -16,9 +16,6 @@ from infermc.process import XSTallyExtractor, MicroXSTallyExtractor
 import numpy as np
 import os
 
-# Type-checking support
-from typecheck import accepts, Or, Exact
-
 
 # A static variable for the output directory in which to save plots
 DIRECTORY = "plots/"
@@ -35,7 +32,6 @@ SCATTER_SIZES['universe'] = 100
 
 
 # Build color maps
-@accepts(opencsg.Geometry)
 def get_color_maps(geometry):
 
   # Initialize the offsets used for computing region IDs
@@ -117,7 +113,6 @@ def get_color_maps(geometry):
   return color_maps, range
 
 
-@accepts(XSTallyExtractor, str, [str], (int, int), [str], str, str)
 def scatter_multigroup_xs(extractor, xs_type, domain_types=['distribcell'],
                           energy_groups=(1,2), colors=['domain_type'],
                           filename='multigroup-xs', extension='png'):
@@ -232,8 +227,6 @@ def scatter_multigroup_xs(extractor, xs_type, domain_types=['distribcell'],
   plt.close(fig)
 
 
-@accepts(MicroXSTallyExtractor, str, openmc.Nuclide,
-         [str], (int, int), str, str)
 def scatter_micro_xs(extractor, xs_type, nuclide, domain_types=['distribcell'],
                      energy_groups=(1,2), filename='micro-xs', extension='png'):
 

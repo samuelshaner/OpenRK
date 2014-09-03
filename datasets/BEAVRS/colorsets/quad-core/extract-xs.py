@@ -8,7 +8,7 @@ import infermc
 
 
 #batches = range(25, 105, 5)
-batches = [60]
+batches = [55]
 
 groups = group_structures['CASMO']['2-group']
 
