@@ -35,7 +35,7 @@ for batch in batches:
 
       for nuclide_name, nuclide_tuple in nuclides.items():
         plotter.scatter_micro_xs(micro_extractor, xs_type, nuclide_tuple[0],
-                              domain_types=['distribcell', 'material'],
+                              domain_types=['distribcell'],
                               filename='{0}-{1}-{2}-batches'.format(nuclide_name, xs_type, batch))
 
   materials = micro_extractor._openmc_geometry.getAllMaterials()

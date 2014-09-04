@@ -82,7 +82,8 @@ class MicroXS(infermc.MultiGroupXS):
     super(MicroXS, self).computeXS()
 
     # Divide out the densities to convert xs to barns
-    self._xs = infermc.uncorr_math.divide_by_scalar(self._xs, self._densities)
+    if self._xs_type != 'chi':
+      self._xs = infermc.uncorr_math.divide_by_scalar(self._xs, self._densities)
 
 
   def getXS(self, groups='all', nuclides='all', subdomains='all', metric='mean'):
