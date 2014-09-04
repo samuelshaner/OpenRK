@@ -26,6 +26,8 @@ class Geometry(object):
     # A NumPy array of volumes for each region, indexed by Region ID
     self._region_volumes = None
 
+    self._all_cells = None
+
     # Dictionaries mapping neighbor hashes to consecutive integers
     # Keys    - hashes of the tuples of (unique) neighbors
     # Values  - monotonically consecutive non-negative integers
@@ -39,8 +41,6 @@ class Geometry(object):
     # Values  - hashes of the tuples of (unique) neighbors
     self._regions_to_neighbors = dict()
     self._regions_to_unique_neighbors = dict()
-
-    self._all_cells = None
 
 
   def __deepcopy__(self, memo):
@@ -61,6 +61,7 @@ class Geometry(object):
       clone._unique_neighbor_ids = copy.deepcopy(self._unique_neighbor_ids, memo)
       clone._regions_to_neighbors = copy.deepcopy(self._regions_to_neighbors, memo)
       clone._regions_to_unique_neighbors = copy.deepcopy(self._regions_to_unique_neighbors, memo)
+      clone._all_cells = copy.deepcopy(self._all_cells, memo)
 
       memo[id(self)] = clone
 
@@ -143,6 +144,7 @@ class Geometry(object):
 
 
   def getAllCells(self):
+
     if self._all_cells is None:
       self._all_cells = self._root_universe.getAllCells()
 
