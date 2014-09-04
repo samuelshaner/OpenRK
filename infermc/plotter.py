@@ -80,7 +80,8 @@ def get_color_maps(geometry):
 
 def scatter_multigroup_xs(extractor, filename, xs_types='all',
                           domain_types='all', energy_groups=(1,2),
-                          colors=['domain_type'], extension='png'):
+                          colors=['domain_type'], extension='png',
+                          xlim=None, ylim=None):
 
   global DIRECTORY
   global SCATTER_SIZES
@@ -145,6 +146,12 @@ def scatter_multigroup_xs(extractor, filename, xs_types='all',
     plt.title('{0} {1} Cross-Section'.format(xs_type.capitalize()))
     plt.grid()
 
+    if not xlim is None:
+      plt.xlim(xlim)
+
+    if not ylim is None:
+      plt.ylim(ylim)
+
     ax = plt.subplot(111)
     ax.yaxis.set_major_formatter(axis_formatter)
     ax.xaxis.set_major_formatter(axis_formatter)
@@ -169,7 +176,8 @@ def scatter_multigroup_xs(extractor, filename, xs_types='all',
 
 def scatter_micro_xs(extractor, filename, nuclides='all', xs_types='all',
                      domain_types='all', energy_groups=(1,2),
-                     colors=['domain_type'], extension='png'):
+                     colors=['domain_type'], extension='png',
+                     xlim=None, ylim=None):
 
   global DIRECTORY
   global SCATTER_SIZES
@@ -244,6 +252,12 @@ def scatter_micro_xs(extractor, filename, nuclides='all', xs_types='all',
       plt.title('{0} {1} Cross-Section'.format(nuclide._name,
                                                xs_type.capitalize()))
       plt.grid()
+
+      if not xlim is None:
+        plt.xlim(xlim)
+
+      if not ylim is None:
+        plt.ylim(ylim)
 
       ax = plt.subplot(111)
       ax.yaxis.set_major_formatter(axis_formatter)

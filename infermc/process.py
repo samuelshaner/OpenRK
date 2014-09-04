@@ -541,6 +541,40 @@ class XSTallyExtractor(object):
                                               self._domain._id))
 
 
+  def getMaxXS(self, xs_type, domain_type, group):
+
+    max_xs = 1e10
+
+    for domain in self._multigroup_xs[domain_type].keys():
+      xs = self.getMultiGroupXS(xs_type, domain, domain_type)
+
+      if xs_type != 'scatter matrix':
+        data = xs.getXS(groups=[group])
+      else:
+        data = xs.getXS(in_groups=[group], out_groups=[group])
+
+      max_xs = max(max_xs, np.amax(data.ravel()))
+
+    return max_xs
+
+
+  def getMinXS(self, xs_type, domain_type, group):
+
+    min_xs = -1.
+
+    for domain in self._multigroup_xs[domain_type].keys():
+      xs = self.getMultiGroupXS(xs_type, domain, domain_type)
+
+      if xs_type != 'scatter matrix':
+        data = xs.getXS(groups=[group])
+      else:
+        data = xs.getXS(in_groups=[group], out_groups=[group])
+
+      min_xs = min(min_xs, np.amin(data.ravel()))
+
+    return min_xs
+
+
 class MicroXSTallyExtractor(XSTallyExtractor):
 
 
@@ -749,3 +783,42 @@ class MicroXSTallyExtractor(XSTallyExtractor):
           xs = self._multigroup_xs[domain_type][domain_id][xs_type]
           xs.checkXS()
 
+
+  def getMaxXS(self, xs_type, nuclide, domain_type, group):
+
+    max_xs = -1.
+
+    for domain in self._multigroup_xs[domain_type].keys():
+      xs = self.getMultiGroupXS(xs_type, domain, domain_type)
+
+      if not xs.containsNuclide(nuclide):
+        continue
+
+      if xs_type != 'scatter matrix':
+        data = xs.getXS(groups=[group], nuclides=[nuclide])
+      else:
+        data = xs.getXS(in_groups=[group], out_groups=[group], nuclides=[nuclide])
+
+      max_xs = max(max_xs, np.amax(data.ravel()))
+
+    return max_xs
+
+
+  def getMinXS(self, xs_type, nuclide, domain_type, group):
+
+    min_xs = 1e10
+
+    for domain in self._multigroup_xs[domain_type].keys():
+      xs = self.getMultiGroupXS(xs_type, domain, domain_type)
+
+      if not xs.containsNuclide(nuclide):
+        continue
+
+      if xs_type != 'scatter matrix':
+        data = xs.getXS(groups=[group], nuclides=[nuclide])
+      else:
+        data = xs.getXS(in_groups=[group], out_groups=[group], nuclides=[nuclide])
+
+      min_xs = min(min_xs, np.amin(data.ravel()))
+
+    return min_xs
