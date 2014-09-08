@@ -869,14 +869,11 @@ class Lattice(Universe):
             'the universes array has not been set'.format(self._id)
       raise ValueError(msg)
 
+    unique_universes = np.unique(self._universes.ravel())
     universes = dict()
 
-    for i in range(self._dimension[0]):
-      for j in range(self._dimension[1]):
-        for k in range(self._dimension[2]):
-          universe = self._universes[k][j][i]
-          universe_id = universe._id
-          universes[universe_id] = universe
+    for universe in unique_universes:
+      universes[universe._id] = universe
 
     return universes
 
@@ -1068,7 +1065,6 @@ class Lattice(Universe):
             'since it is not a Python tuple/list or ' \
             'NumPy array'.format(self._id, universes)
       raise ValueError(msg)
-
 
     # if universes was input in 2D -> make 3D
     shape = np.shape(universes)
