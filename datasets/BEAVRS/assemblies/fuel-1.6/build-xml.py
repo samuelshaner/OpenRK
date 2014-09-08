@@ -46,6 +46,7 @@ settings_file.setInactive(inactive)
 settings_file.setParticles(particles)
 settings_file.setStatepointInterval(5)
 settings_file.setOutput({'tallies': False})
+settings_file.setPTables(True)
 source_bounds = [geometry.getMinX(), geometry.getMinY(), geometry.getMinZ(), \
                  geometry.getMaxX(), geometry.getMaxY(), geometry.getMaxZ()]
 settings_file.setSourceSpace('box', source_bounds)
@@ -73,27 +74,27 @@ micro_tally_factory = MicroXSTallyFactory(openmc_geometry)
 
 groups = group_structures['CASMO']['2-group']
 
+'''
 tally_factory.createAllMultiGroupXS(groups, domain_type='distribcell')
 tally_factory.createAllMultiGroupXS(groups, domain_type='material')
 tally_factory.createAllMultiGroupXS(groups, domain_type='cell')
 tally_factory.createAllMultiGroupXS(groups, domain_type='universe')
 tally_factory.createTalliesFile()
-
 '''
+
 micro_tally_factory.createAllMultiGroupXS(groups, domain_type='distribcell')
 micro_tally_factory.createAllMultiGroupXS(groups, domain_type='material')
 micro_tally_factory.createAllMultiGroupXS(groups, domain_type='cell')
 micro_tally_factory.createAllMultiGroupXS(groups, domain_type='universe')
 micro_tally_factory.createTalliesFile()
-'''
 
 
 ###############################################################################
 #########################   Plotting the Geometry  ############################
 ###############################################################################
 
-#plotter.plot_neighbor_cells(geometry)
-#plotter.plot_neighbor_cells(geometry, unique=True)
-#plotter.plot_regions(geometry)
-#plotter.plot_materials(geometry)
-#plotter.plot_cells(geometry)
+plotter.plot_neighbor_cells(geometry)
+plotter.plot_neighbor_cells(geometry, unique=True)
+plotter.plot_regions(geometry)
+plotter.plot_materials(geometry)
+plotter.plot_cells(geometry)

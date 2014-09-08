@@ -3,6 +3,8 @@ from openmc import *
 from datasets.BEAVRS.materials import openmc_materials
 from geometry import geometry
 from infermc.build import *
+import opencsg.plotter as plotter
+
 
 
 ###############################################################################
@@ -45,6 +47,7 @@ settings_file.setInactive(inactive)
 settings_file.setParticles(particles)
 settings_file.setStatepointInterval(5)
 settings_file.setOutput({'tallies': False})
+settings_file.setPTables(True)
 source_bounds = [geometry.getMinX(), geometry.getMinY(), geometry.getMinZ(), \
                  geometry.getMaxX(), geometry.getMaxY(), geometry.getMaxZ()]
 settings_file.setSourceSpace('box', source_bounds)
@@ -67,13 +70,14 @@ plot_file.exportToXML()
 ##################   Exporting to OpenMC tallies.xml File  ####################
 ###############################################################################
 
-tally_factory = XSTallyFactory(openmc_geometry)
 
-groups = group_structures['CASMO']['8-group']
 
-tally_factory.createAllXS(groups, domain_type='distribcell')
-tally_factory.createAllXS(groups, domain_type='material')
-tally_factory.createAllXS(groups, domain_type='cell')
-tally_factory.createAllXS(groups, domain_type='universe')
+###############################################################################
+#########################   Plotting the Geometry  ############################
+###############################################################################
 
-tally_factory.createTalliesFile()
+plotter.plot_neighbor_cells(geometry)
+plotter.plot_neighbor_cells(geometry, unique=True)
+plotter.plot_regions(geometry)
+plotter.plot_materials(geometry)
+plotter.plot_cells(geometry)

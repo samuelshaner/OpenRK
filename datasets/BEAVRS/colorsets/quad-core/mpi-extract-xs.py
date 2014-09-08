@@ -103,9 +103,9 @@ while (curr_batch >= first_batch) and (curr_batch <= last_batch):
       plotter.scatter_micro_xs(extractor, xs_types=[xs_type], nuclides=[nuclide],
                                domain_types=['distribcell', 'cell'],
                                colors=['cell', 'cell'],
-                               filename='batch-{0}'.format(curr_batch),
-                               xlim=[0.9*all_min_xs[i,j,0], 1.1*all_max_xs[i,j,0]],
-                               ylim=[0.9*all_min_xs[i,j,1], 1.1*all_max_xs[i,j,1]])
+                               filename='batch-{0}'.format(curr_batch)) #,
+#                               xlim=[0.9*all_min_xs[i,j,0], 1.1*all_max_xs[i,j,0]],
+#                               ylim=[0.9*all_min_xs[i,j,1], 1.1*all_max_xs[i,j,1]])
 
 
   openmc.reset_auto_ids()

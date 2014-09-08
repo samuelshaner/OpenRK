@@ -47,6 +47,7 @@ settings_file.setParticles(particles)
 settings_file.setStatepointInterval(5)
 settings_file.setThreads(8)
 settings_file.setOutput({'tallies': False})
+settings_file.setPTables(True)
 source_bounds = [geometry.getMinX(), geometry.getMinY(), geometry.getMinZ(), \
                  geometry.getMaxX(), geometry.getMaxY(), geometry.getMaxZ()]
 settings_file.setSourceSpace('box', source_bounds)
@@ -93,8 +94,8 @@ micro_tally_factory.createTalliesFile()
 ##########################   Ploting the Geometry  ############################
 ###############################################################################
 
-#plotter.plot_neighbor_cells(geometry)
-#plotter.plot_neighbor_cells(geometry, unique=True)
-#plotter.plot_regions(geometry)
-#plotter.plot_materials(geometry)
-#plotter.plot_cells(geometry)
+plotter.plot_neighbor_cells(geometry)
+plotter.plot_neighbor_cells(geometry, unique=True)
+plotter.plot_regions(geometry)
+plotter.plot_materials(geometry)
+plotter.plot_cells(geometry)

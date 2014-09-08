@@ -4,7 +4,7 @@ import matplotlib
 # in your ~/.matplotlib/matplotlibrc
 matplotlib.use('Agg')
 
-import matplotlib.pyplot as plt
+import pylab as plt
 
 # Force non-interactive mode, or set 'interactive' to False
 # in your ~/.matplotlib/matplotlibrc
