@@ -11,6 +11,11 @@ MATERIAL_IDS = list()
 # A static variable for auto-generated Material IDs
 AUTO_MATERIAL_ID = 10000
 
+def reset_auto_material_id():
+  global AUTO_MATERIAL_ID, MATERIAL_IDS
+  AUTO_MATERIAL_ID = 10000
+  MATERIAL_IDS = list()
+
 
 class Material(object):
 
@@ -27,7 +32,7 @@ class Material(object):
 
   def __deepcopy__(self, memo):
 
-    existing = memo.get(self)
+    existing = memo.get(id(self))
 
     # If this is the first time we have tried to copy this object, create a copy
     if existing is None:
@@ -36,11 +41,29 @@ class Material(object):
       clone._id = self._id
       clone._name = self._name
 
+      memo[id(self)] = clone
+
       return clone
 
     # If this object has been copied before, return the first copy made
     else:
       return existing
+
+
+  def __gt__(self, other):
+    return (id(self) > id(other))
+
+
+  def __ge__(self, other):
+    return (id(self) >= id(other))
+
+
+  def __lt__(self, other):
+    return (id(self) < id(other))
+
+
+  def __le__(self, other):
+    return (id(self) <= id(other))
 
 
   def setId(self, material_id=None):

@@ -27,7 +27,7 @@ class RadialMesh(object):
 
   def __deepcopy__(self, memo):
 
-    existing = memo.get(self)
+    existing = memo.get(id(self))
 
     # If this is the first time we have tried to copy this object, create a copy
     if existing is None:
@@ -38,6 +38,8 @@ class RadialMesh(object):
       clone._min_radius = self._min_radius
       clone._with_outer = self._with_outer
       clone._with_inner = self._with_inner
+
+      memo[id(self)] = clone
 
       return clone
 
@@ -207,13 +209,15 @@ class SectorMesh(object):
 
   def __deepcopy__(self, memo):
 
-    existing = memo.get(self)
+    existing = memo.get(id(self))
 
     # If this is the first time we have tried to copy this object, create a copy
     if existing is None:
 
       clone = type(self).__new__(type(self))
       clone._num_sectors = self._num_sectors
+
+      memo[id(self)] = clone
 
       return clone
 

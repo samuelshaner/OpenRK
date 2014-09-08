@@ -6,11 +6,11 @@ from opencsg.material import Material
 from opencsg.surface import Surface, ON_SURFACE_THRESH
 from opencsg.point import Point
 from opencsg.checkvalue import *
-import numpy as np
-import math
 from collections import OrderedDict
+from hashlib import sha1
+import numpy as np
 from numpy.lib.stride_tricks import as_strided
-import copy
+import copy, math
 
 
 # Error threshold for determining how close to the boundary of a Lattice cell
@@ -22,6 +22,11 @@ UNIVERSE_IDS = list()
 
 # A static variable for auto-generated Universe IDs
 AUTO_UNIVERSE_ID = 10000
+
+def reset_auto_universe_id():
+  global AUTO_UNIVERSE_ID, UNIVERSE_IDS
+  AUTO_UNIVERSE_ID = 10000
+  UNIVERSE_IDS = list()
 
 MAX_FLOAT = np.finfo(np.float64).max
 MIN_FLOAT = np.finfo(np.float64).min
@@ -52,7 +57,7 @@ class Universe(object):
 
   def __deepcopy__(self, memo):
 
-    existing = memo.get(self)
+    existing = memo.get(id(self))
 
     # If this is the first time we have tried to copy this object, create a copy
     if existing is None:
@@ -60,16 +65,38 @@ class Universe(object):
       clone = type(self).__new__(type(self))
       clone._id = self._id
       clone._name = self._name
-      clone._cells = copy.deepcopy(self._cells)
-      clone._cell_offsets = copy.deepcopy(self._cell_offsets)
+
+      clone._cells = dict()
+      for cell_id in self._cells:
+        clone._cells[cell_id] = copy.deepcopy(self._cells[cell_id], memo)
+
+      clone._cell_offsets = copy.deepcopy(self._cell_offsets, memo)
       clone._num_regions = self._num_regions
       clone._volume = self._volume
+
+      memo[id(self)] = clone
 
       return clone
 
     # If this object has been copied before, return the first copy made
     else:
       return existing
+
+
+  def __gt__(self, other):
+    return (id(self) > id(other))
+
+
+  def __ge__(self, other):
+    return (id(self) >= id(other))
+
+
+  def __lt__(self, other):
+    return (id(self) < id(other))
+
+
+  def __le__(self, other):
+    return (id(self) <= id(other))
 
 
   def getAllCells(self):
@@ -571,7 +598,7 @@ class Lattice(Universe):
 
   def __deepcopy__(self, memo):
 
-    existing = memo.get(self)
+    existing = memo.get(id(self))
 
     # If this is the first time we have tried to copy this object, create a copy
     if existing is None:
@@ -582,12 +609,21 @@ class Lattice(Universe):
       clone._type = self._type
       clone._dimension = self._dimension
       clone._width = self._width
-      clone._universes = copy.deepcopy(self._universes)
-      clone._cell_offsets = copy.deepcopy(self._cell_offsets)
+
+      clone._universes = np.empty(self._universes.shape, dtype=Universe)
+      for i in range(self._dimension[0]):
+        for j in range(self._dimension[1]):
+          for k in range(self._dimension[2]):
+            universe = self._universes[k][j][i]
+            clone._universes[k,j,i] = copy.deepcopy(universe, memo)
+
+      clone._cell_offsets = copy.deepcopy(self._cell_offsets, memo)
       clone._num_regions = self._num_regions
-      clone._offset = copy.deepcopy(self._offset)
-      clone._neighbor_universes = copy.deepcopy(self._neighbor_universes)
+      clone._offset = copy.deepcopy(self._offset, memo)
+      clone._neighbor_universes = copy.deepcopy(self._neighbor_universes, memo)
       clone._neighbor_depth = self._neighbor_depth
+
+      memo[id(self)] = clone
 
       return clone
 
@@ -788,8 +824,8 @@ class Lattice(Universe):
 
     neighbors_universes = self.getNeighbors(lat_x, lat_y, lat_z)
     neighbors_universes.sort()
-    neighbors_universes.flags.writeable = False
-    neighbors_hash = hash(neighbors_universes.data)
+    raw_data = neighbors_universes.view()
+    neighbors_hash = int(sha1(raw_data).hexdigest(), 16)
     return neighbors_hash
 
 
@@ -797,8 +833,8 @@ class Lattice(Universe):
 
     neighbors_universes = self.getUniqueNeighbors(lat_x, lat_y, lat_z)
     neighbors_universes.sort()
-    neighbors_universes.flags.writeable = False
-    neighbors_hash = hash(neighbors_universes.data)
+    raw_data = neighbors_universes.view()
+    neighbors_hash = int(sha1(raw_data).hexdigest(), 16)
     return neighbors_hash
 
 
@@ -1077,9 +1113,9 @@ class Lattice(Universe):
     volume_fraction = np.float64(1. / (self._dimension[0] * self._dimension[1] \
                                          * self._dimension[2]))
 
-    for i in xrange(self._dimension[0]):
-      for j in xrange(self._dimension[1]):
-        for k in xrange(self._dimension[2]):
+    for i in range(self._dimension[0]):
+      for j in range(self._dimension[1]):
+        for k in range(self._dimension[2]):
           universe = self._universes[k][j][i]
           universe.computeVolumeFractions(volume=(volume * volume_fraction),
                                           tolerance=tolerance)
@@ -1097,9 +1133,9 @@ class Lattice(Universe):
     # The cell offsets have not yet been initialized
     count = 0
 
-    for i in xrange(self._dimension[0]):
-      for j in xrange(self._dimension[1]):
-        for k in xrange(self._dimension[2]):
+    for i in range(self._dimension[0]):
+      for j in range(self._dimension[1]):
+        for k in range(self._dimension[2]):
           self._cell_offsets[k][j][i] = count
           self._universes[k][j][i].initializeCellOffsets()
           count += self._universes[k][j][i]._num_regions
@@ -1322,10 +1358,15 @@ class Lattice(Universe):
 
 
 # Lists of all IDs for all Cells created
-cell_ids = list()
+CELL_IDS = list()
 
 # A static variable for auto-generated Cell IDs
-auto_cell_id = 10000
+AUTO_CELL_ID = 10000
+
+def reset_auto_cell_id():
+  global AUTO_CELL_ID, CELL_IDS
+  AUTO_CELL_ID = 10000
+  CELL_IDS = list()
 
 
 class Cell(object):
@@ -1371,7 +1412,7 @@ class Cell(object):
 
   def __deepcopy__(self, memo):
 
-    existing = memo.get(self)
+    existing = memo.get(id(self))
 
     # If this is the first time we have tried to copy this object, create a copy
     if existing is None:
@@ -1379,13 +1420,19 @@ class Cell(object):
       clone = type(self).__new__(type(self))
       clone._id = self._id
       clone._name = self._name
-      clone._fill = self._fill
+      clone._fill = copy.deepcopy(self._fill, memo)
       clone._type = self._type
       clone._num_subcells = self._num_subcells
       clone._volume_fraction = self._volume_fraction
       clone._volume = self._volume
-      clone._neighbor_cells = copy.deepcopy(self._neighbor_cells)
-      clone._surfaces = copy.deepcopy(self._surfaces)
+      clone._neighbor_cells = copy.deepcopy(self._neighbor_cells, memo)
+
+      clone._surfaces = dict()
+      for surface_id in self._surfaces.keys():
+        surface = self._surfaces[surface_id][0]
+        halfspace =self._surfaces[surface_id][1]
+        clone_surface = copy.deepcopy(surface)
+        clone._surfaces[surface_id] = (clone_surface, halfspace)
 
       clone._max_x = self._max_x
       clone._min_x = self._min_x
@@ -1394,11 +1441,29 @@ class Cell(object):
       clone._max_z = self._max_z
       clone._min_z = self._min_z
 
+      memo[id(self)] = clone
+
       return clone
 
     # If this object has been copied before, return the first copy made
     else:
       return existing
+
+
+  def __gt__(self, other):
+    return (id(self) > id(other))
+
+
+  def __ge__(self, other):
+    return (id(self) >= id(other))
+
+
+  def __lt__(self, other):
+    return (id(self) < id(other))
+
+
+  def __le__(self, other):
+    return (id(self) <= id(other))
 
 
   def getMaxX(self):
@@ -1470,37 +1535,37 @@ class Cell(object):
   def getNeighborsHash(self):
     neighbor_cells = np.copy(self.getNeighbors())
     neighbor_cells.sort()
-    neighbor_cells.flags.writeable = False
-    neighbors_hash = hash(neighbor_cells.data)
+    raw_data = neighbor_cells.view()
+    neighbors_hash = int(sha1(raw_data).hexdigest(), 16)
     return neighbors_hash
 
 
   def getUniqueNeighborsHash(self):
     neighbor_cells = np.copy(self.getUniqueNeighbors())
     neighbor_cells.sort()
-    neighbor_cells.flags.writeable = False
-    neighbors_hash = hash(neighbor_cells.data)
+    raw_data = neighbor_cells.view()
+    neighbors_hash = int(sha1(raw_data).hexdigest(), 16)
     return neighbors_hash
 
 
   def setId(self, cell_id=None):
 
-    global cell_ids
+    global CELL_IDS
 
     if cell_id is None:
-      global auto_cell_id
-      self._id = auto_cell_id
-      cell_ids.append(auto_cell_id)
-      auto_cell_id += 1
+      global AUTO_CELL_ID
+      self._id = AUTO_CELL_ID
+      CELL_IDS.append(AUTO_CELL_ID)
+      AUTO_CELL_ID += 1
 
     # Check that the ID is an integer and wasn't already used
     elif is_integer(cell_id):
 
       # If the Cell already has an ID, remove it from global list
       if not self._id is None:
-        cell_ids.remove(self._id)
+        CELL_IDS.remove(self._id)
 
-      if cell_id in cell_ids:
+      if cell_id in CELL_IDS:
         msg = 'Unable to set Cell ID to {0} since a Cell with this ID was ' \
               'already initialized'.format(cell_id)
         raise ValueError(msg)
@@ -1512,7 +1577,7 @@ class Cell(object):
 
       else:
         self._id = cell_id
-        cell_ids.append(cell_id)
+        CELL_IDS.append(cell_id)
 
     else:
       msg = 'Unable to set Cell ID to a non-integer {0}'.format(cell_id)
@@ -1955,7 +2020,7 @@ class Cell(object):
       y = np.nan_to_num(y)
       z = np.nan_to_num(z)
 
-      for i in xrange(num_samples):
+      for i in range(num_samples):
 
         point.setX(x[i])
         point.setY(y[i])
@@ -2063,16 +2128,18 @@ class LocalCoords(object):
 
   def __deepcopy__(self, memo):
 
-    existing = memo.get(self)
+    existing = memo.get(id(self))
 
     # If this is the first time we have tried to copy this object, create a copy
     if existing is None:
 
       clone = type(self).__new__(type(self))
-      clone._point = copy.deepcopy(self._point)
+      clone._point = copy.deepcopy(self._point, memo)
       clone._type = self._type
-      clone._next = copy.deepcopy(self._next)
-      clone._prev = copy.deepcopy(self._prev)
+      clone._next = copy.deepcopy(self._next, memo)
+      clone._prev = copy.deepcopy(self._prev, memo)
+
+      memo[id(self)] = clone
 
       return clone
 
@@ -2194,14 +2261,16 @@ class UnivCoords(LocalCoords):
 
   def __deepcopy__(self, memo):
 
-    existing = memo.get(self)
+    existing = memo.get(id(self))
 
     # If this is the first time we have tried to copy this object, create a copy
     if existing is None:
 
-      clone = super(UnivCoords, self)._deepcopy(self, memo)
-      clone._universe = copy.deepcopy(self._universe)
-      clone._cell = copy.deepcopy(self._cell)
+      clone = super(UnivCoords, self).__deepcopy__(self, memo)
+      clone._universe = copy.deepcopy(self._universe, memo)
+      clone._cell = copy.deepcopy(self._cell, memo)
+
+      memo[id(self)] = clone
 
       return clone
 
@@ -2331,16 +2400,18 @@ class LatCoords(LocalCoords):
 
   def __deepcopy__(self, memo):
 
-    existing = memo.get(self)
+    existing = memo.get(id(self))
 
     # If this is the first time we have tried to copy this object, create a copy
     if existing is None:
 
-      clone = super(LatCoords, self)._deepcopy(self, memo)
-      clone._lattice = copy.deepcopy(self._lattice)
+      clone = super(LatCoords, self).__deepcopy__(self, memo)
+      clone._lattice = copy.deepcopy(self._lattice, memo)
       clone._lat_x = self._lat_x
       clone._lat_y = self._lat_y
       clone._lat_z = self._lat_z
+
+      memo[id(self)] = clone
 
       return clone
 

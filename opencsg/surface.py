@@ -19,6 +19,12 @@ SURFACE_IDS = list()
 # A static variable for auto-generated Surface IDs
 AUTO_SURFACE_ID = 10000
 
+def reset_auto_surface_id():
+  global AUTO_SURFACE_ID, SURFACE_IDS
+  AUTO_SURFACE_ID = 10000
+  SURFACE_IDS = list()
+
+
 # The Surface boundary conditions
 BOUNDARY_TYPES = ['interface', 'vacuum', 'reflective']
 
@@ -72,7 +78,7 @@ class Surface(object):
 
   def __deepcopy__(self, memo):
 
-    existing = memo.get(self)
+    existing = memo.get(id(self))
 
     # If this is the first time we have tried to copy this object, create a copy
     if existing is None:
@@ -82,8 +88,15 @@ class Surface(object):
       clone._name = self._name
       clone._type = self._type
       clone._boundary_type = self._boundary_type
-      clone._neighbor_cells = copy.deepcopy(self._neighbor_cells)
-      clone._coeffs = copy.deepcopy(self._coeffs)
+      clone._coeffs = copy.deepcopy(self._coeffs, memo)
+
+      clone._neighbor_cells = dict()
+      clone._neighbor_cells[-1] = set()
+      clone._neighbor_cells[+1] = set()
+
+      for halfspace in [+1, -1]:
+        for cell in self._neighbor_cells[halfspace]:
+          clone._neighbor_cells[halfspace] = copy.deepcopy(cell, memo)
 
       clone._max_x = self._max_x
       clone._min_x = self._min_x
@@ -92,11 +105,29 @@ class Surface(object):
       clone._max_z = self._max_z
       clone._min_z = self._min_z
 
+      memo[id(self)] = clone
+
       return clone
 
     # If this object has been copied before, return the first copy made
     else:
       return existing
+
+
+  def __gt__(self, other):
+    return (id(self) > id(other))
+
+
+  def __ge__(self, other):
+    return (id(self) >= id(other))
+
+
+  def __lt__(self, other):
+    return (id(self) < id(other))
+
+
+  def __le__(self, other):
+    return (id(self) <= id(other))
 
 
   def getMaxX(self, halfspace=None):
