@@ -5,6 +5,8 @@ __email__ = 'wboyd@mit.edu'
 import opencsg
 from opencsg.universe import *
 from opencsg.point import *
+from opencsg.ray import *
+import copy
 
 tiny_bit = 1e-5
 
@@ -461,7 +463,7 @@ class Geometry(object):
 
   def generateRays(self, num_rays=1000):
 
-    rays = dict()
+    rays = list()
     bounds = self.getBounds()
 
     for ray in xrange(num_rays):
@@ -486,26 +488,25 @@ class Geometry(object):
       u, v, w = np.random.rand(3)-0.5
       point = Point(x=x, y=y, z=z)
       direction = Direction(u=u, v=v, w=w)
-      rays[point] = direction
+      ray = Ray(point, direction)
+      rays.append(ray)
 
     return rays
 
   def traceRays(self, rays):
-    segments = []
-    while rays != {}:
-      points = rays.keys()
-      for ray in points:
-        intersect = self.getNearestIntersection(ray, rays[ray])
-        if intersect is None:
-          del rays[ray]
-        else:
-          segment = Segment(self, start=ray, end=intersect)
-          segments.append(segment)
-          intersect.setCoords(intersect._coords + tiny_bit*rays[ray]._comps)
-          rays[intersect] = rays[ray]
-          del rays[ray]
 
-    return segments
+    for ray in rays:
+      start = copy.deepcopy(ray._point)
+      direction = copy.deepcopy(ray._direction)
+      while True:
+        intersect = self.getNearestIntersection(start, direction)
+        if intersect is None:
+          break
+        segment = Segment(self, start=start, end=intersect)
+        ray.addSegment(segment)
+        start.setCoords(intersect._coords + tiny_bit*direction._comps)
+
+    return rays
 
   def getNeighbors(self, region_id):
     coords = self.findRegion(region_id)

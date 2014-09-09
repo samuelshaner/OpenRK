@@ -3,6 +3,7 @@ __email__ = 'dvtran@mit.edu'
 
 
 from opencsg import *
+from opencsg.point import Segment
 import numpy as np
 import copy
 
@@ -12,13 +13,13 @@ class Ray(object):
 
     self._point = None
     self._direction = None
+    self._segments = np.empty(shape=0, dtype=object)
 
     if not point is None:
       self.setPoint(point)
 
     if not direction is None:
       self.setDirection(direction)
-
 
   def __deepcopy__(self, memo):
 
@@ -30,6 +31,7 @@ class Ray(object):
       clone = type(self).__new__(type(self))
       clone._point = copy.deepcopy(self._point)
       clone._direction = copy.deepcopy(self._direction)
+      clone._segments = copy.deepcopy(self._segments)
       return clone
 
     # If this object has been copied before, return the first copy made
@@ -55,6 +57,16 @@ class Ray(object):
       raise ValueError(msg)
 
     self._direction = direction
+
+  def addSegment(self, segment):
+
+    if not isinstance(segment, Segment):
+      msg = 'Unable to add segment to ray since it is ' \
+            'not a segment object'
+      raise ValueError(msg)
+
+    self._segments = np.append(self._segments, segment)
+
 
 '''
 class Segment(object):
@@ -164,39 +176,3 @@ class Segment(object):
     string += '{0: <16}{1}{2}\n'.format('\tLength', '=\t', self._length)
     return string
 '''
-
-class Track(object):
-
-  def __init__(self, segments):
-
-    self._segments = np.empty(shape=(len(segments)), dtype=Segment)
-
-    if not segments is None:
-      self.addSegments(segments)
-
-
-  def __deepcopy__(self, memo):
-
-    existing = memo.get(self)
-
-    # If this is the first time we have tried to copy this object, create a copy
-    if existing is None:
-
-      clone = type(self).__new__(type(self))
-      clone._segments = copy.deepcopy(self._segments)
-      return clone
-
-    # If this object has been copied before, return the first copy made
-    else:
-      return existing
-
-
-  def addSegments(self, segments):
-
-    for i in xrange(len(segments)):
-      if not isinstance(segments[i], Segment):
-        msg = 'Unable to add segment to ray since it is ' \
-              'not a segment object'
-        raise ValueError(msg)
-
-      self._segments[i] = segments[i]

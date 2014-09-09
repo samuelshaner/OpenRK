@@ -113,7 +113,10 @@ geometry.setVolume(volume=16., tolerance=1e-1)
 print('Tracing Sample Rays...')
 
 rays = geometry.generateRays(num_rays=1000)
-segments = geometry.traceRays(rays)
+rays = geometry.traceRays(rays)
+segments = []
+for ray in rays:
+  segments.extend(ray._segments.tolist())
 
 
 ###############################################################################
