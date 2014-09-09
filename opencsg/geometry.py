@@ -8,7 +8,7 @@ from opencsg.point import *
 from opencsg.ray import *
 import copy
 
-tiny_bit = 1e-5
+TINY_BIT = 1e-10
 
 def reset_auto_ids():
   opencsg.reset_auto_material_id()
@@ -469,20 +469,20 @@ class Geometry(object):
     for ray in xrange(num_rays):
       edge = np.random.randint(4)
       if edge == 0:
-        x = bounds[edge] + tiny_bit
+        x = bounds[edge] + TINY_BIT
         y = np.random.uniform(bounds[2], bounds[3])
         z = np.random.uniform(-1e12, 1e12)
       elif edge == 1:
-        x = bounds[edge] - tiny_bit
+        x = bounds[edge] - TINY_BIT
         y = np.random.uniform(bounds[2], bounds[3])
         z = np.random.uniform(-1e12, 1e12)
       elif edge == 2:
         x = np.random.uniform(bounds[0], bounds[1])
-        y = bounds[edge] + tiny_bit
+        y = bounds[edge] + TINY_BIT
         z = np.random.uniform(-1e12, 1e12)
       else:
         x = np.random.uniform(bounds[0], bounds[1])
-        y = bounds[edge] - tiny_bit
+        y = bounds[edge] - TINY_BIT
         z = np.random.uniform(-1e12, 1e12)
 
       u, v, w = np.random.rand(3)-0.5
@@ -495,17 +495,17 @@ class Geometry(object):
 
   def traceRays(self, rays):
 
+    start = Point()
     for ray in rays:
-      start = copy.deepcopy(ray._point)
-      direction = copy.deepcopy(ray._direction)
+      start.setCoords(ray._point._coords)
+      direction = ray._direction
       while True:
         intersect = self.getNearestIntersection(start, direction)
         if intersect is None:
           break
         segment = Segment(self, start=start, end=intersect)
         ray.addSegment(segment)
-        start.setCoords(intersect._coords + tiny_bit*direction._comps)
-
+        start.setCoords(intersect._coords + TINY_BIT*direction._comps)
     return rays
 
   def getNeighbors(self, region_id):

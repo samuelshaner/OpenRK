@@ -3,7 +3,6 @@ __email__ = 'dvtran@mit.edu'
 
 
 from opencsg import *
-from opencsg.point import Segment
 import numpy as np
 import copy
 
@@ -67,34 +66,24 @@ class Ray(object):
 
     self._segments = np.append(self._segments, segment)
 
-
-'''
 class Segment(object):
 
   def __init__(self, geometry, start=None, end=None, region_id=None, cell=None):
 
-    self._start = None
-    self._end = None
     self._region_id = None
     self._cell = None
     self._length = None
 
-    if not start is None:
-      self.setStart(start)
-
-    if not end is None:
-      self.setEnd(end)
-
     if not region_id is None:
       self.setRegion(region_id)
-    else:
-      x,y,z = self._start._coords
+    elif not start is None:
+      x,y,z = start._coords
       self.setRegion(geometry.getRegionId(x=x,y=y,z=z))
 
     if not cell is None:
       self.setCell(cell)
-    else:
-      x,y,z = self._start._coords
+    elif not start is None:
+      x,y,z = start._coords
       self.setCell(geometry.findCell(x=x,y=y,z=z))
 
     if not (start is None and end is None):
@@ -109,8 +98,6 @@ class Segment(object):
     if existing is None:
 
       clone = type(self).__new__(type(self))
-      clone._start = copy.deepcopy(self._start)
-      clone._end = copy.deepcopy(self._end)
       clone._region_id = copy.deepcopy(self._region_id)
       clone._cell = copy.deepcopy(self._cell)
       clone._length = copy.deepcopy(self._length)
@@ -119,25 +106,6 @@ class Segment(object):
     # If this object has been copied before, return the first copy made
     else:
       return existing
-
-
-  def setStart(self, start):
-
-    if not isinstance(start, Point):
-      msg = 'Unable to set start point for segment to {0} since it is ' \
-            'not a point object'.format(start)
-      raise ValueError(msg)
-
-    self._start = start
-
-  def setEnd(self, end):
-
-    if not isinstance(end, Point):
-      msg = 'Unable to set end point for segment to {0} since it is ' \
-            'not a point object'.format(end)
-      raise ValueError(msg)
-
-    self._end = end
 
   def setRegion(self, region_id):
     if not is_integer(region_id):
@@ -155,24 +123,12 @@ class Segment(object):
 
     self._cell = cell
 
-  def getXYCoords(self):
-    return [self._start._coords[:2], self._end._coords[:2]]
-
-  def getYZCoords(self):
-    return [self._start._coords[1:], self._end._coords[1:]]
-
-  def getXZCoords(self):
-    return [self._start._coords[::2], self._end._coords[::2]]
-
   def getMaterial(self):
     return self._cell._fill
 
   def __repr__(self):
 
-    string = 'Surface\n'
-    string += '{0: <16}{1}{2}\n'.format('\tStart', '=\t', self._start._coords)
-    string += '{0: <16}{1}{2}\n'.format('\tEnd', '=\t', self._end._coords)
+    string = 'Segment\n'
     string += '{0: <16}{1}{2}\n'.format('\tRegion Id', '=\t', self._region_id)
     string += '{0: <16}{1}{2}\n'.format('\tLength', '=\t', self._length)
     return string
-'''

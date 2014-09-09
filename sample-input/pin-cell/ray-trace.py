@@ -112,11 +112,8 @@ geometry.setVolume(volume=16., tolerance=1e-1)
 
 print('Tracing Sample Rays...')
 
-rays = geometry.generateRays(num_rays=1000)
+rays = geometry.generateRays(num_rays=3000)
 rays = geometry.traceRays(rays)
-segments = []
-for ray in rays:
-  segments.extend(ray._segments.tolist())
 
 
 ###############################################################################
@@ -125,7 +122,7 @@ for ray in rays:
 
 #print('Plotting Geometry...')
 
-plotter.plot_segments(segments, geometry)
+plotter.plot_segments(rays, geometry)
 #plotter.plot_cells(geometry)
 #plotter.plot_materials(geometry)
 #plotter.plot_regions(geometry)

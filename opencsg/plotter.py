@@ -380,7 +380,7 @@ def plot_neighbor_cells(geometry, plane='xy', offset=0.,
   plt.close(fig)
 
 
-def plot_segments(segments, geometry, plane='xy', offset=0.,
+def plot_segments(rays, geometry, plane='xy', offset=0.,
                   gridsize=250, linewidths=1):
 
   global SUBDIRECTORY
@@ -390,24 +390,24 @@ def plot_segments(segments, geometry, plane='xy', offset=0.,
     os.makedirs(SUBDIRECTORY)
 
   # Error checking
-  for segment in segments:
-    if not isinstance(segment, Segment):
+  for ray in rays:
+    if not isinstance(ray, Ray):
       msg = 'Unable to plot the segments since input does not ' \
-            'completely consist of segment objects'
+            'completely consist of ray objects'
       raise ValueError(msg)
 
   if not isinstance(geometry, Geometry):
-    msg = 'Unable to plot the neighbor cells since input was not ' \
+    msg = 'Unable to plot the segments since input was not ' \
           'a Geometry class object'
     raise ValueError(msg)
 
   if not is_integer(gridsize):
-    msg = 'Unable to plot the neighbor cells since the gridsize {0} is' \
+    msg = 'Unable to plot the segments since the gridsize {0} is' \
           'is not an integer'.format(gridsize)
     raise ValueError(msg)
 
   if gridsize <= 0:
-    msg = 'Unable to plot the neighbor cells with a negative ' \
+    msg = 'Unable to plot the segments with a negative ' \
           'gridsize {0}'.format(gridsize)
     raise ValueError(msg)
 
@@ -449,22 +449,32 @@ def plot_segments(segments, geometry, plane='xy', offset=0.,
   # Retrieve the pixel coordinates
   coords = get_pixel_coords(geometry, plane, offset, gridsize)
 
-  # Find the flat source region IDs for each grid point
-  for i in xrange(len(segments)):
-    if plane == 'xy':
-      x,y = segments[i]._start._coords[:2]
-      region_id = segments[i]._region_id
-      segments[i] = segments[i].getXYCoords()
-    elif plane == 'xz':
-      x,z = segments[i]._start._coords[::2]
-      region_id = segments[i]._region_id
-      segments[i] = segments[i].getXZCoords()
-    else:
-      y,z = segments[i]._start._coords[1:]
-      region_id = segments[i]._region_id
-      segments[i] = segments[i].getYZCoords()
+  # Generate start and end points for segments and assign color by region id
+  segments = list()
+  for ray in rays:
+    start = Point()
+    start.setCoords(ray._point._coords)
+    dir = ray._direction.toPolar()
+    for segment in ray._segments:
+      colors.append(color_map[segment._region_id % num_regions])
+      length = segment._length
+      x = start._coords[0] + length*np.sin(dir[2])*np.cos(dir[1])
+      y = start._coords[1] + length*np.sin(dir[2])*np.sin(dir[1])
+      z = start._coords[2] + length*np.cos(dir[2])
+      end = np.array([x, y, z])
+      if plane == 'xy':
+        segments.append([start._coords[:2], end[:2]])
+        start = Point()
+        start.setCoords(end + TINY_BIT*ray._direction._comps)
+      elif plane == 'xz':
+        segments.append([start._coords[::2], end[::2]])
+        start = Point()
+        start.setCoords(end + TINY_BIT*ray._direction._comps)
+      elif plane == 'yz':
+        segments.append([start._coords[1:], end[1:]])
+        start = Point()
+        start.setCoords(end + TINY_BIT*ray._direction._comps)
 
-    colors.append(color_map[region_id % num_regions])
   colors = np.array(colors)
 
   # Plot a 2D color map of the segments

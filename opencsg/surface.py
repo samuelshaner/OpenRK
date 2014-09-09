@@ -1347,7 +1347,6 @@ class ZCylinder(Cylinder):
     super(ZCylinder, self).getIntersectionPoints(point, direction)
 
     if self.onSurface(point):
-      print 'blah'
       return [None]
 
     x, y, z = point._coords
