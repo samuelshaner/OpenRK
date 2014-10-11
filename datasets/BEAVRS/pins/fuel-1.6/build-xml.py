@@ -12,7 +12,7 @@ from infermc.build import *
 # OpenMC simulation parameters
 batches = 30
 inactive = 5
-particles = 100
+particles = 1000
 
 
 ###############################################################################

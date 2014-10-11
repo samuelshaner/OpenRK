@@ -1,7 +1,10 @@
-import openmc
-import infermc
 import numpy as np
 import os
+
+import openmc
+
+import infermc
+
 
 
 # LaTeX Greek symbols for each cross-section type
@@ -77,13 +80,13 @@ class MicroXS(infermc.MultiGroupXS):
     return indices
 
 
-  def computeXS(self):
+  def computeXS(self, corr=True):
 
-    super(MicroXS, self).computeXS()
+    super(MicroXS, self).computeXS(corr)
 
     # Divide out the densities to convert xs to barns
     if self._xs_type != 'chi':
-      self._xs = infermc.uncorr_math.divide_by_scalar(self._xs, self._densities)
+      self._xs = infermc.error_prop.arithmetic.divide_by_scalar(self._xs, self._densities, corr)
 
 
   def getXS(self, groups='all', nuclides='all', subdomains='all', metric='mean'):

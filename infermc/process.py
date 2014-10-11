@@ -309,13 +309,13 @@ class XSTallyExtractor(object):
     return tally
 
 
-  def extractAllMultiGroupXS(self, energy_groups, domain_type='distribcell'):
+  def extractAllMultiGroupXS(self, energy_groups, domain_type='distribcell', corr=True):
 
     for xs_type in infermc.xs_types:
-      self.extractMultiGroupXS(xs_type, energy_groups, domain_type)
+      self.extractMultiGroupXS(xs_type, energy_groups, domain_type, corr)
 
 
-  def extractMultiGroupXS(self, xs_type, energy_groups, domain_type='distribcell'):
+  def extractMultiGroupXS(self, xs_type, energy_groups, domain_type='distribcell', corr=True):
 
     # Add nested dictionary for this domain type if needed
     if not domain_type in self._multigroup_xs.keys():
@@ -339,14 +339,14 @@ class XSTallyExtractor(object):
         self._multigroup_xs[domain_type][domain._id] = dict()
 
       # Build the MultiGroupXS for this domain
-      xs = self.createMultiGroupXS(xs_type, energy_groups, domain, domain_type)
+      xs = self.createMultiGroupXS(xs_type, energy_groups, domain, domain_type, corr)
 
       # Store a handle to the MultiGroupXS object in the nested dictionary
       self._multigroup_xs[domain_type][domain._id][xs_type] = xs
 
 
   def createMultiGroupXS(self, xs_type, energy_groups,
-                         domain, domain_type='distribcell'):
+                         domain, domain_type='distribcell', corr=True):
 
     if self._statepoint is None:
       msg = 'Unable to get cross-sections since the TallyExtractor ' \
@@ -473,7 +473,7 @@ class XSTallyExtractor(object):
       raise ValueError(msg)
 
     # Compute the cross-section
-    multigroup_xs.computeXS()
+    multigroup_xs.computeXS(corr)
 
     # Build offsets such that a user can query the MultiGroupXS for any region
     if domain_type == 'distribcell':
@@ -578,13 +578,13 @@ class XSTallyExtractor(object):
 class MicroXSTallyExtractor(XSTallyExtractor):
 
 
-  def extractAllMultiGroupXS(self, energy_groups, domain_type='distribcell'):
+  def extractAllMultiGroupXS(self, energy_groups, domain_type='distribcell', corr=True):
 
     for xs_type in infermc.xs_types:
-      self.extractMultiGroupXS(xs_type, energy_groups, domain_type)
+      self.extractMultiGroupXS(xs_type, energy_groups, domain_type, corr)
 
 
-  def extractMultiGroupXS(self, xs_type, energy_groups, domain_type='distribcell'):
+  def extractMultiGroupXS(self, xs_type, energy_groups, domain_type='distribcell', corr=True):
 
     # Add nested dictionary for this domain type if needed
     if not domain_type in self._multigroup_xs.keys():
@@ -608,13 +608,13 @@ class MicroXSTallyExtractor(XSTallyExtractor):
         self._multigroup_xs[domain_type][domain._id] = dict()
 
       # Build the MultiGroupXS for this domain
-      xs = self.createMultiGroupXS(xs_type, energy_groups, domain, domain_type)
+      xs = self.createMultiGroupXS(xs_type, energy_groups, domain, domain_type, corr)
 
       # Store a handle to the MultiGroupXS object in the nested dictionary
       self._multigroup_xs[domain_type][domain._id][xs_type] = xs
 
 
-  def createMultiGroupXS(self, xs_type, energy_groups, domain, domain_type='distribcell'):
+  def createMultiGroupXS(self, xs_type, energy_groups, domain, domain_type='distribcell', corr=True):
 
     if self._statepoint is None:
       msg = 'Unable to get cross-sections since the TallyExtractor ' \
@@ -748,7 +748,7 @@ class MicroXSTallyExtractor(XSTallyExtractor):
     # Compute the cross-section
     multigroup_xs.addNuclides(nuclides)
     multigroup_xs.addNuclide((openmc.Nuclide('total'), tot_density))
-    multigroup_xs.computeXS()
+    multigroup_xs.computeXS(corr)
 
     # Build offsets such that a user can query the MultiGroupXS for any region
     if domain_type == 'distribcell':

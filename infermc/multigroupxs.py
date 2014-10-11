@@ -1,7 +1,11 @@
-import openmc
-import infermc
 import numpy as np
-import os, abc
+import os
+import abc
+
+import openmc
+
+import infermc
+
 
 
 # Supported cross-section types
@@ -194,7 +198,7 @@ class MultiGroupXS(object):
 
 
   @abc.abstractmethod
-  def computeXS(self):
+  def computeXS(self, corr=True):
 
     if self._tallies is None:
       msg = 'Unable to compute cross-section without any Tallies'
@@ -627,7 +631,7 @@ class TotalXS(MultiGroupXS):
     super(TotalXS, self).createTallies(scores, filters, keys, estimator)
 
 
-  def computeXS(self):
+  def computeXS(self, corr=True):
 
     # Extract and clean the Tally data
     tally_data, zero_indices = super(TotalXS, self).computeXS()
@@ -639,7 +643,8 @@ class TotalXS(MultiGroupXS):
     total[:, zero_indices['total']] = -1.
 
     # Compute the xs with uncertainty propagation
-    self._xs = infermc.uncorr_math.divide_by_array(total, flux)
+    self._xs = infermc.error_prop.arithmetic.divide_by_array(total, flux,
+                                                             corr, False)
 
     # For any region without flux or reaction rate, convert xs to zero
     all_zero_indices = np.logical_or(zero_indices['flux'],
@@ -673,7 +678,7 @@ class TransportXS(MultiGroupXS):
     super(TransportXS, self).createTallies(scores, filters, keys, estimator)
 
 
-  def computeXS(self):
+  def computeXS(self, corr=True):
 
     # Extract and clean the Tally data
     tally_data, zero_indices = super(TransportXS, self).computeXS()
@@ -684,14 +689,15 @@ class TransportXS(MultiGroupXS):
     # Set any zero fluxes to a negative value
     flux[:, zero_indices['flux']] = -1.
 
-    delta = infermc.uncorr_math.sub(total, scatter1)
+    delta = infermc.error_prop.arithmetic.sub(total, scatter1, corr, False)
 
     # Set any subdomain's zero reaction rates to a negative value
     delta_indices = delta[0, ...] == 0.
     delta[:, delta_indices] = -1.
 
     # Compute the xs with uncertainty propagation
-    self._xs = infermc.uncorr_math.divide_by_array(delta, flux)
+    self._xs = infermc.error_prop.arithmetic.divide_by_array(delta, flux,
+                                                             corr, False)
 
     # For any region without flux or reaction rate, convert xs to zero
     all_zero_indices = np.logical_or(zero_indices['flux'], delta_indices)
@@ -724,7 +730,7 @@ class AbsorptionXS(MultiGroupXS):
     super(AbsorptionXS, self).createTallies(scores, filters, keys, estimator)
 
 
-  def computeXS(self):
+  def computeXS(self, corr=True):
 
     # Extract and clean the Tally data
     tally_data, zero_indices = super(AbsorptionXS, self).computeXS()
@@ -736,7 +742,8 @@ class AbsorptionXS(MultiGroupXS):
     absorption[:, zero_indices['absorption']] = -1.
 
     # Compute the xs with uncertainty propagation
-    self._xs = infermc.uncorr_math.divide_by_array(absorption, flux)
+    self._xs = infermc.error_prop.arithmetic.divide_by_array(absorption, flux,
+                                                             corr, False)
 
     # For any region without flux or reaction rate, convert xs to zero
     all_zero_indices = np.logical_or(zero_indices['flux'],
@@ -770,7 +777,7 @@ class FissionXS(MultiGroupXS):
     super(FissionXS, self).createTallies(scores, filters, keys, estimator)
 
 
-  def computeXS(self):
+  def computeXS(self, corr=True):
 
     # Extract and clean the Tally data
     tally_data, zero_indices = super(FissionXS, self).computeXS()
@@ -782,7 +789,8 @@ class FissionXS(MultiGroupXS):
     fission[:, zero_indices['fission']] = -1.
 
     # Compute the xs with uncertainty propagation
-    self._xs = infermc.uncorr_math.divide_by_array(fission, flux)
+    self._xs = infermc.error_prop.arithmetic.divide_by_array(fission, flux,
+                                                             corr, False)
 
     # For any region without flux or reaction rate, convert xs to zero
     all_zero_indices = np.logical_or(zero_indices['flux'],
@@ -815,7 +823,7 @@ class NuFissionXS(MultiGroupXS):
     super(NuFissionXS, self).createTallies(scores, filters, keys, estimator)
 
 
-  def computeXS(self):
+  def computeXS(self, corr=True):
 
     # Extract and clean the Tally data
     tally_data, zero_indices = super(NuFissionXS, self).computeXS()
@@ -827,7 +835,8 @@ class NuFissionXS(MultiGroupXS):
     nu_fission[:, zero_indices['nu-fission']] = -1.
 
     # Compute the xs with uncertainty propagation
-    self._xs = infermc.uncorr_math.divide_by_array(nu_fission, flux)
+    self._xs = infermc.error_prop.arithmetic.divide_by_array(nu_fission, flux,
+                                                             corr, False)
 
     # For any region without flux or reaction rate, convert xs to zero
     all_zero_indices = np.logical_or(zero_indices['flux'],
@@ -860,7 +869,7 @@ class ScatterXS(MultiGroupXS):
     super(ScatterXS, self).createTallies(scores, filters, keys, estimator)
 
 
-  def computeXS(self):
+  def computeXS(self, corr=True):
 
     # Extract and clean the Tally data
     tally_data, zero_indices = super(ScatterXS, self).computeXS()
@@ -872,7 +881,8 @@ class ScatterXS(MultiGroupXS):
     scatter[:, zero_indices['scatter']] = -1.
 
     # Compute the xs with uncertainty propagation
-    self._xs = infermc.uncorr_math.divide_by_array(scatter, flux)
+    self._xs = infermc.error_prop.arithmetic.divide_by_array(scatter, flux,
+                                                             corr, False)
 
     # For any region without flux or reaction rate, convert xs to zero
     all_zero_indices = np.logical_or(zero_indices['flux'],
@@ -905,7 +915,7 @@ class NuScatterXS(MultiGroupXS):
     super(NuScatterXS, self).createTallies(scores, filters, keys, estimator)
 
 
-  def computeXS(self):
+  def computeXS(self, corr=True):
 
     # Extract and clean the Tally data
     tally_data, zero_indices = super(NuScatterXS, self).computeXS()
@@ -917,7 +927,8 @@ class NuScatterXS(MultiGroupXS):
     nu_scatter[:, zero_indices['nu-scatter']] = -1.
 
     # Compute the xs with uncertainty propagation
-    self._xs = infermc.uncorr_math.divide_by_array(nu_scatter, flux)
+    self._xs = infermc.error_prop.arithmetic.divide_by_array(nu_scatter, flux,
+                                                             corr, False)
 
     # For any region without flux or reaction rate, convert xs to zero
     all_zero_indices = np.logical_or(zero_indices['flux'],
@@ -952,7 +963,7 @@ class ScatterMatrixXS(MultiGroupXS):
     super(ScatterMatrixXS, self).createTallies(scores, filters, keys, estimator)
 
 
-  def computeXS(self):
+  def computeXS(self, corr=True):
 
     # Extract and clean the Tally data
     tally_data, zero_indices = super(ScatterMatrixXS, self).computeXS()
@@ -967,7 +978,8 @@ class ScatterMatrixXS(MultiGroupXS):
     flux = np.repeat(flux[:,:,np.newaxis,:,:], self._num_groups, axis=2)
 
     # Compute the xs with uncertainty propagation
-    self._xs = infermc.uncorr_math.divide_by_array(nu_scatter, flux)
+    self._xs = infermc.error_prop.arithmetic.divide_by_array(nu_scatter, flux,
+                                                             corr, False)
 
     # For any region without flux or reaction rate, convert xs to zero
     all_zero_indices = np.logical_or(zero_indices['flux'][...,np.newaxis],
@@ -1075,7 +1087,7 @@ class Chi(MultiGroupXS):
     super(Chi, self).createTallies(scores, filters, keys, estimator)
 
 
-  def computeXS(self):
+  def computeXS(self, corr=True):
 
     # Extract and clean the Tally data
     tally_data, zero_indices = super(Chi, self).computeXS()
@@ -1086,8 +1098,9 @@ class Chi(MultiGroupXS):
     nu_fission_in[0, zero_indices['nu-fission-in']] = -1.
 
     # FIXME - uncertainty propagation
-    self._xs = infermc.uncorr_math.divide_by_scalar(nu_fission_out,
-                                   nu_fission_in.sum(2)[0, :, np.newaxis, ...])
+    self._xs = infermc.error_prop.arithmetic.divide_by_scalar(nu_fission_out,
+                                   nu_fission_in.sum(2)[0, :, np.newaxis, ...],
+                                   corr, False)
 
     # Compute the total across all groups per subdomain
     norm = self._xs.sum(2)[0, :, np.newaxis, ...]
@@ -1098,7 +1111,8 @@ class Chi(MultiGroupXS):
 
     # Normalize chi to 1.0
     # FIXME - uncertainty propagation
-    self._xs = infermc.uncorr_math.divide_by_scalar(self._xs, norm)
+    self._xs = infermc.error_prop.arithmetic.divide_by_scalar(self._xs, norm,
+                                                              corr, False)
 
     # For any region without flux or reaction rate, convert xs to zero
     self._xs[:, norm_indices] = 0.

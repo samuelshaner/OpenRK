@@ -7,7 +7,7 @@ import infermc.plotter as plotter
 
 
 #batches = range(10, 35, 5)
-batches = [10]
+batches = [30]
 
 groups = group_structures['CASMO']['2-group']
 
@@ -22,8 +22,8 @@ for batch in batches:
 
   ## MICROS
   micro_extractor = MicroXSTallyExtractor(statepoint)
-  micro_extractor.extractAllMultiGroupXS(groups, 'material')
-  micro_extractor.extractAllMultiGroupXS(groups, 'distribcell')
+  micro_extractor.extractAllMultiGroupXS(groups, 'material', corr=True)
+  micro_extractor.extractAllMultiGroupXS(groups, 'distribcell', corr=True)
   micro_extractor.checkXS()
 
   plotter.scatter_micro_xs(micro_extractor,
