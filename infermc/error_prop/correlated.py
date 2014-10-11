@@ -10,15 +10,13 @@
 #       term in the error propagation of the standard deviation.
 
 import numpy as np
-from itertools import product
+import itertools
 
 
 def cov(a, b, micro=True):
 
-  #FIXME: Make correlated/uncorrelated math a switch to turn on/off
-
-  # Assume that the only differnence between the two is in the final index
-  # FIXME: This isn't true for the scattering matrix!!!
+  # Find the complete shape of the covariance array we must return
+  # Assume that the only difference between a,b is in the final (nuclide) index
   if a.size == b.size:
     full_shape = b.shape
   elif a.size > b.size:
@@ -33,12 +31,13 @@ def cov(a, b, micro=True):
   # Allocate an empty NumPy array for the covariance
   covariance = np.zeros(full_shape)
 
-  #FIXME: If only one region, need to return 0!!
+  # If only one region, there is nothing to covary, so return 0
   num_domains = a.shape[0]
-
   if num_domains == 1:
     return covariance
 
+  # Treat cross-sections for each group, nuclide as different random variables,
+  # with different instances for different domains (e.g., distribcells)
   if micro:
     num_nuclides = a.shape[-1]
     num_groups = a.shape[-2]
@@ -47,14 +46,14 @@ def cov(a, b, micro=True):
     num_groups = a.shape[-1]
     rand_var_shape = (num_groups, )
 
-  # Treat cross-sections for each group, nuclide as different random variables,
-  # with different instances for different domains (e.g., distribcells)
+  # Create an iterator over each of the different cross-section random variables
   rand_var_map = tuple()
   for dim in rand_var_shape:
     rand_var_map += (range(dim),)
 
-  rand_var_iterator = product(*rand_var_map)
+  rand_var_iterator = itertools.product(*rand_var_map)
 
+  # Compute the covariance for each of the random variables
   for rand_var_index in rand_var_iterator:
     rv1 = a[..., rand_var_index].ravel()
     rv2 = b[..., rand_var_index].ravel()
