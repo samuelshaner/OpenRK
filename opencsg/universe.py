@@ -577,6 +577,13 @@ class Universe(object):
       raise ValueError(msg)
 
 
+  def toString(self):
+    string = self.__repr__()
+    for cell_id, cell in self._cells.items():
+      string += cell.toString()
+    return string
+
+
   def __repr__(self):
 
     string = 'Universe\n'
@@ -1331,6 +1338,14 @@ class Lattice(Universe):
       raise ValueError(msg)
 
 
+  def toString(self):
+    string = self.__repr__()
+    unique_universes = self.getUniqueUniverses()
+    for universe_id, universe in unique_universes.items():
+      string += universe.toString()
+    return string
+
+
   def __repr__(self):
 
     string = 'Lattice\n'
@@ -2066,6 +2081,12 @@ class Cell(object):
 
     return clone
 
+
+  def toString(self):
+    string = self.__repr__()
+    if not isinstance(self._fill, Material):
+      string += self._fill.toString()
+    return string
 
   def __repr__(self):
 

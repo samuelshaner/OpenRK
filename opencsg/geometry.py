@@ -427,3 +427,8 @@ class Geometry(object):
   def getUniqueNeighborsHash(self, region_id):
     coords = self.findRegion(region_id)
     return coords.getUniqueNeighborsHash()
+
+
+  def toString(self):
+    string = self._root_universe.toString()
+    return string
