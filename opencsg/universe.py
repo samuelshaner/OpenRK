@@ -382,6 +382,25 @@ class Universe(object):
     self._cells.clear()
 
 
+  def containsCell(cell=None, cell_id=None, name=None):
+
+    if not cell is None:
+      for cell_id in self._cells.keys():
+        if cell == self._cells[cell_id]:
+          return True
+
+    if not cell_id is None:
+      if cell_id in self._cells.keys():
+        return True
+
+    if not name is None:
+      for cell_id in self._cells.keys():
+        if cell._name == self._cells[cell_id]._name:
+          return True
+
+    return False
+
+
   def computeVolumeFractions(self, volume=np.float64(1.), tolerance=1e-3):
 
     if not is_float(volume):
