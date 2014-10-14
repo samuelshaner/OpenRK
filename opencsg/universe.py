@@ -1394,12 +1394,13 @@ def reset_auto_cell_id():
 
 class Cell(object):
 
-  def __init__(self, cell_id=None, name='', fill=None):
+  def __init__(self, cell_id=None, name='', fill=None, rot=None):
 
     # Initialize Cell class attributes
     self._id = None
     self._name = None
     self._fill = None
+    self._rot = None
     self._type = None
     self._num_subcells = None
     self._volume_fraction = np.float64(0.)
@@ -1432,6 +1433,9 @@ class Cell(object):
     if not fill is None:
       self.setFill(fill)
 
+    if not rot is None:
+      self.setRotation(rot)
+
 
   def __deepcopy__(self, memo):
 
@@ -1444,6 +1448,7 @@ class Cell(object):
       clone._id = self._id
       clone._name = self._name
       clone._fill = copy.deepcopy(self._fill, memo)
+      clone._rot = self._rot
       clone._type = self._type
       clone._num_subcells = self._num_subcells
       clone._volume_fraction = self._volume_fraction
@@ -1628,6 +1633,11 @@ class Cell(object):
 
     self._fill = fill
 
+  def setRotation(self, rot):
+
+    # TODO: error checking
+
+    self._rot = rot
 
   def setType(self, type):
 
