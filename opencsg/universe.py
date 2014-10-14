@@ -1,6 +1,7 @@
 __author__ = 'Will Boyd'
 __email__ = 'wboyd@mit.edu'
 
+import warnings
 
 from opencsg.material import Material
 from opencsg.surface import Surface, ON_SURFACE_THRESH
@@ -1739,12 +1740,20 @@ class Cell(object):
           coeffs = surface._coeffs
           test_coeffs = test_surface._coeffs
 
+          match = True
           for key in coeffs.keys():
             coeff = coeffs[key]
             test_coeff = test_coeffs[key]
-
-          if abs(coeff-test_coeff) < 1e-10:
-            return
+            if abs(coeff-test_coeff) < 1e-10:
+              match = False
+              break
+          if match:
+            warnings.warn('Skipping redundant surface <{0}> ' + \
+                          'for cell <{1}>: ' +\
+                          'matches <{2}>'.format(surface._name,
+                                                 self._name,
+                                                 test_surface._name))
+            return  
 
     surface_id = surface._id
 
