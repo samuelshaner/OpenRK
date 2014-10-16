@@ -2120,9 +2120,9 @@ class Cell(object):
 
     if not self._fill is None:
 
-      if self._type is 'material':
+      if self._type == 'material':
         string += 'Material ID='
-      elif self._type is 'universe':
+      elif self._type == 'universe':
         string += 'Universe ID='
       else:
         string += 'Lattice ID='
