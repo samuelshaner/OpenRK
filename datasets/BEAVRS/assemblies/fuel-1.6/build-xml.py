@@ -1,5 +1,5 @@
 from datasets.energy_groups import group_structures
-#from datasets.BEAVRS.materials import OPENMC_MATERIALS
+from datasets.BEAVRS.materials import openmc_materials
 from openmc import *
 from geometry import geometry
 from infermc.build import *
@@ -32,8 +32,8 @@ geometry_file.exportToXML()
 ###############################################################################
 
 materials_file = MaterialsFile()
-materials_file.addMaterials(OPENMC_MATERIALS.values())
 materials_file.setDefaultXS('70c')
+materials_file.addMaterials(openmc_materials.values())
 materials_file.exportToXML()
 
 

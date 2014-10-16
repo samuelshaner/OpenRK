@@ -20,6 +20,13 @@ class EnergyGroups(object):
     self._num_groups = len(edges)-1
 
 
+  def __eq__(self, other):
+    if not isinstance(other, EnergyGroups):
+      return False
+    elif self._group_edges != other._group_edges:
+      return False
+
+
   def generateBinEdges(self, start, stop, num_groups, type='linear'):
 
     self._num_groups = num_groups

@@ -38,6 +38,7 @@ def cov(a, b, micro=True):
 
   # Treat cross-sections for each group, nuclide as different random variables,
   # with different instances for different domains (e.g., distribcells)
+  # FIXME: This does not work for the scattering matrix!!!
   if micro:
     num_nuclides = a.shape[-1]
     num_groups = a.shape[-2]

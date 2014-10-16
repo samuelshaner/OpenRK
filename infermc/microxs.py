@@ -494,7 +494,6 @@ class MicroScatterMatrixXS(MicroXS, infermc.ScatterMatrixXS):
 
   def printXS(self, nuclides='all', subdomains='all'):
 
-
     string = 'Micro XS\n'
     string += '{0: <16}{1}{2}\n'.format('\tType', '=\t', self._xs_type)
     string += '{0: <16}{1}{2}\n'.format('\tDomain Type', '=\t', self._domain_type)

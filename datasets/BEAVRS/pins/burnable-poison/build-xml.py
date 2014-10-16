@@ -31,6 +31,7 @@ geometry_file.exportToXML()
 ###############################################################################
 
 materials_file = MaterialsFile()
+materials_file.setDefaultXS('70c')
 materials_file.addMaterials(openmc_materials.values())
 materials_file.exportToXML()
 
