@@ -292,7 +292,7 @@ class XSTallyExtractor(object):
 
       # Iterate over the Nuclides requested by the user
       for nuclide in nuclides:
-        if not nuclide[0] in test_tally._nuclides:
+        if not nuclide in test_tally._nuclides:
           contains_nuclides = False
           break
 
@@ -631,7 +631,14 @@ class MicroXSTallyExtractor(XSTallyExtractor):
 
     # Extract a list of tuples of Nuclides and number densities (at/b-cm)
     # of all Nuclides in the domain of interest
-    nuclides = domain.getAllNuclides().values()
+    nuclides_densities = domain.getAllNuclides().values()
+    nuclides = list()
+    densities = list()
+
+    for nuclide_density in nuclides_densities:
+      nuclides.append(nuclide_density[0])
+      densities.append(nuclide_density[1])
+
     tot_density = 1.
 
     if xs_type == 'total':
@@ -746,8 +753,8 @@ class MicroXSTallyExtractor(XSTallyExtractor):
       raise ValueError(msg)
 
     # Compute the cross-section
-    multigroup_xs.addNuclides(nuclides)
-    multigroup_xs.addNuclide((openmc.Nuclide('total'), tot_density))
+    multigroup_xs.addNuclides(nuclides, densities)
+    multigroup_xs.addNuclide(openmc.Nuclide('total'), tot_density)
     multigroup_xs.computeXS(corr)
 
     # Build offsets such that a user can query the MultiGroupXS for any region

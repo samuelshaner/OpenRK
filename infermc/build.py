@@ -94,9 +94,15 @@ class MicroXSTallyFactory(XSTallyFactory):
 
     # Add all of the Nuclides in the domain to the MicroXS
     if nuclides is None:
-      nuclides = domain.getAllNuclides().values()
-      tot_density = sum([nuclide[1] for nuclide in nuclides])
-      nuclides.append((openmc.Nuclide('total'), tot_density))
+
+      nuclides_densities = domain.getAllNuclides().values()
+
+      nuclides = list()
+
+      for nuclide_density in nuclides_densities:
+        nuclides.append(nuclide_density[0])
+
+      nuclides.append(openmc.Nuclide('total'))
 
     if xs_type == 'total':
       xs = MicroTotalXS(domain, domain_type, energy_groups, nuclides)

@@ -24,7 +24,7 @@ greek['diffusion'] = '$D$'
 class MicroXS(infermc.MultiGroupXS):
 
   def __init__(self, domain=None, domain_type=None,
-               energy_groups=None, nuclides=None):
+               energy_groups=None, nuclides=None, densities=None):
 
     super(MicroXS, self).__init__(domain, domain_type, energy_groups)
 
@@ -34,18 +34,30 @@ class MicroXS(infermc.MultiGroupXS):
     self._num_nuclides = 0
 
     if not nuclides is None:
-      self.addNuclides(nuclides)
+      self.addNuclides(nuclides, densities)
 
 
-  def addNuclide(self, nuclide):
-    self._nuclides.append(nuclide[0])
-    self._densities = np.append(self._densities, nuclide[1])
+  def addNuclide(self, nuclide, density=None):
+
+    self._nuclides.append(nuclide)
+
+    if not density is None:
+      self._densities = np.append(self._densities, density)
+
+    # FIXME: Add a dummy density if one was not specified
+    else:
+      self._densities = np.append(self._densities, -1)
+
     self._num_nuclides += 1
 
 
-  def addNuclides(self, nuclides):
-    for nuclide in nuclides:
-      self.addNuclide(nuclide)
+  def addNuclides(self, nuclides, densities=None):
+
+    for i, nuclide in enumerate(nuclides):
+      if densities is None:
+        self.addNuclide(nuclide)
+      else:
+        self.addNuclide(nuclide, densities[i])
 
 
   def addNuclidesToTallies(self):
@@ -169,8 +181,7 @@ class MicroXS(infermc.MultiGroupXS):
     nuclides = xs_results['nuclides']
     densities = xs_results['densities']
     num_nuclides = len(nuclides)
-    nuclides = [(nuclides[i], densities[i]) for i in range(num_nuclides)]
-    self.addNuclides(nuclides)
+    self.addNuclides(nuclides, densities)
 
 
   def exportResults(self, nuclides='all', subdomains='all',
@@ -222,7 +233,7 @@ class MicroXS(infermc.MultiGroupXS):
         for j, nuclide in enumerate(nuclides):
 
           # Create an HDF5 group for the Nuclide and xs type
-          group_name = self._nuclides[nuclide]._name
+          group_name = nuclide._name
           nuclide_group = subdomain_group.require_group(group_name)
           xs_group = nuclide_group.require_group(self._xs_type)
 
@@ -275,10 +286,10 @@ class MicroXS(infermc.MultiGroupXS):
           subdomain_group = domain_group
 
         # Loop over all Nuclides
-        for nuclide in nuclides:
+        for j, nuclide in enumerate(nuclides):
 
           # Create an HDF5 group for the Nuclide and xs type
-          group_name = self._nuclides[nuclide]._name
+          group_name = nuclide._name
 
           if not subdomain_group.has_key(group_name):
             nuclide_group = subdomain_group[group_name] = dict()
@@ -288,8 +299,8 @@ class MicroXS(infermc.MultiGroupXS):
           xs_group = nuclide_group[self._xs_type] = dict()
 
           # Add MultiGroupXS results data to the dictionary
-          xs_group['average'] = average[i, ..., nuclide]
-          xs_group['std. dev.'] = std_dev[i, ..., nuclide]
+          xs_group['average'] = average[i, ..., j]
+          xs_group['std. dev.'] = std_dev[i, ..., j]
 
       # Pickle the MultiGroupXS results to a file
       pickle.dump(xs_results, open(filename, 'wb'))
@@ -324,7 +335,7 @@ class MicroXS(infermc.MultiGroupXS):
 
       # Loop over all subdomains and Nuclides
       for i, subdomain in enumerate(subdomains):
-        for nuclide in nuclides:
+        for j, nuclide in enumerate(nuclides):
 
           # Add MultiGroupXS results data to the table list
           table = list()
@@ -338,8 +349,8 @@ class MicroXS(infermc.MultiGroupXS):
             for group in range(self._num_groups):
               subtable = list()
               subtable.append(group+1)
-              subtable.append(average[i, group, ..., nuclide])
-              subtable.append(std_dev[i, group, ..., nuclide])
+              subtable.append(average[i, group, ..., j])
+              subtable.append(std_dev[i, group, ..., j])
               table.append(subtable)
 
           # Scattering matrix
@@ -355,8 +366,8 @@ class MicroXS(infermc.MultiGroupXS):
                 subtable = list()
                 subtable.append(in_group+1)
                 subtable.append(out_group+1)
-                subtable.append(average[i, in_group, out_group, ..., nuclide])
-                subtable.append(std_dev[i, in_group, out_group, ..., nuclide])
+                subtable.append(average[i, in_group, out_group, ..., j])
+                subtable.append(std_dev[i, in_group, out_group, ..., j])
                 table.append(subtable)
 
           if self._domain_type == 'distribcell':
