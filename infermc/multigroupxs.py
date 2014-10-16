@@ -12,6 +12,7 @@ import infermc
 xs_types = ['total',
             'transport',
             'absorption',
+            'capture'
             'scatter',
             'nu-scatter',
             'scatter matrix',
@@ -198,7 +199,7 @@ class MultiGroupXS(object):
 
 
   @abc.abstractmethod
-  def computeXS(self, corr=True):
+  def computeXS(self, corr=False):
 
     if self._tallies is None:
       msg = 'Unable to compute cross-section without any Tallies'
@@ -631,7 +632,7 @@ class TotalXS(MultiGroupXS):
     super(TotalXS, self).createTallies(scores, filters, keys, estimator)
 
 
-  def computeXS(self, corr=True):
+  def computeXS(self, corr=False):
 
     # Extract and clean the Tally data
     tally_data, zero_indices = super(TotalXS, self).computeXS()
@@ -678,7 +679,7 @@ class TransportXS(MultiGroupXS):
     super(TransportXS, self).createTallies(scores, filters, keys, estimator)
 
 
-  def computeXS(self, corr=True):
+  def computeXS(self, corr=False):
 
     # Extract and clean the Tally data
     tally_data, zero_indices = super(TransportXS, self).computeXS()
@@ -730,7 +731,7 @@ class AbsorptionXS(MultiGroupXS):
     super(AbsorptionXS, self).createTallies(scores, filters, keys, estimator)
 
 
-  def computeXS(self, corr=True):
+  def computeXS(self, corr=False):
 
     # Extract and clean the Tally data
     tally_data, zero_indices = super(AbsorptionXS, self).computeXS()
@@ -748,6 +749,58 @@ class AbsorptionXS(MultiGroupXS):
     # For any region without flux or reaction rate, convert xs to zero
     all_zero_indices = np.logical_or(zero_indices['flux'],
                                      zero_indices['absorption'])
+    self._xs[:, all_zero_indices] = 0.
+
+    # Correct -0.0 to +0.0
+    self._xs += 0.
+
+
+class CaptureXS(MultiGroupXS):
+
+  def __init__(self, domain=None, domain_type=None, energy_groups=None):
+    super(CaptureXS, self).__init__(domain, domain_type, energy_groups)
+    self._xs_type = 'capture'
+
+
+  def createTallies(self):
+
+    # Create a list of scores for each Tally to be created
+    scores = ['flux', 'absorption', 'fission']
+    estimator = 'tracklength'
+    keys = scores
+
+    # Create the non-domain specific Filters for the Tallies
+    group_edges = self._energy_groups._group_edges
+    energy_filter = openmc.Filter('energy', group_edges)
+    filters = [[energy_filter], [energy_filter], [energy_filter]]
+
+    # Intialize the Tallies
+    super(CaptureXS, self).createTallies(scores, filters, keys, estimator)
+
+
+  def computeXS(self, corr=False):
+
+    # Extract and clean the Tally data
+    tally_data, zero_indices = super(CaptureXS, self).computeXS()
+    absorption = tally_data['absorption']
+    fission = tally_data['fission']
+    flux = tally_data['flux']
+
+    # Set any zero fluxes to a negative value
+    flux[:, zero_indices['flux']] = -1.
+
+    delta = infermc.error_prop.arithmetic.sub(absorption, fission, corr, False)
+
+    # Set any subdomain's zero reaction rates to a negative value
+    delta_indices = delta[0, ...] == 0.
+    delta[:, delta_indices] = -1.
+
+    # Compute the xs with uncertainty propagation
+    self._xs = infermc.error_prop.arithmetic.divide_by_array(delta, flux,
+                                                             corr, False)
+
+    # For any region without flux or reaction rate, convert xs to zero
+    all_zero_indices = np.logical_or(zero_indices['flux'], delta_indices)
     self._xs[:, all_zero_indices] = 0.
 
     # Correct -0.0 to +0.0
@@ -777,7 +830,7 @@ class FissionXS(MultiGroupXS):
     super(FissionXS, self).createTallies(scores, filters, keys, estimator)
 
 
-  def computeXS(self, corr=True):
+  def computeXS(self, corr=False):
 
     # Extract and clean the Tally data
     tally_data, zero_indices = super(FissionXS, self).computeXS()
@@ -823,7 +876,7 @@ class NuFissionXS(MultiGroupXS):
     super(NuFissionXS, self).createTallies(scores, filters, keys, estimator)
 
 
-  def computeXS(self, corr=True):
+  def computeXS(self, corr=False):
 
     # Extract and clean the Tally data
     tally_data, zero_indices = super(NuFissionXS, self).computeXS()
@@ -869,7 +922,7 @@ class ScatterXS(MultiGroupXS):
     super(ScatterXS, self).createTallies(scores, filters, keys, estimator)
 
 
-  def computeXS(self, corr=True):
+  def computeXS(self, corr=False):
 
     # Extract and clean the Tally data
     tally_data, zero_indices = super(ScatterXS, self).computeXS()
@@ -915,7 +968,7 @@ class NuScatterXS(MultiGroupXS):
     super(NuScatterXS, self).createTallies(scores, filters, keys, estimator)
 
 
-  def computeXS(self, corr=True):
+  def computeXS(self, corr=False):
 
     # Extract and clean the Tally data
     tally_data, zero_indices = super(NuScatterXS, self).computeXS()
@@ -963,7 +1016,7 @@ class ScatterMatrixXS(MultiGroupXS):
     super(ScatterMatrixXS, self).createTallies(scores, filters, keys, estimator)
 
 
-  def computeXS(self, corr=True):
+  def computeXS(self, corr=False):
 
     # Extract and clean the Tally data
     tally_data, zero_indices = super(ScatterMatrixXS, self).computeXS()
@@ -1087,7 +1140,7 @@ class Chi(MultiGroupXS):
     super(Chi, self).createTallies(scores, filters, keys, estimator)
 
 
-  def computeXS(self, corr=True):
+  def computeXS(self, corr=False):
 
     # Extract and clean the Tally data
     tally_data, zero_indices = super(Chi, self).computeXS()

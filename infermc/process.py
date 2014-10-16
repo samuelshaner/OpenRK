@@ -309,13 +309,13 @@ class XSTallyExtractor(object):
     return tally
 
 
-  def extractAllMultiGroupXS(self, energy_groups, domain_type='distribcell', corr=True):
+  def extractAllMultiGroupXS(self, energy_groups, domain_type='distribcell', corr=False):
 
     for xs_type in infermc.xs_types:
       self.extractMultiGroupXS(xs_type, energy_groups, domain_type, corr)
 
 
-  def extractMultiGroupXS(self, xs_type, energy_groups, domain_type='distribcell', corr=True):
+  def extractMultiGroupXS(self, xs_type, energy_groups, domain_type='distribcell', corr=False):
 
     # Add nested dictionary for this domain type if needed
     if not domain_type in self._multigroup_xs.keys():
@@ -346,7 +346,7 @@ class XSTallyExtractor(object):
 
 
   def createMultiGroupXS(self, xs_type, energy_groups,
-                         domain, domain_type='distribcell', corr=True):
+                         domain, domain_type='distribcell', corr=False):
 
     if self._statepoint is None:
       msg = 'Unable to get cross-sections since the TallyExtractor ' \
@@ -395,6 +395,19 @@ class XSTallyExtractor(object):
       multigroup_xs = infermc.AbsorptionXS(domain, domain_type, energy_groups)
       multigroup_xs._tallies['flux'] = flux
       multigroup_xs._tallies['absorption'] = absorption
+
+    elif xs_type == 'capture':
+
+      # Get the Tally objects needed to compute the absorption xs
+      flux = self.getTally('flux', filters)
+      absorption = self.getTally('absorption', filters)
+      fission = self.getTally('fission', filters)
+
+      # Initialize a MultiGroupXS object
+      multigroup_xs = infermc.AbsorptionXS(domain, domain_type, energy_groups)
+      multigroup_xs._tallies['flux'] = flux
+      multigroup_xs._tallies['absorption'] = absorption
+      multigroup_xs._tallies['fission'] = fission
 
     elif xs_type == 'fission':
 
@@ -578,13 +591,13 @@ class XSTallyExtractor(object):
 class MicroXSTallyExtractor(XSTallyExtractor):
 
 
-  def extractAllMultiGroupXS(self, energy_groups, domain_type='distribcell', corr=True):
+  def extractAllMultiGroupXS(self, energy_groups, domain_type='distribcell', corr=False):
 
     for xs_type in infermc.xs_types:
       self.extractMultiGroupXS(xs_type, energy_groups, domain_type, corr)
 
 
-  def extractMultiGroupXS(self, xs_type, energy_groups, domain_type='distribcell', corr=True):
+  def extractMultiGroupXS(self, xs_type, energy_groups, domain_type='distribcell', corr=False):
 
     # Add nested dictionary for this domain type if needed
     if not domain_type in self._multigroup_xs.keys():
@@ -614,7 +627,7 @@ class MicroXSTallyExtractor(XSTallyExtractor):
       self._multigroup_xs[domain_type][domain._id][xs_type] = xs
 
 
-  def createMultiGroupXS(self, xs_type, energy_groups, domain, domain_type='distribcell', corr=True):
+  def createMultiGroupXS(self, xs_type, energy_groups, domain, domain_type='distribcell', corr=False):
 
     if self._statepoint is None:
       msg = 'Unable to get cross-sections since the TallyExtractor ' \
@@ -675,6 +688,17 @@ class MicroXSTallyExtractor(XSTallyExtractor):
       multigroup_xs = infermc.MicroAbsorptionXS(domain, domain_type, energy_groups)
       multigroup_xs._tallies['flux'] = flux
       multigroup_xs._tallies['absorption'] = absorption
+
+    elif xs_type == 'capture':
+
+      # Get the Tally objects needed to compute the absorption xs
+      flux = self.getTally('flux', filters)
+      absorption = self.getTally('capture', filters, nuclides)
+
+      # Initialize a MultiGroupXS object
+      multigroup_xs = infermc.MicroAbsorptionXS(domain, domain_type, energy_groups)
+      multigroup_xs._tallies['flux'] = flux
+      multigroup_xs._tallies['capture'] = absorption
 
     elif xs_type == 'fission':
 

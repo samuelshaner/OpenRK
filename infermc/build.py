@@ -35,6 +35,8 @@ class XSTallyFactory(object):
       xs = infermc.TransportXS(domain, domain_type, energy_groups)
     elif xs_type == 'absorption':
       xs = infermc.AbsorptionXS(domain, domain_type, energy_groups)
+    elif xs_type == 'capture':
+      xs = infermc.CaptureXS(domain, domain_type, energy_groups)
     elif xs_type == 'fission':
       xs = infermc.FissionXS(domain, domain_type, energy_groups)
     elif xs_type == 'nu-fission':
@@ -110,6 +112,8 @@ class MicroXSTallyFactory(XSTallyFactory):
       xs = MicroTransportXS(domain, domain_type, energy_groups, nuclides)
     elif xs_type == 'absorption':
       xs = MicroAbsorptionXS(domain, domain_type, energy_groups, nuclides)
+    elif xs_type == 'capture':
+      xs = MicroCaptureXS(domain, domain_type, energy_groups, nuclides)
     elif xs_type == 'fission':
       xs = MicroFissionXS(domain, domain_type, energy_groups, nuclides)
     elif xs_type == 'nu-fission':

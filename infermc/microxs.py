@@ -460,6 +460,13 @@ class MicroAbsorptionXS(MicroXS, infermc.AbsorptionXS):
     self.addNuclidesToTallies()
 
 
+class MicroCaptureXS(MicroXS, infermc.CaptureXS):
+
+  def createTallies(self):
+    super(MicroCaptureXS, self).createTallies()
+    self.addNuclidesToTallies()
+
+
 class MicroFissionXS(MicroXS, infermc.FissionXS):
 
   def createTallies(self):
