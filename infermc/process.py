@@ -693,12 +693,14 @@ class MicroXSTallyExtractor(XSTallyExtractor):
 
       # Get the Tally objects needed to compute the absorption xs
       flux = self.getTally('flux', filters)
-      absorption = self.getTally('capture', filters, nuclides)
+      absorption = self.getTally('absorption', filters, nuclides)
+      fission = self.getTally('fission', filters, nuclides)
 
       # Initialize a MultiGroupXS object
       multigroup_xs = infermc.MicroAbsorptionXS(domain, domain_type, energy_groups)
       multigroup_xs._tallies['flux'] = flux
-      multigroup_xs._tallies['capture'] = absorption
+      multigroup_xs._tallies['absorption'] = absorption
+      multigroup_xs._tallies['fission'] = fission
 
     elif xs_type == 'fission':
 

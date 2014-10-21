@@ -230,20 +230,20 @@ class MicroXS(infermc.MultiGroupXS):
           subdomain_group = domain_group
 
         # Loop over all Nuclides
-        for j, nuclide in enumerate(nuclides):
+        for nuclide in nuclides:
 
           # Create an HDF5 group for the Nuclide and xs type
-          group_name = nuclide._name
+          group_name = self._nuclides[nuclide]._name
           nuclide_group = subdomain_group.require_group(group_name)
           xs_group = nuclide_group.require_group(self._xs_type)
 
           # Add MultiGroupXS results data to the HDF5 group
           xs_group.require_dataset('average', dtype=np.float64,
-                                   shape=average[i, ..., j].shape,
-                                   data=average[i, ..., j])
+                                   shape=average[i, ..., nuclide].shape,
+                                   data=average[i, ..., nuclide])
           xs_group.require_dataset('std. dev.', dtype=np.float64,
-                                   shape=std_dev[i, ..., j].shape,
-                                   data=std_dev[i, ..., j])
+                                   shape=std_dev[i, ..., nuclide].shape,
+                                   data=std_dev[i, ..., nuclide])
 
       # Close the results HDF5 file
       xs_results.close()
@@ -286,10 +286,10 @@ class MicroXS(infermc.MultiGroupXS):
           subdomain_group = domain_group
 
         # Loop over all Nuclides
-        for j, nuclide in enumerate(nuclides):
+        for nuclide in nuclides:
 
           # Create an HDF5 group for the Nuclide and xs type
-          group_name = nuclide._name
+          group_name = self._nuclides[nuclide]._name
 
           if not subdomain_group.has_key(group_name):
             nuclide_group = subdomain_group[group_name] = dict()
@@ -299,8 +299,8 @@ class MicroXS(infermc.MultiGroupXS):
           xs_group = nuclide_group[self._xs_type] = dict()
 
           # Add MultiGroupXS results data to the dictionary
-          xs_group['average'] = average[i, ..., j]
-          xs_group['std. dev.'] = std_dev[i, ..., j]
+          xs_group['average'] = average[i, ..., nuclide]
+          xs_group['std. dev.'] = std_dev[i, ..., nuclide]
 
       # Pickle the MultiGroupXS results to a file
       pickle.dump(xs_results, open(filename, 'wb'))
@@ -335,7 +335,7 @@ class MicroXS(infermc.MultiGroupXS):
 
       # Loop over all subdomains and Nuclides
       for i, subdomain in enumerate(subdomains):
-        for j, nuclide in enumerate(nuclides):
+        for nuclide in nuclides:
 
           # Add MultiGroupXS results data to the table list
           table = list()
@@ -349,8 +349,8 @@ class MicroXS(infermc.MultiGroupXS):
             for group in range(self._num_groups):
               subtable = list()
               subtable.append(group+1)
-              subtable.append(average[i, group, ..., j])
-              subtable.append(std_dev[i, group, ..., j])
+              subtable.append(average[i, group, ..., nuclide])
+              subtable.append(std_dev[i, group, ..., nuclide])
               table.append(subtable)
 
           # Scattering matrix
@@ -366,8 +366,8 @@ class MicroXS(infermc.MultiGroupXS):
                 subtable = list()
                 subtable.append(in_group+1)
                 subtable.append(out_group+1)
-                subtable.append(average[i, in_group, out_group, ..., j])
-                subtable.append(std_dev[i, in_group, out_group, ..., j])
+                subtable.append(average[i, in_group, out_group, ..., nuclide])
+                subtable.append(std_dev[i, in_group, out_group, ..., nuclide])
                 table.append(subtable)
 
           if self._domain_type == 'distribcell':
