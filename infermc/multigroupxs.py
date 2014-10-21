@@ -12,7 +12,7 @@ import infermc
 xs_types = ['total',
             'transport',
             'absorption',
-            'capture'
+            'capture',
             'scatter',
             'nu-scatter',
             'scatter matrix',
