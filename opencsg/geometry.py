@@ -426,7 +426,7 @@ class Geometry(object):
   def getNearestIntersection(self, point, direction):
 
     x, y, z = point._coords
-    points = []
+    distances = []
     next = self.findCoords(x=x, y=y, z=z)
     while not next is None:
       if isinstance(next, UnivCoords):
@@ -436,7 +436,7 @@ class Geometry(object):
           for surface in surfaces.keys():
             intersect = surfaces[surface][0].getIntersectionPoints(next._point, direction)
             if not intersect is None:
-              points.append(intersect)
+              distances.append(intersect)
 
       elif isinstance(next, LatCoords):
         lat = next._lattice
@@ -447,19 +447,19 @@ class Geometry(object):
         lat_point = Point(x=lat_x, y=lat_y, z=lat_z)
         intersect = lat.getIntersectionPoints(lat_point, direction)
         if not intersect is None:
-          points.append(intersect)
+          distances.append(intersect)
 
       next = next._next
 
-    if points == []:
+    if distances == []:
       return None
 
 
-    nearestdist = points[0][1]
+    nearestdist = distances[0]
 
-    for intersect in points:
-      if intersect[1] < nearestdist:
-        nearestdist = intersect[1]
+    for intersect in distances:
+      if intersect < nearestdist:
+        nearestdist = intersect
 
     nearestpoint = Point()
     poldir = direction.toPolar()

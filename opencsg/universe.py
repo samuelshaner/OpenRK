@@ -1359,13 +1359,13 @@ class Lattice(Universe):
 
     # Check if point is on lattice boundary and return
     if dist_x < ON_LATTICE_CELL_THRESH and abs(u) > PARALLEL_TO_AXIS_THRESHOLD:
-      return [point, 0.]
+      return 0.
 
     if dist_y < ON_LATTICE_CELL_THRESH and abs(v) > PARALLEL_TO_AXIS_THRESHOLD:
-      return [point, 0.]
+      return 0.
 
     if dist_z < ON_LATTICE_CELL_THRESH and abs(w) > PARALLEL_TO_AXIS_THRESHOLD:
-      return [point, 0.]
+      return 0.
 
     # Find intersection in lattice cell
     for dist in [dist_x, dist_y, dist_z]:
@@ -1381,7 +1381,7 @@ class Lattice(Universe):
         intersect = Point()
         intersect.setCoords((new_x, new_y, new_z))
         dist = point.distanceToPoint(intersect)
-        return [intersect, dist]
+        return dist
 
   def __repr__(self):
 

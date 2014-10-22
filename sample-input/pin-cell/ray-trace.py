@@ -1,5 +1,6 @@
 from opencsg import *
 import opencsg.plotter as plotter
+import time
 
 ###############################################################################
 ###########################   Creating Materials   ############################
@@ -136,9 +137,11 @@ geometry.initializeCellOffsets()
 
 print('Tracing Sample Rays...')
 
-rays = geometry.generateRays(num_rays=3000)
+rays = geometry.generateRays(num_rays=1000)
+start = time.time()
 rays = geometry.traceRays(rays)
-
+end = time.time() - start
+print end
 ###############################################################################
 ##########################   Plotting the Geometry   ##########################
 ###############################################################################
@@ -148,5 +151,5 @@ rays = geometry.traceRays(rays)
 plotter.plot_segments(rays, geometry)
 #plotter.plot_cells(geometry)
 #plotter.plot_materials(geometry)
-plotter.plot_regions(geometry)
+#plotter.plot_regions(geometry)
 
