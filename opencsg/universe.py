@@ -4,7 +4,7 @@ __email__ = 'wboyd@mit.edu'
 
 from opencsg.material import Material
 from opencsg.surface import Surface, ON_SURFACE_THRESH
-from opencsg.point import Point
+from opencsg.point import Point, Direction
 from opencsg.checkvalue import *
 from collections import OrderedDict
 from hashlib import sha1
@@ -16,6 +16,9 @@ import copy, math
 # Error threshold for determining how close to the boundary of a Lattice cell
 # a Point needs to be to be considered on it
 ON_LATTICE_CELL_THRESH = 1e-12
+
+# Error threshold for directional components very close to parallel with axes
+PARALLEL_TO_AXIS_THRESHOLD = 1e-5
 
 # Lists of all IDs for all Universes created
 UNIVERSE_IDS = list()
@@ -584,6 +587,7 @@ class Lattice(Universe):
     self._type = ''
     self._dimension = None
     self._width = None
+    self._halfwidth = None
     self._universes = None
     self._cell_offsets = None
     self._num_regions = None
@@ -609,6 +613,7 @@ class Lattice(Universe):
       clone._type = self._type
       clone._dimension = self._dimension
       clone._width = self._width
+      clone._width = self._halfwidth
 
       clone._universes = np.empty(self._universes.shape, dtype=Universe)
       for i in range(self._dimension[0]):
@@ -1063,10 +1068,12 @@ class Lattice(Universe):
     # Initialize width array to infinity by default
     self._width = np.zeros(3, dtype=np.float64)
     self._width[:] = MAX_FLOAT
+    self._halfwidth = np.zeros(3, dtype=np.float64)
+    self._halfwidth[:] = MAX_FLOAT
 
     for i in range(len(width)):
       self._width[i] = width[i]
-
+      self._halfwidth[i] = width[i]/2
 
   def setUniverses(self, universes):
 
@@ -1322,6 +1329,59 @@ class Lattice(Universe):
             'ID={1}'.format(region_id, self._id)
       raise ValueError(msg)
 
+  def getIntersectionPoints(self, point, direction):
+
+    if not isinstance(point, Point):
+      msg = 'Unable to get intersection point with Surface ID={0} ' \
+            'since the input is not a Point object'.format(self._id)
+      raise ValueError(msg)
+
+    if not isinstance(direction, Direction):
+      msg = 'Unable to get intersection point with Surface ID={0} ' \
+            'since the input is not a Direction object'.format(self._id)
+      raise ValueError(msg)
+
+    x, y, z = point._coords
+    u, v, w = direction.normalize()
+
+    # Compute the distance to the Lattice cell boundaries
+    dist_x = (np.sign(u)*self._halfwidth[0] - x)/u
+    dist_y = (np.sign(v)*self._halfwidth[1] - y)/v
+    dist_z = (np.sign(w)*self._halfwidth[2] - z)/w
+
+    # Check if ray is parallel to a lattice wall
+    if abs(u) < PARALLEL_TO_AXIS_THRESHOLD:
+      dist_x = 0
+    if abs(v) < PARALLEL_TO_AXIS_THRESHOLD:
+      dist_y = 0
+    if abs(w) < PARALLEL_TO_AXIS_THRESHOLD:
+      dist_z = 0
+
+    # Check if point is on lattice boundary and return
+    if dist_x < ON_LATTICE_CELL_THRESH and abs(u) > PARALLEL_TO_AXIS_THRESHOLD:
+      return [point, 0.]
+
+    if dist_y < ON_LATTICE_CELL_THRESH and abs(v) > PARALLEL_TO_AXIS_THRESHOLD:
+      return [point, 0.]
+
+    if dist_z < ON_LATTICE_CELL_THRESH and abs(w) > PARALLEL_TO_AXIS_THRESHOLD:
+      return [point, 0.]
+
+    # Find intersection in lattice cell
+    for dist in [dist_x, dist_y, dist_z]:
+      new_x = x + dist*u
+      new_y = y + dist*v
+      new_z = z + dist*w
+      if (abs((abs(new_x) - self._halfwidth[0])) < ON_LATTICE_CELL_THRESH and
+         abs(new_y) < self._halfwidth[1] and abs(new_z) < self._halfwidth[2]) or \
+         (abs((abs(new_y) - self._halfwidth[1])) < ON_LATTICE_CELL_THRESH and
+         abs(new_x) < self._halfwidth[0] and abs(new_z) < self._halfwidth[2]) or \
+         (abs((abs(new_z) - self._halfwidth[2])) < ON_LATTICE_CELL_THRESH and
+         abs(new_x) < self._halfwidth[0] and abs(new_y) < self._halfwidth[1]):
+        intersect = Point()
+        intersect.setCoords((new_x, new_y, new_z))
+        dist = point.distanceToPoint(intersect)
+        return [intersect, dist]
 
   def __repr__(self):
 

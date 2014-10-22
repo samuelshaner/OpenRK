@@ -426,29 +426,46 @@ class Geometry(object):
   def getNearestIntersection(self, point, direction):
 
     x, y, z = point._coords
-    cell = self.findCoords(x=x, y=y, z=z).getTailNode()._cell
-    if cell is None:
-      return None
-    surfaces = cell._surfaces
     points = []
+    next = self.findCoords(x=x, y=y, z=z)
+    while not next is None:
+      if isinstance(next, UnivCoords):
+        cell = next._cell
+        if not cell is None:
+          surfaces = cell._surfaces
+          for surface in surfaces.keys():
+            intersect = surfaces[surface][0].getIntersectionPoints(next._point, direction)
+            if not intersect is None:
+              points.append(intersect)
 
-    for surface in surfaces.keys():
-      intersect = surfaces[surface][0].getIntersectionPoints(point, direction)
-      points.extend(intersect)
+      elif isinstance(next, LatCoords):
+        lat = next._lattice
+        lat_x, lat_y, lat_z = next._point._coords
+        lat_x = lat_x + 0.5*lat._dimension[0]*lat._width[0] - next._lat_x*lat._width[0] - lat._halfwidth[0]
+        lat_y = lat_y + 0.5*lat._dimension[1]*lat._width[1] - next._lat_y*lat._width[1] - lat._halfwidth[1]
+        lat_z = lat_z + 0.5*lat._dimension[2]*lat._width[2] - next._lat_z*lat._width[2] - lat._halfwidth[2]
+        lat_point = Point(x=lat_x, y=lat_y, z=lat_z)
+        intersect = lat.getIntersectionPoints(lat_point, direction)
+        if not intersect is None:
+          points.append(intersect)
 
-    while None in points:
-      points.remove(None)
+      next = next._next
 
     if points == []:
       return None
 
-    nearestpoint = points[0]
-    nearestdist = point.distanceToPoint(points[0])
+
+    nearestdist = points[0][1]
 
     for intersect in points:
-      if point.distanceToPoint(intersect) < nearestdist:
-        nearestpoint = intersect
-        nearestdist = point.distanceToPoint(intersect)
+      if intersect[1] < nearestdist:
+        nearestdist = intersect[1]
+
+    nearestpoint = Point()
+    poldir = direction.toPolar()
+    nearestpoint.setX(point._coords[0] + nearestdist*np.sin(poldir[2])*np.cos(poldir[1]))
+    nearestpoint.setY(point._coords[1] + nearestdist*np.sin(poldir[2])*np.sin(poldir[1]))
+    nearestpoint.setZ(point._coords[2] + nearestdist*np.cos(poldir[2]))
 
     return nearestpoint
 
@@ -485,7 +502,8 @@ class Geometry(object):
         y = bounds[edge] - TINY_BIT
         z = np.random.uniform(-1e12, 1e12)
 
-      u, v, w = np.random.rand(3)-0.5
+      u, v = np.random.rand(2)-0.5
+      w = 0.
       point = Point(x=x, y=y, z=z)
       direction = Direction(u=u, v=v, w=w)
       ray = Ray(point, direction)

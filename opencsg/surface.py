@@ -374,7 +374,7 @@ class Plane(Surface):
     super(Plane, self).getIntersectionPoints(point, direction)
 
     if self.onSurface(point):
-      return [point]
+      return [point, 0.]
 
     x, y, z = point._coords
     u, v, w = direction.normalize()
@@ -388,17 +388,17 @@ class Plane(Surface):
                   self._coeffs['C'] * w
 
     if abs(denominator) < ON_SURFACE_THRESH:
-      return [None]
+      return None
 
     dist = numerator/denominator
 
     if dist < 0:
-      return [None]
+      return None
 
     intersect = Point()
     intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
-
-    return [intersect]
+    dist = point.distanceToPoint(intersect)
+    return [intersect, dist]
 
 class XPlane(Plane):
 
@@ -487,24 +487,23 @@ class XPlane(Plane):
     super(XPlane, self).getIntersectionPoints(point, direction)
 
     if self.onSurface(point):
-      return [point]
+      return [point, 0.]
 
     x, y, z = point._coords
     u, v, w = direction.normalize()
 
     if abs(u) < ON_SURFACE_THRESH:
-      return [None]
+      return None
 
     dist = (self._coeffs['x0'] - x)/u
 
     if dist < 0:
-      return [None]
+      return None
 
     intersect = Point()
     intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
-
-    return [intersect]
-
+    dist = point.distanceToPoint(intersect)
+    return [intersect, dist]
 
 class YPlane(Plane):
 
@@ -592,24 +591,23 @@ class YPlane(Plane):
     super(YPlane, self).getIntersectionPoints(point, direction)
 
     if self.onSurface(point):
-      return [point]
+      return [point, 0.]
 
     x, y, z = point._coords
     u, v, w = direction.normalize()
 
     if abs(v) < ON_SURFACE_THRESH:
-      return [None]
+      return None
 
     dist = (self._coeffs['y0'] - y)/v
 
     if dist < 0:
-      return [None]
+      return None
 
     intersect = Point()
     intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
-
-    return [intersect]
-
+    dist = point.distanceToPoint(intersect)
+    return [intersect, dist]
 
 class ZPlane(Plane):
 
@@ -697,24 +695,23 @@ class ZPlane(Plane):
     super(ZPlane, self).getIntersectionPoints(point, direction)
 
     if self.onSurface(point):
-      return [point]
+      return [point, 0.]
 
     x, y, z = point._coords
     u, v, w = direction.normalize()
 
     if abs(w) < ON_SURFACE_THRESH:
-      return [None]
+      return None
 
     dist = (self._coeffs['z0'] - z)/w
 
     if dist < 0:
-      return [None]
+      return None
 
     intersect = Point()
     intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
-
-    return [intersect]
-
+    dist = point.distanceToPoint(intersect)
+    return [intersect, dist]
 
 class Cylinder(Surface):
 
@@ -921,7 +918,7 @@ class XCylinder(Cylinder):
     super(XCylinder, self).getIntersectionPoints(point, direction)
 
     if self.onSurface(point):
-      return [point]
+      return [point, 0.]
 
     x, y, z = point._coords
     u, v, w = direction.normalize()
@@ -933,22 +930,25 @@ class XCylinder(Cylinder):
     c = ybar**2 + zbar**2 - self._coeffs['R']**2
 
     if abs(a) < ON_SURFACE_THRESH or k**2-a*c < 0:
-      return [None, None]
+      return None
 
     if c < 0:
       dist = (-k + np.sqrt(k**2-a*c))/a
       intersect = Point()
       intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
-      return [intersect]
+      dist = point.distanceToPoint(intersect)
+      return [intersect, dist]
 
     else:
       dist = (-k - np.sqrt(k**2-a*c))/a
       if dist > 0:
         intersect = Point()
         intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
-        return [intersect]
+        dist = point.distanceToPoint(intersect)
+        return [intersect, dist]
+
       else:
-        return [None]
+        return None
 
 
 class YCylinder(Cylinder):
@@ -1133,7 +1133,7 @@ class YCylinder(Cylinder):
     super(YCylinder, self).getIntersectionPoints(point, direction)
 
     if self.onSurface(point):
-      return [point]
+      return [point, 0.]
 
     x, y, z = point._coords
     u, v, w = direction.normalize()
@@ -1145,22 +1145,25 @@ class YCylinder(Cylinder):
     c = xbar**2 + zbar**2 - self._coeffs['R']**2
 
     if abs(a) < ON_SURFACE_THRESH or k**2-a*c < 0:
-      return [None, None]
+      return None
 
     if c < 0:
       dist = (-k + np.sqrt(k**2-a*c))/a
       intersect = Point()
       intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
-      return [intersect]
+      dist = point.distanceToPoint(intersect)
+      return [intersect, dist]
 
     else:
       dist = (-k - np.sqrt(k**2-a*c))/a
       if dist > 0:
         intersect = Point()
         intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
-        return [intersect]
+        dist = point.distanceToPoint(intersect)
+        return [intersect, dist]
+
       else:
-        return [None]
+        return None
 
 
 class ZCylinder(Cylinder):
@@ -1347,7 +1350,7 @@ class ZCylinder(Cylinder):
     super(ZCylinder, self).getIntersectionPoints(point, direction)
 
     if self.onSurface(point):
-      return [None]
+      return [point, 0.]
 
     x, y, z = point._coords
     u, v, w = direction.normalize()
@@ -1359,22 +1362,25 @@ class ZCylinder(Cylinder):
     c = xbar**2 + ybar**2 - self._coeffs['R']**2
 
     if abs(a) < ON_SURFACE_THRESH or k**2-a*c < 0:
-      return [None]
+      return None
 
     if c < 0:
       dist = (-k + np.sqrt(k**2-a*c))/a
       intersect = Point()
       intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
-      return [intersect]
+      dist = point.distanceToPoint(intersect)
+      return [intersect, dist]
 
     else:
       dist = (-k - np.sqrt(k**2-a*c))/a
       if dist > 0:
         intersect = Point()
         intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
-        return [intersect]
+        dist = point.distanceToPoint(intersect)
+        return [intersect, dist]
+
       else:
-        return [None]
+        return None
 
 class Sphere(Surface):
 
@@ -1640,7 +1646,7 @@ class Sphere(Surface):
     super(Sphere, self).getIntersectionPoints(point, direction)
 
     if self.onSurface(point):
-      return [point]
+      return [point, 0.]
 
     x, y, z = point._coords
     u, v, w = direction.normalize()
@@ -1652,14 +1658,16 @@ class Sphere(Surface):
     c = xbar**2 + ybar**2 + zbar**2 - self._coeffs['R']**2
 
     if k**2-c < 0:
-      return [None, None]
+      return None
 
 
     if c < 0:
       dist = (-k + np.sqrt(k**2-c))
       intersect = Point()
       intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
-      return [intersect]
+      dist = point.distanceToPoint(intersect)
+      return [intersect, dist]
+
 
     else:
       dist1 = (-k + np.sqrt(k**2-c))
@@ -1670,7 +1678,8 @@ class Sphere(Surface):
         dist = dist2
       intersect = Point()
       intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
-      return [intersect]
+      dist = point.distanceToPoint(intersect)
+      return [intersect, dist]
 
 
 class SquarePrism(Surface):
