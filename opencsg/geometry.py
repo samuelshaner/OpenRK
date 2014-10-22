@@ -29,6 +29,8 @@ class Geometry(object):
     # A NumPy array of volumes for each region, indexed by Region ID
     self._region_volumes = None
 
+    self._all_cells = None
+
     # Dictionaries mapping neighbor hashes to consecutive integers
     # Keys    - hashes of the tuples of (unique) neighbors
     # Values  - monotonically consecutive non-negative integers
@@ -62,6 +64,7 @@ class Geometry(object):
       clone._unique_neighbor_ids = copy.deepcopy(self._unique_neighbor_ids, memo)
       clone._regions_to_neighbors = copy.deepcopy(self._regions_to_neighbors, memo)
       clone._regions_to_unique_neighbors = copy.deepcopy(self._regions_to_unique_neighbors, memo)
+      clone._all_cells = copy.deepcopy(self._all_cells, memo)
 
       memo[id(self)] = clone
 
@@ -133,12 +136,6 @@ class Geometry(object):
 
 
   def getBounds(self):
-
-    if self._root_universe is None:
-      msg = 'Unable to get the bounds since the Geometry does not ' \
-            'contain the base Universe ID=0'
-      raise ValueError(msg)
-
     bounds = [self._root_universe.getMinX(),
               self._root_universe.getMaxX(),
               self._root_universe.getMinY(),
@@ -151,21 +148,13 @@ class Geometry(object):
 
   def getAllCells(self):
 
-    if self._root_universe is None:
-      msg = 'Unable to get all Cells since the Geometry does not ' \
-            'contain the base Universe ID=0'
-      raise ValueError(msg)
+    if self._all_cells is None:
+      self._all_cells = self._root_universe.getAllCells()
 
-    return self._root_universe.getAllCells()
+    return self._all_cells
 
 
   def getAllUniverses(self):
-
-    if self._root_universe is None:
-      msg = 'Unable to get all Universes since the Geometry does not ' \
-            'contain the base Universe ID=0'
-      raise ValueError(msg)
-
     return self._root_universe.getAllUniverses()
 
 
@@ -542,3 +531,6 @@ class Geometry(object):
     coords = self.findRegion(region_id)
     return coords.getUniqueNeighborsHash()
 
+  def toString(self):
+    string = self._root_universe.toString()
+    return string

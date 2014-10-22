@@ -194,6 +194,191 @@ class RadialMesh(object):
     return new_cells
 
 
+class RectilinearMesh(object):
+
+  def __init__(self):
+
+    super(RectilinearMesh, self).__init__()
+
+    # A Python list, tuple or NumPy array of points to insert mesh planes
+    self._mesh_points = None
+    self._num_mesh_cells = 0
+
+    # 'x', 'y', 'z'
+    self._axis = None
+
+
+  def setAxis(self, axis):
+
+    if not is_string(axis):
+      msg = 'Unable to set the axis for RectilinearMesh to {0} ' \
+            'since it is not a string'.format(axis)
+      raise ValueError(msg)
+
+    elif not axis in ['x', 'y', 'z']:
+      msg = 'Unable to set the axis for RectilinearMesh to {0} ' \
+            'since it is not x, y, or z'.format(axis)
+      raise ValueError(msg)
+
+    self._axis = axis
+
+
+  def setMeshPoints(self, mesh_points):
+
+    if not isinstance(mesh_points, (list, tuple, np.ndarray)):
+      msg = 'Unable to set the mesh lines for RectilinearMesh ' \
+            'since it is not a Python list, tuple or NumPy array'
+      raise ValueError(msg)
+
+    elif not is_float(mesh_points[0]) or is_integer(mesh_points[0]):
+      msg = 'Unable to set the mesh lines for RectilinearMesh ' \
+            'since it is not filled with float or integer values'
+      raise ValueError(msg)
+
+    self._mesh_points = mesh_points
+    self._num_mesh_cells = len(mesh_points) - 1
+
+
+  def subdivideCell(self, cell, universe=None):
+
+    if not isinstance(cell, Cell):
+      msg = 'Unable to subdivide Cell with RectilinearMesh since {0} ' \
+            'is not a Cell'.format(cell)
+      raise ValueError(msg)
+
+    # FIXME: do I need this???
+    cell.findBoundingBox()
+
+    # Initialize an empty list of the new subdivided cells
+    new_cells = list()
+
+    if self._num_mesh_cells < 2:
+      return new_cells
+
+    # Initialize an empty list for Planes
+    planes = list()
+
+    # Create each of the bounding planes for the sector Cells
+    for point in self._mesh_points:
+
+      if self._axis == 'x':
+        planes.append(XPlane(x0=point))
+      elif self._axis == 'y':
+        planes.append(YPlane(y0=point))
+      elif self._axis == 'z':
+        planes.append(ZPlane(z0=point))
+
+    # Create sectors using disjoint halfspaces of pairing Planes
+    for i in range(self._num_mesh_cells):
+
+      # Create new Cell clone for this sector Cell
+      subcell = cell.clone()
+
+      # Add new bounding planar Surfaces to the clone
+      subcell.addSurface(surface=planes[i], halfspace=+1)
+      subcell.addSurface(surface=planes[i+1], halfspace=-1)
+
+      # Store the clone in the container of new sector Cells
+      new_cells.append(subcell)
+
+    if isinstance(universe, Universe):
+      universe.removeCell(cell)
+      universe.addCells(new_cells)
+
+    return new_cells
+
+
+  def subdivideCells(self, cells, universe=None):
+
+    if not isinstance(cells, (tuple, list, MappingView, np.ndarray)):
+      msg = 'Unable to subdivide cells with a RectilinearMesh since {0} ' \
+            'is not a Python tuple/list or NumPy array'.format(cells)
+      raise ValueError(msg)
+
+    # Cast to a list so we can safely modify it in place
+    cells = list(cells)
+
+    # Initialize an empty list of new Cells
+    new_cells = list()
+
+    if self._num_mesh_cells < 2:
+      return new_cells
+
+    for cell in cells:
+      new_cells.extend(self.subdivideCell(cell=cell))
+
+      if isinstance(universe, Universe):
+        universe.removeCell(cell)
+
+    universe.addCells(new_cells)
+
+    return new_cells
+
+
+  def subdivideUniverse(self, universe):
+
+    if not isinstance(universe, Universe):
+      msg = 'Unable to subdivide Universe with a RectilinearMesh since {0} ' \
+            'is not a Universe'.format(universe)
+      raise ValueError(msg)
+
+    cells = universe._cells.values()
+    new_cells = self.subdivideCells(cells, universe=universe)
+    return new_cells
+
+
+class LinearMesh(RectilinearMesh):
+
+  def __init__(self, axis, min_point, max_point, num_mesh_cells):
+
+    self._min_point = min_point
+    self._max_point = max_point
+    self._num_mesh_cells = num_mesh_cells
+
+    # Set the axis ('x', 'y', or 'z')
+    self.setAxis(axis)
+
+    # Generate linearly spaced mesh points and assign them to the parent class
+    mesh_points = np.linspace(self._min_point, self._max_point,
+                              self._num_mesh_cells+1)
+    self.setMeshPoints(mesh_points)
+
+
+class LogarithmicMesh(RectilinearMesh):
+
+  def __init__(self, axis, min_point, max_point, num_mesh_cells, base='e'):
+
+    self._min_point = min_point
+    self._max_point = max_point
+    self._num_mesh_cells = num_mesh_cells
+
+    # Set the axis ('x', 'y', or 'z')
+    self.setAxis(axis)
+
+    # Set the log base ('e' or 10)
+    self._base = None
+    self.setBase(base)
+
+    # Generate logarithmically spaced mesh points and assign them to the parent class
+    if self._base == 'e':
+      mesh_points = np.logspace(np.log(self._min_point), np.log(self._max_point),
+                                self._num_mesh_cells+1, base=np.e)
+    elif self._base == 10:
+      mesh_points = np.logspace(np.log10(self._min_point), np.log10(self._max_point),
+                                self._num_mesh_cells+1)
+
+    self.setMeshPoints(mesh_points)
+
+
+  def setBase(self, base):
+
+    if not is_string(base) or not base in ['e', 10]:
+      msg = 'Unable to set the base for LogarithmicMesh to {0} ' \
+            'which is not e or 10'.format(base)
+      raise ValueError(msg)
+
+
+
 class SectorMesh(object):
 
   def __init__(self, num_sectors=None):
@@ -303,7 +488,6 @@ class SectorMesh(object):
   def subdivideCells(self, cells, universe=None):
 
     if not isinstance(cells, (tuple, list, MappingView, np.ndarray)):
-      print(type(cells))
       msg = 'Unable to subdivide cells with a SectorMesh since {0} ' \
             'is not a Python tuple/list or NumPy array'.format(cells)
       raise ValueError(msg)

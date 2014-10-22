@@ -385,6 +385,25 @@ class Universe(object):
     self._cells.clear()
 
 
+  def containsCell(cell=None, cell_id=None, name=None):
+
+    if not cell is None:
+      for cell_id in self._cells.keys():
+        if cell == self._cells[cell_id]:
+          return True
+
+    if not cell_id is None:
+      if cell_id in self._cells.keys():
+        return True
+
+    if not name is None:
+      for cell_id in self._cells.keys():
+        if cell._name == self._cells[cell_id]._name:
+          return True
+
+    return False
+
+
   def computeVolumeFractions(self, volume=np.float64(1.), tolerance=1e-3):
 
     if not is_float(volume):
@@ -559,6 +578,13 @@ class Universe(object):
       msg = 'Unable to find cell for region_id={0} in Universe ' \
             'ID={1}'.format(region_id, self._id)
       raise ValueError(msg)
+
+
+  def toString(self):
+    string = self.__repr__()
+    for cell_id, cell in self._cells.items():
+      string += cell.toString()
+    return string
 
 
   def __repr__(self):
@@ -874,32 +900,22 @@ class Lattice(Universe):
             'the universes array has not been set'.format(self._id)
       raise ValueError(msg)
 
+    unique_universes = np.unique(self._universes.ravel())
     universes = dict()
 
-    for i in range(self._dimension[0]):
-      for j in range(self._dimension[1]):
-        for k in range(self._dimension[2]):
-          universe = self._universes[k][j][i]
-          universe_id = universe._id
-          universes[universe_id] = universe
+    for universe in unique_universes:
+      universes[universe._id] = universe
 
     return universes
 
 
   def getAllCells(self):
 
-    if self._universes is None:
-      msg = 'Unable to get all Cells for Lattice ID={0} since the ' \
-            'universes array has not been set'.format(self._id)
-      raise ValueError(msg)
-
     cells = dict()
+    unique_universes = self.getUniqueUniverses()
 
-    for i in range(self._dimension[0]):
-      for j in range(self._dimension[1]):
-        for k in range(self._dimension[2]):
-          universe = self._universes[k][j][i]
-          cells.update(universe.getAllCells())
+    for universe_id, universe in unique_universes.items():
+      cells.update(universe.getAllCells())
 
     return cells
 
@@ -1082,7 +1098,6 @@ class Lattice(Universe):
             'since it is not a Python tuple/list or ' \
             'NumPy array'.format(self._id, universes)
       raise ValueError(msg)
-
 
     # if universes was input in 2D -> make 3D
     shape = np.shape(universes)
@@ -1383,6 +1398,14 @@ class Lattice(Universe):
         dist = point.distanceToPoint(intersect)
         return dist
 
+  def toString(self):
+    string = self.__repr__()
+    unique_universes = self.getUniqueUniverses()
+    for universe_id, universe in unique_universes.items():
+      string += universe.toString()
+    return string
+
+
   def __repr__(self):
 
     string = 'Lattice\n'
@@ -1552,15 +1575,10 @@ class Cell(object):
 
   def getAllCells(self):
 
-    if self._fill is None:
-      msg = 'Unable to get all Cells from Cell ID={0} since the fill ' \
-            'has not been set'.format(self._id)
-      raise ValueError(msg)
-
     cells = dict()
 
     if self._type == 'universe' or self._type == 'lattice':
-      cells.update(self._fill.getAllCells())
+      cells = self._fill.getAllCells()
 
     return cells
 
@@ -2123,6 +2141,12 @@ class Cell(object):
 
     return clone
 
+
+  def toString(self):
+    string = self.__repr__()
+    if not isinstance(self._fill, Material):
+      string += self._fill.toString()
+    return string
 
   def __repr__(self):
 
