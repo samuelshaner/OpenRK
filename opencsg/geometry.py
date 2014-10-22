@@ -416,7 +416,11 @@ class Geometry(object):
 
     x, y, z = point._coords
     distances = []
+
+    # initialize linked list for point
     next = self.findCoords(x=x, y=y, z=z)
+
+    # Loop through linked list and retrieve intersection distances
     while not next is None:
       if isinstance(next, UnivCoords):
         cell = next._cell
@@ -446,10 +450,12 @@ class Geometry(object):
 
     nearestdist = distances[0]
 
+    # find smallest distance
     for intersect in distances:
       if intersect < nearestdist:
         nearestdist = intersect
 
+    # sets coordinates for nearest intersection
     nearestpoint = Point()
     poldir = direction.toPolar()
     nearestpoint.setX(point._coords[0] + nearestdist*np.sin(poldir[2])*np.cos(poldir[1]))
@@ -504,14 +510,20 @@ class Geometry(object):
 
     start = Point()
     for ray in rays:
+
+      # sets starting point of ray
       start.setCoords(ray._point._coords)
       direction = ray._direction
+
+      # traces ray until ray has reached the edge of the geometry
       while True:
         intersect = self.getNearestIntersection(start, direction)
         if intersect is None:
           break
         segment = Segment(self, start=start, end=intersect)
         ray.addSegment(segment)
+
+        # adjusts next segment in ray to start at previous intersection
         start.setCoords(intersect._coords + TINY_BIT*direction._comps)
     return rays
 

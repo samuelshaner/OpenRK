@@ -5,6 +5,8 @@ __email__ = 'dvtran@mit.edu'
 from opencsg import *
 import numpy as np
 import copy
+import os
+import h5py
 
 class Ray(object):
 
@@ -132,3 +134,27 @@ class Segment(object):
     string += '{0: <16}{1}{2}\n'.format('\tRegion Id', '=\t', self._region_id)
     string += '{0: <16}{1}{2}\n'.format('\tLength', '=\t', self._length)
     return string
+
+def exportRays(rays, directory = 'csg-data/', filename = 'rays-data.h5'):
+
+  # creates folder to contain rays data file if one does not exist
+  if not os.path.exists(directory):
+    os.makedirs(directory)
+
+  f = h5py.File(directory + filename, 'w')
+  f.attrs['Number of Rays'] = len(rays)
+  rays_group = f.create_group('Rays')
+
+  # create groups for each ray
+  for i in xrange(len(rays)):
+    ray_group = rays_group.create_group('Ray (%d)' % (i))
+    ray_group.create_dataset('Start Point', data = rays[i]._point._coords)
+    ray_group.create_dataset('Direction', data = rays[i]._direction._comps)
+    segments = rays[i]._segments
+    for j in xrange(len(segments)):
+      segment_group = ray_group.create_group('Segment (%d)' % (j))
+      segment_group.create_dataset('Region ID', data = segments[j]._region_id)
+      segment_group.create_dataset('Cell ID', data = segments[j]._cell._id)
+      segment_group.create_dataset('Length', data = segments[j]._length)
+
+  f.close()
