@@ -1402,6 +1402,7 @@ class Cell(object):
     self._name = None
     self._fill = None
     self._rotation = None
+    self._rotation_matrix = None
     self._type = None
     self._num_subcells = None
     self._volume_fraction = np.float64(0.)
@@ -1634,8 +1635,8 @@ class Cell(object):
   def setRotation(self, rotation):
 
     # TODO: error checking
-    if not isinstance(rotation, (np.array, tuple, list)):
-      msg = 'Unable to set rotation for Cell ID={0} to {1} since it is not' \
+    if not isinstance(rotation, (np.ndarray, tuple, list)):
+      msg = 'Unable to set rotation for Cell ID={0} to {1} since it is not ' \
             'a list/tuple or NumPy array'.format(self._id, rotation)
       raise ValueError(msg)
 
@@ -1645,6 +1646,27 @@ class Cell(object):
       raise ValueError(msg)
 
     self._rotation = rotation
+
+    # Compute rotation angles in x,y,z directions
+    phi = self._rotation[0] * math.pi / 180.
+    theta = self._rotation[1] * math.pi / 180.
+    psi = self._rotation[2] * math.pi / 180.
+
+    # Calculate rotation matrix based on angles given
+    self._rotation_matrix = np.zeros((3,3), dtype=np.float64)
+    self._rotation_matrix[0,0] = math.cos(theta) * math.cos(psi)
+    self._rotation_matrix[0,1] = math.cos(theta) * math.sin(psi)
+    self._rotation_matrix[0,2] = -math.sin(theta)
+    self._rotation_matrix[1,0] = -math.cos(phi) * math.sin(psi) + \
+                                 math.sin(phi) * math.sin(theta) * math.cos(psi)
+    self._rotation_matrix[1,1] = math.cos(phi) * math.cos(psi) + \
+                                 math.sin(phi) * math.sin(theta) * math.sin(psi)
+    self._rotation_matrix[1,2] = math.sin(phi) * math.cos(theta)
+    self._rotation_matrix[2,0] = math.sin(phi) * math.sin(psi) + \
+                                 math.cos(phi) * math.sin(theta) * math.cos(psi)
+    self._rotation_matrix[2,1] = math.sin(phi) * math.cos(psi) + \
+                                 math.cos(phi) * math.sin(theta) * math.sin(psi)
+    self._rotation_matrix[2,2] = math.cos(phi) * math.cos(theta)
 
 
   def setType(self, type):
