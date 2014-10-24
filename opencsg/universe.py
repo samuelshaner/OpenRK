@@ -1395,13 +1395,13 @@ def reset_auto_cell_id():
 
 class Cell(object):
 
-  def __init__(self, cell_id=None, name='', fill=None, rot=None):
+  def __init__(self, cell_id=None, name='', fill=None):
 
     # Initialize Cell class attributes
     self._id = None
     self._name = None
     self._fill = None
-    self._rot = None
+    self._rotation = None
     self._type = None
     self._num_subcells = None
     self._volume_fraction = np.float64(0.)
@@ -1434,9 +1434,6 @@ class Cell(object):
     if not fill is None:
       self.setFill(fill)
 
-    if not rot is None:
-      self.setRotation(rot)
-
 
   def __deepcopy__(self, memo):
 
@@ -1449,7 +1446,7 @@ class Cell(object):
       clone._id = self._id
       clone._name = self._name
       clone._fill = copy.deepcopy(self._fill, memo)
-      clone._rot = self._rot
+      clone._rotation = self._rotation
       clone._type = self._type
       clone._num_subcells = self._num_subcells
       clone._volume_fraction = self._volume_fraction
@@ -1634,11 +1631,21 @@ class Cell(object):
 
     self._fill = fill
 
-  def setRotation(self, rot):
+  def setRotation(self, rotation):
 
     # TODO: error checking
+    if not isinstance(rotation, (np.array, tuple, list)):
+      msg = 'Unable to set rotation for Cell ID={0} to {1} since it is not' \
+            'a list/tuple or NumPy array'.format(self._id, rotation)
+      raise ValueError(msg)
 
-    self._rot = rot
+    elif len(rotation) != 3:
+      msg = 'Unable to set rotation for Cell ID={0} to {1} since it is not ' \
+            'of length 3'.format(self._id, rotation)
+      raise ValueError(msg)
+
+    self._rotation = rotation
+
 
   def setType(self, type):
 
