@@ -38,7 +38,7 @@ def plot_cells(geometry, plane='xy', offset=0., gridsize=250):
     raise ValueError(msg)
 
   if not is_integer(gridsize):
-    msg = 'Unable to plot the cells since the gridsize {0} is ' \
+    msg = 'Unable to plot the cells since the gridsize {0} ' \
           'is not an integer'.format(gridsize)
     raise ValueError(msg)
 
@@ -53,7 +53,7 @@ def plot_cells(geometry, plane='xy', offset=0., gridsize=250):
     raise ValueError(msg)
 
   if not is_float(offset):
-    msg = 'Unable to plot the cells since the offset {0} is ' \
+    msg = 'Unable to plot the cells since the offset {0} ' \
           'is not a float'.format(offset)
     raise ValueError(msg)
 
@@ -123,7 +123,7 @@ def plot_materials(geometry, plane='xy', offset=0., gridsize=250):
     raise ValueError(msg)
 
   if not is_integer(gridsize):
-    msg = 'Unable to plot the materials since the gridsize {0} is' \
+    msg = 'Unable to plot the materials since the gridsize {0} ' \
           'is not an integer'.format(gridsize)
     raise ValueError(msg)
 
@@ -138,7 +138,7 @@ def plot_materials(geometry, plane='xy', offset=0., gridsize=250):
     raise ValueError(msg)
 
   if not is_float(offset):
-    msg = 'Unable to plot the materials since the offset {0} is' \
+    msg = 'Unable to plot the materials since the offset {0} ' \
           'is not a float'.format(offset)
     raise ValueError(msg)
 
@@ -207,7 +207,7 @@ def plot_regions(geometry, plane='xy', offset=0., gridsize=250):
     raise ValueError(msg)
 
   if not is_integer(gridsize):
-    msg = 'Unable to plot the regions since the gridsize {0} is' \
+    msg = 'Unable to plot the regions since the gridsize {0} ' \
           'is not an integer'.format(gridsize)
     raise ValueError(msg)
 
@@ -222,7 +222,7 @@ def plot_regions(geometry, plane='xy', offset=0., gridsize=250):
     raise ValueError(msg)
 
   if not is_float(offset):
-    msg = 'Unable to plot the regions since the offset {0} is' \
+    msg = 'Unable to plot the regions since the offset {0} ' \
           'is not a float'.format(offset)
     raise ValueError(msg)
 
@@ -292,7 +292,7 @@ def plot_neighbor_cells(geometry, plane='xy', offset=0.,
     raise ValueError(msg)
 
   if not is_integer(gridsize):
-    msg = 'Unable to plot the neighbor cells since the gridsize {0} is' \
+    msg = 'Unable to plot the neighbor cells since the gridsize {0} ' \
           'is not an integer'.format(gridsize)
     raise ValueError(msg)
 
@@ -307,7 +307,7 @@ def plot_neighbor_cells(geometry, plane='xy', offset=0.,
     raise ValueError(msg)
 
   if not is_float(offset):
-    msg = 'Unable to plot the neighbor cells since the offset {0} is' \
+    msg = 'Unable to plot the neighbor cells since the offset {0} ' \
           'is not a float'.format(offset)
     raise ValueError(msg)
 

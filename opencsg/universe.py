@@ -479,7 +479,14 @@ class Universe(object):
       cell = self._cells[cell_id]
       
       if cell.containsPoint(localcoords._point):
+
         localcoords.setCell(cell)
+
+        # Apply rotation
+        if not cell._rotation is None:
+          point = localcoords._point
+          point._coords = np.dot(cell._rotation_matrix,
+                                 np.transpose(point._coords))
 
         # 'material' type Cell - lowest level, terminate search for Cell
         if cell._type == 'material':
@@ -1447,7 +1454,8 @@ class Cell(object):
       clone._id = self._id
       clone._name = self._name
       clone._fill = copy.deepcopy(self._fill, memo)
-      clone._rotation = self._rotation
+      clone._rotation = copy.deepcopy(self._rotation)
+      clone._rotation_matrix = copy.deepcopy(self._rotation_matrix)
       clone._type = self._type
       clone._num_subcells = self._num_subcells
       clone._volume_fraction = self._volume_fraction
