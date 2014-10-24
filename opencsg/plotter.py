@@ -38,7 +38,7 @@ def plot_cells(geometry, plane='xy', offset=0., gridsize=250):
     raise ValueError(msg)
 
   if not is_integer(gridsize):
-    msg = 'Unable to plot the cells since the gridsize {0} is' \
+    msg = 'Unable to plot the cells since the gridsize {0} is ' \
           'is not an integer'.format(gridsize)
     raise ValueError(msg)
 
@@ -53,7 +53,7 @@ def plot_cells(geometry, plane='xy', offset=0., gridsize=250):
     raise ValueError(msg)
 
   if not is_float(offset):
-    msg = 'Unable to plot the cells since the offset {0} is' \
+    msg = 'Unable to plot the cells since the offset {0} is ' \
           'is not a float'.format(offset)
     raise ValueError(msg)
 
@@ -394,7 +394,7 @@ def get_pixel_coords(geometry, plane, offset, gridsize):
     ycoords = np.linspace(bounds[2], bounds[3], gridsize)
     if offset < bounds[4] or offset > bounds[5]:
       msg = 'Unable to plot offset at z={0} as it must lie ' \
-          'between the z bounds[{1},{2}]'.format(offset, \
+          'between the z bounds [{1},{2}]'.format(offset, \
                                                    bounds[4], bounds[5])
       raise ValueError(msg)
     del bounds[4:]
@@ -403,7 +403,7 @@ def get_pixel_coords(geometry, plane, offset, gridsize):
     zcoords = np.linspace(bounds[4], bounds[5], gridsize)
     if offset < bounds[2] or offset > bounds[3]:
       msg = 'Unable to plot offset at y={0} as it must lie ' \
-          'between the y bounds[{1},{2}]'.format(offset, \
+          'between the y bounds [{1},{2}]'.format(offset, \
                                                    bounds[2], bounds[3])
       raise ValueError(msg)
     del bounds[2:4]
@@ -412,7 +412,7 @@ def get_pixel_coords(geometry, plane, offset, gridsize):
     zcoords = np.linspace(bounds[4], bounds[5], gridsize)
     if offset < bounds[0] or offset > bounds[1]:
       msg = 'Unable to plot offset at x={0} as it must lie ' \
-          'between the x bounds[{1},{2}]'.format(offset, \
+          'between the x bounds [{1},{2}]'.format(offset, \
                                                    bounds[0], bounds[1])
       raise ValueError(msg)
     del bounds[:2]
