@@ -68,6 +68,14 @@ class Ray(object):
 
     self._segments = np.append(self._segments, segment)
 
+  def __repr__(self):
+
+    string = 'Ray\n'
+    string += '{0: <16}{1}{2}\n'.format('\tStart Point', '=\t', self._point._coords)
+    string += '{0: <16}{1}{2}\n'.format('\tDirection', '=\t', self._direction._comps)
+    string += '{0: <16}{1}{2}\n'.format('\tNumber of Segments', '=\t', len(self._segments))
+    return string
+
 class Segment(object):
 
   def __init__(self, geometry=None, start=None, end=None, region_id=None, cell_id=None):
@@ -101,7 +109,7 @@ class Segment(object):
 
       clone = type(self).__new__(type(self))
       clone._region_id = copy.deepcopy(self._region_id)
-      clone._cell = copy.deepcopy(self._cell)
+      clone._cell = copy.deepcopy(self._cell_id)
       clone._length = copy.deepcopy(self._length)
       return clone
 
@@ -125,13 +133,14 @@ class Segment(object):
 
     self._cell_id = cell_id
 
-  def getMaterial(self):
-    return self._cell._fill
+  def getMaterial(self, universe):
+    return universe._cells[self._cell_id]._fill
 
   def __repr__(self):
 
     string = 'Segment\n'
     string += '{0: <16}{1}{2}\n'.format('\tRegion Id', '=\t', self._region_id)
+    string += '{0: <16}{1}{2}\n'.format('\tCell Id', '=\t', self._cell_id)
     string += '{0: <16}{1}{2}\n'.format('\tLength', '=\t', self._length)
     return string
 

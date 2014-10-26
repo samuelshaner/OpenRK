@@ -482,7 +482,7 @@ class Geometry(object):
       start.setCoords(ray._point._coords)
       direction = ray._direction
 
-      # traces ray until ray has reached the edge of the geometry
+      # traces ray until edge of the geometry is reached
       while True:
         intersect = self.getNearestIntersection(start, direction)
         if intersect is None:
@@ -490,7 +490,7 @@ class Geometry(object):
         segment = Segment(geometry=self, start=start, end=intersect)
         ray.addSegment(segment)
 
-        # adjusts next segment in ray to start at previous intersection
+        # adjusts next segment in ray to start at found intersection
         start.setCoords(intersect._coords + TINY_BIT*direction._comps)
     return rays
 

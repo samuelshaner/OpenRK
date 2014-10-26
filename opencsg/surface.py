@@ -2242,17 +2242,3 @@ class ZSquarePrism(SquarePrism):
     Ry = abs(self._coeffs['y0'] - y) - self._coeffs['R']
 
     return max(Rx, Ry)
-
-'''
-def getIntersectionPoints(self, point, direction):
-
-super(Square, self).getIntersectionPoints(point, direction)
-
-x, y, z = point._coords
-u, v, w = direction.normalize()
-
-Dx_left = (self._coeffs['x0'] - self._coeffs['R'] - x)/u
-Dx_right = (self._coeffs['x0'] + self._coeffs['R'] - x)/u
-Dy_left = (self._coeffs['y0'] - self._coeffs['R'] - y)/u
-Dy_right = (self._coeffs['y0'] - self._coeffs['R'] - y)/u
-'''
