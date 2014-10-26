@@ -473,39 +473,6 @@ class Geometry(object):
     segment = Segment(geometry=self, start=point, end=intersect)
     return segment
 
-  def generateRays(self, num_rays=1000):
-
-    rays = list()
-    bounds = self.getBounds()
-
-    for ray in xrange(num_rays):
-      edge = np.random.randint(4)
-      if edge == 0:
-        x = bounds[edge] + TINY_BIT
-        y = np.random.uniform(bounds[2], bounds[3])
-        z = np.random.uniform(-1e12, 1e12)
-      elif edge == 1:
-        x = bounds[edge] - TINY_BIT
-        y = np.random.uniform(bounds[2], bounds[3])
-        z = np.random.uniform(-1e12, 1e12)
-      elif edge == 2:
-        x = np.random.uniform(bounds[0], bounds[1])
-        y = bounds[edge] + TINY_BIT
-        z = np.random.uniform(-1e12, 1e12)
-      else:
-        x = np.random.uniform(bounds[0], bounds[1])
-        y = bounds[edge] - TINY_BIT
-        z = np.random.uniform(-1e12, 1e12)
-
-      u, v = np.random.rand(2)-0.5
-      w = 0.
-      point = Point(x=x, y=y, z=z)
-      direction = Direction(u=u, v=v, w=w)
-      ray = Ray(point, direction)
-      rays.append(ray)
-
-    return rays
-
   def traceRays(self, rays):
 
     start = Point()

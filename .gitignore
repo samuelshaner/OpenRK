@@ -23,10 +23,17 @@ var/
 .idea/
 .idea/*
 
+# Output
 *.png
 */*.png
 *plots
 */plots/*
+*csg-data
+*/csg-data/*
+*.h5
+*/*.h5
+*.hdf5
+*/*.hdf5
 
 *~
 */*~
