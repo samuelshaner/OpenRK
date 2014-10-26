@@ -470,7 +470,7 @@ class Geometry(object):
     if intersect is None:
       return None
 
-    segment = Segment(self, start=point, end=intersect)
+    segment = Segment(geometry=self, start=point, end=intersect)
     return segment
 
   def generateRays(self, num_rays=1000):
@@ -520,7 +520,7 @@ class Geometry(object):
         intersect = self.getNearestIntersection(start, direction)
         if intersect is None:
           break
-        segment = Segment(self, start=start, end=intersect)
+        segment = Segment(geometry=self, start=start, end=intersect)
         ray.addSegment(segment)
 
         # adjusts next segment in ray to start at previous intersection

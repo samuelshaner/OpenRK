@@ -70,23 +70,23 @@ class Ray(object):
 
 class Segment(object):
 
-  def __init__(self, geometry, start=None, end=None, region_id=None, cell=None):
+  def __init__(self, geometry=None, start=None, end=None, region_id=None, cell_id=None):
 
     self._region_id = None
-    self._cell = None
+    self._cell_id = None
     self._length = None
 
     if not region_id is None:
       self.setRegion(region_id)
-    elif not start is None:
+    elif (not start is None) and (not geometry is None):
       x,y,z = start._coords
       self.setRegion(geometry.getRegionId(x=x,y=y,z=z))
 
-    if not cell is None:
-      self.setCell(cell)
-    elif not start is None:
+    if not cell_id is None:
+      self.setCell(cell_id)
+    elif (not start is None) and (not geometry is None):
       x,y,z = start._coords
-      self.setCell(geometry.findCell(x=x,y=y,z=z))
+      self.setCell(geometry.findCell(x=x,y=y,z=z)._id)
 
     if not (start is None and end is None):
       self._length = start.distanceToPoint(end)
@@ -117,13 +117,13 @@ class Segment(object):
 
     self._region_id = region_id
 
-  def setCell(self, cell):
-    if not str(type(cell)) == '<class \'opencsg.universe.Cell\'>':
+  def setCell(self, cell_id):
+    if not is_integer(cell_id):
       msg = 'Unable to set cell for segment to {0} since it is ' \
-            'not a cell object'.format(cell)
+            'not an integer'.format(cell_id)
       raise ValueError(msg)
 
-    self._cell = cell
+    self._cell_id = cell_id
 
   def getMaterial(self):
     return self._cell._fill
@@ -151,10 +151,45 @@ def exportRays(rays, directory = 'csg-data/', filename = 'rays-data.h5'):
     ray_group.create_dataset('Start Point', data = rays[i]._point._coords)
     ray_group.create_dataset('Direction', data = rays[i]._direction._comps)
     segments = rays[i]._segments
+    segments_group = ray_group.create_group('Segments')
     for j in xrange(len(segments)):
-      segment_group = ray_group.create_group('Segment (%d)' % (j))
-      segment_group.create_dataset('Region ID', data = segments[j]._region_id)
-      segment_group.create_dataset('Cell ID', data = segments[j]._cell._id)
-      segment_group.create_dataset('Length', data = segments[j]._length)
+      segment = segments_group.create_group('Segment (%d)' % (j))
+      segment.create_dataset('Region ID', data = segments[j]._region_id)
+      segment.create_dataset('Cell ID', data = segments[j]._cell_id)
+      segment.create_dataset('Length', data = segments[j]._length)
 
   f.close()
+
+def importRays(directory = 'csg-data/', filename = 'rays-data.h5'):
+
+  # checks to see if folder exists and raises error otherwise
+  if not os.path.exists(directory + filename):
+    msg = 'Could not find file under specified directory and filename.'
+    raise ValueError(msg)
+
+  rays = list()
+
+  f = h5py.File(directory + filename, 'r')
+
+  # extract and create rays from file
+  for i in xrange(len(f['Rays'])):
+    start = Point()
+    direction = Direction()
+    start.setCoords(f['Rays']['Ray (%d)' % (i)]['Start Point'])
+    direction.setComps(f['Rays']['Ray (%d)' % (i)]['Direction'])
+    ray = Ray(start, direction)
+    for j in xrange(len(f['Rays']['Ray (%d)' % (i)]['Segments'])):
+      segment = Segment()
+      segment._region_id = f['Rays']['Ray (%d)' % (i)]['Segments']\
+                            ['Segment (%d)' % (j)]['Region ID'][...]
+      segment._cell_id = f['Rays']['Ray (%d)' % (i)]['Segments']\
+                          ['Segment (%d)' % (j)]['Cell ID'][...]
+      segment._length = f['Rays']['Ray (%d)' % (i)]['Segments']\
+                        ['Segment (%d)' % (j)]['Length'][...]
+      ray.addSegment(segment)
+
+    rays.append(ray)
+
+  f.close()
+
+  return rays

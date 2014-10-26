@@ -137,21 +137,18 @@ geometry.initializeCellOffsets()
 
 print('Tracing Sample Rays...')
 
-rays = geometry.generateRays(num_rays=1000)
-start = time.time()
+rays = geometry.generateRays(num_rays=300)
 rays = geometry.traceRays(rays)
-end = time.time() - start
-print end
-opencsg.ray.exportRays(rays)
+rays = opencsg.ray.importRays()
 
 
 ###############################################################################
 ##########################   Plotting the Geometry   ##########################
 ###############################################################################
 
-#print('Plotting Geometry...')
+print('Plotting Geometry...')
 
-plotter.plot_segments(rays, geometry)
+#plotter.plot_segments(rays, geometry)
 #plotter.plot_cells(geometry)
 #plotter.plot_materials(geometry)
 #plotter.plot_regions(geometry)
