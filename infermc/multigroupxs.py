@@ -4,6 +4,18 @@ import openmc
 import infermc
 
 
+# NOTE
+# self._xs indices:
+# 0 - metric (mean, std_dev)
+# 1 - subdomain
+# 2 - energy
+# 3 - nuclide
+
+# self._tallies['flux'] indices:
+# 0 - energy
+# 1 - nuclide ('total')
+# 2 - subdomain
+
 
 # Supported cross-section types
 xs_types = ['total',
@@ -120,71 +132,6 @@ class MultiGroupXS(object):
     # If this object has been copied before, return the first copy made
     else:
       return existing
-
-
-  def getCondensedXS(self, coarse_groups):
-    '''This routine takes in a collection of 2-tuples of energy groups'''
-
-    # FIXME: this must be specialized for the scattering matrix
-
-    # Error checking for the group bounds is done here
-    new_groups = self._energy_groups.getCondensedGroups(coarse_groups)
-    num_coarse_groups = new_groups._num_groups
-
-    # Clone the MultiGroupXS
-    condensed_xs = copy.deepcopy(self)
-    condensed_xs.energy_groups = new_groups
-
-    # Convert the group bounds to array indices
-    group_indices = np.asarray(coarse_groups)
-    group_indices[0][0] -= 1
-
-    for tally_type, tally in condensed_xs._tallies.items():
-
-      for filter in tally._filters:
-        if 'energy' in filter._type:
-          filter.setBinEdges(new_groups.group_edges)
-          filter.setNumBins(num_coarse_groups)
-
-      sum = tally._sum
-      sum_sq = tally._sum_sq
-
-      coarse_shape = (num_coarse_groups,) + sum.shape[1:]
-      coarse_sum = np.zeros(coarse_shape)
-      coarse_sum_sq = np.zeros(coarse_shape)
-      sum_sq = sum_sq.astype(np.float128)
-
-      # FIXME: This assumes that the xs in each group are uncorrelated
-      for i, group in enumerate(group_indices):
-        coarse_sum[i, ...] = sum[group[0]:group[1], ...].sum(axis=0)
-        intermed = np.sqrt(sum_sq[group[0]:group[1], ...]).sum(axis=0)
-        coarse_sum_sq[i, ...] = np.power(intermed, 2.)
-
-      tally.setResults(coarse_sum, coarse_sum_sq)
-      tally.computeStdDev()
-      condensed_xs._tallies[tally_type] = tally
-
-      '''
-      print tally._id
-      if tally._id == 10000:
-        print('{0}'.format(tally))
-        print('std dev: {0}, {1}, {2}'.format(tally._std_dev, tally._sum, tally._sum_sq))
-      '''
-
-    # Tell the cloned xs to compute xs
-    condensed_xs.computeXS()
-    return condensed_xs
-
-    # self._xs indices:
-    # 0 - metric (mean, std_dev)
-    # 1 - subdomain
-    # 2 - energy
-    # 3 - nuclide
-
-    # self._tallies['flux'] indices:
-    # 0 - energy
-    # 1 - nuclide ('total')
-    # 2 - subdomain
 
 
   @property
@@ -391,6 +338,52 @@ class MultiGroupXS(object):
     xs = self._xs[metrics[metric], offsets, ...]
     xs = xs[..., groups, :]
     return xs
+
+
+  def getCondensedXS(self, coarse_groups):
+    '''This routine takes in a collection of 2-tuples of energy groups'''
+
+    # FIXME: this must be specialized for the scattering matrix
+    # FIXME: this under-estimates the uncertainty due to inter-group correlation
+
+    # Error checking for the group bounds is done here
+    new_groups = self._energy_groups.getCondensedGroups(coarse_groups)
+    num_coarse_groups = new_groups._num_groups
+
+    # Clone the MultiGroupXS
+    condensed_xs = copy.deepcopy(self)
+    condensed_xs.energy_groups = new_groups
+
+    # Convert the group bounds to array indices
+    group_indices = np.asarray(coarse_groups)
+    group_indices[0][0] -= 1
+
+    for tally_type, tally in condensed_xs._tallies.items():
+
+      for filter in tally._filters:
+        if 'energy' in filter._type:
+          filter.setBinEdges(new_groups.group_edges)
+          filter.setNumBins(num_coarse_groups)
+
+      sum = tally._sum
+      sum_sq = tally._sum_sq
+
+      coarse_shape = (num_coarse_groups,) + sum.shape[1:]
+      coarse_sum = np.zeros(coarse_shape)
+      coarse_sum_sq = np.zeros(coarse_shape)
+
+      for i, group in enumerate(group_indices):
+        coarse_sum[i, ...] = sum[group[0]:group[1], ...].sum(axis=0)
+        intermed = np.sqrt(sum_sq[group[0]:group[1], ...]).sum(axis=0)
+        coarse_sum_sq[i, ...] = np.power(intermed, 2.)
+
+      tally.setResults(coarse_sum, coarse_sum_sq)
+      tally.computeStdDev()
+      condensed_xs._tallies[tally_type] = tally
+
+    # Tell the cloned xs to compute xs
+    condensed_xs.computeXS()
+    return condensed_xs
 
 
   def printXS(self, subdomains='all'):
