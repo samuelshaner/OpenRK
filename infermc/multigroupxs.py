@@ -102,13 +102,16 @@ class MultiGroupXS(object):
       clone._xs_type = self._xs_type
       clone._domain = self._domain
       clone._domain_type = self._domain_type
-      clone._energy_groups = copy.deepcopy(self._energy_groups)
+      clone._energy_groups = copy.deepcopy(self._energy_groups, memo)
       clone._num_groups = self._num_groups
-      clone._tallies = copy.deepcopy(self._tallies)
-      clone._xs = copy.deepcopy(self._xs)
-      clone._colors = copy.deepcopy(self._colors)
-      clone._subdomain_offsets = copy.deepcopy(self._subdomain_offsets)
-      clone._offset = copy.deepcopy(self._offset)
+      clone._xs = copy.deepcopy(self._xs, memo)
+      clone._colors = copy.deepcopy(self._colors, memo)
+      clone._subdomain_offsets = copy.deepcopy(self._subdomain_offsets, memo)
+      clone._offset = copy.deepcopy(self._offset, memo)
+
+      clone._tallies = dict()
+      for tally_type, tally in self._tallies.items():
+        clone._tallies[tally_type] = copy.deepcopy(tally, memo)
 
       memo[id(self)] = clone
 
@@ -129,38 +132,39 @@ class MultiGroupXS(object):
     # Clone the MultiGroupXS
     condensed_xs = copy.deepcopy(self)
     condensed_xs.energy_groups = new_groups
-    condensed_xs._xs_type += ' (condensed)'
 
     # Convert the group bounds to array indices
     group_indices = np.asarray(coarse_groups) - 1
-    print('group indices: {0}'.format(group_indices))
 
-    # Get the condensed flux (w/ uncertainty propagation)
-    sum = self._tallies['flux']._sum
-    sum_sq = self._tallies['flux']._sum_sq
+    for tally_type, tally in condensed_xs._tallies.items():
 
-    print('sum: {0}'.format(sum))
-    print('sum shape: {0}'.format(sum.shape))
-    print('sum sq: {0}'.format(sum_sq))
-    print('sum sq shape: {0}'.format(sum_sq.shape))
+      for filter in tally._filters:
+        if 'energy' in filter._type:
+          filter.setBinEdges(new_groups.group_edges)
+          filter.setNumBins(num_coarse_groups)
 
-    # Allocate memory for condensed flux
-    coarse_shape = (num_coarse_groups,) + sum.shape[1:]
-    coarse_sum = np.zeros(coarse_shape)
-    coarse_sum_sq = np.zeros(coarse_shape)
 
-    # FIXME: This assumes that the xs in each group are uncorrelated
-    for i, group in enumerate(group_indices):
-      lower = group[0]
-      upper = group[1]+1
-      print lower, upper
-      coarse_sum[i, ...] = sum[lower:upper, ...].sum(axis=0)
-      coarse_sum_sq[i, ...] = sum_sq[lower:upper, ...].sum(axis=0)
+      # Get the condensed flux (w/ uncertainty propagation)
+      sum = tally._sum
+      sum_sq = tally._sum_sq
 
-    print('coarse sum: {0}'.format(coarse_sum))
-    print('coarse sum shape: {0}'.format(coarse_sum.shape))
-    print('coarse sum sq: {0}'.format(coarse_sum_sq))
-    print('coarse sum sq shape: {0}'.format(coarse_sum_sq.shape))
+      # Allocate memory for condensed flux
+      coarse_shape = (num_coarse_groups,) + sum.shape[1:]
+      coarse_sum = np.zeros(coarse_shape)
+      coarse_sum_sq = np.zeros(coarse_shape)
+
+      # FIXME: This assumes that the xs in each group are uncorrelated
+      for i, group in enumerate(group_indices):
+        coarse_sum[i, ...] = sum[group[0]:group[1]+1, ...].sum(axis=0)
+        coarse_sum_sq[i, ...] = np.sqrt(sum_sq[group[0]:group[1]+1, ...]).sum(axis=0)**2
+
+      tally.setResults(coarse_sum, coarse_sum_sq)
+      tally.computeStdDev()
+      condensed_xs._tallies[tally_type] = tally
+
+    # Tell the cloned xs to compute xs
+    condensed_xs.computeXS()
+    condensed_xs.printPDF()
 
     '''
     print('np.r_: {0}'.format(flux_sum.cumsum(axis=0)))

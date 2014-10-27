@@ -1,8 +1,6 @@
 import numpy as np
-import os
-
+import os, copy
 import openmc
-
 import infermc
 
 
@@ -35,6 +33,43 @@ class MicroXS(infermc.MultiGroupXS):
 
     if not nuclides is None:
       self.addNuclides(nuclides, densities)
+
+
+  def __deepcopy__(self, memo):
+
+    existing = memo.get(id(self))
+
+    # If this is the first time we have tried to copy this object, create a copy
+    if existing is None:
+
+      clone = type(self).__new__(type(self))
+      clone._xs_type = self._xs_type
+      clone._domain = self._domain
+      clone._domain_type = self._domain_type
+      clone._energy_groups = copy.deepcopy(self._energy_groups, memo)
+      clone._num_groups = self._num_groups
+      clone._xs = copy.deepcopy(self._xs, memo)
+      clone._colors = copy.deepcopy(self._colors, memo)
+      clone._subdomain_offsets = copy.deepcopy(self._subdomain_offsets, memo)
+      clone._offset = copy.deepcopy(self._offset, memo)
+      clone._densities = np.zeros(0)
+      clone._num_nuclides = 0
+
+      clone._tallies = dict()
+      for tally_type, tally in self._tallies.items():
+        clone._tallies[tally_type] = copy.deepcopy(tally, memo)
+
+      clone._nuclides = list()
+      for i, nuclide in enumerate(self._nuclides):
+        clone.addNuclide(copy.deepcopy(nuclide), self._densities[i])
+
+      memo[id(self)] = clone
+
+      return clone
+
+    # If this object has been copied before, return the first copy made
+    else:
+      return existing
 
 
   def addNuclide(self, nuclide, density=None):

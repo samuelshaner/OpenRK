@@ -1,4 +1,5 @@
 import numpy as np
+import copy
 
 
 class EnergyGroups(object):
@@ -7,6 +8,25 @@ class EnergyGroups(object):
 
     self._group_edges = None
     self._num_groups = None
+
+  def __deepcopy__(self, memo):
+
+    existing = memo.get(id(self))
+
+    # If this is the first time we have tried to copy this object, create a copy
+    if existing is None:
+
+      clone = type(self).__new__(type(self))
+      clone.group_edges = copy.deepcopy(self._group_edges)
+
+      memo[id(self)] = clone
+
+      return clone
+
+    # If this object has been copied before, return the first copy made
+    else:
+      return existing
+
 
 
   @property
