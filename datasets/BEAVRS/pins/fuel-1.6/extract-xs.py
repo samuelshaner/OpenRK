@@ -15,7 +15,7 @@ for batch in batches:
 
   print batch
 
-  filename = 'statepoint.{0:02d}.h5'.format(batch)
+  filename = 'statepoint.10.h5'.format(batch)
 
   # Initialize a handle on the OpenMC statepoint file
   statepoint = openmc.statepoint.StatePoint(filename)
@@ -26,7 +26,8 @@ for batch in batches:
   micro_extractor.extractAllMultiGroupXS(groups, 'distribcell', corr=True)
   micro_extractor.checkXS()
 
-  hm = micro_extractor._multigroup_xs['distribcell'][10000]['total'].getCondensedXS([(1,2), (2,4), (4,8)])
+  hm = micro_extractor._multigroup_xs['distribcell'][10000]['total'].getCondensedXS([(1,4), (4,8)])
+  hm.printPDF()
 
 #  plotter.scatter_micro_xs(micro_extractor,
 #                           domain_types=['distribcell', 'material'],

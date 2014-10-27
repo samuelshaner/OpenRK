@@ -125,6 +125,8 @@ class MultiGroupXS(object):
   def getCondensedXS(self, coarse_groups):
     '''This routine takes in a collection of 2-tuples of energy groups'''
 
+    # FIXME: this must be specialized for the scattering matrix
+
     # Error checking for the group bounds is done here
     new_groups = self._energy_groups.getCondensedGroups(coarse_groups)
     num_coarse_groups = new_groups._num_groups
@@ -134,7 +136,8 @@ class MultiGroupXS(object):
     condensed_xs.energy_groups = new_groups
 
     # Convert the group bounds to array indices
-    group_indices = np.asarray(coarse_groups) - 1
+    group_indices = np.asarray(coarse_groups)
+    group_indices[0][0] -= 1
 
     for tally_type, tally in condensed_xs._tallies.items():
 
@@ -143,50 +146,34 @@ class MultiGroupXS(object):
           filter.setBinEdges(new_groups.group_edges)
           filter.setNumBins(num_coarse_groups)
 
-
-      # Get the condensed flux (w/ uncertainty propagation)
       sum = tally._sum
       sum_sq = tally._sum_sq
 
-      # Allocate memory for condensed flux
       coarse_shape = (num_coarse_groups,) + sum.shape[1:]
       coarse_sum = np.zeros(coarse_shape)
       coarse_sum_sq = np.zeros(coarse_shape)
+      sum_sq = sum_sq.astype(np.float128)
 
       # FIXME: This assumes that the xs in each group are uncorrelated
       for i, group in enumerate(group_indices):
-        coarse_sum[i, ...] = sum[group[0]:group[1]+1, ...].sum(axis=0)
-        coarse_sum_sq[i, ...] = np.sqrt(sum_sq[group[0]:group[1]+1, ...]).sum(axis=0)**2
+        coarse_sum[i, ...] = sum[group[0]:group[1], ...].sum(axis=0)
+        intermed = np.sqrt(sum_sq[group[0]:group[1], ...]).sum(axis=0)
+        coarse_sum_sq[i, ...] = np.power(intermed, 2.)
 
       tally.setResults(coarse_sum, coarse_sum_sq)
       tally.computeStdDev()
       condensed_xs._tallies[tally_type] = tally
 
+      '''
+      print tally._id
+      if tally._id == 10000:
+        print('{0}'.format(tally))
+        print('std dev: {0}, {1}, {2}'.format(tally._std_dev, tally._sum, tally._sum_sq))
+      '''
+
     # Tell the cloned xs to compute xs
     condensed_xs.computeXS()
-    condensed_xs.printPDF()
-
-    '''
-    print('np.r_: {0}'.format(flux_sum.cumsum(axis=0)))
-    flux_sum = np.r_[0, flux_sum.cumsum(axis=0).ravel()][group_indices]
-    flux_sum_sq = np.r_[0, flux_sum_sq.cumsum()][group_indices]
-
-    print('cumsum[group indices]: {0}'.format(flux_sum))
-
-    flux_sum = flux_sum[..., :, 1] - flux_sum[..., :, 0]
-    flux_sum_sq = flux_sum_sq[..., :, 1] - flux_sum_sq[..., :, 0]
-
-    print('new flux:\n{0}'.format(flux_sum))
-    print('old flux:\n{0}'.format(self._tallies['flux']._sum))
-    print('old flux shape:\n{0}'.format(self._tallies['flux']._sum.shape))
-
-    # Nice solution to summing over different ranges of variables
-    # http://stackoverflow.com/questions/7471474/numpy-sum-of-values-in-subarrays-between-pairs-of-indices
-    '''
-
-    # Get the condensed reaction rate (w/ uncertainty propagation)
-
-    # Get the condensed xs (w/ uncertainty propagation)
+    return condensed_xs
 
     # self._xs indices:
     # 0 - metric (mean, std_dev)
@@ -198,9 +185,6 @@ class MultiGroupXS(object):
     # 0 - energy
     # 1 - nuclide ('total')
     # 2 - subdomain
-
-    # FIXME: this must be specialized for the scattering matrix
-    # FIXME: Should I made condensed Tally objects as well??
 
 
   @property
