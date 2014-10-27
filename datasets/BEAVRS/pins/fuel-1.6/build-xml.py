@@ -72,7 +72,7 @@ plot_file.exportToXML()
 tally_factory = XSTallyFactory(openmc_geometry)
 micro_tally_factory = MicroXSTallyFactory(openmc_geometry)
 
-groups = group_structures['CASMO']['2-group']
+groups = group_structures['CASMO']['8-group']
 
 '''
 tally_factory.createAllMultiGroupXS(groups, domain_type='distribcell')

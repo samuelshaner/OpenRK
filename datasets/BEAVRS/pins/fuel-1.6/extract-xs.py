@@ -7,9 +7,9 @@ import infermc.plotter as plotter
 
 
 #batches = range(25, 105, 5)
-batches = [30]
+batches = [10]
 
-groups = group_structures['CASMO']['2-group']
+groups = group_structures['CASMO']['8-group']
 
 for batch in batches:
 
@@ -22,22 +22,24 @@ for batch in batches:
 
   ## MICROS
   micro_extractor = MicroXSTallyExtractor(statepoint)
-  micro_extractor.extractAllMultiGroupXS(groups, 'material', corr=True)
+#  micro_extractor.extractAllMultiGroupXS(groups, 'material', corr=True)
   micro_extractor.extractAllMultiGroupXS(groups, 'distribcell', corr=True)
   micro_extractor.checkXS()
 
-  plotter.scatter_micro_xs(micro_extractor,
-                           domain_types=['distribcell', 'material'],
-                           colors=['cell', 'material'],
-                           filename='{0}-batch'.format(batch))
+  hm = micro_extractor._multigroup_xs['distribcell'][10000]['total'].getCondensedXS([(1,2), (2,4), (4,8)])
 
-  materials = micro_extractor._openmc_geometry.getAllMaterials()
+#  plotter.scatter_micro_xs(micro_extractor,
+#                           domain_types=['distribcell', 'material'],
+#                           colors=['cell', 'material'],
+#                           filename='{0}-batch'.format(batch))
+
+#  materials = micro_extractor._openmc_geometry.getAllMaterials()
 
   # DUMP-TO-FILE and PRINT XS
-  for material in materials:
-    for xs_type in xs_types:
-      xs = micro_extractor._multigroup_xs['material'][material._id][xs_type]
-      xs.printPDF(directory='micro', filename='material-{0}-{1}'.format(material._id, xs_type))
+#  for material in materials:
+#    for xs_type in xs_types:
+#      xs = micro_extractor._multigroup_xs['material'][material._id][xs_type]
+#      xs.printPDF(directory='micro', filename='material-{0}-{1}'.format(material._id, xs_type))
 
   openmc.reset_auto_ids()
   del micro_extractor, statepoint

@@ -87,3 +87,45 @@ class EnergyGroups(object):
           raise ValueError(msg)
 
     return indices
+
+
+  def getCondensedGroups(self, coarse_groups):
+    '''This routine takes in a collection of 2-tuples of energy groups'''
+
+    if not isinstance(coarse_groups, (tuple, list, np.array)):
+      msg = 'Unable to condense MultiGroupXS with group_bounds {0} which ' \
+            'is not a Python tuple/list or NumPy array'.format(coarse_groups)
+      raise ValueError(msg)
+
+    for group in coarse_groups:
+      if group[0] < 1 or group[0] > self._num_groups:
+        msg = 'Unable to condense MultiGroupXS with group bound {0}'.format(group)
+        raise ValueError(msg)
+      elif group[1] < 1 or group[1] > self._num_groups:
+        msg = 'Unable to condense MultiGroupXS with group bound {0}'.format(group)
+        raise ValueError(msg)
+      elif group[0] >= group[1]:
+        msg = 'Unable to condense MultiGroupXS with groups {0} which ' \
+              'is not monotonically increasing'.format(group)
+        raise ValueError(msg)
+
+    # Compute the group indices into the coarse group
+    group_bounds = list()
+    for group in coarse_groups:
+      group_bounds.append(group[0])
+    group_bounds.append(coarse_groups[-1][1])
+
+    # Determine the indices mapping the fine-to-coarse energy groups
+    group_bounds = np.asarray(group_bounds)
+    group_indices = np.flipud(self._num_groups - group_bounds)
+    group_indices[-1] += 1
+
+    # Determine the edges between coarse energy groups and sort
+    # in increasing order in case the user passed in unordered groups
+    group_edges = self._group_edges[group_indices]
+    group_edges = np.sort(group_edges)
+
+    # Create a new condensed EnergyGroups object
+    condensed_groups = EnergyGroups()
+    condensed_groups.group_edges = group_edges
+    return condensed_groups

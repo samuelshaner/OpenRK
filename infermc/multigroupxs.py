@@ -1,9 +1,6 @@
+import os, copy, abc
 import numpy as np
-import os
-import abc
-
 import openmc
-
 import infermc
 
 
@@ -92,6 +89,114 @@ class MultiGroupXS(object):
 
     if not energy_groups is None:
       self.energy_groups = energy_groups
+
+
+  def __deepcopy__(self, memo):
+
+    existing = memo.get(id(self))
+
+    # If this is the first time we have tried to copy this object, create a copy
+    if existing is None:
+
+      clone = type(self).__new__(type(self))
+      clone._xs_type = self._xs_type
+      clone._domain = self._domain
+      clone._domain_type = self._domain_type
+      clone._energy_groups = copy.deepcopy(self._energy_groups)
+      clone._num_groups = self._num_groups
+      clone._tallies = copy.deepcopy(self._tallies)
+      clone._xs = copy.deepcopy(self._xs)
+      clone._colors = copy.deepcopy(self._colors)
+      clone._subdomain_offsets = copy.deepcopy(self._subdomain_offsets)
+      clone._offset = copy.deepcopy(self._offset)
+
+      memo[id(self)] = clone
+
+      return clone
+
+    # If this object has been copied before, return the first copy made
+    else:
+      return existing
+
+
+  def getCondensedXS(self, coarse_groups):
+    '''This routine takes in a collection of 2-tuples of energy groups'''
+
+    # Error checking for the group bounds is done here
+    new_groups = self._energy_groups.getCondensedGroups(coarse_groups)
+    num_coarse_groups = new_groups._num_groups
+
+    # Clone the MultiGroupXS
+    condensed_xs = copy.deepcopy(self)
+    condensed_xs.energy_groups = new_groups
+    condensed_xs._xs_type += ' (condensed)'
+
+    # Convert the group bounds to array indices
+    group_indices = np.asarray(coarse_groups) - 1
+    print('group indices: {0}'.format(group_indices))
+
+    # Get the condensed flux (w/ uncertainty propagation)
+    sum = self._tallies['flux']._sum
+    sum_sq = self._tallies['flux']._sum_sq
+
+    print('sum: {0}'.format(sum))
+    print('sum shape: {0}'.format(sum.shape))
+    print('sum sq: {0}'.format(sum_sq))
+    print('sum sq shape: {0}'.format(sum_sq.shape))
+
+    # Allocate memory for condensed flux
+    coarse_shape = (num_coarse_groups,) + sum.shape[1:]
+    coarse_sum = np.zeros(coarse_shape)
+    coarse_sum_sq = np.zeros(coarse_shape)
+
+    # FIXME: This assumes that the xs in each group are uncorrelated
+    for i, group in enumerate(group_indices):
+      lower = group[0]
+      upper = group[1]+1
+      print lower, upper
+      coarse_sum[i, ...] = sum[lower:upper, ...].sum(axis=0)
+      coarse_sum_sq[i, ...] = sum_sq[lower:upper, ...].sum(axis=0)
+
+    print('coarse sum: {0}'.format(coarse_sum))
+    print('coarse sum shape: {0}'.format(coarse_sum.shape))
+    print('coarse sum sq: {0}'.format(coarse_sum_sq))
+    print('coarse sum sq shape: {0}'.format(coarse_sum_sq.shape))
+
+    '''
+    print('np.r_: {0}'.format(flux_sum.cumsum(axis=0)))
+    flux_sum = np.r_[0, flux_sum.cumsum(axis=0).ravel()][group_indices]
+    flux_sum_sq = np.r_[0, flux_sum_sq.cumsum()][group_indices]
+
+    print('cumsum[group indices]: {0}'.format(flux_sum))
+
+    flux_sum = flux_sum[..., :, 1] - flux_sum[..., :, 0]
+    flux_sum_sq = flux_sum_sq[..., :, 1] - flux_sum_sq[..., :, 0]
+
+    print('new flux:\n{0}'.format(flux_sum))
+    print('old flux:\n{0}'.format(self._tallies['flux']._sum))
+    print('old flux shape:\n{0}'.format(self._tallies['flux']._sum.shape))
+
+    # Nice solution to summing over different ranges of variables
+    # http://stackoverflow.com/questions/7471474/numpy-sum-of-values-in-subarrays-between-pairs-of-indices
+    '''
+
+    # Get the condensed reaction rate (w/ uncertainty propagation)
+
+    # Get the condensed xs (w/ uncertainty propagation)
+
+    # self._xs indices:
+    # 0 - metric (mean, std_dev)
+    # 1 - subdomain
+    # 2 - energy
+    # 3 - nuclide
+
+    # self._tallies['flux'] indices:
+    # 0 - energy
+    # 1 - nuclide ('total')
+    # 2 - subdomain
+
+    # FIXME: this must be specialized for the scattering matrix
+    # FIXME: Should I made condensed Tally objects as well??
 
 
   @property
