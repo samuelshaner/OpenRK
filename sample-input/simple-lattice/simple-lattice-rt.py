@@ -148,7 +148,7 @@ geometry.setVolume(16., tolerance=1e-1)
 
 print('Tracing Sample Rays...')
 
-num_rays = 1000
+num_rays = 100
 
 rays = list()
 bounds = geometry.getBounds()
@@ -176,11 +176,10 @@ for ray in xrange(num_rays):
   w = 0.
   point = Point(x=x, y=y, z=z)
   direction = Direction(u=u, v=v, w=w)
-  ray = Ray(point, direction)
+  ray = Ray(point=point, direction=direction)
   rays.append(ray)
 
 rays = geometry.traceRays(rays)
-
 
 ###############################################################################
 ##########################   Plotting the Geometry   ##########################
@@ -192,4 +191,4 @@ print('Plotting Geometry...')
 #plotter.plot_materials(geometry)
 #plotter.plot_regions(geometry)
 #plotter.plot_neighbor_cells(geometry)
-#plotter.plot_segments(rays, geometry)
+plotter.plot_segments(rays, geometry)

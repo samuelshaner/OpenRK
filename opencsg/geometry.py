@@ -340,7 +340,7 @@ class Geometry(object):
     if coords._cell is None:
       return np.nan
 
-    while not coords is None:
+    while coords is not None:
 
       # The coords is a UnivCoords object
       if isinstance(coords, UnivCoords):
@@ -421,26 +421,26 @@ class Geometry(object):
     next = self.findCoords(x=x, y=y, z=z)
 
     # Loop through linked list and retrieve intersection distances
-    while not next is None:
+    while next is not None:
       if isinstance(next, UnivCoords):
         cell = next._cell
-        if not cell is None:
+        if cell is not None:
           surfaces = cell._surfaces
-          for surface in surfaces.keys():
-            intersect = surfaces[surface][0].getIntersectionPoints(next._point, direction)
-            if not intersect is None:
-              distances.append(intersect)
+          for surface in surfaces.values():
+            dist = surface[0].minSurfaceDist(next._point, direction)
+            if dist is not None:
+              distances.append(dist)
 
       elif isinstance(next, LatCoords):
         lat = next._lattice
-        lat_x, lat_y, lat_z = next._point._coords
-        lat_x = lat_x + 0.5*lat._dimension[0]*lat._width[0] - next._lat_x*lat._width[0] - lat._halfwidth[0]
-        lat_y = lat_y + 0.5*lat._dimension[1]*lat._width[1] - next._lat_y*lat._width[1] - lat._halfwidth[1]
-        lat_z = lat_z + 0.5*lat._dimension[2]*lat._width[2] - next._lat_z*lat._width[2] - lat._halfwidth[2]
-        lat_point = Point(x=lat_x, y=lat_y, z=lat_z)
-        intersect = lat.getIntersectionPoints(lat_point, direction)
-        if not intersect is None:
-          distances.append(intersect)
+        x_lat, y_lat, z_lat = next._point._coords - lat._offset
+        x_lat = x_lat + 0.5*lat._dimension[0]*lat._width[0] - next._lat_x*lat._width[0] - lat._halfwidth[0]
+        y_lat = y_lat + 0.5*lat._dimension[1]*lat._width[1] - next._lat_y*lat._width[1] - lat._halfwidth[1]
+        z_lat = z_lat + 0.5*lat._dimension[2]*lat._width[2] - next._lat_z*lat._width[2] - lat._halfwidth[2]
+        lat_point = Point(x=x_lat, y=y_lat, z=z_lat)
+        dist = lat.minSurfaceDist(lat_point, direction)
+        if dist is not None:
+          distances.append(dist)
 
       next = next._next
 
@@ -448,19 +448,18 @@ class Geometry(object):
       return None
 
 
-    nearestdist = distances[0]
-
     # find smallest distance
-    for intersect in distances:
-      if intersect < nearestdist:
-        nearestdist = intersect
+    min_dist = min(distances)
+
 
     # sets coordinates for nearest intersection
     nearestpoint = Point()
     poldir = direction.toPolar()
-    nearestpoint.setX(point._coords[0] + nearestdist*np.sin(poldir[2])*np.cos(poldir[1]))
-    nearestpoint.setY(point._coords[1] + nearestdist*np.sin(poldir[2])*np.sin(poldir[1]))
-    nearestpoint.setZ(point._coords[2] + nearestdist*np.cos(poldir[2]))
+    sines = np.sin(poldir)
+    cosines = np.cos(poldir)
+    nearestpoint.setX(point._coords[0] + min_dist*sines[2]*cosines[1])
+    nearestpoint.setY(point._coords[1] + min_dist*sines[2]*sines[1])
+    nearestpoint.setZ(point._coords[2] + min_dist*cosines[2])
 
     return nearestpoint
 

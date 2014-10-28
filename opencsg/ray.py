@@ -10,16 +10,15 @@ import h5py
 
 class Ray(object):
 
-  def __init__(self, point, direction):
+  def __init__(self, point=None, direction=None):
 
-    self._point = None
-    self._direction = None
-    self._segments = np.empty(shape=0, dtype=object)
+    self._segments = np.empty(shape=(10), dtype=object)
+    self._num_segments = 0
 
-    if not point is None:
+    if point is not None:
       self.setPoint(point)
 
-    if not direction is None:
+    if direction is not None:
       self.setDirection(direction)
 
   def __deepcopy__(self, memo):
@@ -33,6 +32,7 @@ class Ray(object):
       clone._point = copy.deepcopy(self._point)
       clone._direction = copy.deepcopy(self._direction)
       clone._segments = copy.deepcopy(self._segments)
+      clone._num_segments = copy.deepcopy(self._num_segments)
       return clone
 
     # If this object has been copied before, return the first copy made
@@ -66,14 +66,18 @@ class Ray(object):
             'not a segment object'
       raise ValueError(msg)
 
-    self._segments = np.append(self._segments, segment)
+    if self._segments.shape[0] <= self._num_segments:
+      self._segments = np.append(self._segments, np.empty(shape=(10), dtype = object))
+
+    self._segments[self._num_segments] = segment
+    self._num_segments += 1
 
   def __repr__(self):
 
     string = 'Ray\n'
     string += '{0: <16}{1}{2}\n'.format('\tStart Point', '=\t', self._point._coords)
     string += '{0: <16}{1}{2}\n'.format('\tDirection', '=\t', self._direction._comps)
-    string += '{0: <16}{1}{2}\n'.format('\tNumber of Segments', '=\t', len(self._segments))
+    string += '{0: <16}{1}{2}\n'.format('\tNumber of Segments', '=\t', self._num_segments)
     return string
 
 class Segment(object):
@@ -84,19 +88,19 @@ class Segment(object):
     self._cell_id = None
     self._length = None
 
-    if not region_id is None:
+    if region_id is not None:
       self.setRegion(region_id)
-    elif (not start is None) and (not geometry is None):
+    elif (start is not None) and (geometry is not None):
       x,y,z = start._coords
       self.setRegion(geometry.getRegionId(x=x,y=y,z=z))
 
-    if not cell_id is None:
+    if cell_id is not None:
       self.setCell(cell_id)
-    elif (not start is None) and (not geometry is None):
+    elif (start is not None) and (geometry is not None):
       x,y,z = start._coords
       self.setCell(geometry.findCell(x=x,y=y,z=z)._id)
 
-    if not (start is None and end is None):
+    if (start is not None) and (end is not None):
       self._length = start.distanceToPoint(end)
 
 
@@ -161,7 +165,7 @@ def exportRays(rays, directory = 'csg-data/', filename = 'rays-data.h5'):
     ray_group.create_dataset('Direction', data = rays[i]._direction._comps)
     segments = rays[i]._segments
     segments_group = ray_group.create_group('Segments')
-    for j in xrange(len(segments)):
+    for j in xrange(ray._num_segments):
       segment = segments_group.create_group('Segment (%d)' % (j))
       segment.create_dataset('Region ID', data = segments[j]._region_id)
       segment.create_dataset('Cell ID', data = segments[j]._cell_id)
@@ -186,7 +190,7 @@ def importRays(directory = 'csg-data/', filename = 'rays-data.h5'):
     direction = Direction()
     start.setCoords(f['Rays']['Ray (%d)' % (i)]['Start Point'])
     direction.setComps(f['Rays']['Ray (%d)' % (i)]['Direction'])
-    ray = Ray(start, direction)
+    ray = Ray(point=start, direction=direction)
     for j in xrange(len(f['Rays']['Ray (%d)' % (i)]['Segments'])):
       segment = Segment()
       segment._region_id = f['Rays']['Ray (%d)' % (i)]['Segments']\

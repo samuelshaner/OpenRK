@@ -190,7 +190,7 @@ for ray in xrange(num_rays):
   w = 0.
   point = Point(x=x, y=y, z=z)
   direction = Direction(u=u, v=v, w=w)
-  ray = Ray(point, direction)
+  ray = Ray(point=point, direction=direction)
   rays.append(ray)
 
 rays = geometry.traceRays(rays)

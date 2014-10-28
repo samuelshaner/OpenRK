@@ -311,7 +311,7 @@ class Universe(object):
     elif is_integer(universe_id):
 
       # If the Universe already has an ID, remove it from global list
-      if not self._id is None:
+      if self._id is not None:
         UNIVERSE_IDS.remove(self._id)
 
       if universe_id in UNIVERSE_IDS:
@@ -387,16 +387,16 @@ class Universe(object):
 
   def containsCell(cell=None, cell_id=None, name=None):
 
-    if not cell is None:
+    if cell is not None:
       for cell_id in self._cells.keys():
         if cell == self._cells[cell_id]:
           return True
 
-    if not cell_id is None:
+    if cell_id is not None:
       if cell_id in self._cells.keys():
         return True
 
-    if not name is None:
+    if name is not None:
       for cell_id in self._cells.keys():
         if cell._name == self._cells[cell_id]._name:
           return True
@@ -953,7 +953,7 @@ class Lattice(Universe):
     elif is_integer(lattice_id):
 
       # If the Lattice already has an ID, remove it from global list
-      if not self._id is None:
+      if self._id is not None:
         UNIVERSE_IDS.remove(self._id)
 
       if lattice_id in UNIVERSE_IDS:
@@ -1146,7 +1146,7 @@ class Lattice(Universe):
   def initializeCellOffsets(self):
 
     # If we have already called this routine, return the total number of regions
-    if not self._num_regions is None:
+    if self._num_regions is not None:
       return self._num_regions
 
     # Initialize an array for the cell offsets
@@ -1344,7 +1344,7 @@ class Lattice(Universe):
             'ID={1}'.format(region_id, self._id)
       raise ValueError(msg)
 
-  def getIntersectionPoints(self, point, direction):
+  def minSurfaceDist(self, point, direction):
 
     if not isinstance(point, Point):
       msg = 'Unable to get intersection point with Surface ID={0} ' \
@@ -1489,7 +1489,7 @@ class Cell(object):
     self.setMinY(MIN_FLOAT)
     self.setMinZ(MIN_FLOAT)
 
-    if not fill is None:
+    if fill is not None:
       self.setFill(fill)
 
 
@@ -1640,7 +1640,7 @@ class Cell(object):
     elif is_integer(cell_id):
 
       # If the Cell already has an ID, remove it from global list
-      if not self._id is None:
+      if self._id is not None:
         CELL_IDS.remove(self._id)
 
       if cell_id in CELL_IDS:
@@ -1931,7 +1931,7 @@ class Cell(object):
   def getNumSubCells(self):
 
     # If we have already called this routine, return the number of subcells
-    if not self._num_subcells is None:
+    if self._num_subcells is not None:
       return self._num_subcells
 
     # The cell offsets have not yet been initialized - we must compute them
@@ -2159,7 +2159,7 @@ class Cell(object):
 
     string += '{0: <16}{1}'.format('\tFill', '=\t')
 
-    if not self._fill is None:
+    if self._fill is not None:
 
       if self._type is 'material':
         string += 'Material ID='
@@ -2200,13 +2200,13 @@ class LocalCoords(object):
     self._next = None
     self._prev = None
 
-    if not point is None:
+    if point is not None:
       self.setPoint(point)
 
-    if not next is None:
+    if next is not None:
       self.setNext(next)
 
-    if not prev is None:
+    if prev is not None:
       self.setPrev(prev)
 
 
@@ -2244,7 +2244,7 @@ class LocalCoords(object):
 
   def setNext(self, next):
 
-    if not isinstance(next, LocalCoords) and not next is None:
+    if not isinstance(next, LocalCoords) and next is not None:
       msg = 'Unable to set the next to {0} for LocalCoords since it is not ' \
             'a LocalCoords object'.format(next)
       raise ValueError(msg)
@@ -2254,7 +2254,7 @@ class LocalCoords(object):
 
   def setPrev(self, prev):
 
-    if not isinstance(prev, LocalCoords) and not prev is None:
+    if not isinstance(prev, LocalCoords) and prev is not None:
       msg = 'Unable to set the prev to {0} for LocalCoords since it is not ' \
             'a LocalCoords object'.format(prev)
       raise ValueError(msg)
@@ -2267,7 +2267,7 @@ class LocalCoords(object):
     curr = self
     prev = self._prev
 
-    while not prev is None:
+    while prev is not None:
       curr = prev
       prev = curr._prev
 
@@ -2279,7 +2279,7 @@ class LocalCoords(object):
     curr = self
     next = self._next
 
-    while not next is None:
+    while next is not None:
       curr = next
       next = curr._next
 
@@ -2316,7 +2316,7 @@ class LocalCoords(object):
 
     string += '{0: <16}{1}'.format('\tPoint', '=\t')
 
-    if not self._point is None:
+    if self._point is not None:
       string += '{0}'.format(self._point._coords)
 
     string += '\n'
@@ -2336,10 +2336,10 @@ class UnivCoords(LocalCoords):
     self._universe = None
     self._cell = None
 
-    if not universe is None:
+    if universe is not None:
       self.setUniverse(universe)
 
-    if not cell is None:
+    if cell is not None:
       self.setCell(cell)
 
 
@@ -2449,7 +2449,7 @@ class UnivCoords(LocalCoords):
     string += '{0: <16}{1}{2}\n'.format('\tUniverse', '=\t', self._universe._id)
     string += '{0: <16}{1}'.format('\tCell', '=\t')
 
-    if not self._cell is None:
+    if self._cell is not None:
       string += '{0}'.format(self._cell._id)
 
     return string
@@ -2469,16 +2469,16 @@ class LatCoords(LocalCoords):
     self._lat_y = None
     self._lat_z = None
 
-    if not lattice is None:
+    if lattice is not None:
       self.setLattice(lattice)
 
-    if not lat_x is None:
+    if lat_x is not None:
       self.setLatticeX(lat_x)
 
-    if not lat_y is None:
+    if lat_y is not None:
       self.setLatticeY(lat_y)
 
-    if not lat_z is None:
+    if lat_z is not None:
       self.setLatticeY(lat_z)
 
 

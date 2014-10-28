@@ -173,7 +173,7 @@ class Surface(object):
       return False
 
 
-  def getIntersectionPoints(self, point, direction):
+  def minSurfaceDist(self, point, direction):
     if not isinstance(point, Point):
       msg = 'Unable to get intersection point with Surface ID={0} ' \
             'since the input is not a Point object'.format(self._id)
@@ -199,7 +199,7 @@ class Surface(object):
     elif is_integer(surface_id):
 
       # If the Material already has an ID, remove it from global list
-      if not self._id is None:
+      if self._id is not None:
         SURFACE_IDS.remove(self._id)
 
       elif surface_id in SURFACE_IDS:
@@ -303,16 +303,16 @@ class Plane(Surface):
     self._coeffs['C'] = None
     self._coeffs['D'] = None
 
-    if not A is None:
+    if A is not None:
       self.setA(A)
 
-    if not B is None:
+    if B is not None:
       self.setB(B)
 
-    if not C is None:
+    if C is not None:
       self.setC(C)
 
-    if not D is None:
+    if D is not None:
       self.setD(D)
 
 
@@ -369,9 +369,9 @@ class Plane(Surface):
 
     return value
 
-  def getIntersectionPoints(self, point, direction):
+  def minSurfaceDist(self, point, direction):
     
-    super(Plane, self).getIntersectionPoints(point, direction)
+    super(Plane, self).minSurfaceDist(point, direction)
 
     if self.onSurface(point):
       return 0.
@@ -412,7 +412,7 @@ class XPlane(Plane):
     self._type = 'x-plane'
     self._coeffs['x0'] = None
 
-    if not x0 is None:
+    if x0 is not None:
       self.setX0(x0)
 
 
@@ -482,9 +482,9 @@ class XPlane(Plane):
     self._min_x = np.float64(x0)
 
 
-  def getIntersectionPoints(self, point, direction):
+  def minSurfaceDist(self, point, direction):
 
-    super(XPlane, self).getIntersectionPoints(point, direction)
+    super(XPlane, self).minSurfaceDist(point, direction)
 
     if self.onSurface(point):
       return 0.
@@ -517,7 +517,7 @@ class YPlane(Plane):
     self._type = 'y-plane'
     self._coeffs['y0'] = None
 
-    if not y0 is None:
+    if y0 is not None:
       self.setY0(y0)
 
 
@@ -586,9 +586,9 @@ class YPlane(Plane):
     self._min_y = np.float64(y0)
 
 
-  def getIntersectionPoints(self, point, direction):
+  def minSurfaceDist(self, point, direction):
 
-    super(YPlane, self).getIntersectionPoints(point, direction)
+    super(YPlane, self).minSurfaceDist(point, direction)
 
     if self.onSurface(point):
       return 0.
@@ -621,7 +621,7 @@ class ZPlane(Plane):
     self._type = 'z-plane'
     self._coeffs['z0'] = None
 
-    if not z0 is None:
+    if z0 is not None:
       self.setZ0(z0)
 
 
@@ -690,9 +690,9 @@ class ZPlane(Plane):
     self._min_z = z0
 
 
-  def getIntersectionPoints(self, point, direction):
+  def minSurfaceDist(self, point, direction):
 
-    super(ZPlane, self).getIntersectionPoints(point, direction)
+    super(ZPlane, self).minSurfaceDist(point, direction)
 
     if self.onSurface(point):
       return 0.
@@ -748,13 +748,13 @@ class XCylinder(Cylinder):
     self._coeffs['z0'] = 0.
     self._coeffs['R'] = None
 
-    if not y0 is None:
+    if y0 is not None:
       self.setY0(y0)
 
-    if not z0 is None:
+    if z0 is not None:
       self.setZ0(z0)
 
-    if not R is None:
+    if R is not None:
       self.setR(R)
 
 
@@ -871,7 +871,7 @@ class XCylinder(Cylinder):
 
     self._coeffs['y0'] = np.float64(y0)
 
-    if not self._coeffs['R'] is None:
+    if self._coeffs['R'] is not None:
       self._max_y = y0 + self._coeffs['R']
       self._min_y = y0 - self._coeffs['R']
 
@@ -885,7 +885,7 @@ class XCylinder(Cylinder):
 
     self._coeffs['z0'] = np.float64(z0)
 
-    if not self._coeffs['R'] is None:
+    if self._coeffs['R'] is not None:
       self._max_z = z0 + self._coeffs['R']
       self._min_z = z0 - self._coeffs['R']
 
@@ -894,11 +894,11 @@ class XCylinder(Cylinder):
 
     super(XCylinder, self).setR(R)
 
-    if not self._coeffs['y0'] is None:
+    if self._coeffs['y0'] is not None:
       self._max_y = self._coeffs['y0'] + self._coeffs['R']
       self._min_y = self._coeffs['y0'] - self._coeffs['R']
 
-    if not self._coeffs['z0'] is None:
+    if self._coeffs['z0'] is not None:
       self._max_z = self._coeffs['z0'] + self._coeffs['R']
       self._min_z = self._coeffs['z0'] - self._coeffs['R']
 
@@ -913,9 +913,9 @@ class XCylinder(Cylinder):
     r = np.sqrt(r2)
     return (r - self._coeffs['R'])
 
-  def getIntersectionPoints(self, point, direction):
+  def minSurfaceDist(self, point, direction):
 
-    super(XCylinder, self).getIntersectionPoints(point, direction)
+    super(XCylinder, self).minSurfaceDist(point, direction)
 
     if self.onSurface(point):
       return 0.
@@ -964,13 +964,13 @@ class YCylinder(Cylinder):
     self._coeffs['z0'] = 0.
     self._coeffs['R'] = None
 
-    if not x0 is None:
+    if x0 is not None:
       self.setX0(x0)
 
-    if not z0 is None:
+    if z0 is not None:
       self.setZ0(z0)
 
-    if not R is None:
+    if R is not None:
       self.setR(R)
 
 
@@ -1086,7 +1086,7 @@ class YCylinder(Cylinder):
 
     self._coeffs['x0'] = np.float64(x0)
 
-    if not self._coeffs['R'] is None:
+    if self._coeffs['R'] is not None:
       self._max_x = x0 + self._coeffs['R']
       self._min_x = x0 - self._coeffs['R']
 
@@ -1100,7 +1100,7 @@ class YCylinder(Cylinder):
 
     self._coeffs['z0'] = np.float64(z0)
 
-    if not self._coeffs['R'] is None:
+    if self._coeffs['R'] is not None:
       self._max_z = z0 + self._coeffs['R']
       self._min_z = z0 - self._coeffs['R']
 
@@ -1109,11 +1109,11 @@ class YCylinder(Cylinder):
 
     super(YCylinder, self).setR(R)
 
-    if not self._coeffs['x0'] is None:
+    if self._coeffs['x0'] is not None:
       self._max_x = self._coeffs['x0'] + self._coeffs['R']
       self._min_x = self._coeffs['x0'] - self._coeffs['R']
 
-    if not self._coeffs['z0'] is None:
+    if self._coeffs['z0'] is not None:
       self._max_z = self._coeffs['z0'] + self._coeffs['R']
       self._min_z = self._coeffs['z0'] - self._coeffs['R']
 
@@ -1128,9 +1128,9 @@ class YCylinder(Cylinder):
     r = np.sqrt(r2)
     return (r - self._coeffs['R'])
 
-  def getIntersectionPoints(self, point, direction):
+  def minSurfaceDist(self, point, direction):
 
-    super(YCylinder, self).getIntersectionPoints(point, direction)
+    super(YCylinder, self).minSurfaceDist(point, direction)
 
     if self.onSurface(point):
       return 0.
@@ -1180,13 +1180,13 @@ class ZCylinder(Cylinder):
     self._coeffs['R'] = None
 
 
-    if not x0 is None:
+    if x0 is not None:
       self.setX0(x0)
 
-    if not y0 is None:
+    if y0 is not None:
       self.setY0(y0)
 
-    if not R is None:
+    if R is not None:
       self.setR(R)
 
 
@@ -1303,7 +1303,7 @@ class ZCylinder(Cylinder):
 
     self._coeffs['x0'] = np.float64(x0)
 
-    if not self._coeffs['R'] is None:
+    if self._coeffs['R'] is not None:
       self._max_x = x0 + self._coeffs['R']
       self._min_x = x0 - self._coeffs['R']
 
@@ -1317,7 +1317,7 @@ class ZCylinder(Cylinder):
 
     self._coeffs['y0'] = np.float64(y0)
 
-    if not self._coeffs['R'] is None:
+    if self._coeffs['R'] is not None:
       self._max_y = y0 + self._coeffs['R']
       self._min_y = y0 - self._coeffs['R']
 
@@ -1326,11 +1326,11 @@ class ZCylinder(Cylinder):
 
     super(ZCylinder, self).setR(R)
 
-    if not self._coeffs['x0'] is None:
+    if self._coeffs['x0'] is not None:
       self._max_x = self._coeffs['x0'] + self._coeffs['R']
       self._min_x = self._coeffs['x0'] - self._coeffs['R']
 
-    if not self._coeffs['y0'] is None:
+    if self._coeffs['y0'] is not None:
       self._max_y = self._coeffs['y0'] + self._coeffs['R']
       self._min_y = self._coeffs['y0'] - self._coeffs['R']
 
@@ -1345,9 +1345,9 @@ class ZCylinder(Cylinder):
     r = np.sqrt(r2)
     return (r - self._coeffs['R'])
 
-  def getIntersectionPoints(self, point, direction):
+  def minSurfaceDist(self, point, direction):
 
-    super(ZCylinder, self).getIntersectionPoints(point, direction)
+    super(ZCylinder, self).minSurfaceDist(point, direction)
 
     if self.onSurface(point):
       return 0.
@@ -1396,16 +1396,16 @@ class Sphere(Surface):
     self._coeffs['z0'] = None
     self._coeffs['R'] = None
 
-    if not x0 is None:
+    if x0 is not None:
       self.setX0(x0)
 
-    if not y0 is None:
+    if y0 is not None:
       self.setY0(y0)
 
-    if not z0 is None:
+    if z0 is not None:
       self.setZ0(z0)
 
-    if not R is None:
+    if R is not None:
       self.setZ0(R)
 
 
@@ -1574,7 +1574,7 @@ class Sphere(Surface):
 
     self._coeffs['x0'] = np.float64(x0)
 
-    if not self._coeffs['R'] is None:
+    if self._coeffs['R'] is not None:
       self._max_x = x0 + self._coeffs['R']
       self._min_x = x0 - self._coeffs['R']
 
@@ -1588,7 +1588,7 @@ class Sphere(Surface):
 
     self._coeffs['y0'] = np.float64(y0)
 
-    if not self._coeffs['R'] is None:
+    if self._coeffs['R'] is not None:
       self._max_y = y0 + self._coeffs['R']
       self._min_y = y0 - self._coeffs['R']
 
@@ -1602,7 +1602,7 @@ class Sphere(Surface):
 
     self._coeffs['z0'] = np.float64(z0)
 
-    if not self._coeffs['R'] is None:
+    if self._coeffs['R'] is not None:
       self._max_z = z0 + self._coeffs['R']
       self._min_z = z0 - self._coeffs['R']
 
@@ -1616,15 +1616,15 @@ class Sphere(Surface):
 
     self._coeffs['R'] = np.float64(R)
 
-    if not self._coeffs['x0'] is None:
+    if self._coeffs['x0'] is not None:
       self._max_x = self._coeffs['x0'] + R
       self._min_x = self._coeffs['x0'] - R
 
-    if not self._coeffs['y0'] is None:
+    if self._coeffs['y0'] is not None:
       self._max_y = self._coeffs['y0'] + R
       self._min_y = self._coeffs['y0'] - R
 
-    if not self._coeffs['z0'] is None:
+    if self._coeffs['z0'] is not None:
       self._max_z = self._coeffs['z0'] + R
       self._min_z = self._coeffs['z0'] - R
 
@@ -1641,9 +1641,9 @@ class Sphere(Surface):
     R = np.sqrt(R2)
     return (R - self._coeffs['R'])
 
-  def getIntersectionPoints(self, point, direction):
+  def minSurfaceDist(self, point, direction):
 
-    super(Sphere, self).getIntersectionPoints(point, direction)
+    super(Sphere, self).minSurfaceDist(point, direction)
 
     if self.onSurface(point):
       return 0.
@@ -1717,13 +1717,13 @@ class XSquarePrism(SquarePrism):
     self._coeffs['z0'] = 0.
     self._coeffs['R'] = None
 
-    if not y0 is None:
+    if y0 is not None:
       self.setY0(y0)
 
-    if not z0 is None:
+    if z0 is not None:
       self.setZ0(z0)
 
-    if not R is None:
+    if R is not None:
       self.setR(R)
 
 
@@ -1840,7 +1840,7 @@ class XSquarePrism(SquarePrism):
 
     self._coeffs['x0'] = np.float64(y0)
 
-    if not self._coeffs['R'] is None:
+    if self._coeffs['R'] is not None:
       self._max_x = y0 + self._coeffs['R']
       self._min_x = y0 - self._coeffs['R']
 
@@ -1854,7 +1854,7 @@ class XSquarePrism(SquarePrism):
 
     self._coeffs['z0'] = np.float64(z0)
 
-    if not self._coeffs['R'] is None:
+    if self._coeffs['R'] is not None:
       self._max_y = z0 + self._coeffs['R']
       self._min_y = z0 - self._coeffs['R']
 
@@ -1863,11 +1863,11 @@ class XSquarePrism(SquarePrism):
 
     super(XSquarePrism, self).setR(R)
 
-    if not self._coeffs['y0'] is None:
+    if self._coeffs['y0'] is not None:
       self._max_y = self._coeffs['y0'] + R
       self._min_y = self._coeffs['y0'] - R
 
-    if not self._coeffs['z0'] is None:
+    if self._coeffs['z0'] is not None:
       self._max_z = self._coeffs['z0'] + R
       self._min_z = self._coeffs['z0'] - R
 
@@ -1897,13 +1897,13 @@ class YSquarePrism(SquarePrism):
     self._coeffs['z0'] = 0.
     self._coeffs['R'] = None
 
-    if not x0 is None:
+    if x0 is not None:
       self.setX0(x0)
 
-    if not z0 is None:
+    if z0 is not None:
       self.setZ0(z0)
 
-    if not R is None:
+    if R is not None:
       self.setR(R)
 
 
@@ -2020,7 +2020,7 @@ class YSquarePrism(SquarePrism):
 
     self._coeffs['x0'] = np.float64(x0)
 
-    if not self._coeffs['R'] is None:
+    if self._coeffs['R'] is not None:
       self._max_x = x0 + self._coeffs['R']
       self._min_x = x0 - self._coeffs['R']
 
@@ -2034,7 +2034,7 @@ class YSquarePrism(SquarePrism):
 
     self._coeffs['z0'] = np.float64(z0)
 
-    if not self._coeffs['R'] is None:
+    if self._coeffs['R'] is not None:
       self._max_y = z0 + self._coeffs['R']
       self._min_y = z0 - self._coeffs['R']
 
@@ -2043,11 +2043,11 @@ class YSquarePrism(SquarePrism):
 
     super(YSquarePrism, self).setR(R)
 
-    if not self._coeffs['x0'] is None:
+    if self._coeffs['x0'] is not None:
       self._max_x = self._coeffs['x0'] + R
       self._min_x = self._coeffs['x0'] - R
 
-    if not self._coeffs['z0'] is None:
+    if self._coeffs['z0'] is not None:
       self._max_z = self._coeffs['z0'] + R
       self._min_z = self._coeffs['z0'] - R
 
@@ -2077,13 +2077,13 @@ class ZSquarePrism(SquarePrism):
     self._coeffs['y0'] = 0.
     self._coeffs['R'] = None
 
-    if not x0 is None:
+    if x0 is not None:
       self.setX0(x0)
 
-    if not y0 is None:
+    if y0 is not None:
       self.setY0(y0)
 
-    if not R is None:
+    if R is not None:
       self.setR(R)
 
 
@@ -2200,7 +2200,7 @@ class ZSquarePrism(SquarePrism):
 
     self._coeffs['x0'] = np.float64(x0)
 
-    if not self._coeffs['R'] is None:
+    if self._coeffs['R'] is not None:
       self._max_x = x0 + self._coeffs['R']
       self._min_x = x0 - self._coeffs['R']
 
@@ -2214,7 +2214,7 @@ class ZSquarePrism(SquarePrism):
 
     self._coeffs['y0'] = np.float64(y0)
 
-    if not self._coeffs['R'] is None:
+    if self._coeffs['R'] is not None:
       self._max_y = y0 + self._coeffs['R']
       self._min_y = y0 - self._coeffs['R']
 
@@ -2223,11 +2223,11 @@ class ZSquarePrism(SquarePrism):
 
     super(ZSquarePrism, self).setR(R)
 
-    if not self._coeffs['x0'] is None:
+    if self._coeffs['x0'] is not None:
       self._max_x = self._coeffs['x0'] + R
       self._min_x = self._coeffs['x0'] - R
 
-    if not self._coeffs['y0'] is None:
+    if self._coeffs['y0'] is not None:
       self._max_y = self._coeffs['y0'] + R
       self._min_y = self._coeffs['y0'] - R
 

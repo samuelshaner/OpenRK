@@ -14,14 +14,9 @@ class Point(object):
     # Initialize coordinates
     self._coords = np.zeros(3, dtype=np.float64)
 
-    if not x is None:
-      self.setX(x)
-
-    if not y is None:
-      self.setY(y)
-
-    if not z is None:
-      self.setZ(z)
+    self.setX(x)
+    self.setY(y)
+    self.setZ(z)
 
 
   def __deepcopy__(self, memo):
@@ -101,15 +96,11 @@ class Direction(object):
     # Initialize components
     self._comps = np.zeros(3, dtype=np.float64)
 
-    if not u is None:
-      self.setU(u)
+    self.setU(u)
+    self.setV(v)
+    self.setW(w)
 
-    if not v is None:
-      self.setV(v)
-
-    if not w is None:
-      self.setW(w)
-
+    self._is_normalized = False
 
   def __deepcopy__(self, memo):
 
@@ -120,6 +111,7 @@ class Direction(object):
 
       clone = type(self).__new__(type(self))
       clone._comps = copy.deepcopy(self._comps)
+      clone._is_normalized = copy.deepcopy(self._is_normalized)
       return clone
 
     # If this object has been copied before, return the first copy made
@@ -145,7 +137,7 @@ class Direction(object):
       raise ValueError(msg)
 
     self._comps[0] = np.float64(u)
-
+    self._is_normalized = False
 
   def setV(self, v):
     if not is_integer(v) and not is_float(v):
@@ -154,7 +146,7 @@ class Direction(object):
       raise ValueError(msg)
 
     self._comps[1] = np.float64(v)
-
+    self._is_normalized = False
 
   def setW(self, w):
     if not is_integer(w) and not is_float(w):
@@ -163,19 +155,27 @@ class Direction(object):
       raise ValueError(msg)
 
     self._comps[2] = np.float64(w)
+    self._is_normalized = False
 
   def normalize(self):
 
+    # Check if direction is normalized
+    if self._is_normalized:
+      return self._comps
+
+    # Normalizes direction otherwise
     comps = self._comps
     unit = comps/np.sqrt(np.sum(comps**2))
+    self._is_normalized = True
     return unit
 
   def toPolar(self):
 
     u, v, w = self._comps
-    r = np.sqrt(np.sum(self._comps**2))
+    square_comps = self._comps**2
+    r = np.sqrt(np.sum(square_comps))
     phi = np.arctan2(v, u)
-    theta = np.arcsin(np.sqrt(u**2 + v**2)/r)
+    theta = np.arcsin(np.sqrt((square_comps[0] + square_comps[1])/r))
     
     return np.array([r,phi,theta])
 

@@ -455,9 +455,9 @@ def plot_segments(rays, geometry, plane='xy', offset=0.,
     start = Point()
     start.setCoords(ray._point._coords)
     dir = ray._direction.toPolar()
-    for segment in ray._segments:
-      colors.append(color_map[segment._region_id % num_regions])
-      length = segment._length
+    for segment in xrange(ray._num_segments):
+      colors.append(color_map[ray._segments[segment]._region_id % num_regions])
+      length = ray._segments[segment]._length
       x = start._coords[0] + length*np.sin(dir[2])*np.cos(dir[1])
       y = start._coords[1] + length*np.sin(dir[2])*np.sin(dir[1])
       z = start._coords[2] + length*np.cos(dir[2])
