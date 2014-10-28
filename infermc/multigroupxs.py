@@ -411,7 +411,12 @@ class MultiGroupXS(object):
                   '{3: <10}MeV]:\t'.format('', group, bounds[0], bounds[1])
         average = self.getXS([group], [subdomain], 'mean')
         std_dev = self.getXS([group], [subdomain], 'std_dev')
-        string += '{:.2e}+/-{:.2e}'.format(average[0,0,0], std_dev[0,0,0])
+
+        std_dev[average == 0.] = 0.
+        average[average == 0.] = 1.
+        rel_err = (std_dev / average) * 100.
+
+        string += '{:.2e}+/-{:1.2e}%'.format(average[0,0,0], rel_err[0,0,0])
         string += '\n'
 
       string += '\n'
@@ -497,6 +502,10 @@ class MultiGroupXS(object):
     average = self._xs[metrics['mean'], offsets, ...]
     std_dev = self._xs[metrics['std_dev'], offsets, ...]
 
+    std_dev[average == 0.] = 0.
+    average[average == 0.] = 1.
+    rel_err = (std_dev / average) * 100.
+
     # HDF5 binary file
     if format == 'hdf5':
 
@@ -531,9 +540,9 @@ class MultiGroupXS(object):
         xs_group.require_dataset('average', dtype=np.float64,
                                  shape=average[i, ...].shape,
                                  data=average[i, ...])
-        xs_group.require_dataset('std. dev.', dtype=np.float64,
-                                 shape=std_dev[i, ...].shape,
-                                 data=std_dev[i, ...])
+        xs_group.require_dataset('rel. err.', dtype=np.float64,
+                                 shape=rel_err[i, ...].shape,
+                                 data=rel_err[i, ...])
 
         # Close the MultiGroup results HDF5 file
         xs_results.close()
@@ -579,7 +588,7 @@ class MultiGroupXS(object):
 
         # Add MultiGroupXS results data to the dictionary
         xs_group['average'] = average[i, ...]
-        xs_group['std. dev.'] = std_dev[i, ...]
+        xs_group['rel. err.'] = rel_err[i, ...]
 
       # Pickle the MultiGroupXS results to a file
       pickle.dump(xs_results, open(filename, 'wb'))
@@ -622,13 +631,13 @@ class MultiGroupXS(object):
           headers = list()
           headers.append('Group')
           headers.append('Average XS')
-          headers.append('Std. Dev.')
+          headers.append('Rel. Err. (\%)')
 
           for group in range(self._num_groups):
             subtable = list()
             subtable.append(group+1)
             subtable.append(average[i, group, ...])
-            subtable.append(std_dev[i, group, ...])
+            subtable.append(rel_err[i, group, ...])
             table.append(subtable)
 
         # Scattering matrix
@@ -637,7 +646,7 @@ class MultiGroupXS(object):
           headers.append('Group In')
           headers.append('Group Out')
           headers.append('Average XS')
-          headers.append('Std. Dev.')
+          headers.append('Rel. Err. (\%)')
 
           for in_group in range(self._num_groups):
             for out_group in range(self._num_groups):
@@ -645,7 +654,7 @@ class MultiGroupXS(object):
               subtable.append(in_group+1)
               subtable.append(out_group+1)
               subtable.append(average[i, in_group, out_group, ...])
-              subtable.append(std_dev[i, in_group, out_group, ...])
+              subtable.append(rel_err[i, in_group, out_group, ...])
               table.append(subtable)
 
         if self._domain_type == 'distribcell':
@@ -1177,7 +1186,12 @@ class ScatterMatrixXS(MultiGroupXS):
           string += '{0: <12}Group {1} -> Group {2}:\t\t'.format('', in_group, out_group)
           average = self.getXS([in_group], [out_group], [subdomain], 'mean')
           std_dev = self.getXS([in_group], [out_group], [subdomain], 'std_dev')
-          string += '{:.2e}+/-{:.2e}'.format(average[0,0,0], std_dev[0,0,0])
+
+          std_dev[average == 0.] = 0.
+          average[average == 0.] = 1.
+          rel_err = (std_dev / average) * 100.
+
+          string += '{:.2e}+/-{:1.2e}%'.format(average[0,0,0], rel_err[0,0,0])
           string += '\n'
 
       string += '\n'

@@ -3,8 +3,6 @@ import os, copy
 import openmc
 import infermc
 
-
-
 # LaTeX Greek symbols for each cross-section type
 greek = dict()
 greek['total'] = '$\\sigma_{t}$'
@@ -173,7 +171,12 @@ class MicroXS(infermc.MultiGroupXS):
                     '{3: <10}MeV]:\t'.format('', group, bounds[0], bounds[1])
           average = self.getXS([group], [nuclide], [subdomain], 'mean')
           std_dev = self.getXS([group], [nuclide], [subdomain], 'std_dev')
-          string += '{:.2e}+/-{:.2e}'.format(average[0,0,0], std_dev[0,0,0])
+
+          std_dev[average == 0.] = 0.
+          average[average == 0.] = 1.
+          rel_err = (std_dev / average) * 100.
+
+          string += '{:.2e}+/-{:1.2e}%'.format(average[0,0,0], std_dev[0,0,0])
           string += '\n'
 
         string += '\n'
@@ -236,6 +239,10 @@ class MicroXS(infermc.MultiGroupXS):
     std_dev = self._xs[infermc.metrics['std_dev'], offsets, ...]
     std_dev = std_dev[..., nuclides]
 
+    std_dev[average == 0.] = 0.
+    average[average == 0.] = 1.
+    rel_err = (std_dev / average) * 100.
+
     # HDF5 binary file
     if format == 'hdf5':
 
@@ -276,9 +283,9 @@ class MicroXS(infermc.MultiGroupXS):
           xs_group.require_dataset('average', dtype=np.float64,
                                    shape=average[i, ..., nuclide].shape,
                                    data=average[i, ..., nuclide])
-          xs_group.require_dataset('std. dev.', dtype=np.float64,
-                                   shape=std_dev[i, ..., nuclide].shape,
-                                   data=std_dev[i, ..., nuclide])
+          xs_group.require_dataset('rel. err.', dtype=np.float64,
+                                   shape=rel_err[i, ..., nuclide].shape,
+                                   data=rel_err[i, ..., nuclide])
 
       # Close the results HDF5 file
       xs_results.close()
@@ -335,7 +342,7 @@ class MicroXS(infermc.MultiGroupXS):
 
           # Add MultiGroupXS results data to the dictionary
           xs_group['average'] = average[i, ..., nuclide]
-          xs_group['std. dev.'] = std_dev[i, ..., nuclide]
+          xs_group['rel. err.'] = rel_err[i, ..., nuclide]
 
       # Pickle the MultiGroupXS results to a file
       pickle.dump(xs_results, open(filename, 'wb'))
@@ -379,13 +386,13 @@ class MicroXS(infermc.MultiGroupXS):
             headers = list()
             headers.append('Group')
             headers.append('Average XS')
-            headers.append('Std. Dev.')
+            headers.append('Rel. Err. (\%)')
 
             for group in range(self._num_groups):
               subtable = list()
               subtable.append(group+1)
               subtable.append(average[i, group, ..., nuclide])
-              subtable.append(std_dev[i, group, ..., nuclide])
+              subtable.append(rel_err[i, group, ..., nuclide])
               table.append(subtable)
 
           # Scattering matrix
@@ -394,7 +401,7 @@ class MicroXS(infermc.MultiGroupXS):
             headers.append('Group In')
             headers.append('Group Out')
             headers.append('Average XS')
-            headers.append('Std. Dev.')
+            headers.append('Rel. Err. (\%)')
 
             for in_group in range(self._num_groups):
               for out_group in range(self._num_groups):
@@ -402,7 +409,7 @@ class MicroXS(infermc.MultiGroupXS):
                 subtable.append(in_group+1)
                 subtable.append(out_group+1)
                 subtable.append(average[i, in_group, out_group, ..., nuclide])
-                subtable.append(std_dev[i, in_group, out_group, ..., nuclide])
+                subtable.append(rel_err[i, in_group, out_group, ..., nuclide])
                 table.append(subtable)
 
           if self._domain_type == 'distribcell':
@@ -581,7 +588,12 @@ class MicroScatterMatrixXS(MicroXS, infermc.ScatterMatrixXS):
             string += '{0: <12}Group {1} -> Group {2}:\t\t'.format('', in_group, out_group)
             average = self.getXS([in_group], [out_group], [nuclide], [subdomain], 'mean')
             std_dev = self.getXS([in_group], [out_group], [nuclide], [subdomain], 'std_dev')
-            string += '{:.2e}+/-{:.2e}'.format(average[0,0,0], std_dev[0,0,0])
+
+            std_dev[average == 0.] = 0.
+            average[average == 0.] = 1.
+            rel_err = (std_dev / average) * 100.
+
+            string += '{:.2e}+/-{:1.2e}%'.format(average[0,0,0], rel_err[0,0,0])
             string += '\n'
 
         string += '\n'
