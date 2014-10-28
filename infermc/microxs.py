@@ -239,9 +239,11 @@ class MicroXS(infermc.MultiGroupXS):
     std_dev = self._xs[infermc.metrics['std_dev'], offsets, ...]
     std_dev = std_dev[..., nuclides]
 
-    std_dev[average == 0.] = 0.
-    average[average == 0.] = 1.
+    zero_indices = average == 0
+    std_dev[zero_indices] = 0.
+    average[zero_indices] = 1.
     rel_err = (std_dev / average) * 100.
+    average[zero_indices] = 0.
 
     # HDF5 binary file
     if format == 'hdf5':
@@ -589,9 +591,11 @@ class MicroScatterMatrixXS(MicroXS, infermc.ScatterMatrixXS):
             average = self.getXS([in_group], [out_group], [nuclide], [subdomain], 'mean')
             std_dev = self.getXS([in_group], [out_group], [nuclide], [subdomain], 'std_dev')
 
-            std_dev[average == 0.] = 0.
-            average[average == 0.] = 1.
+            zero_indices = average == 0
+            std_dev[zero_indices] = 0.
+            average[zero_indices] = 1.
             rel_err = (std_dev / average) * 100.
+            average[zero_indices] = 0.
 
             string += '{:.2e}+/-{:1.2e}%'.format(average[0,0,0], rel_err[0,0,0])
             string += '\n'

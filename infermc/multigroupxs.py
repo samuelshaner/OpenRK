@@ -343,7 +343,6 @@ class MultiGroupXS(object):
   def getCondensedXS(self, coarse_groups):
     '''This routine takes in a collection of 2-tuples of energy groups'''
 
-    # FIXME: this must be specialized for the scattering matrix
     # FIXME: this under-estimates the uncertainty due to inter-group correlation
 
     # Error checking for the group bounds is done here
@@ -412,9 +411,11 @@ class MultiGroupXS(object):
         average = self.getXS([group], [subdomain], 'mean')
         std_dev = self.getXS([group], [subdomain], 'std_dev')
 
-        std_dev[average == 0.] = 0.
-        average[average == 0.] = 1.
+        zero_indices = average == 0
+        std_dev[zero_indices] = 0.
+        average[zero_indices] = 1.
         rel_err = (std_dev / average) * 100.
+        average[zero_indices] = 0.
 
         string += '{:.2e}+/-{:1.2e}%'.format(average[0,0,0], rel_err[0,0,0])
         string += '\n'
@@ -502,9 +503,11 @@ class MultiGroupXS(object):
     average = self._xs[metrics['mean'], offsets, ...]
     std_dev = self._xs[metrics['std_dev'], offsets, ...]
 
-    std_dev[average == 0.] = 0.
-    average[average == 0.] = 1.
+    zero_indices = average == 0
+    std_dev[zero_indices] = 0.
+    average[zero_indices] = 1.
     rel_err = (std_dev / average) * 100.
+    average[zero_indices] = 0.
 
     # HDF5 binary file
     if format == 'hdf5':
@@ -1129,6 +1132,8 @@ class ScatterMatrixXS(MultiGroupXS):
     self._xs = infermc.error_prop.arithmetic.divide_by_array(nu_scatter, flux,
                                                              corr, False)
 
+
+
     # For any region without flux or reaction rate, convert xs to zero
     all_zero_indices = np.logical_or(zero_indices['flux'][...,np.newaxis],
                                      zero_indices['nu-scatter'])
@@ -1136,6 +1141,96 @@ class ScatterMatrixXS(MultiGroupXS):
 
     # Correct -0.0 to +0.0
     self._xs += 0.
+
+
+  def getCondensedXS(self, coarse_groups):
+    '''This routine takes in a collection of 2-tuples of energy groups'''
+
+    # FIXME: this under-estimates the uncertainty due to inter-group correlation
+# NOTE
+# self._xs indices:
+# 0 - metric (mean, std_dev)
+# 1 - subdomain
+# 2 - energy
+# 3 - nuclide
+
+# self._tallies['flux'] indices:
+# 0 - energy
+# 1 - nuclide ('total')
+# 2 - subdomain
+
+    # Error checking for the group bounds is done here
+    new_groups = self._energy_groups.getCondensedGroups(coarse_groups)
+    num_coarse_groups = new_groups._num_groups
+
+    # Clone the MultiGroupXS
+    condensed_xs = copy.deepcopy(self)
+    condensed_xs.energy_groups = new_groups
+
+    # Convert the group bounds to array indices
+    group_indices = np.asarray(coarse_groups)
+    group_indices[0][0] -= 1
+
+    for tally_type, tally in condensed_xs._tallies.items():
+
+      for filter in tally._filters:
+        if 'energy' in filter._type:
+          filter.setBinEdges(new_groups.group_edges)
+          filter.setNumBins(num_coarse_groups)
+
+      sum = tally._sum
+      sum_sq = tally._sum_sq
+
+      if 'flux' in tally._scores:
+        coarse_shape = (num_coarse_groups,) + sum.shape[1:]
+        coarse_sum = np.zeros(coarse_shape)
+        coarse_sum_sq = np.zeros(coarse_shape)
+
+        for i, group in enumerate(group_indices):
+          coarse_sum[i, ...] = sum[group[0]:group[1], ...].sum(axis=0)
+          intermed = np.sqrt(sum_sq[group[0]:group[1], ...]).sum(axis=0)
+          coarse_sum_sq[i, ...] = np.power(intermed, 2.)
+
+      # We must treat the group-to-group scattering reaction rate matrix
+      # in a different way than the flux since it has an extra dimension
+      # for the outgoing energy group
+      elif 'nu-scatter' in tally._scores:
+
+        coarse_shape = (num_coarse_groups, num_coarse_groups) + sum.shape[1:]
+        coarse_sum = np.zeros(coarse_shape)
+        coarse_sum_sq = np.zeros(coarse_shape)
+
+        # "Unroll" the group-to-group structure into a 2D matrix
+        fine_shape = (self._num_groups, self._num_groups) + sum.shape[1:]
+        sum = np.reshape(sum, fine_shape)
+        sum_sq = np.reshape(sum_sq, fine_shape)
+
+        for i, in_group in enumerate(group_indices):
+          for j, out_group in enumerate(group_indices):
+
+            # Extract the "block" of the group-to-group reaction rate tallies
+            sum_block = sum[in_group[0]:in_group[1], ...]
+            sum_block = sum_block[:, out_group[0]:out_group[1], ...]
+            sum_sq_block = sum_sq[in_group[0]:in_group[1], ...]
+            sum_sq_block = sum_sq_block[:, out_group[0]:out_group[1], ...]
+
+            coarse_sum[i,j, ...] = sum_block.sum(axis=(0,1))
+            intermed = np.sqrt(sum_sq_block.sum(axis=(0,1)))
+            coarse_sum_sq[i,j, ...] = np.power(intermed, 2.)
+
+        # Reshape the 2D matrix back into the form expected by the Tally
+        coarse_shape = (num_coarse_groups**2,) + sum.shape[2:]
+        coarse_sum = np.reshape(coarse_sum, coarse_shape)
+        coarse_sum_sq = np.reshape(coarse_sum_sq, coarse_shape)
+
+      tally.setResults(coarse_sum, coarse_sum_sq)
+      tally.computeStdDev()
+      condensed_xs._tallies[tally_type] = tally
+
+    # Tell the cloned xs to compute xs
+    condensed_xs.computeXS()
+
+    return condensed_xs
 
 
   def getXS(self, in_groups='all', out_groups='all',
@@ -1187,9 +1282,11 @@ class ScatterMatrixXS(MultiGroupXS):
           average = self.getXS([in_group], [out_group], [subdomain], 'mean')
           std_dev = self.getXS([in_group], [out_group], [subdomain], 'std_dev')
 
-          std_dev[average == 0.] = 0.
-          average[average == 0.] = 1.
+          zero_indices = average == 0
+          std_dev[zero_indices] = 0.
+          average[zero_indices] = 1.
           rel_err = (std_dev / average) * 100.
+          average[zero_indices] = 0.
 
           string += '{:.2e}+/-{:1.2e}%'.format(average[0,0,0], rel_err[0,0,0])
           string += '\n'

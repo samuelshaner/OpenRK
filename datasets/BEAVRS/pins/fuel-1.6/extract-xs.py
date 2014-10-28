@@ -7,7 +7,7 @@ import infermc.plotter as plotter
 
 
 #batches = range(25, 105, 5)
-batches = [30]
+batches = [20]
 
 groups = group_structures['CASMO']['8-group']
 
@@ -15,7 +15,7 @@ for batch in batches:
 
   print batch
 
-  filename = 'statepoint.10.h5'.format(batch)
+  filename = 'statepoint.20.h5'#.format(batch)
 
   # Initialize a handle on the OpenMC statepoint file
   statepoint = openmc.statepoint.StatePoint(filename)
@@ -26,14 +26,14 @@ for batch in batches:
   micro_extractor.extractAllMultiGroupXS(groups, 'distribcell', corr=True)
   micro_extractor.checkXS()
 
-#  hm = micro_extractor._multigroup_xs['distribcell'][10000]['total'].getCondensedXS([(1,4), (4,8)])
-#  hm.printPDF()
+  mat10003 = micro_extractor._multigroup_xs['material'][10003]['scatter matrix'].getCondensedXS([(1,4), (4,8)])
+  mat10003.printPDF()
 
 #  plotter.scatter_micro_xs(micro_extractor,
 #                           domain_types=['distribcell', 'material'],
 #                           colors=['cell', 'material'],
 #                           filename='{0}-batch'.format(batch))
-
+  '''
   materials = micro_extractor._openmc_geometry.getAllMaterials()
 
   # DUMP-TO-FILE and PRINT XS
@@ -41,7 +41,7 @@ for batch in batches:
     for xs_type in xs_types:
       xs = micro_extractor._multigroup_xs['material'][material._id][xs_type]
       xs.printPDF(directory='micro', filename='material-{0}-{1}'.format(material._id, xs_type))
-
+  '''
   openmc.reset_auto_ids()
   del micro_extractor, statepoint
 
