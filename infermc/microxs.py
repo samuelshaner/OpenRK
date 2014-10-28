@@ -176,7 +176,7 @@ class MicroXS(infermc.MultiGroupXS):
           average[average == 0.] = 1.
           rel_err = (std_dev / average) * 100.
 
-          string += '{:.2e}+/-{:1.2e}%'.format(average[0,0,0], std_dev[0,0,0])
+          string += '{:.2e}+/-{:1.2e}%'.format(average[0,0,0], rel_err[0,0,0])
           string += '\n'
 
         string += '\n'
