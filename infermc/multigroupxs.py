@@ -287,7 +287,8 @@ class MultiGroupXS(object):
   def getSubDomainOffsets(self, subdomains='all'):
 
     if subdomains == 'all':
-      offsets = self._subdomain_offsets.values()
+      num_subdomains = self._xs.shape[1]
+      offsets = np.arange(0, num_subdomains)
 
     else:
       offsets = np.zeros(len(subdomains), dtype=np.int64)
