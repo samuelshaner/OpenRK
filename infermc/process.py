@@ -101,7 +101,6 @@ class XSTallyExtractor(object):
     self._buildCellTallyMaps()
     self._buildUniverseTallyMaps()
     self._buildMaterialTallyMaps()
-    self._buildAllPaths()
 
 
   def _buildMaterialTallyMaps(self):
@@ -208,7 +207,7 @@ class XSTallyExtractor(object):
             self._distribcells_to_tallies[distribcell_id].append(tally._id)
 
 
-  def _buildAllPaths(self):
+  def buildAllPaths(self):
 
     # Create a list of "paths" for each unique region in the Geometry
     self._opencsg_geometry.initializeCellOffsets()
@@ -221,6 +220,12 @@ class XSTallyExtractor(object):
 
 
   def getPath(self, region):
+
+    # If this region has not been requested before, memoize its path
+    if region not in self._all_paths:
+      coord = self._opencsg_geometry.findRegion(region)
+      self._all_paths[region] = get_path(coord)
+
     return self._all_paths[region]
 
 
@@ -786,6 +791,7 @@ class MicroXSTallyExtractor(XSTallyExtractor):
     # Build offsets such that a user can query the MultiGroupXS for any region
     if domain_type == 'distribcell':
 
+      '''
       multigroup_xs.findDomainOffset()
       domain_offset = multigroup_xs._offset
 
@@ -799,6 +805,7 @@ class MicroXSTallyExtractor(XSTallyExtractor):
         if cell_id == domain._id:
           offset = self._openmc_geometry.getOffset(path, domain_offset)
           multigroup_xs.setSubDomainOffset(region, offset)
+      '''
 
     else:
       multigroup_xs.setSubDomainOffset(domain._id, 0)
