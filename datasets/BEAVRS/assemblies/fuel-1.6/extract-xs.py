@@ -26,23 +26,28 @@ for batch in batches:
   micro_extractor.extractAllMultiGroupXS(groups, 'distribcell')
   micro_extractor.checkXS()
 
-  plotter.scatter_micro_xs(micro_extractor,
-                           domain_types=['distribcell', 'material'],
-                           colors=['cell', 'material'],
-                           filename='{0}-batch'.format(batch))
+#  plotter.scatter_micro_xs(micro_extractor,
+#                           domain_types=['distribcell', 'material'],
+#                           colors=['cell', 'material'],
+#                           filename='{0}-batch'.format(batch))
 
-  materials = micro_extractor._openmc_geometry.getAllMaterials()
+#  materials = micro_extractor._openmc_geometry.getAllMaterials()
 
   # DUMP-TO-FILE and PRINT XS
-  for material in materials:
-    for xs_type in xs_types:
-      xs = micro_extractor._multigroup_xs['material'][material._id][xs_type]
+#  for material in materials:
+#    for xs_type in xs_types:
+#      xs = micro_extractor._multigroup_xs['material'][material._id][xs_type]
 #      xs.dumpToFile(directory='micro', filename='material-{0}-{1}'.format(material._id, xs_type))
 #      xs.exportResults()
-      xs.printPDF(directory='micro', filename='material-{0}-{1}'.format(material._id, xs_type))
+#      xs.printPDF(directory='micro', filename='material-{0}-{1}'.format(material._id, xs_type))
+
+  test_xs = micro_extractor._multigroup_xs['distribcell'][10000]['fission']
+  avg_xs = test_xs.getDomainAveragedXS()
+  avg_xs.printPDF()
 
   openmc.reset_auto_ids()
   del micro_extractor, statepoint
+
 
   '''
   ## MACROS

@@ -634,7 +634,7 @@ class MicroXSTallyExtractor(XSTallyExtractor):
                                      domain_type, nuclides, corr)
 
         # Add nested dictionary for this domain if needed
-        if not domain._id in self._multigroup_xs[domain_type].keys():
+        if not domain._id in self._multigroup_xs[domain_type]:
           self._multigroup_xs[domain_type][domain._id] = dict()
 
         # Store a handle to the MultiGroupXS object in the nested dictionary
@@ -668,20 +668,23 @@ class MicroXSTallyExtractor(XSTallyExtractor):
     filters.append(openmc.Filter(type='energy', bins=group_edges))
     filters.append(openmc.Filter(type=domain_type, bins=domain._id))
 
+    if nuclides == 'all':
+      all_nuclides = True
+
     # Extract a list of tuples of Nuclides and number densities (at/b-cm)
     # of all Nuclides in the domain of interest
     nuclides_densities = domain.getAllNuclides().values()
     densities = list()
+    nuclides = list()
+
 
     for nuclide_density in nuclides_densities:
 
       nuclide = nuclide_density[0]
       density = nuclide_density[1]
 
-      if nuclides == 'all':
-        # Move nuclide to end of list ensure ordering of nuclides is
-        # identical to the ordering of the nuclides in the domain
-        nuclides.append(nuclides.pop(nuclides.index(nuclide)))
+      if all_nuclides:
+        nuclides.append(nuclide)
         densities.append(density)
 
       elif nuclide in nuclides:
@@ -820,7 +823,7 @@ class MicroXSTallyExtractor(XSTallyExtractor):
     # FIXME!!!! - this does not work for simulations with a subset of nuclides
     # Add Nuclides and densities to the MicroXS
     multigroup_xs.addNuclides(nuclides, densities)
-    if nuclides == 'all':
+    if all_nuclides:
       multigroup_xs.addNuclide(openmc.Nuclide('total'), tot_density)
 
     # Compute the cross-section
@@ -829,7 +832,6 @@ class MicroXSTallyExtractor(XSTallyExtractor):
     # Build offsets such that a user can query the MultiGroupXS for any region
     if domain_type == 'distribcell':
 
-      '''
       multigroup_xs.findDomainOffset()
       domain_offset = multigroup_xs._offset
 
@@ -843,7 +845,6 @@ class MicroXSTallyExtractor(XSTallyExtractor):
         if cell_id == domain._id:
           offset = self._openmc_geometry.getOffset(path, domain_offset)
           multigroup_xs.setSubDomainOffset(region, offset)
-      '''
 
     else:
       multigroup_xs.setSubDomainOffset(domain._id, 0)

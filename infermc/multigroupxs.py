@@ -287,8 +287,7 @@ class MultiGroupXS(object):
   def getSubDomainOffsets(self, subdomains='all'):
 
     if subdomains == 'all':
-      num_subdomains = self._xs.shape[1]
-      offsets = np.arange(0, num_subdomains)
+      offsets = self._subdomain_offsets.values()
 
     else:
       offsets = np.zeros(len(subdomains), dtype=np.int64)
@@ -307,7 +306,8 @@ class MultiGroupXS(object):
   def getSubDomains(self, offsets='all'):
 
     if offsets == 'all':
-      subdomains = self._subdomain_offsets.keys()
+      num_subdomains = self._xs.shape[1]
+      offsets = np.arange(0, num_subdomains)
 
     else:
       subdomains = np.zeros(len(offsets), dtype=np.int64)
@@ -384,6 +384,43 @@ class MultiGroupXS(object):
     # Tell the cloned xs to compute xs
     condensed_xs.computeXS()
     return condensed_xs
+
+
+  def getDomainAveragedXS(self, subdomains='all'):
+
+    if self._domain_type != 'distribcell':
+      msg = 'Unable to compute domain averaged {0} ' \
+            'xs for {1} {2} since it is not a ' \
+            'distribcell'.format(self._xs_type,
+                                 self._domain_type, self._domain._id)
+      raise ValueError(msg)
+
+    # Clone the MultiGroupXS
+    domain_avg_xs = copy.deepcopy(self)
+
+    # Make clone a 'cell' MultiGroupXS and clear subdomain offsets
+    domain_avg_xs._domain_type = 'cell'
+    domain_avg_xs._subdomain_offsets = dict()
+    domain_avg_xs.domain = domain_avg_xs._domain
+    domain_avg_xs.findDomainOffset()
+
+    # Get an array of the cross-sections for each subdomain of interest
+    xs = self.getXS(subdomains=subdomains, metric='mean')
+
+    # Compute the averaged cross-section in each group for
+    # each nuclide, and find the sample standard deviation
+    mean = np.mean(xs, axis=0)
+    std_dev = np.std(xs, axis=0)
+
+    # Add extra dimensions to the arrays to account for
+    # metric ('mean', 'std_dev') and subdomain indices
+    mean = mean[np.newaxis, np.newaxis, ...]
+    std_dev = std_dev[np.newaxis, np.newaxis, ...]
+
+    # Assign averaged cross-section array to cloned MultiGroupXS
+    domain_avg_xs._xs = np.vstack((mean, std_dev))
+
+    return domain_avg_xs
 
 
   def printXS(self, subdomains='all'):
