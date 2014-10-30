@@ -477,16 +477,10 @@ class Universe(object):
     for cell_id in self._cells:
 
       cell = self._cells[cell_id]
-      
+
       if cell.containsPoint(localcoords._point):
 
         localcoords.setCell(cell)
-
-        # Apply rotation
-        if not cell._rotation is None:
-          point = localcoords._point
-          point._coords = np.dot(cell._rotation_matrix,
-                                 np.transpose(point._coords))
 
         # 'material' type Cell - lowest level, terminate search for Cell
         if cell._type == 'material':
@@ -497,6 +491,14 @@ class Universe(object):
         else:
 
           fill = cell._fill
+
+          # Apply rotation
+          if not cell._rotation is None:
+            point = localcoords._point
+            point._coords = np.dot(cell._rotation_matrix, point._coords)
+            print('rotated point in cell {0}'.format(cell._name))
+            print('{0}'.format(point))
+            print localcoords.getHeadNode()
 
           if isinstance(fill, Lattice):
             next_coords = LatCoords(localcoords._point)
@@ -622,8 +624,11 @@ class Lattice(Universe):
     self._cell_offsets = None
     self._num_regions = None
     self._offset = np.zeros(3, dtype=np.float64)
+
     self._neighbor_universes = None
     self._neighbor_depth = 1
+    self._neighbors_hash = None
+    self._unique_neighbors_hash = None
 
     self.setId(lattice_id)
     self.setName(name)
@@ -656,6 +661,8 @@ class Lattice(Universe):
       clone._offset = copy.deepcopy(self._offset, memo)
       clone._neighbor_universes = copy.deepcopy(self._neighbor_universes, memo)
       clone._neighbor_depth = self._neighbor_depth
+      clone._neighbors_hash = copy.deepcopy(self._neighbors_hash)
+      clone._unique_neighbors_hash = copy.deepcopy(self._unique_neighbors_hash)
 
       memo[id(self)] = clone
 
@@ -856,19 +863,33 @@ class Lattice(Universe):
 
   def getNeighborsHash(self, lat_x, lat_y, lat_z=None):
 
-    neighbors_universes = self.getNeighbors(lat_x, lat_y, lat_z)
-    neighbors_universes.sort()
-    raw_data = neighbors_universes.view()
-    neighbors_hash = int(sha1(raw_data).hexdigest(), 16)
+    if lat_z == None:
+      lat_z = 0
+
+    if self._neighbors_hash[lat_x, lat_y, lat_z] == 0:
+      neighbors_universes = self.getNeighbors(lat_x, lat_y, lat_z)
+      neighbors_universes.sort()
+      raw_data = neighbors_universes.view()
+      neighbors_hash = int(sha1(raw_data).hexdigest(), 16)
+    else:
+      neighbors_hash = self._neighbors_hash[lat_x, lat_y, lat_z]
+
     return neighbors_hash
 
 
   def getUniqueNeighborsHash(self, lat_x, lat_y, lat_z=None):
 
-    neighbors_universes = self.getUniqueNeighbors(lat_x, lat_y, lat_z)
-    neighbors_universes.sort()
-    raw_data = neighbors_universes.view()
-    neighbors_hash = int(sha1(raw_data).hexdigest(), 16)
+    if lat_z == None:
+      lat_z = 0
+
+    if self._unique_neighbors_hash[lat_x, lat_y, lat_z] == 0:
+      neighbors_universes = self.getUniqueNeighbors(lat_x, lat_y, lat_z)
+      neighbors_universes.sort()
+      raw_data = neighbors_universes.view()
+      neighbors_hash = int(sha1(raw_data).hexdigest(), 16)
+    else:
+      neighbors_hash = self._unique_neighbors_hash[lat_x, lat_y, lat_z]
+
     return neighbors_hash
 
 
@@ -1053,11 +1074,12 @@ class Lattice(Universe):
               'is a negative value'.format(self._id, dim)
         raise ValueError(msg)
 
+    # Copy the dimension into a NumPy array
     self._dimension = np.ones(3, dtype=np.int64)
 
     for i in range(len(dimension)):
       self._dimension[i] = dimension[i]
-        
+
 
   def setWidth(self, width):
 
@@ -1189,6 +1211,33 @@ class Lattice(Universe):
 
     for universe_id, universe in unique_universes.items():
       universe.buildNeighbors()
+
+    # Initialize Neighbors Hash
+    self._neighbors_hash = np.zeros(tuple(self._dimension), dtype=np.int)
+    self._unique_neighbors_hash =np.zeros(tuple(self._dimension), dtype=np.int)
+
+    neighbors_counter = 0
+    unique_neighbors_counter = 0
+    neighbors_hash = dict()
+    unique_neighbors_hash = dict()
+
+    for i in range(self._dimension[0]):
+      for j in range(self._dimension[1]):
+        for k in range(self._dimension[2]):
+
+          hash = self.getNeighborsHash(i,j,k)
+          unique_hash = self.getUniqueNeighborsHash(i,j,k)
+
+          if hash not in neighbors_hash:
+            neighbors_hash[hash] = neighbors_counter
+            neighbors_counter += 1
+
+          if unique_hash not in unique_neighbors_hash:
+            unique_neighbors_hash[unique_hash] = unique_neighbors_counter
+            unique_neighbors_counter += 1
+
+          self._neighbors_hash[i,j,k] = neighbors_hash[hash]
+          self._unique_neighbors_hash[i,j,k] = unique_neighbors_hash[unique_hash]
 
 
   def findCell(self, localcoords):
@@ -1416,6 +1465,8 @@ class Cell(object):
     self._volume = np.float64(0.)
 
     self._neighbor_cells = np.empty(shape=(0,), dtype=Cell)
+    self._neighbors_hash = None
+    self._unique_neighbors_hash = None
 
     # Keys   - Surface IDs
     # Values - (halfpsace, Surface) tuples
@@ -1461,6 +1512,8 @@ class Cell(object):
       clone._volume_fraction = self._volume_fraction
       clone._volume = self._volume
       clone._neighbor_cells = copy.deepcopy(self._neighbor_cells, memo)
+      clone._neighbors_hash = self._neighbors_hash
+      clone._unique_neighbors_hash = self._unique_neighbors_hash
 
       clone._surfaces = dict()
       for surface_id in self._surfaces.keys():
@@ -1563,19 +1616,25 @@ class Cell(object):
 
 
   def getNeighborsHash(self):
-    neighbor_cells = np.copy(self.getNeighbors())
-    neighbor_cells.sort()
-    raw_data = neighbor_cells.view()
-    neighbors_hash = int(sha1(raw_data).hexdigest(), 16)
-    return neighbors_hash
+
+    if self._neighbors_hash is None:
+      neighbor_cells = np.copy(self.getNeighbors())
+      neighbor_cells.sort()
+      raw_data = neighbor_cells.view()
+      self._neighbors_hash = int(sha1(raw_data).hexdigest(), 16)
+
+    return self._neighbors_hash
 
 
   def getUniqueNeighborsHash(self):
-    neighbor_cells = np.copy(self.getUniqueNeighbors())
-    neighbor_cells.sort()
-    raw_data = neighbor_cells.view()
-    neighbors_hash = int(sha1(raw_data).hexdigest(), 16)
-    return neighbors_hash
+
+    if self._unique_neighbors_hash is None:
+      neighbor_cells = np.copy(self.getUniqueNeighbors())
+      neighbor_cells.sort()
+      raw_data = neighbor_cells.view()
+      self._unique_neighbors_hash = int(sha1(raw_data).hexdigest(), 16)
+
+    return self._unique_neighbors_hash
 
 
   def setId(self, cell_id=None):
@@ -1656,9 +1715,9 @@ class Cell(object):
     self._rotation = rotation
 
     # Compute rotation angles in x,y,z directions
-    phi = self._rotation[0] * math.pi / 180.
-    theta = self._rotation[1] * math.pi / 180.
-    psi = self._rotation[2] * math.pi / 180.
+    phi = -self._rotation[0] * math.pi / 180.
+    theta = -self._rotation[1] * math.pi / 180.
+    psi = -self._rotation[2] * math.pi / 180.
 
     # Calculate rotation matrix based on angles given
     self._rotation_matrix = np.zeros((3,3), dtype=np.float64)
@@ -1672,7 +1731,7 @@ class Cell(object):
     self._rotation_matrix[1,2] = math.sin(phi) * math.cos(theta)
     self._rotation_matrix[2,0] = math.sin(phi) * math.sin(psi) + \
                                  math.cos(phi) * math.sin(theta) * math.cos(psi)
-    self._rotation_matrix[2,1] = math.sin(phi) * math.cos(psi) + \
+    self._rotation_matrix[2,1] = -math.sin(phi) * math.cos(psi) + \
                                  math.cos(phi) * math.sin(theta) * math.sin(psi)
     self._rotation_matrix[2,2] = math.cos(phi) * math.cos(theta)
 

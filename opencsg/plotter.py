@@ -146,7 +146,7 @@ def plot_materials(geometry, plane='xy', offset=0., gridsize=250):
 
   # Get the number of Cells filled with Materials
   materials = geometry.getAllMaterials()
-  num_materials = len(materials)
+  num_materials = len(materials) + 10
 
   # Create array of equally spaced randomized floats as a color map for plots
   # Seed the NumPy random number generator to ensure reproducible color maps

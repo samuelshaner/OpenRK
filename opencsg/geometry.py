@@ -308,6 +308,8 @@ class Geometry(object):
 
     for region in range(self._num_regions):
 
+      print region
+
       # Build lists of neighbor Cells/Universes
       neighbors = self.getNeighborsHash(region)
       unique_neighbors = self.getUniqueNeighborsHash(region)
