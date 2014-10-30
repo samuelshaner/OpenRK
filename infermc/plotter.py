@@ -194,7 +194,7 @@ def scatter_micro_xs(extractor, filename, nuclides='all', xs_types='all',
   if xs_types == 'all':
     xs_types = infermc.xs_types
 
-  # Creat a list of colors the length of the number of domains to plot
+  # Create a list of colors the length of the number of domains to plot
   if len(colors) == 1:
     colors = [colors[0] for i in range(len(domain_types))]
 
@@ -235,17 +235,22 @@ def scatter_micro_xs(extractor, filename, nuclides='all', xs_types='all',
           color = next(color_maps[colors[j]])
 
           # Get the MultiGroupXS object for this domain
-          xs = extractor.getMultiGroupXS(xs_type, domain_id, domain_type)
+          try:
+            xs = extractor.getMultiGroupXS(xs_type, domain_id, domain_type)
 
-          if not xs.containsNuclide(nuclide):
-            continue
+            if not xs.containsNuclide(nuclide):
+              continue
 
-          # Get the cross-section data for all subdomain and store to the array
-          data = xs.getXS(groups=energy_groups, nuclides=[nuclide])
+            # Get the cross-section data for all subdomain and store to the array
+            data = xs.getXS(groups=energy_groups, nuclides=[nuclide])
 
-          # Plot the data for this domain
-          plt.scatter(data[:,0,...].ravel(), data[:,1,...].ravel(), c=color,
-                      edgecolors='k', s=SCATTER_SIZES[domain_type])
+            # Plot the data for this domain
+            plt.scatter(data[:,0,...].ravel(), data[:,1,...].ravel(), c=color,
+                        edgecolors='k', s=SCATTER_SIZES[domain_type])
+
+          except (KeyError, ValueError):
+            # If the xs does not exist, continue
+            pass
 
       plt.xlabel('Group {0} [barns]'.format(energy_groups[0]))
       plt.ylabel('Group {0} [barns]'.format(energy_groups[1]))

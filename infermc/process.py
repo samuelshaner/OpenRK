@@ -288,18 +288,21 @@ class XSTallyExtractor(object):
       contains_filters = True
 
       # Iterate over the Filters requested by the user
-      for filter in filters:
-        if not filter in test_tally._filters:
+      for filter in test_tally._filters:
+        if not filter in filters:
           contains_filters = False
           break
 
+
       contains_nuclides = True
 
+      '''
       # Iterate over the Nuclides requested by the user
-      for nuclide in nuclides:
-        if not nuclide in test_tally._nuclides:
+      for nuclide in test_tally._nuclides:
+        if not nuclide in nuclides:
           contains_nuclides = False
           break
+      '''
 
       # If the Tally contained all Filters and Nuclides, return the Tally
       if contains_filters and contains_nuclides:
@@ -596,13 +599,16 @@ class XSTallyExtractor(object):
 class MicroXSTallyExtractor(XSTallyExtractor):
 
 
-  def extractAllMultiGroupXS(self, energy_groups, domain_type='distribcell', corr=False):
+  def extractAllMultiGroupXS(self, energy_groups, domain_type='distribcell',
+                             nuclides='all', ignore_missing=True, corr=False):
 
     for xs_type in infermc.xs_types:
-      self.extractMultiGroupXS(xs_type, energy_groups, domain_type, corr)
+      self.extractMultiGroupXS(xs_type, energy_groups, domain_type,
+                               nuclides, ignore_missing, corr)
 
 
-  def extractMultiGroupXS(self, xs_type, energy_groups, domain_type='distribcell', corr=False):
+  def extractMultiGroupXS(self, xs_type, energy_groups, domain_type='distribcell',
+                          nuclides='all', ignore_missing=True, corr=False):
 
     # Add nested dictionary for this domain type if needed
     if not domain_type in self._multigroup_xs.keys():
@@ -621,18 +627,33 @@ class MicroXSTallyExtractor(XSTallyExtractor):
     # Iterate and create the MultiGroupXS for each domain
     for domain in domains:
 
-      # Add nested dictionary for this domain if needed
-      if not domain._id in self._multigroup_xs[domain_type].keys():
-        self._multigroup_xs[domain_type][domain._id] = dict()
+      try:
 
-      # Build the MultiGroupXS for this domain
-      xs = self.createMultiGroupXS(xs_type, energy_groups, domain, domain_type, corr)
+        # Build the MultiGroupXS for this domain
+        xs = self.createMultiGroupXS(xs_type, energy_groups, domain,
+                                     domain_type, nuclides, corr)
 
-      # Store a handle to the MultiGroupXS object in the nested dictionary
-      self._multigroup_xs[domain_type][domain._id][xs_type] = xs
+        # Add nested dictionary for this domain if needed
+        if not domain._id in self._multigroup_xs[domain_type].keys():
+          self._multigroup_xs[domain_type][domain._id] = dict()
+
+        # Store a handle to the MultiGroupXS object in the nested dictionary
+        self._multigroup_xs[domain_type][domain._id][xs_type] = xs
+
+      except (KeyError, ValueError):
+
+        if ignore_missing:
+          pass
+
+        else:
+          msg = 'Unable to build {0} xs for domain {1} {2} since ' \
+                'the necessary tallies were not found in the ' \
+                'statepoint'.format(xs_type, domain_type, domain._id)
+          raise KeyError(msg)
 
 
-  def createMultiGroupXS(self, xs_type, energy_groups, domain, domain_type='distribcell', corr=False):
+  def createMultiGroupXS(self, xs_type, energy_groups, domain,
+                         domain_type='distribcell', nuclides='all', corr=False):
 
     if self._statepoint is None:
       msg = 'Unable to get cross-sections since the TallyExtractor ' \
@@ -650,14 +671,27 @@ class MicroXSTallyExtractor(XSTallyExtractor):
     # Extract a list of tuples of Nuclides and number densities (at/b-cm)
     # of all Nuclides in the domain of interest
     nuclides_densities = domain.getAllNuclides().values()
-    nuclides = list()
     densities = list()
 
     for nuclide_density in nuclides_densities:
-      nuclides.append(nuclide_density[0])
-      densities.append(nuclide_density[1])
+
+      nuclide = nuclide_density[0]
+      density = nuclide_density[1]
+
+      if nuclides == 'all':
+        # Move nuclide to end of list ensure ordering of nuclides is
+        # identical to the ordering of the nuclides in the domain
+        nuclides.append(nuclides.pop(nuclides.index(nuclide)))
+        densities.append(density)
+
+      elif nuclide in nuclides:
+        # Move nuclide to end of list ensure ordering of nuclides is
+        # identical to the ordering of the nuclides in the domain
+        nuclides.append(nuclides.pop(nuclides.index(nuclide)))
+        densities.append(density)
 
     tot_density = 1.
+
 
     if xs_type == 'total':
 
@@ -783,9 +817,13 @@ class MicroXSTallyExtractor(XSTallyExtractor):
       msg = 'Unable to get diffusion coefficient'
       raise ValueError(msg)
 
-    # Compute the cross-section
+    # FIXME!!!! - this does not work for simulations with a subset of nuclides
+    # Add Nuclides and densities to the MicroXS
     multigroup_xs.addNuclides(nuclides, densities)
-    multigroup_xs.addNuclide(openmc.Nuclide('total'), tot_density)
+    if nuclides == 'all':
+      multigroup_xs.addNuclide(openmc.Nuclide('total'), tot_density)
+
+    # Compute the cross-section
     multigroup_xs.computeXS(corr)
 
     # Build offsets such that a user can query the MultiGroupXS for any region
