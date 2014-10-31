@@ -414,10 +414,20 @@ class MultiGroupXS(object):
     # Clone the MultiGroupXS
     domain_avg_xs = copy.deepcopy(self)
 
-    # Make clone a 'cell' MultiGroupXS and clear subdomain offsets
+    # Make clone a 'cell' MultiGroupXS
     domain_avg_xs._domain_type = 'cell'
+
+    # Clear subdomain offsets
     domain_avg_xs._subdomain_offsets = dict()
     domain_avg_xs.domain = domain_avg_xs._domain
+
+    # FIXME
+    # Rewrite all subdomains to point to zero
+#    offsets = self.getSubDomainOffsets(subdomains)
+#    subdomains = self.getSubDomains(offsets)
+#    for subdomain in subdomains:
+#      domain_avg_xs.setSubDomainOffset(subdomain, 0)
+
     domain_avg_xs.findDomainOffset()
 
     # Get an array of the cross-sections for each subdomain of interest
