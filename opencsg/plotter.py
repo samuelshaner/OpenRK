@@ -23,6 +23,18 @@ import os
 SUBDIRECTORY = "plots/"
 
 
+def get_unique_integers(data):
+  '''Replace unique values in array with integers from monotonic sequence'''
+
+  # Inspired by the following post on StackOverflow:
+  # http://stackoverflow.com/questions/15709169/numpy-replace-groups-of-elements-with-integers-incrementally
+
+  values, indices, inverse = np.unique(data, True, True)
+  values, inverse = np.unique(indices[inverse], False, True)
+  inverse = np.reshape(inverse, data.shape)
+  return inverse
+
+
 def plot_cells(geometry, plane='xy', offset=0., gridsize=250):
 
   global SUBDIRECTORY
@@ -59,18 +71,8 @@ def plot_cells(geometry, plane='xy', offset=0., gridsize=250):
 
   print('Plotting the Cells...')
 
-  # Get the number of Cells filled with Materials
-  cells = geometry.getAllMaterialCells()
-  num_cells = len(cells)
-
-  # Create array of equally spaced randomized floats as a color map for plots
-  # Seed the NumPy random number generator to ensure reproducible color maps
-  numpy.random.seed(1)
-  colors = np.linspace(0., 1., num_cells, endpoint=False)
-  numpy.random.shuffle(colors)
-
   # Initialize a NumPy array for the surface colors
-  surface = numpy.zeros((gridsize, gridsize))
+  surface = numpy.zeros((gridsize, gridsize), dtype=np.int64)
 
   # Retrieve the pixel coordinates
   coords = get_pixel_coords(geometry, plane, offset, gridsize)
@@ -86,11 +88,24 @@ def plot_cells(geometry, plane='xy', offset=0., gridsize=250):
       else:
         cell = geometry.findCell(x=offset, y=coords['y'][i], z=coords['z'][j])  
 
-      # If we did not find a Cell for this region, use a NaN "bad" number color
+      # If we did not find a Cell for this region, use a -1 "bad" number color
       if cell is None:
-        surface[j][i] = np.nan
+        surface[j][i] = -1
       else:
-        surface[j][i] = colors[cell._id % num_cells]
+        surface[j][i] = cell._id
+
+  # Get the number of Cells in the plot
+  num_colors = np.unique(surface).size
+
+  # Create array of equally spaced randomized floats as a color map for plots
+  # Seed the NumPy random number generator to ensure reproducible color maps
+  numpy.random.seed(1)
+  colors = np.arange(0., num_colors, 1, dtype=np.int64)
+  numpy.random.shuffle(colors)
+
+  # Replace Cell IDs with monotonically increasing integers (starting at 0)
+  surface = get_unique_integers(surface)
+  surface = colors[surface]
 
   # Make Matplotlib color "bad" numbers (ie, NaN, INF) with transparent pixels
   cmap = plt.get_cmap('spectral')
@@ -144,16 +159,6 @@ def plot_materials(geometry, plane='xy', offset=0., gridsize=250):
 
   print('Plotting the Materials...')
 
-  # Get the number of Cells filled with Materials
-  materials = geometry.getAllMaterials()
-  num_materials = len(materials) + 10
-
-  # Create array of equally spaced randomized floats as a color map for plots
-  # Seed the NumPy random number generator to ensure reproducible color maps
-  numpy.random.seed(1)
-  colors = np.linspace(0., 1., num_materials, endpoint=False)
-  numpy.random.shuffle(colors)
-
   # Initialize a NumPy array for the surface colors
   surface = numpy.zeros((gridsize, gridsize))
 
@@ -171,11 +176,24 @@ def plot_materials(geometry, plane='xy', offset=0., gridsize=250):
       else:
         cell = geometry.findCell(x=offset, y=coords['y'][i], z=coords['z'][j])  
 
-      # If we did not find a Cell for this region, use a NaN "bad" number color
+      # If we did not find a Cell for this region, use a -1 "bad" number color
       if cell is None:
-        surface[j][i] = np.nan
+        surface[j][i] = -1
       else:
-        surface[j][i] = colors[cell._fill._id % num_materials]
+        surface[j][i] = cell._fill._id
+
+  # Get the number of Materials in the plot
+  num_colors = np.unique(surface).size
+
+  # Create array of equally spaced randomized floats as a color map for plots
+  # Seed the NumPy random number generator to ensure reproducible color maps
+  numpy.random.seed(1)
+  colors = np.arange(0., num_colors, 1, dtype=np.int64)
+  numpy.random.shuffle(colors)
+
+  # Replace Material IDs with monotonically increasing integers (starting at 0)
+  surface = get_unique_integers(surface)
+  surface = colors[surface]
 
   # Make Matplotlib color "bad" numbers (ie, NaN, INF) with transparent pixels
   cmap = plt.get_cmap('spectral')
@@ -228,16 +246,6 @@ def plot_regions(geometry, plane='xy', offset=0., gridsize=250):
 
   print('Plotting the Regions...')
 
-  # Initialize the offsets used for computing region IDs
-  geometry.initializeCellOffsets()
-  num_regions = geometry._num_regions
-
-  # Create array of equally spaced randomized floats as a color map for plots
-  # Seed the NumPy random number generator to ensure reproducible color maps
-  numpy.random.seed(1)
-  colors = np.linspace(0., 1., num_regions, endpoint=False)
-  numpy.random.shuffle(colors)
-
   # Initialize a NumPy array for the surface colors
   surface = numpy.zeros((gridsize, gridsize))
 
@@ -255,11 +263,24 @@ def plot_regions(geometry, plane='xy', offset=0., gridsize=250):
       else:
         region_id = geometry.getRegionId(x=offset, y=coords['y'][i], z=coords['z'][j])
 
-      # If we did not find a region for this region, use a NaN "bad" number color
+      # If we did not find a region for this region, use a -1 "bad" number color
       if np.isnan(region_id):
-        surface[j][i] = region_id
+        surface[j][i] = -1
       else:
-       surface[j][i] = colors[region_id % num_regions]
+       surface[j][i] = region_id
+
+  # Get the number of regions in the plot
+  num_colors = np.unique(surface).size
+
+  # Create array of equally spaced randomized floats as a color map for plots
+  # Seed the NumPy random number generator to ensure reproducible color maps
+  numpy.random.seed(1)
+  colors = np.arange(0., num_colors, 1, dtype=np.int64)
+  numpy.random.shuffle(colors)
+
+  # Replace region IDs with monotonically increasing integers (starting at 0)
+  surface = get_unique_integers(surface)
+  surface = colors[surface]
 
   # Make Matplotlib color "bad" numbers (ie, NaN, INF) with transparent pixels
   cmap = plt.get_cmap('spectral')
@@ -277,7 +298,7 @@ def plot_regions(geometry, plane='xy', offset=0., gridsize=250):
 
 
 def plot_neighbor_cells(geometry, plane='xy', offset=0.,
-                        gridsize=250, unique=False):
+                        gridsize=250, first_level=0, unique=False):
 
   global SUBDIRECTORY
 
@@ -319,17 +340,6 @@ def plot_neighbor_cells(geometry, plane='xy', offset=0.,
   # Build the neighbor Cells/Universes
   geometry.buildNeighbors()
 
-  if unique:
-    num_neighbors = geometry._num_unique_neighbors
-  else:
-    num_neighbors = geometry._num_neighbors
-
-  # Create array of equally spaced randomized floats as a color map for plots
-  # Seed the NumPy random number generator to ensure reproducible color maps
-  numpy.random.seed(1)
-  colors = np.linspace(0., 1., num_neighbors, endpoint=False)
-  numpy.random.shuffle(colors)
-
   # Initialize a NumPy array for the surface colors
   surface = numpy.zeros((gridsize, gridsize))
 
@@ -347,17 +357,28 @@ def plot_neighbor_cells(geometry, plane='xy', offset=0.,
       else:
         region_id = geometry.getRegionId(x=offset, y=surf['y'][i], z=surf['z'][j])
 
-      # If we did not find a region for this region, use a NaN "bad" number color
+      # If we did not find a region for this region, use a -1 "bad" number color
       if np.isnan(region_id):
-        surface[j][i] = region_id
+        surface[j][i] = -1
       elif unique:
-        neighbors = geometry._regions_to_unique_neighbors[region_id]
-        neighbor_id = geometry._unique_neighbor_ids[neighbors]
-        surface[j][i] = colors[neighbor_id % num_neighbors]
+        neighbors_hash = geometry.getUniqueNeighborsHash(region_id, first_level)
+        surface[j][i] = neighbors_hash
       else:
-        neighbors = geometry._regions_to_neighbors[region_id]
-        neighbor_id = geometry._neighbor_ids[neighbors]
-        surface[j][i] = colors[neighbor_id % num_neighbors]
+        neighbors_hash = geometry.getNeighborsHash(region_id, first_level)
+        surface[j][i] = neighbors_hash
+
+  # Get the number of neighbors in the plot
+  num_colors = np.unique(surface).size
+
+  # Create array of equally spaced randomized floats as a color map for plots
+  # Seed the NumPy random number generator to ensure reproducible color maps
+  numpy.random.seed(1)
+  colors = np.arange(0., num_colors, 1, dtype=np.int64)
+  numpy.random.shuffle(colors)
+
+  # Replace neighbor IDs with monotonically increasing integers (starting at 0)
+  surface = get_unique_integers(surface)
+  surface = colors[surface]
 
   # Make Matplotlib color "bad" numbers (ie, NaN, INF) with transparent pixels
   cmap = plt.get_cmap('spectral')
@@ -388,6 +409,10 @@ def get_pixel_coords(geometry, plane, offset, gridsize):
   ycoords = None
   zcoords = None
   coords = dict()
+
+  # FIXME: This is a hack to only plot the top right corner
+#  bounds[0] = 50.
+#  bounds[2] = 50.
 
   if plane == 'xy':
     xcoords = np.linspace(bounds[0], bounds[1], gridsize)

@@ -496,9 +496,9 @@ class Universe(object):
           if not cell._rotation is None:
             point = localcoords._point
             point._coords = np.dot(cell._rotation_matrix, point._coords)
-            print('rotated point in cell {0}'.format(cell._name))
-            print('{0}'.format(point))
-            print localcoords.getHeadNode()
+#            print('rotated point in cell {0}'.format(cell._name))
+#            print('{0}'.format(point))
+#            print localcoords.getHeadNode()
 
           if isinstance(fill, Lattice):
             next_coords = LatCoords(localcoords._point)
@@ -2448,7 +2448,7 @@ class UnivCoords(LocalCoords):
       return self._next.getUniqueNeighbors(neighbors)
 
 
-  def getNeighborsHash(self, neighbors=None):
+  def getNeighborsHash(self, neighbors=None, first_level=0):
 
     if neighbors is None:
       neighbors = list()
@@ -2458,12 +2458,12 @@ class UnivCoords(LocalCoords):
 
     # Make recursive call to next LocalCoords or return
     if self._next is None:
-      return hash(tuple(neighbors))
+      return hash(tuple(neighbors)[first_level:])
     else:
-      return self._next.getNeighborsHash(neighbors=neighbors)
+      return self._next.getNeighborsHash(neighbors, first_level)
 
 
-  def getUniqueNeighborsHash(self, neighbors=None):
+  def getUniqueNeighborsHash(self, neighbors=None, first_level=0):
 
     if neighbors is None:
       neighbors = list()
@@ -2473,9 +2473,9 @@ class UnivCoords(LocalCoords):
 
     # Make recursive call to next LocalCoords or return
     if self._next is None:
-      return hash(tuple(neighbors))
+      return hash(tuple(neighbors)[first_level:])
     else:
-      return self._next.getUniqueNeighborsHash(neighbors=neighbors)
+      return self._next.getUniqueNeighborsHash(neighbors, first_level)
 
 
   def setUniverse(self, universe):
@@ -2594,7 +2594,7 @@ class LatCoords(LocalCoords):
       return self._next.getUniqueNeighbors(neighbors)
 
 
-  def getNeighborsHash(self, neighbors=None):
+  def getNeighborsHash(self, neighbors=None, first_level=0):
 
     if neighbors is None:
       neighbors = list()
@@ -2607,12 +2607,12 @@ class LatCoords(LocalCoords):
 
     # Make recursive call to next LocalCoords if it exists or return
     if self._next is None:
-      return hash(tuple(neighbors))
+      return hash(tuple(neighbors)[first_level:])
     else:
-      return self._next.getNeighborsHash(neighbors=neighbors)
+      return self._next.getNeighborsHash(neighbors, first_level)
 
 
-  def getUniqueNeighborsHash(self, neighbors=None):
+  def getUniqueNeighborsHash(self, neighbors=None, first_level=0):
 
     if neighbors is None:
       neighbors = list()
@@ -2625,9 +2625,9 @@ class LatCoords(LocalCoords):
 
     # Make recursive call to next LocalCoords if it exists or return
     if self._next is None:
-      return hash(tuple(neighbors))
+      return hash(tuple(neighbors)[first_level:])
     else:
-      return self._next.getUniqueNeighborsHash(neighbors)
+      return self._next.getUniqueNeighborsHash(neighbors, first_level)
 
 
   def setLattice(self, lattice):
