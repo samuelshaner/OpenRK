@@ -42,6 +42,7 @@ def get_color_maps(geometry):
   num_materials = len(materials)
   num_cells = len(cells)
   num_universes = len(universes)
+  num_regions = geometry._num_regions
 
   # Create arrays of equally spaced randomized floats as a color map for plots
   # Seed the NumPy random number generator to ensure reproducible color maps

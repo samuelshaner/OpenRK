@@ -50,6 +50,7 @@ class MicroXS(infermc.MultiGroupXS):
       clone._colors = copy.deepcopy(self._colors, memo)
       clone._subdomain_offsets = copy.deepcopy(self._subdomain_offsets, memo)
       clone._offset = copy.deepcopy(self._offset, memo)
+      clone._subdomain_neighbors = copy.deepcopy(self._subdomain_neighbors, memo)
       clone._densities = np.zeros(0)
       clone._num_nuclides = 0
 

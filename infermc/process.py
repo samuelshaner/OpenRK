@@ -229,6 +229,28 @@ class XSTallyExtractor(object):
     return self._all_paths[region]
 
 
+  def buildNeighborMaps(self, first_level=0, unique=False):
+
+    distribcell_xs = self._multigroup_xs['distribcell']
+    geometry = self._opencsg_geometry
+    geometry.buildNeighbors()
+
+    for domain_id in distribcell_xs:
+      for xs_type in distribcell_xs[domain_id]:
+
+        multigroup_xs = distribcell_xs[domain_id][xs_type]
+        subdomains = multigroup_xs.getSubDomains()
+
+        for subdomain in subdomains:
+
+          if unique:
+            neighbor = geometry.getUniqueNeighborsHash(subdomain, first_level)
+          else:
+            neighbor = geometry.getNeighborsHash(subdomain, first_level)
+
+          multigroup_xs.setSubDomainNeighbor(subdomain, neighbor)
+
+
   def getTally(self, score, filters, nuclides=[],
                estimator='tracklength', label=''):
 

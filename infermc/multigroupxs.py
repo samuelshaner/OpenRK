@@ -93,6 +93,11 @@ class MultiGroupXS(object):
     self._subdomain_offsets = dict()
     self._offset = None
 
+    # A dictionary used to store neighbor IDs for distribcell subdomains
+    # Keys   - Subdomain ID (Region ID for districells)
+    # Values - (Unique) neighbor ID
+    self._subdomain_neighbors = dict()
+
     if not domain_type is None:
       self.domain_type = domain_type
 
@@ -120,6 +125,7 @@ class MultiGroupXS(object):
       clone._colors = copy.deepcopy(self._colors, memo)
       clone._subdomain_offsets = copy.deepcopy(self._subdomain_offsets, memo)
       clone._offset = copy.deepcopy(self._offset, memo)
+      clone._subdomain_neighbors = copy.deepcopy(self._subdomain_neighbors, memo)
 
       clone._tallies = dict()
       for tally_type, tally in self._tallies.items():
@@ -205,6 +211,10 @@ class MultiGroupXS(object):
     self._subdomain_offsets[domain_id] = offset
 
 
+  def setSubDomainNeighbor(self, domain_id, neighbor):
+    self._subdomain_neighbors[domain_id] = neighbor
+
+
   @abc.abstractmethod
   def createTallies(self, scores, filters, keys, estimator):
 
@@ -287,13 +297,14 @@ class MultiGroupXS(object):
   def getSubDomainOffsets(self, subdomains='all'):
 
     if subdomains == 'all':
-      offsets = self._subdomain_offsets.values()
+      offsets = np.arange(self._xs.shape[1])
+#      offsets = self._subdomain_offsets.values()
 
     else:
       offsets = np.zeros(len(subdomains), dtype=np.int64)
 
       for i, subdomain in enumerate(subdomains):
-        if self._subdomain_offsets.has_key(subdomain):
+        if subdomain in self._subdomain_offsets:
           offsets[i] = self._subdomain_offsets[subdomain]
         else:
           msg = 'Unable to get subdomain index for subdomain {0} since it is ' \
@@ -306,8 +317,7 @@ class MultiGroupXS(object):
   def getSubDomains(self, offsets='all'):
 
     if offsets == 'all':
-      num_subdomains = self._xs.shape[1]
-      offsets = np.arange(0, num_subdomains)
+      subdomains = self._subdomain_offsets.keys()
 
     else:
       subdomains = np.zeros(len(offsets), dtype=np.int64)
@@ -324,6 +334,27 @@ class MultiGroupXS(object):
           raise ValueError(msg)
 
     return subdomains
+
+
+  def getSubDomainNeighbors(self, subdomains='all'):
+
+    # FIXME
+    if subdomains == 'all':
+      offsets = np.arange(self._xs.shape[1])
+#      offsets = self._subdomain_offsets.values()
+
+    else:
+      neighbors = np.zeros(len(subdomains), dtype=np.int64)
+
+      for i, subdomain in enumerate(subdomains):
+        if subdomain in self._subdomain_neighbors:
+          neighbors[i] = self._subdomain_neighbors[subdomain]
+        else:
+          msg = 'Unable to get subdomain neighbor for subdomain {0} since it is ' \
+                'not one of the subdomains in the cross-section'.format(subdomain)
+          raise ValueError(msg)
+
+    return neighbors
 
 
   def getXS(self, groups='all', subdomains='all', metric='mean'):

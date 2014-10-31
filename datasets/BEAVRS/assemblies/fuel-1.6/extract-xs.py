@@ -26,24 +26,41 @@ for batch in batches:
   micro_extractor.extractAllMultiGroupXS(groups, 'distribcell')
   micro_extractor.checkXS()
 
-#  plotter.scatter_micro_xs(micro_extractor,
-#                           domain_types=['distribcell', 'material'],
-#                           colors=['cell', 'material'],
-#                           filename='{0}-batch'.format(batch))
+  plotter.scatter_micro_xs(micro_extractor,
+                           domain_types=['distribcell', 'material'],
+                           colors=['cell', 'material'],
+                           filename='{0}-batch'.format(batch))
 
-#  materials = micro_extractor._openmc_geometry.getAllMaterials()
+  materials = micro_extractor._openmc_geometry.getAllMaterials()
 
   # DUMP-TO-FILE and PRINT XS
-#  for material in materials:
-#    for xs_type in xs_types:
-#      xs = micro_extractor._multigroup_xs['material'][material._id][xs_type]
-#      xs.dumpToFile(filename='material-{0}-{1}'.format(material._id, xs_type))
-#      xs.exportResults()
-#      xs.printPDF(filename='material-{0}-{1}'.format(material._id, xs_type))
+  for material in materials:
+    for xs_type in xs_types:
+      xs = micro_extractor._multigroup_xs['material'][material._id][xs_type]
+      xs.dumpToFile(filename='material-{0}-{1}'.format(material._id, xs_type))
+      xs.exportResults()
+      xs.printPDF(filename='material-{0}-{1}'.format(material._id, xs_type))
+
+  micro_extractor.buildNeighborMaps(unique=False, first_level=0)
 
   test_xs = micro_extractor._multigroup_xs['distribcell'][10000]['fission']
   avg_xs = test_xs.getDomainAveragedXS()
   avg_xs.printPDF(filename='distribcell-10000-fission')
+
+
+  # Plotting data colored by neighbors
+  import matplotlib.pyplot as plt
+  data = test_xs._xs[0,...]
+  offsets = test_xs.getSubDomainOffsets()
+  subdomains = test_xs.getSubDomains(offsets)
+  neighbors = test_xs.getSubDomainNeighbors(subdomains)
+  fig = plt.figure()
+  nuclide = test_xs.getNuclideIndices([openmc.Nuclide('U-235', '70c')])
+  plt.scatter(x=data[:,0,...,nuclide].ravel(),
+              y=data[:,1,...,nuclide].ravel(),
+              c=neighbors)
+  plt.savefig('test-neighbors.png')
+
 
   openmc.reset_auto_ids()
   del micro_extractor, statepoint
