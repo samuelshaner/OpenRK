@@ -298,7 +298,6 @@ class MultiGroupXS(object):
 
     if subdomains == 'all':
       offsets = np.arange(self._xs.shape[1])
-#      offsets = self._subdomain_offsets.values()
 
     else:
       offsets = np.zeros(len(subdomains), dtype=np.int64)
@@ -317,42 +316,38 @@ class MultiGroupXS(object):
   def getSubDomains(self, offsets='all'):
 
     if offsets == 'all':
-      subdomains = self._subdomain_offsets.keys()
+      offsets = self.getSubDomainOffsets()
 
-    else:
-      subdomains = np.zeros(len(offsets), dtype=np.int64)
+    subdomains = np.zeros(len(offsets), dtype=np.int64)
 
-      keys = self._subdomain_offsets.keys()
-      values = self._subdomain_offsets.values()
+    keys = self._subdomain_offsets.keys()
+    values = self._subdomain_offsets.values()
 
-      for i, offset in enumerate(offsets):
-        if offset in values:
-          subdomains[i] = keys[values.index(offset)]
-        else:
-          msg = 'Unable to get subdomain for offset {0} since it is ' \
-                'not one of the offsets in the cross-section'.format(offset)
-          raise ValueError(msg)
+    for i, offset in enumerate(offsets):
+      if offset in values:
+        subdomains[i] = keys[values.index(offset)]
+      else:
+        msg = 'Unable to get subdomain for offset {0} since it is ' \
+              'not one of the offsets in the cross-section'.format(offset)
+        raise ValueError(msg)
 
     return subdomains
 
 
   def getSubDomainNeighbors(self, subdomains='all'):
 
-    # FIXME
     if subdomains == 'all':
-      offsets = np.arange(self._xs.shape[1])
-#      offsets = self._subdomain_offsets.values()
+      subdomains = self.getSubDomains()
 
-    else:
-      neighbors = np.zeros(len(subdomains), dtype=np.int64)
+    neighbors = np.zeros(len(subdomains), dtype=np.int64)
 
-      for i, subdomain in enumerate(subdomains):
-        if subdomain in self._subdomain_neighbors:
-          neighbors[i] = self._subdomain_neighbors[subdomain]
-        else:
-          msg = 'Unable to get subdomain neighbor for subdomain {0} since it is ' \
-                'not one of the subdomains in the cross-section'.format(subdomain)
-          raise ValueError(msg)
+    for i, subdomain in enumerate(subdomains):
+      if subdomain in self._subdomain_neighbors:
+        neighbors[i] = self._subdomain_neighbors[subdomain]
+      else:
+        msg = 'Unable to get subdomain neighbor for subdomain {0} since it is ' \
+              'not one of the subdomains in the cross-section'.format(subdomain)
+        raise ValueError(msg)
 
     return neighbors
 

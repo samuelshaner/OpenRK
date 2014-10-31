@@ -51,9 +51,7 @@ for batch in batches:
   # Plotting data colored by neighbors
   import matplotlib.pyplot as plt
   data = test_xs._xs[0,...]
-  offsets = test_xs.getSubDomainOffsets()
-  subdomains = test_xs.getSubDomains(offsets)
-  neighbors = test_xs.getSubDomainNeighbors(subdomains)
+  neighbors = test_xs.getSubDomainNeighbors()
   fig = plt.figure()
   nuclide = test_xs.getNuclideIndices([openmc.Nuclide('U-235', '70c')])
   plt.scatter(x=data[:,0,...,nuclide].ravel(),
