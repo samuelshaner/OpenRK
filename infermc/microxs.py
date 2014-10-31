@@ -140,6 +140,22 @@ class MicroXS(infermc.MultiGroupXS):
     return xs[..., nuclides]
 
 
+  def getRelErr(self, groups='all', nuclides='all', subdomains='all'):
+
+    # Get the cross-section average and std deviation
+    average = self.getXS(groups, nuclides, subdomains, 'mean')
+    std_dev = self.getXS(groups, nuclides, subdomains, 'std_dev')
+
+    # Compute the relative error while accounting for zeros
+    zero_indices = average == 0
+    std_dev[zero_indices] = 0.
+    average[zero_indices] = 1.
+    rel_err = (std_dev / average) * 100.
+    average[zero_indices] = 0.
+
+    return rel_err
+
+
   def printXS(self, nuclides='all', subdomains='all'):
 
     string = 'Micro XS\n'
@@ -170,12 +186,7 @@ class MicroXS(infermc.MultiGroupXS):
           string += '{0: <12}Group {1} [{2: <10} - ' \
                     '{3: <10}MeV]:\t'.format('', group, bounds[0], bounds[1])
           average = self.getXS([group], [nuclide], [subdomain], 'mean')
-          std_dev = self.getXS([group], [nuclide], [subdomain], 'std_dev')
-
-          std_dev[average == 0.] = 0.
-          average[average == 0.] = 1.
-          rel_err = (std_dev / average) * 100.
-
+          rel_err = self.getRelErr([group], [nuclide], [subdomain])
           string += '{:.2e}+/-{:1.2e}%'.format(average[0,0,0], rel_err[0,0,0])
           string += '\n'
 
@@ -554,6 +565,23 @@ class MicroScatterMatrixXS(MicroXS, infermc.ScatterMatrixXS):
     return xs[..., nuclides]
 
 
+  def getRelErr(self, in_groups='all', out_groups='all',
+                nuclides='all', subdomains='all'):
+
+    # Get the cross-section average and std deviation
+    average = self.getXS(in_groups, out_groups, nuclides, subdomains, 'mean')
+    std_dev = self.getXS(in_groups, out_groups, nuclides, subdomains, 'std_dev')
+
+    # Compute the relative error while accounting for zeros
+    zero_indices = average == 0
+    std_dev[zero_indices] = 0.
+    average[zero_indices] = 1.
+    rel_err = (std_dev / average) * 100.
+    average[zero_indices] = 0.
+
+    return rel_err
+
+
   def printXS(self, nuclides='all', subdomains='all'):
 
     string = 'Micro XS\n'
@@ -589,14 +617,7 @@ class MicroScatterMatrixXS(MicroXS, infermc.ScatterMatrixXS):
           for out_group in range(1,self._num_groups+1):
             string += '{0: <12}Group {1} -> Group {2}:\t\t'.format('', in_group, out_group)
             average = self.getXS([in_group], [out_group], [nuclide], [subdomain], 'mean')
-            std_dev = self.getXS([in_group], [out_group], [nuclide], [subdomain], 'std_dev')
-
-            zero_indices = average == 0
-            std_dev[zero_indices] = 0.
-            average[zero_indices] = 1.
-            rel_err = (std_dev / average) * 100.
-            average[zero_indices] = 0.
-
+            rel_err = self.getRelErr([in_group], [out_group], [nuclide], [subdomain])
             string += '{:.2e}+/-{:1.2e}%'.format(average[0,0,0], rel_err[0,0,0])
             string += '\n'
 

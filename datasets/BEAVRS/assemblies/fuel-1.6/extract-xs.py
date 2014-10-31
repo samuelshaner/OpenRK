@@ -31,19 +31,19 @@ for batch in batches:
 #                           colors=['cell', 'material'],
 #                           filename='{0}-batch'.format(batch))
 
-#  materials = micro_extractor._openmc_geometry.getAllMaterials()
+  materials = micro_extractor._openmc_geometry.getAllMaterials()
 
   # DUMP-TO-FILE and PRINT XS
-#  for material in materials:
-#    for xs_type in xs_types:
-#      xs = micro_extractor._multigroup_xs['material'][material._id][xs_type]
-#      xs.dumpToFile(directory='micro', filename='material-{0}-{1}'.format(material._id, xs_type))
-#      xs.exportResults()
-#      xs.printPDF(directory='micro', filename='material-{0}-{1}'.format(material._id, xs_type))
+  for material in materials:
+    for xs_type in xs_types:
+      xs = micro_extractor._multigroup_xs['material'][material._id][xs_type]
+      xs.dumpToFile(filename='material-{0}-{1}'.format(material._id, xs_type))
+      xs.exportResults()
+      xs.printPDF(filename='material-{0}-{1}'.format(material._id, xs_type))
 
   test_xs = micro_extractor._multigroup_xs['distribcell'][10000]['fission']
   avg_xs = test_xs.getDomainAveragedXS()
-  avg_xs.printPDF()
+  avg_xs.printPDF(filename='distribcell-10000-fission')
 
   openmc.reset_auto_ids()
   del micro_extractor, statepoint

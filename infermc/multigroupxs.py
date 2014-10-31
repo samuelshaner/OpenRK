@@ -341,6 +341,22 @@ class MultiGroupXS(object):
     return xs
 
 
+  def getRelErr(self, groups='all', subdomains='all'):
+
+    # Get the cross-section average and std deviation
+    average = self.getXS(groups, subdomains, 'mean')
+    std_dev = self.getXS(groups, subdomains, 'std_dev')
+
+    # Compute the relative error while accounting for zeros
+    zero_indices = average == 0
+    std_dev[zero_indices] = 0.
+    average[zero_indices] = 1.
+    rel_err = (std_dev / average) * 100.
+    average[zero_indices] = 0.
+
+    return rel_err
+
+
   def getCondensedXS(self, coarse_groups):
     '''This routine takes in a collection of 2-tuples of energy groups'''
 
@@ -447,14 +463,7 @@ class MultiGroupXS(object):
         string += '{0: <12}Group {1} [{2: <10} - ' \
                   '{3: <10}MeV]:\t'.format('', group, bounds[0], bounds[1])
         average = self.getXS([group], [subdomain], 'mean')
-        std_dev = self.getXS([group], [subdomain], 'std_dev')
-
-        zero_indices = average == 0
-        std_dev[zero_indices] = 0.
-        average[zero_indices] = 1.
-        rel_err = (std_dev / average) * 100.
-        average[zero_indices] = 0.
-
+        rel_err = self.getRelErr([group], [subdomain])
         string += '{:.2e}+/-{:1.2e}%'.format(average[0,0,0], rel_err[0,0,0])
         string += '\n'
 
@@ -1288,6 +1297,22 @@ class ScatterMatrixXS(MultiGroupXS):
     return xs
 
 
+  def getRelErr(self, in_groups='all', out_groups='all', subdomains='all'):
+
+    # Get the cross-section average and std deviation
+    average = self.getXS(in_groups, out_groups, subdomains, 'mean')
+    std_dev = self.getXS(in_groups, out_groups, subdomains, 'std_dev')
+
+    # Compute the relative error while accounting for zeros
+    zero_indices = average == 0
+    std_dev[zero_indices] = 0.
+    average[zero_indices] = 1.
+    rel_err = (std_dev / average) * 100.
+    average[zero_indices] = 0.
+
+    return rel_err
+
+
   def printXS(self, subdomains='all'):
 
     string = 'Multi-Group XS\n'
@@ -1318,14 +1343,7 @@ class ScatterMatrixXS(MultiGroupXS):
         for out_group in range(1,self._num_groups+1):
           string += '{0: <12}Group {1} -> Group {2}:\t\t'.format('', in_group, out_group)
           average = self.getXS([in_group], [out_group], [subdomain], 'mean')
-          std_dev = self.getXS([in_group], [out_group], [subdomain], 'std_dev')
-
-          zero_indices = average == 0
-          std_dev[zero_indices] = 0.
-          average[zero_indices] = 1.
-          rel_err = (std_dev / average) * 100.
-          average[zero_indices] = 0.
-
+          rel_err = self.getRelErr([in_group], [out_group], [subdomain])
           string += '{:.2e}+/-{:1.2e}%'.format(average[0,0,0], rel_err[0,0,0])
           string += '\n'
 
