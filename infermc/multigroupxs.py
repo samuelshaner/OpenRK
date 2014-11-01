@@ -1,7 +1,6 @@
-import os, copy, abc
 import numpy as np
-import openmc
-import infermc
+import openmc, infermc
+import os, copy, abc
 
 
 # NOTE

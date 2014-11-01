@@ -26,6 +26,7 @@ for batch in batches:
   micro_extractor.extractAllMultiGroupXS(groups, 'distribcell')
   micro_extractor.checkXS()
 
+  '''
   plotter.scatter_micro_xs(micro_extractor,
                            domain_types=['distribcell', 'material'],
                            colors=['cell', 'material'],
@@ -40,25 +41,17 @@ for batch in batches:
       xs.dumpToFile(filename='material-{0}-{1}'.format(material._id, xs_type))
       xs.exportResults()
       xs.printPDF(filename='material-{0}-{1}'.format(material._id, xs_type))
+  '''
 
-  micro_extractor.buildNeighborMaps(unique=False, first_level=0)
+  micro_extractor.buildNeighborMaps(unique=True, first_level=1)
 
   test_xs = micro_extractor._multigroup_xs['distribcell'][10000]['fission']
   avg_xs = test_xs.getDomainAveragedXS()
   avg_xs.printPDF(filename='distribcell-10000-fission')
 
-
   # Plotting data colored by neighbors
-  import matplotlib.pyplot as plt
-  data = test_xs._xs[0,...]
-  neighbors = test_xs.getSubDomainNeighbors()
-  fig = plt.figure()
-  nuclide = test_xs.getNuclideIndices([openmc.Nuclide('U-235', '70c')])
-  plt.scatter(x=data[:,0,...,nuclide].ravel(),
-              y=data[:,1,...,nuclide].ravel(),
-              c=neighbors)
-  plt.savefig('test-neighbors.png')
-
+  plotter.scatter_all_neighbors(micro_extractor, uncertainties=False,
+                              filename='{0}-batch'.format(batch))
 
   openmc.reset_auto_ids()
   del micro_extractor, statepoint
