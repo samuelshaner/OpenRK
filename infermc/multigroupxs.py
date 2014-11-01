@@ -351,6 +351,13 @@ class MultiGroupXS(object):
     return neighbors
 
 
+  def getNeighborSubDomains(self, neighbor):
+    neighbors = self.getSubDomainNeighbors()
+    offsets = np.where(neighbors == neighbor)[0]
+    subdomains = self.getSubDomains(offsets)
+    return subdomains
+
+
   def getXS(self, groups='all', subdomains='all', metric='mean'):
 
     if self._xs is None:
@@ -472,6 +479,25 @@ class MultiGroupXS(object):
     domain_avg_xs._xs = np.vstack((mean, std_dev))
 
     return domain_avg_xs
+
+
+  def getAllNeighborAveragedXS(self):
+
+    neighbors = self.getSubDomainNeighbors()
+    unique_neighbors = np.unique(neighbors)
+    all_neighbors_xs = dict()
+
+    for unique_neighbor in unique_neighbors:
+      neighbor_xs = self.getNeighborAveragedXS(unique_neighbor)
+      all_neighbors_xs[unique_neighbor] = neighbor_xs
+
+    return all_neighbors_xs
+
+
+  def getNeighborAveragedXS(self, neighbor):
+    subdomains = self.getNeighborSubDomains(neighbor)
+    neighbor_xs = self.getDomainAveragedXS(subdomains)
+    return neighbor_xs
 
 
   def printXS(self, subdomains='all'):

@@ -49,9 +49,17 @@ for batch in batches:
   avg_xs = test_xs.getDomainAveragedXS()
   avg_xs.printPDF(filename='distribcell-10000-fission')
 
+  all_neighbor_xs = test_xs.getAllNeighborAveragedXS()
+
+  for neighbor in all_neighbor_xs:
+    neighbor_xs = all_neighbor_xs[neighbor]
+    neighbor_xs.printPDF(filename='neighbor-{0}-fission'.format(neighbor))
+
+
   # Plotting data colored by neighbors
-  plotter.scatter_all_neighbors(micro_extractor, uncertainties=False,
-                              filename='{0}-batch'.format(batch))
+#  plotter.scatter_all_neighbors(micro_extractor, uncertainties=False,
+#                              filename='{0}-batch'.format(batch))
+
 
   openmc.reset_auto_ids()
   del micro_extractor, statepoint
