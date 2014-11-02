@@ -104,20 +104,20 @@ group_structures['CASMO'] = casmo
 
 
 ################################################################################
-######################################  MC-13  #################################
+######################################  MC-15  #################################
 ################################################################################
 
-# Create a sub-dictionary for the CASMO energy group structures
-mc13 = dict()
+# Create a sub-dictionary for the MC-15 energy group structures
+mc15 = dict()
 
 
 # 16-group structure
-mc13['16-group'] = infermc.EnergyGroups()
+mc15['16-group'] = infermc.EnergyGroups()
 group_edges = np.array([1.e-11, 3.e-8, 1.e-7, 3.e-7, 6.25e-7,
                         1.e-6, 4.e-6, 6.e-6, 1.e-5, 2.5e-5, 5.e-5,
                         1.e-4, 1.e-3, 1.e-2, 1.e-1, 1., 20.])
-mc13['16-group'].group_edges = group_edges
+mc15['16-group'].group_edges = group_edges
 
 
 # Store the sub-dictionary in the global dictionary
-group_structures['MC13'] = mc13
+group_structures['MC15'] = mc15
