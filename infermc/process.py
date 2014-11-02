@@ -233,6 +233,7 @@ class XSTallyExtractor(object):
 
     distribcell_xs = self._multigroup_xs['distribcell']
     geometry = self._opencsg_geometry
+    geometry.clearNeighbors()
     geometry.buildNeighbors()
 
     for domain_id in distribcell_xs:
@@ -434,7 +435,7 @@ class XSTallyExtractor(object):
       fission = self.getTally('fission', filters)
 
       # Initialize a MultiGroupXS object
-      multigroup_xs = infermc.AbsorptionXS(domain, domain_type, energy_groups)
+      multigroup_xs = infermc.CaptureXS(domain, domain_type, energy_groups)
       multigroup_xs._tallies['flux'] = flux
       multigroup_xs._tallies['absorption'] = absorption
       multigroup_xs._tallies['fission'] = fission
@@ -761,7 +762,7 @@ class MicroXSTallyExtractor(XSTallyExtractor):
       fission = self.getTally('fission', filters, nuclides)
 
       # Initialize a MultiGroupXS object
-      multigroup_xs = infermc.MicroAbsorptionXS(domain, domain_type, energy_groups)
+      multigroup_xs = infermc.MicroCaptureXS(domain, domain_type, energy_groups)
       multigroup_xs._tallies['flux'] = flux
       multigroup_xs._tallies['absorption'] = absorption
       multigroup_xs._tallies['fission'] = fission
