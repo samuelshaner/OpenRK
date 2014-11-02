@@ -279,6 +279,16 @@ class Geometry(object):
     self._num_regions = self._root_universe._num_regions
 
 
+  def clearNeighbors(self):
+    self._num_neighbors = 0
+    self._neighbor_ids = dict()
+    self._num_unique_neighbors = 0
+    self._unique_neighbor_ids = dict()
+    self._regions_to_neighbors = dict()
+    self._regions_to_unique_neighbors = dict()
+    self._built_neighbors = False
+
+
   def buildNeighbors(self):
 
     if self._root_universe is None:
@@ -287,7 +297,7 @@ class Geometry(object):
       raise ValueError(msg)
 
     # If the neighbors have already been built, just return
-    if self._num_neighbors > 0:
+    if self._built_neighbors:
       return
 
     self._root_universe.buildNeighbors()
