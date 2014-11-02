@@ -8,6 +8,7 @@ greek = dict()
 greek['total'] = '$\\sigma_{t}$'
 greek['transport'] = '$\\sigma_{tr}$'
 greek['absorption'] = '$\\sigma_{a}$'
+greek['capture'] = '$\\sigma_{c}$'
 greek['scatter'] = '$\\sigma_{s}$'
 greek['nu-scatter'] = '$\\nu\\sigma_{s}$'
 greek['scatter matrix'] = '$\\sigma_{s}$'
@@ -247,9 +248,7 @@ class MicroXS(infermc.MultiGroupXS):
     nuclides = self.getNuclideIndices(nuclides)
 
     average = self._xs[infermc.metrics['mean'], offsets, ...]
-    average = average[..., nuclides]
     std_dev = self._xs[infermc.metrics['std_dev'], offsets, ...]
-    std_dev = std_dev[..., nuclides]
 
     zero_indices = average == 0
     std_dev[zero_indices] = 0.
@@ -405,6 +404,8 @@ class MicroXS(infermc.MultiGroupXS):
             for group in range(self._num_groups):
               subtable = list()
               subtable.append(group+1)
+              print average.shape
+              print i, group, nuclide
               subtable.append(average[i, group, ..., nuclide])
               subtable.append(rel_err[i, group, ..., nuclide])
               table.append(subtable)

@@ -82,8 +82,8 @@ tally_factory.createAllMultiGroupXS(groups, domain_type='universe')
 tally_factory.createTalliesFile()
 '''
 
-#micro_tally_factory.createAllMultiGroupXS(groups, domain_type='distribcell')
-#micro_tally_factory.createAllMultiGroupXS(groups, domain_type='material')
+micro_tally_factory.createAllMultiGroupXS(groups, domain_type='distribcell')
+micro_tally_factory.createAllMultiGroupXS(groups, domain_type='material')
 micro_tally_factory.createAllMultiGroupXS(groups, domain_type='cell')
 #micro_tally_factory.createAllMultiGroupXS(groups, domain_type='universe')
 micro_tally_factory.createTalliesFile()

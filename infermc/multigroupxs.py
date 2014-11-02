@@ -45,6 +45,7 @@ greek = dict()
 greek['total'] = '$\\Sigma_{t}$'
 greek['transport'] = '$\\Sigma_{tr}$'
 greek['absorption'] = '$\\Sigma_{a}$'
+greek['capture'] = '$\\Sigma_{c}$'
 greek['scatter'] = '$\\Sigma_{s}$'
 greek['nu-scatter'] = '$\\nu\\Sigma_{s}$'
 greek['scatter matrix'] = '$\\Sigma_{s}$'
@@ -610,6 +611,9 @@ class MultiGroupXS(object):
     subdomains = self.getSubDomains(offsets)
     average = self._xs[metrics['mean'], offsets, ...]
     std_dev = self._xs[metrics['std_dev'], offsets, ...]
+
+
+    print average.shape
 
     zero_indices = average == 0
     std_dev[zero_indices] = 0.
