@@ -35,7 +35,8 @@ def get_unique_integers(data):
   return inverse
 
 
-def plot_cells(geometry, plane='xy', offset=0., gridsize=250):
+def plot_cells(geometry, plane='xy', offset=0., gridsize=250,
+               xlim=None, ylim=None, zlim=None):
 
   global SUBDIRECTORY
 
@@ -75,7 +76,7 @@ def plot_cells(geometry, plane='xy', offset=0., gridsize=250):
   surface = numpy.zeros((gridsize, gridsize), dtype=np.int64)
 
   # Retrieve the pixel coordinates
-  coords = get_pixel_coords(geometry, plane, offset, gridsize)
+  coords = get_pixel_coords(geometry, plane, offset, gridsize, xlim, ylim, zlim)
 
   # Find the flat source region IDs for each grid point
   for i in range(gridsize):
@@ -123,7 +124,8 @@ def plot_cells(geometry, plane='xy', offset=0., gridsize=250):
 
 
 
-def plot_materials(geometry, plane='xy', offset=0., gridsize=250):
+def plot_materials(geometry, plane='xy', offset=0., gridsize=250,
+                   xlim=None, ylim=None, zlim=None):
 
   global SUBDIRECTORY
 
@@ -163,7 +165,7 @@ def plot_materials(geometry, plane='xy', offset=0., gridsize=250):
   surface = numpy.zeros((gridsize, gridsize))
 
   # Retrieve the pixel coordinates
-  coords = get_pixel_coords(geometry, plane, offset, gridsize)
+  coords = get_pixel_coords(geometry, plane, offset, gridsize, xlim, ylim, zlim)
 
   # Find the flat source region IDs for each grid point
   for i in range(gridsize):
@@ -210,7 +212,8 @@ def plot_materials(geometry, plane='xy', offset=0., gridsize=250):
   plt.close(fig)
 
 
-def plot_regions(geometry, plane='xy', offset=0., gridsize=250):
+def plot_regions(geometry, plane='xy', offset=0., gridsize=250,
+                   xlim=None, ylim=None, zlim=None):
 
   global SUBDIRECTORY
 
@@ -250,7 +253,7 @@ def plot_regions(geometry, plane='xy', offset=0., gridsize=250):
   surface = numpy.zeros((gridsize, gridsize))
 
   # Retrieve the pixel coordinates
-  coords = get_pixel_coords(geometry, plane, offset, gridsize)
+  coords = get_pixel_coords(geometry, plane, offset, gridsize, xlim, ylim, zlim)
 
   # Find the flat source region IDs for each grid point
   for i in range(gridsize):
@@ -298,7 +301,8 @@ def plot_regions(geometry, plane='xy', offset=0., gridsize=250):
 
 
 def plot_neighbor_cells(geometry, plane='xy', offset=0.,
-                        gridsize=250, first_level=0, unique=False):
+                        gridsize=250, first_level=0, unique=False,
+                        xlim=None, ylim=None, zlim=None):
 
   global SUBDIRECTORY
 
@@ -344,7 +348,7 @@ def plot_neighbor_cells(geometry, plane='xy', offset=0.,
   surface = numpy.zeros((gridsize, gridsize))
 
   # Retrieve the pixel coordinates
-  surf = get_pixel_coords(geometry, plane, offset, gridsize)
+  surf = get_pixel_coords(geometry, plane, offset, gridsize, xlim, ylim, zlim)
 
   # Find the flat source region IDs for each grid point
   for i in range(gridsize):
@@ -401,7 +405,7 @@ def plot_neighbor_cells(geometry, plane='xy', offset=0.,
   plt.close(fig)
 
 
-def get_pixel_coords(geometry, plane, offset, gridsize):
+def get_pixel_coords(geometry, plane, offset, gridsize, xlim, ylim, zlim):
 
   # initialize variables to be returned
   bounds = geometry.getBounds()
@@ -410,9 +414,17 @@ def get_pixel_coords(geometry, plane, offset, gridsize):
   zcoords = None
   coords = dict()
 
-  # FIXME: This is a hack to only plot the top right corner
-#  bounds[0] = 50.
-#  bounds[2] = 50.
+  if not xlim is None:
+    bounds[0] = xlim[0]
+    bounds[1] = xlim[1]
+
+  if not ylim is None:
+    bounds[2] = ylim[0]
+    bounds[3] = ylim[1]
+
+  if not zlim is None:
+    bounds[4] = zlim[0]
+    bounds[5] = zlim[1]
 
   if plane == 'xy':
     xcoords = np.linspace(bounds[0], bounds[1], gridsize)
