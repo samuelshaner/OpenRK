@@ -334,7 +334,7 @@ def scatter_neighbor_xs(multigroup_xs, filename, nuclide,
                                       subdomains=subdomains,
                                     nuclides=[nuclide], metric='std_dev')
       y_std_dev = multigroup_xs.getXS(groups=[energy_groups[1]],
-                                      subdomain=subdomains,
+                                      subdomains=subdomains,
                                     nuclides=[nuclide], metric='std_dev')
       radii = np.sqrt(x_std_dev**2 + y_std_dev**2)
 
