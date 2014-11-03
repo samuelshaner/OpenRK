@@ -16,7 +16,7 @@ for batch in batches:
 
   print batch
 
-  filename = 'statepoint.{0:03d}.h5'.format(batch)
+  filename = 'statepoint.{0:02}.h5'.format(batch)
 
   # Initialize a handle on the OpenMC statepoint file
   statepoint = openmc.statepoint.StatePoint(filename)
@@ -32,7 +32,7 @@ for batch in batches:
                            colors=['cell', 'cell'],
                            filename='{0}-batch'.format(batch))
 
-  materials = micro_extractor._openmc_geometry.getAllMaterials()
+  materials = micro_extractor._openmc_geometry.get_all_materials()
 
   # DUMP-TO-FILE and PRINT XS
 #  for material in materials:
@@ -42,30 +42,3 @@ for batch in batches:
 
   openmc.reset_auto_ids()
   del micro_extractor, statepoint
-
-  '''
-  ## MACROS
-  extractor = XSTallyExtractor(statepoint)
-  extractor.extractAllMultiGroupXS(groups, 'material')
-  extractor.extractAllMultiGroupXS(groups, 'distribcell')
-  extractor.checkXS()
-
-  plotter.scatter_micro_xs(micro_extractor,
-                           domain_types=['distribcell', 'material'],
-                           colors=['cell', 'material'],
-                           filename='{0}-batch'.format(batch))
-
-  materials = extractor._openmc_geometry.getAllMaterials()
-
-  # DUMP-TO-FILE and PRINT XS
-  for material in materials:
-    for xs_type in xs_types:
-      xs = extractor._multigroup_xs['material'][material._id][xs_type]
-      xs.dumpToFile(directory='macro', filename='material-{0}-{1}'.format(material._id, xs_type))
-      xs.printXS()
-      xs.exportResults()
-      xs.printPDF(directory='macro', filename='material-{0}-{1}'.format(material._id, xs_type))
-
-  openmc.reset_auto_ids()
-  del extractor, statepoint
-  '''

@@ -101,7 +101,7 @@ class MicroXS(infermc.MultiGroupXS):
       if 'flux' in tally._scores:
         continue
       for nuclide in self._nuclides:
-        tally.addNuclide(nuclide)
+        tally.add_nuclide(nuclide)
 
 
   def containsNuclide(self, nuclide):

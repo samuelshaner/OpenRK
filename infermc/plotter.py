@@ -184,7 +184,7 @@ def scatter_micro_xs(extractor, filename, nuclides='all', xs_types='all',
   global SCATTER_SIZES
 
   if nuclides == 'all':
-    all_nuclides = extractor._openmc_geometry.getAllNuclides()
+    all_nuclides = extractor._openmc_geometry.get_all_nuclides()
     nuclides = list()
     for nuclide_name, nuclide_tuple in all_nuclides.items():
       nuclides.append(nuclide_tuple[0])

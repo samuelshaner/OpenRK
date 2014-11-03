@@ -203,7 +203,7 @@ class MultiGroupXS(object):
     # Distribcell tallies
     else:
       first_tally = self._tallies[self._tallies.keys()[0]]
-      domain_filter = first_tally.findFilter('distribcell', [self._domain._id])
+      domain_filter = first_tally.find_filter('distribcell', [self._domain._id])
       self._offset = domain_filter._offset
 
 
@@ -239,13 +239,13 @@ class MultiGroupXS(object):
     for i, score in enumerate(scores):
       key = keys[i]
       self._tallies[key] = openmc.Tally(label=label)
-      self._tallies[key].addScore(score)
-      self._tallies[key].setEstimator(estimator)
-      self._tallies[key].addFilter(domain_filter)
+      self._tallies[key].add_score(score)
+      self._tallies[key].set_estimator(estimator)
+      self._tallies[key].add_filter(domain_filter)
 
       # Add all non-domain specific Filters (ie, energy) to the Tally
       for filter in filters[i]:
-        self._tallies[key].addFilter(filter)
+        self._tallies[key].add_filter(filter)
 
 
   @abc.abstractmethod
@@ -269,12 +269,12 @@ class MultiGroupXS(object):
       energy_axes = list()
 
       for i, filter in enumerate(tally._filters):
-        new_shape += (filter.getNumBins(), )
+        new_shape += (filter.get_num_bins(), )
 
         if 'energy' in filter._type:
           energy_axes.append(i)
 
-      new_shape += (tally.getNumNuclides(), )
+      new_shape += (tally.get_num_nuclides(), )
 
       # Reshape the array
       mean = np.reshape(mean, new_shape)
@@ -411,8 +411,8 @@ class MultiGroupXS(object):
 
       for filter in tally._filters:
         if 'energy' in filter._type:
-          filter.setBinEdges(new_groups.group_edges)
-          filter.setNumBins(num_coarse_groups)
+          filter.set_bin_edges(new_groups.group_edges)
+          filter.set_num_bins(num_coarse_groups)
 
       sum = tally._sum
       sum_sq = tally._sum_sq
@@ -426,8 +426,8 @@ class MultiGroupXS(object):
         intermed = np.sqrt(sum_sq[group[0]:group[1], ...]).sum(axis=0)
         coarse_sum_sq[i, ...] = np.power(intermed, 2.)
 
-      tally.setResults(coarse_sum, coarse_sum_sq)
-      tally.computeStdDev()
+      tally.set_results(coarse_sum, coarse_sum_sq)
+      tally.compute_std_dev()
       condensed_xs._tallies[tally_type] = tally
 
     # Tell the cloned xs to compute xs
@@ -1287,8 +1287,8 @@ class ScatterMatrixXS(MultiGroupXS):
 
       for filter in tally._filters:
         if 'energy' in filter._type:
-          filter.setBinEdges(new_groups.group_edges)
-          filter.setNumBins(num_coarse_groups)
+          filter.set_bin_edges(new_groups.group_edges)
+          filter.set_num_bins(num_coarse_groups)
 
       sum = tally._sum
       sum_sq = tally._sum_sq
@@ -1335,8 +1335,8 @@ class ScatterMatrixXS(MultiGroupXS):
         coarse_sum = np.reshape(coarse_sum, coarse_shape)
         coarse_sum_sq = np.reshape(coarse_sum_sq, coarse_shape)
 
-      tally.setResults(coarse_sum, coarse_sum_sq)
-      tally.computeStdDev()
+      tally.set_results(coarse_sum, coarse_sum_sq)
+      tally.compute_std_dev()
       condensed_xs._tallies[tally_type] = tally
 
     # Tell the cloned xs to compute xs

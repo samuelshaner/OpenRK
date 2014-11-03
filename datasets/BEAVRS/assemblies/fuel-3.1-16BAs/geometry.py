@@ -85,12 +85,3 @@ geometry.setRootUniverse(root_universe)
 geometry.initializeCellOffsets()
 num_regions = geometry._num_regions
 print('# regions = %d' % num_regions)
-
-print('Creating the Geometry...')
-
-geometry = opencsg.Geometry()
-geometry.setRootUniverse(root_universe)
-
-geometry.initializeCellOffsets()
-num_regions = geometry._num_regions
-print('# regions = %d' % num_regions)

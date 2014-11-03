@@ -22,8 +22,8 @@ particles = 100000
 # Create geometry.xml
 openmc_geometry = get_openmc_geometry(geometry)
 geometry_file = openmc.GeometryFile()
-geometry_file.setGeometry(openmc_geometry)
-geometry_file.exportToXML()
+geometry_file.set_geometry(openmc_geometry)
+geometry_file.export_to_xml()
 
 
 ###############################################################################
@@ -31,8 +31,8 @@ geometry_file.exportToXML()
 ###############################################################################
 
 materials_file = MaterialsFile()
-materials_file.addMaterials(openmc_materials.values())
-materials_file.exportToXML()
+materials_file.add_materials(openmc_materials.values())
+materials_file.export_to_xml()
 
 
 ###############################################################################
@@ -40,17 +40,17 @@ materials_file.exportToXML()
 ###############################################################################
 
 settings_file = SettingsFile()
-settings_file.setBatches(batches)
-settings_file.setInactive(inactive)
-settings_file.setParticles(particles)
-settings_file.setStatepointInterval(5)
-settings_file.setOutput({'tallies': False})
-settings_file.setPTables(True)
+settings_file.set_batches(batches)
+settings_file.set_inactive(inactive)
+settings_file.set_particles(particles)
+settings_file.set_statepoint_interval(5)
+settings_file.set_output({'tallies': False})
+settings_file.set_ptables(True)
 source_bounds = [geometry.getMinX(), geometry.getMinY(), geometry.getMinZ(), \
                  geometry.getMaxX(), geometry.getMaxY(), geometry.getMaxZ()]
-settings_file.setSourceSpace('box', source_bounds)
-settings_file.setThreads(8)
-settings_file.exportToXML()
+settings_file.set_source_space('box', source_bounds)
+settings_file.set_threads(8)
+settings_file.export_to_xml()
 
 
 ###############################################################################
@@ -58,11 +58,11 @@ settings_file.exportToXML()
 ###############################################################################
 
 plot = Plot(plot_id=1)
-plot.setWidth(width=[geometry.getMaxX()-geometry.getMinX(),
+plot.set_width(width=[geometry.getMaxX()-geometry.getMinX(),
                      geometry.getMaxY()-geometry.getMinY()])
 plot_file = PlotsFile()
-plot_file.addPlot(plot)
-plot_file.exportToXML()
+plot_file.add_plot(plot)
+plot_file.export_to_xml()
 
 
 ###############################################################################
@@ -74,7 +74,7 @@ micro_tally_factory = MicroXSTallyFactory(openmc_geometry)
 
 groups = group_structures['CASMO']['2-group']
 
-nuclides = openmc_geometry.getAllNuclides()
+nuclides = openmc_geometry.get_all_nuclides()
 tally_nuclides = [nuclides['H-1'], nuclides['B-10'], nuclides['O-16'],
                   nuclides['U-235'], nuclides['U-238'], nuclides['Zr-90'],
                   nuclides['Fe-56']]

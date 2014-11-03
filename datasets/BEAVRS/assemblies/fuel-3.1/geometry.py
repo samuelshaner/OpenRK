@@ -26,7 +26,6 @@ boundaries = dict()
 boundaries['Box'] = opencsg.ZSquarePrism(boundary='reflective', R=lattice_width/2.)
 boundaries['Z-Min'] = opencsg.ZPlane(z0=-slice_height / 2.)
 boundaries['Z-Max'] = opencsg.ZPlane(z0=slice_height / 2.)
-boundaries['Z-Max'] = opencsg.ZPlane(z0=slice_height / 2.)
 
 for index in boundaries.keys():
   boundaries[index].setBoundaryType('reflective')
@@ -71,9 +70,6 @@ root_universe.addCell(root_cell)
 
 # Append the bounding surfaces for the Geometry to the root Cell
 root_cell.addSurface(surface=boundaries['Box'], halfspace=-1)
-root_cell.addSurface(surface=boundaries['X-Max'], halfspace=-1)
-root_cell.addSurface(surface=boundaries['Y-Min'], halfspace=+1)
-root_cell.addSurface(surface=boundaries['Y-Max'], halfspace=-1)
 root_cell.addSurface(surface=boundaries['Z-Min'], halfspace=+1)
 root_cell.addSurface(surface=boundaries['Z-Max'], halfspace=-1)
 

@@ -64,11 +64,11 @@ class XSTallyFactory(object):
   def createAllMultiGroupXS(self, energy_groups, domain_type='distribcell'):
 
     if domain_type == 'distribcell' or domain_type == 'cell':
-      domains = self._geometry.getAllMaterialCells()
+      domains = self._geometry.get_all_material_cells()
     elif domain_type == 'universe':
-      domains = self._geometry.getAllMaterialUniverses()
+      domains = self._geometry.get_all_material_universes()
     elif domain_type == 'material':
-      domains = self._geometry.getAllMaterials()
+      domains = self._geometry.get_all_materials()
 
     for domain in domains:
       for xs_type in infermc.xs_types:
@@ -83,9 +83,9 @@ class XSTallyFactory(object):
       tallies = tallies.union(set(xs._tallies.values()))
 
     for tally in tallies:
-      self._tallies_file.addTally(tally)
+      self._tallies_file.add_tally(tally)
 
-    self._tallies_file.exportToXML()
+    self._tallies_file.export_to_xml()
 
 
 class MicroXSTallyFactory(XSTallyFactory):
@@ -97,7 +97,7 @@ class MicroXSTallyFactory(XSTallyFactory):
     # Add all of the Nuclides in the domain to the MicroXS
     if nuclides is None:
 
-      nuclides_densities = domain.getAllNuclides().values()
+      nuclides_densities = domain.get_all_nuclides().values()
 
       nuclides = list()
 
@@ -141,11 +141,11 @@ class MicroXSTallyFactory(XSTallyFactory):
                             nuclides=None):
 
     if domain_type == 'distribcell' or domain_type == 'cell':
-      domains = self._geometry.getAllMaterialCells()
+      domains = self._geometry.get_all_material_cells()
     elif domain_type == 'universe':
-      domains = self._geometry.getAllMaterialUniverses()
+      domains = self._geometry.get_all_material_universes()
     elif domain_type == 'material':
-      domains = self._geometry.getAllMaterials()
+      domains = self._geometry.get_all_materials()
 
     for domain in domains:
       for xs_type in infermc.xs_types:

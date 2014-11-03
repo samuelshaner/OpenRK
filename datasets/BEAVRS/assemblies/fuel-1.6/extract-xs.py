@@ -26,13 +26,12 @@ for batch in batches:
   micro_extractor.extractAllMultiGroupXS(groups, 'distribcell')
   micro_extractor.checkXS()
 
-  '''
-  plotter.scatter_micro_xs(micro_extractor,
-                           domain_types=['distribcell', 'material'],
-                           colors=['cell', 'material'],
-                           filename='{0}-batch'.format(batch))
+#  plotter.scatter_micro_xs(micro_extractor,
+#                           domain_types=['distribcell', 'material'],
+#                           colors=['cell', 'material'],
+#                           filename='{0}-batch'.format(batch))
 
-  materials = micro_extractor._openmc_geometry.getAllMaterials()
+  materials = micro_extractor._openmc_geometry.get_all_materials()
 
   # DUMP-TO-FILE and PRINT XS
   for material in materials:
@@ -40,8 +39,7 @@ for batch in batches:
       xs = micro_extractor._multigroup_xs['material'][material._id][xs_type]
       xs.dumpToFile(filename='material-{0}-{1}'.format(material._id, xs_type))
       xs.exportResults()
-      xs.printPDF(filename='material-{0}-{1}'.format(material._id, xs_type))
-  '''
+#      xs.printPDF(filename='material-{0}-{1}'.format(material._id, xs_type))
 
   micro_extractor.buildNeighborMaps(unique=True, first_level=1)
 
@@ -57,36 +55,9 @@ for batch in batches:
 
 
   # Plotting data colored by neighbors
-#  plotter.scatter_all_neighbors(micro_extractor, uncertainties=False,
-#                              filename='{0}-batch'.format(batch))
+  plotter.scatter_all_neighbors(micro_extractor, uncertainties=False,
+                              filename='{0}-batch'.format(batch))
 
 
   openmc.reset_auto_ids()
   del micro_extractor, statepoint
-
-
-  '''
-  ## MACROS
-  extractor = XSTallyExtractor(statepoint)
-  extractor.extractAllMultiGroupXS(groups, 'material')
-  extractor.extractAllMultiGroupXS(groups, 'distribcell')
-  extractor.checkXS()
-
-  plotter.scatter_micro_xs(extractor,
-                           domain_types=['distribcell', 'material'],
-                           filename='{0}-batch'.format(batch))
-
-  materials = extractor._openmc_geometry.getAllMaterials()
-
-  # DUMP-TO-FILE and PRINT XS
-  for material in materials:
-    for xs_type in xs_types:
-      xs = extractor._multigroup_xs['material'][material._id][xs_type]
-      xs.dumpToFile(directory='macro', filename='material-{0}-{1}'.format(material._id, xs_type))
-      xs.printXS()
-      xs.exportResults()
-      xs.printPDF(directory='macro', filename='material-{0}-{1}'.format(material._id, xs_type))
-
-  openmc.reset_auto_ids()
-  del extractor, statepoint
-  '''

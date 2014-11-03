@@ -25,7 +25,7 @@ groups = group_structures['CASMO']['2-group']
 #######  FIND MAX AND MIN CROSS-SECTION VALUES FOR EACH NUCLIDE AND GROUP ######
 
 openmc_geometry = openmc.get_openmc_geometry(geometry)
-nuclides = openmc_geometry.getAllNuclides()
+nuclides = openmc_geometry.get_all_nuclides()
 tally_nuclides = [nuclides['H-1'][0], nuclides['B-10'][0], nuclides['O-16'][0],
                   nuclides['U-235'][0], nuclides['U-238'][0], nuclides['Zr-90'][0],
                   nuclides['Fe-56'][0]]

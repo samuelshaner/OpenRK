@@ -354,13 +354,13 @@ class XSTallyExtractor(object):
 
     # Get a list of the domains for this domain type to iterate over
     if domain_type == 'material':
-      domains = self._openmc_geometry.getAllMaterials()
+      domains = self._openmc_geometry.get_all_materials()
 
     elif domain_type == 'universe':
-      domains = self._openmc_geometry.getAllMaterialUniverses()
+      domains = self._openmc_geometry.get_all_material_universes()
 
     elif domain_type == 'cell' or domain_type == 'distribcell':
-      domains = self._openmc_geometry.getAllMaterialCells()
+      domains = self._openmc_geometry.get_all_material_cells()
 
     # Iterate and create the MultiGroupXS for each domain
     for domain in domains:
@@ -533,7 +533,7 @@ class XSTallyExtractor(object):
         cell_id = path[-1]
 
         if cell_id == domain._id:
-          offset = self._openmc_geometry.getOffset(path, domain_offset)
+          offset = self._openmc_geometry.get_offset(path, domain_offset)
           multigroup_xs.setSubDomainOffset(region, offset)
 
     else:
@@ -639,13 +639,13 @@ class MicroXSTallyExtractor(XSTallyExtractor):
 
     # Get a list of the domains for this domain type to iterate over
     if domain_type == 'material':
-      domains = self._openmc_geometry.getAllMaterials()
+      domains = self._openmc_geometry.get_all_materials()
 
     elif domain_type == 'universe':
-      domains = self._openmc_geometry.getAllMaterialUniverses()
+      domains = self._openmc_geometry.get_all_material_universes()
 
     elif domain_type == 'cell' or domain_type == 'distribcell':
-      domains = self._openmc_geometry.getAllMaterialCells()
+      domains = self._openmc_geometry.get_all_material_cells()
 
     # Iterate and create the MultiGroupXS for each domain
     for domain in domains:
@@ -696,7 +696,7 @@ class MicroXSTallyExtractor(XSTallyExtractor):
 
     # Extract a list of tuples of Nuclides and number densities (at/b-cm)
     # of all Nuclides in the domain of interest
-    nuclides_densities = domain.getAllNuclides().values()
+    nuclides_densities = domain.get_all_nuclides().values()
     densities = list()
     nuclides = list()
 
@@ -866,7 +866,7 @@ class MicroXSTallyExtractor(XSTallyExtractor):
         cell_id = path[-1]
 
         if cell_id == domain._id:
-          offset = self._openmc_geometry.getOffset(path, domain_offset)
+          offset = self._openmc_geometry.get_offset(path, domain_offset)
           multigroup_xs.setSubDomainOffset(region, offset)
 
     else:
