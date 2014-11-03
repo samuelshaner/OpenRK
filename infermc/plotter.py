@@ -23,7 +23,7 @@ FILE_FORMATS = ['png', 'jpg', 'pdf', 'svg', 'eps', 'pkl']
 
 # Dictionary of data point sizes for each domain type
 SCATTER_SIZES = dict()
-SCATTER_SIZES['distribcell'] = 20
+SCATTER_SIZES['distribcell'] = 30
 SCATTER_SIZES['material'] = 100
 SCATTER_SIZES['cell'] = 100
 SCATTER_SIZES['universe'] = 100
@@ -299,38 +299,60 @@ def scatter_neighbor_xs(multigroup_xs, filename, nuclide,
   global SCATTER_SIZES
 
   fig = plt.figure()
+  ax = fig.add_subplot(111)
   axis_formatter = matplotlib.ticker.ScalarFormatter(useOffset=False)
 
   # Get the cross-section type and domain
   xs_type = multigroup_xs._xs_type
   domain = multigroup_xs._domain
 
-  # Get the cross-section data for all subdomains
-  data = multigroup_xs.getXS(groups=energy_groups, nuclides=[nuclide])
-
   # Get the neighbor ID for each data point
   neighbors = multigroup_xs.getSubDomainNeighbors()
+  unique_neighbors = np.unique(neighbors)
 
-  # If the user requested uncertainties, find 1-sigma "radius" for each point
-  if uncertainties:
-    x_std_dev = multigroup_xs.getXS(groups=[energy_groups[0]],
-                                  nuclides=[nuclide], metric='std_dev')
-    y_std_dev = multigroup_xs.getXS(groups=[energy_groups[1]],
-                                  nuclides=[nuclide], metric='std_dev')
-    radii = np.sqrt(x_std_dev**2 + y_std_dev**2)
+  # Initialize a color map for each neighbor
+  np.random.seed(1)
+  color_map = np.linspace(0., 1., len(unique_neighbors), endpoint=False)
+  np.random.shuffle(color_map)
+  color_map = itertools.cycle(matplotlib.cm.hsv(color_map))
 
-  # Plot the data for all subdomains color-coded by neighbor ID
-  if uncertainties:
-    plt.scatter(data[:,0,...].ravel(), data[:,1,...].ravel(), c=neighbors,
-                edgecolors='k', s=radii, alpha=0.6)
-  else:
-    plt.scatter(data[:,0,...].ravel(), data[:,1,...].ravel(), c=neighbors,
-                edgecolors='k', s=SCATTER_SIZES['distribcell'])
+  # Initialize lists to store plot handles and labels to create a legend
+  plots = list()
+  labels = list()
+
+  for unique_neighbor in unique_neighbors:
+
+    subdomains = multigroup_xs.getNeighborSubDomains(unique_neighbor)
+
+    # Get the cross-section data for all subdomains
+    data = multigroup_xs.getXS(groups=energy_groups,
+                               subdomains=subdomains, nuclides=[nuclide])
+
+    # If the user requested uncertainties, find 1-sigma "radius" for each point
+    if uncertainties:
+      x_std_dev = multigroup_xs.getXS(groups=[energy_groups[0]],
+                                      subdomains=subdomains,
+                                    nuclides=[nuclide], metric='std_dev')
+      y_std_dev = multigroup_xs.getXS(groups=[energy_groups[1]],
+                                      subdomain=subdomains,
+                                    nuclides=[nuclide], metric='std_dev')
+      radii = np.sqrt(x_std_dev**2 + y_std_dev**2)
+
+    label = 'neighbor {0}'.format(unique_neighbor)
+    labels.append(label)
+
+    # Plot the data for all subdomains color-coded by neighbor ID
+    if uncertainties:
+      plots.append(plt.scatter(data[:,0,...].ravel(), data[:,1,...].ravel(),
+                   c=next(color_map), edgecolors='k', s=radii, alpha=0.6))
+    else:
+      plots.append(ax.scatter(data[:,0,...].ravel(), data[:,1,...].ravel(),
+                   c=next(color_map), edgecolors='k', s=SCATTER_SIZES['distribcell']))
 
   plt.xlabel('Group {0} [barns]'.format(energy_groups[0]))
   plt.ylabel('Group {0} [barns]'.format(energy_groups[1]))
-  plt.title('{0} {1} Cross-Section'.format(nuclide._name,
-                                           xs_type.capitalize()))
+  plt.title('{0} {1} Cross-Section'.format(nuclide._name, xs_type.capitalize()))
+  plt.legend(plots, labels, scatterpoints=1, loc='best', fontsize=12)
   plt.grid()
 
   if not xlim is None:
@@ -339,7 +361,6 @@ def scatter_neighbor_xs(multigroup_xs, filename, nuclide,
   if not ylim is None:
     plt.ylim(ylim)
 
-  ax = plt.subplot(111)
   ax.yaxis.set_major_formatter(axis_formatter)
   ax.xaxis.set_major_formatter(axis_formatter)
 
