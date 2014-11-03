@@ -404,8 +404,6 @@ class MicroXS(infermc.MultiGroupXS):
             for group in range(self._num_groups):
               subtable = list()
               subtable.append(group+1)
-              print average.shape
-              print i, group, nuclide
               subtable.append(average[i, group, ..., nuclide])
               subtable.append(rel_err[i, group, ..., nuclide])
               table.append(subtable)
