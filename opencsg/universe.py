@@ -15,7 +15,7 @@ import copy, math
 
 # Error threshold for determining how close to the boundary of a Lattice cell
 # a Point needs to be to be considered on it
-ON_LATTICE_CELL_THRESH = 1e-12
+ON_LATTICE_CELL_THRESH = 1e-06
 
 # Error threshold for directional components very close to parallel with axes
 PARALLEL_TO_AXIS_THRESHOLD = 1e-5

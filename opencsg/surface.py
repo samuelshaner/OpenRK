@@ -13,6 +13,9 @@ import copy
 # Threshold for determining how close a point must be to a surface to be on it
 ON_SURFACE_THRESH = 1e-12
 
+# Threshold for determining if particle is travelling parallel to axis
+PARALLEL_TO_AXIS_THRESH = 1e-5
+
 # A list of all IDs for all Surfaces created
 SURFACE_IDS = list()
 
@@ -1349,9 +1352,6 @@ class ZCylinder(Cylinder):
 
     super(ZCylinder, self).minSurfaceDist(point, direction)
 
-    if self.onSurface(point):
-      return 0.
-
     x, y, z = point._coords
     u, v, w = direction.normalize()
 
@@ -1884,6 +1884,38 @@ class XSquarePrism(SquarePrism):
     return max(Ry, Rz)
 
 
+  def minSurfaceDist(self, point, direction):
+
+    super(XSquarePrism, self).minSurfaceDist(point, direction)
+
+    if self.onSurface(point):
+      return 0.
+
+    x, y, z = point._coords
+    u, v, w = direction.normalize()
+
+    dist_y = (np.sign(v)*self._coeffs['R'] - y)/v
+    dist_z = (np.sign(w)*self._coeffs['R'] - z)/w
+
+    if abs(v) < PARALLEL_TO_AXIS_THRESH:
+      dist_y = 0.
+    if abs(w) < PARALLEL_TO_AXIS_THRESH:
+      dist_z = 0.
+
+    for dist in [dist_y, dist_z]:
+      new_x = x + dist*u
+      new_y = y + dist*v
+      new_z = z + dist*w
+      if (abs((abs(new_y) - self._coeffs['R'])) < ON_SURFACE_THRESH and
+         abs(new_z) < self._coeffs['R']) or \
+         (abs((abs(new_z) - self._coeffs['R'])) < ON_SURFACE_THRESH and
+          abs(new_y) < self._coeffs['R']):
+        intersect = Point()
+        intersect.setCoords((new_x, new_y, new_z))
+        dist = point.distanceToPoint(intersect)
+        return dist
+
+
 class YSquarePrism(SquarePrism):
 
   def __init__(self, surface_id=None, name='',
@@ -2062,6 +2094,37 @@ class YSquarePrism(SquarePrism):
     Rz = abs(self._coeffs['z0'] - z) - self._coeffs['R']
 
     return max(Rx, Rz)
+
+  def minSurfaceDist(self, point, direction):
+
+    super(YSquarePrism, self).minSurfaceDist(point, direction)
+
+    if self.onSurface(point):
+      return 0.
+
+    x, y, z = point._coords
+    u, v, w = direction.normalize()
+
+    dist_x = (np.sign(u)*self._coeffs['R'] - x)/u
+    dist_z = (np.sign(w)*self._coeffs['R'] - z)/w
+
+    if abs(u) < PARALLEL_TO_AXIS_THRESH:
+      dist_x = 0.
+    if abs(w) < PARALLEL_TO_AXIS_THRESH:
+      dist_z = 0.
+
+    for dist in [dist_x, dist_z]:
+      new_x = x + dist*u
+      new_y = y + dist*v
+      new_z = z + dist*w
+      if (abs((abs(new_x) - self._coeffs['R'])) < ON_SURFACE_THRESH and
+         abs(new_z) < self._coeffs['R']) or \
+         (abs((abs(new_z) - self._coeffs['R'])) < ON_SURFACE_THRESH and
+          abs(new_x) < self._coeffs['R']):
+        intersect = Point()
+        intersect.setCoords((new_x, new_y, new_z))
+        dist = point.distanceToPoint(intersect)
+        return dist
 
 
 class ZSquarePrism(SquarePrism):
@@ -2242,3 +2305,35 @@ class ZSquarePrism(SquarePrism):
     Ry = abs(self._coeffs['y0'] - y) - self._coeffs['R']
 
     return max(Rx, Ry)
+
+
+  def minSurfaceDist(self, point, direction):
+
+    super(ZSquarePrism, self).minSurfaceDist(point, direction)
+
+    if self.onSurface(point):
+      return 0.
+
+    x, y, z = point._coords
+    u, v, w = direction.normalize()
+
+    dist_x = (np.sign(u)*self._coeffs['R'] - x)/u
+    dist_y = (np.sign(v)*self._coeffs['R'] - y)/v
+
+    if abs(u) < PARALLEL_TO_AXIS_THRESH:
+      dist_x = 0.
+    if abs(v) < PARALLEL_TO_AXIS_THRESH:
+      dist_y = 0.
+
+    for dist in [dist_x, dist_y]:
+      new_x = x + dist*u
+      new_y = y + dist*v
+      new_z = z + dist*w
+      if (abs((abs(new_x) - self._coeffs['R'])) < ON_SURFACE_THRESH and
+         abs(new_y) < self._coeffs['R']) or \
+         (abs((abs(new_y) - self._coeffs['R'])) < ON_SURFACE_THRESH and
+          abs(new_x) < self._coeffs['R']):
+        intersect = Point()
+        intersect.setCoords((new_x, new_y, new_z))
+        dist = point.distanceToPoint(intersect)
+        return dist

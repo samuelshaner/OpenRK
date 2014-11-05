@@ -175,7 +175,7 @@ class Direction(object):
     square_comps = self._comps**2
     r = np.sqrt(np.sum(square_comps))
     phi = np.arctan2(v, u)
-    theta = np.arcsin(np.sqrt((square_comps[0] + square_comps[1])/r))
+    theta = np.arcsin(np.sqrt((square_comps[0] + square_comps[1]))/r)
     
     return np.array([r,phi,theta])
 

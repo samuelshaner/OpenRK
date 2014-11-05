@@ -1,6 +1,6 @@
 from opencsg import *
 import opencsg.plotter as plotter
-
+import time
 
 ###############################################################################
 ###########################   Creating Materials   ############################
@@ -148,7 +148,7 @@ geometry.setVolume(16., tolerance=1e-1)
 
 print('Tracing Sample Rays...')
 
-num_rays = 100
+num_rays = 1000
 
 rays = list()
 bounds = geometry.getBounds()
@@ -174,6 +174,7 @@ for ray in xrange(num_rays):
 
   u, v = np.random.rand(2)-0.5
   w = 0.
+
   point = Point(x=x, y=y, z=z)
   direction = Direction(u=u, v=v, w=w)
   ray = Ray(point=point, direction=direction)
@@ -190,5 +191,5 @@ print('Plotting Geometry...')
 #plotter.plot_cells(geometry)
 #plotter.plot_materials(geometry)
 #plotter.plot_regions(geometry)
-#plotter.plot_neighbor_cells(geometry)
-plotter.plot_segments(rays, geometry)
+#plotter.plot_neighbor_cells(geometry#)
+#plotter.plot_segments(rays, geometry)
