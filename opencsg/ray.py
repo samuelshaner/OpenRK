@@ -12,6 +12,7 @@ class Ray(object):
 
   def __init__(self, point=None, direction=None):
 
+    # Initializing length 10 array in order avoid many resizings
     self._segments = np.empty(shape=(10), dtype=object)
     self._num_segments = 0
 
@@ -28,11 +29,11 @@ class Ray(object):
     # If this is the first time we have tried to copy this object, create a copy
     if existing is None:
 
-      clone = type(self).__new__(type(self))
-      clone._point = copy.deepcopy(self._point)
-      clone._direction = copy.deepcopy(self._direction)
-      clone._segments = copy.deepcopy(self._segments)
-      clone._num_segments = copy.deepcopy(self._num_segments)
+      clone = type(self).__new__(type(self), memo)
+      clone._point = copy.deepcopy(self._point, memo)
+      clone._direction = copy.deepcopy(self._direction, memo)
+      clone._segments = copy.deepcopy(self._segments, memo)
+      clone._num_segments = copy.deepcopy(self._num_segments, memo)
       return clone
 
     # If this object has been copied before, return the first copy made
@@ -52,19 +53,9 @@ class Ray(object):
 
   def setDirection(self, direction):
 
-    if not isinstance(direction, Direction):
-      msg = 'Unable to set direction for ray to {0} since it is ' \
-            'not a point object'.format(direction)
-      raise ValueError(msg)
-
     self._direction = direction
 
   def addSegment(self, segment):
-
-    if not isinstance(segment, Segment):
-      msg = 'Unable to add segment to ray since it is ' \
-            'not a segment object'
-      raise ValueError(msg)
 
     if self._segments.shape[0] <= self._num_segments:
       self._segments = np.append(self._segments, np.empty(shape=(10), dtype = object))
@@ -111,10 +102,10 @@ class Segment(object):
     # If this is the first time we have tried to copy this object, create a copy
     if existing is None:
 
-      clone = type(self).__new__(type(self))
-      clone._region_id = copy.deepcopy(self._region_id)
-      clone._cell = copy.deepcopy(self._cell_id)
-      clone._length = copy.deepcopy(self._length)
+      clone = type(self).__new__(type(self), memo)
+      clone._region_id = copy.deepcopy(self._region_id, memo)
+      clone._cell = copy.deepcopy(self._cell_id, memo)
+      clone._length = copy.deepcopy(self._length, memo)
       return clone
 
     # If this object has been copied before, return the first copy made
@@ -122,18 +113,10 @@ class Segment(object):
       return existing
 
   def setRegion(self, region_id):
-    if not is_integer(region_id):
-      msg = 'Unable to set region id for segment to {0} since it is ' \
-            'not an integer'.format(region_id)
-      raise ValueError(msg)
 
     self._region_id = region_id
 
   def setCell(self, cell_id):
-    if not is_integer(cell_id):
-      msg = 'Unable to set cell for segment to {0} since it is ' \
-            'not an integer'.format(cell_id)
-      raise ValueError(msg)
 
     self._cell_id = cell_id
 
@@ -148,7 +131,7 @@ class Segment(object):
     string += '{0: <16}{1}{2}\n'.format('\tLength', '=\t', self._length)
     return string
 
-def exportRays(rays, directory = 'csg-data/', filename = 'rays-data.h5'):
+def exportRays(rays, directory = 'ray-segments/', filename = 'rays-data.h5'):
 
   # creates folder to contain rays data file if one does not exist
   if not os.path.exists(directory):
@@ -173,7 +156,7 @@ def exportRays(rays, directory = 'csg-data/', filename = 'rays-data.h5'):
 
   f.close()
 
-def importRays(directory = 'csg-data/', filename = 'rays-data.h5'):
+def importRays(directory = 'ray-segments/', filename = 'rays-data.h5'):
 
   # checks to see if folder exists and raises error otherwise
   if not os.path.exists(directory + filename):

@@ -1,6 +1,5 @@
 from opencsg import *
 import opencsg.plotter as plotter
-import time
 
 ###############################################################################
 ###########################   Creating Materials   ############################
@@ -18,11 +17,10 @@ water = Material(name='Water')
 
 print('Creating Surfaces...')
 
-cylinder = ZCylinder(x0=0.0, y0=0.0, R=0.7)
-left = XPlane(boundary='reflective', x0=-4.0)
-right = XPlane(boundary='reflective', x0=4.0)
-top = YPlane(boundary='reflective', y0=4.0)
-bottom = YPlane(boundary='reflective', y0=-4.0)
+cylinder = ZCylinder(x0=0.0, y0=0.0, R=1.0)
+box = ZSquarePrism(x0=0., y0=0., R=2.0)
+box.setBoundaryType('reflective')
+
 
 ###############################################################################
 ###########################   Creating Universes  #############################
@@ -32,7 +30,6 @@ print('Creating Universes...')
 
 universes = list()
 universes.append(Universe(name='Pin'))
-universes.append(Universe(name='Small Lattice'))
 universes.append(Universe(universe_id=0, name='Root Universe'))
 
 
@@ -45,20 +42,14 @@ print('Creating Cells...')
 cells = list()
 cells.append(Cell(name='Fuel', fill=uo2))
 cells.append(Cell(name='Water', fill=water))
-cells.append(Cell(name='Small Lattice'))
 cells.append(Cell(name='Root Cell'))
 
 cells[0].addSurface(halfspace=-1, surface=cylinder)
 cells[1].addSurface(halfspace=+1, surface=cylinder)
-
-cells[3].addSurface(halfspace=+1, surface=left)
-cells[3].addSurface(halfspace=-1, surface=right)
-cells[3].addSurface(halfspace=-1, surface=top)
-cells[3].addSurface(halfspace=+1, surface=bottom)
+cells[2].addSurface(halfspace=-1, surface=box)
 
 universes[0].addCells(cells[0:2])
 universes[1].addCell(cells[2])
-universes[2].addCell(cells[3])
 
 
 ###############################################################################
@@ -67,7 +58,6 @@ universes[2].addCell(cells[3])
 
 print('Meshing the Cells...')
 
-'''
 mesh = RadialMesh()
 mesh.setNumRings(3)
 mesh.setMaxRadius(1.0)
@@ -83,7 +73,7 @@ new_cells = mesh.subdivideCell(cell=cells[1], universe=universes[0])
 
 mesh = SectorMesh(num_sectors=8)
 mesh.subdivideUniverse(universe=universes[0])
-'''
+
 
 ###############################################################################
 ###########################   Creating Lattices   #############################
@@ -91,34 +81,13 @@ mesh.subdivideUniverse(universe=universes[0])
 
 print('Creating Lattices...')
 
-# Initialize Lattices
-lattices = list()
-lattices.append(Lattice(name='2x2 assembly'))
-lattices.append(Lattice(name='2x2 core'))
+lattice = Lattice(name='1x1')
+lattice.setWidth((4.0, 4.0))
+lattice.setDimension((1, 1))
+lattice.setUniverses([[universes[0]]])
 
-# 2x2 Pin fuel assembly
-lattices[0].setWidth((2.0, 2.0))
-lattices[0].setDimension((2, 2))
+cells[2].setFill(lattice)
 
-pin_template = [[1, 1],
-                [1, 1]]
-
-for i in range(len(pin_template)):
-  for j in range(len(pin_template[i])):
-    pin_template[i][j] = universes[pin_template[i][j]-1]
-
-lattices[0].setUniverses(pin_template)
-cells[2].setFill(lattices[0])
-
-# 2x2 fuel assembly core
-lattices[1].setWidth((4.0,4.0))
-lattices[1].setDimension((2,2))
-
-assembly_template = [[universes[1], universes[1]],
-                     [universes[1], universes[1]]]
-
-lattices[1].setUniverses(assembly_template)
-cells[3].setFill(lattices[1])
 
 ###############################################################################
 ##########################   Creating the Geometry   ##########################
@@ -127,9 +96,11 @@ cells[3].setFill(lattices[1])
 print('Creating Geometry...')
 
 geometry = Geometry()
-geometry.setRootUniverse(universes[2])
+geometry.setRootUniverse(universes[1])
 
 geometry.initializeCellOffsets()
+geometry.setVolume(volume=16., tolerance=1e-1)
+
 
 ###############################################################################
 ###############################   Ray Tracing   ###############################
@@ -137,9 +108,39 @@ geometry.initializeCellOffsets()
 
 print('Tracing Sample Rays...')
 
-rays = geometry.generateRays(num_rays=300)
+num_rays = 1000
+
+rays = list()
+bounds = geometry.getBounds()
+
+# initialize random rays
+for ray in xrange(num_rays):
+  edge = np.random.randint(4)
+  if edge == 0:
+    x = bounds[edge] + TINY_BIT
+    y = np.random.uniform(bounds[2], bounds[3])
+    z = np.random.uniform(-1e12, 1e12)
+  elif edge == 1:
+    x = bounds[edge] - TINY_BIT
+    y = np.random.uniform(bounds[2], bounds[3])
+    z = np.random.uniform(-1e12, 1e12)
+  elif edge == 2:
+    x = np.random.uniform(bounds[0], bounds[1])
+    y = bounds[edge] + TINY_BIT
+    z = np.random.uniform(-1e12, 1e12)
+  else:
+    x = np.random.uniform(bounds[0], bounds[1])
+    y = bounds[edge] - TINY_BIT
+    z = np.random.uniform(-1e12, 1e12)
+
+  u, v = np.random.rand(2)-0.5
+  w = 0.
+  point = Point(x=x, y=y, z=z)
+  direction = Direction(u=u, v=v, w=w)
+  ray = Ray(point=point, direction=direction)
+  rays.append(ray)
+
 rays = geometry.traceRays(rays)
-rays = opencsg.ray.importRays()
 
 
 ###############################################################################
@@ -148,8 +149,8 @@ rays = opencsg.ray.importRays()
 
 print('Plotting Geometry...')
 
-#plotter.plot_segments(rays, geometry)
 #plotter.plot_cells(geometry)
 #plotter.plot_materials(geometry)
 #plotter.plot_regions(geometry)
-
+#plotter.plot_neighbor_cells(geometry)
+#plotter.plot_segments(rays, geometry)

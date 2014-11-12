@@ -8,6 +8,7 @@ from opencsg.point import *
 from opencsg.ray import *
 import copy
 
+# Small displacement for moving a point across a surface in ray tracing
 TINY_BIT = 1e-10
 
 def reset_auto_ids():
@@ -482,15 +483,16 @@ class Geometry(object):
       direction = ray._direction
 
       # traces ray until edge of the geometry is reached
-      while True:
-        intersect = self.getNearestIntersection(start, direction)
-        if intersect is None:
-          break
+      intersect = self.getNearestIntersection(start, direction)
+
+      while intersect is not None:
         segment = Segment(geometry=self, start=start, end=intersect)
         ray.addSegment(segment)
 
         # adjusts next segment in ray to start at found intersection
         start.setCoords(intersect._coords + TINY_BIT*direction._comps)
+        intersect = self.getNearestIntersection(start,direction)
+
     return rays
 
   def getNeighbors(self, region_id):

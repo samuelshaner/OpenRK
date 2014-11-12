@@ -380,8 +380,7 @@ def plot_neighbor_cells(geometry, plane='xy', offset=0.,
   plt.close(fig)
 
 
-def plot_segments(rays, geometry, plane='xy', offset=0.,
-                  gridsize=250, linewidths=1):
+def plot_segments(rays, geometry, plane='xy', linewidths=1):
 
   global SUBDIRECTORY
 
@@ -401,16 +400,6 @@ def plot_segments(rays, geometry, plane='xy', offset=0.,
           'a Geometry class object'
     raise ValueError(msg)
 
-  if not is_integer(gridsize):
-    msg = 'Unable to plot the segments since the gridsize {0} is' \
-          'is not an integer'.format(gridsize)
-    raise ValueError(msg)
-
-  if gridsize <= 0:
-    msg = 'Unable to plot the segments with a negative ' \
-          'gridsize {0}'.format(gridsize)
-    raise ValueError(msg)
-
   if not is_integer(linewidths):
     msg = 'Unable to plot the segments since the linewidths {0} is' \
           'is not an integer'.format(linewidths)
@@ -424,11 +413,6 @@ def plot_segments(rays, geometry, plane='xy', offset=0.,
   if plane not in ['xy', 'xz', 'yz']:
     msg = 'Unable to plot the segments with an invalid ' \
         'plane {0}. Plane options xy, xz, yz'.format(plane)
-    raise ValueError(msg)
-
-  if not is_float(offset):
-    msg = 'Unable to plot the neighbor cells since the offset {0} is' \
-          'is not a float'.format(offset)
     raise ValueError(msg)
 
   print('Plotting the Segments...')
@@ -445,9 +429,6 @@ def plot_segments(rays, geometry, plane='xy', offset=0.,
 
   # Initialize a NumPy array for the segment colors
   colors = list()
-
-  # Retrieve the pixel coordinates
-  coords = get_pixel_coords(geometry, plane, offset, gridsize)
 
   # Generate start and end points for segments and assign color by region id
   segments = list()
@@ -481,8 +462,6 @@ def plot_segments(rays, geometry, plane='xy', offset=0.,
   lc = matplotlib.collections.LineCollection(segments, colors=colors, linewidths=linewidths)
   fig, ax = plt.subplots()
   ax.add_collection(lc)
-  plt.xlim(coords['x'][0], coords['x'][-1])
-  plt.ylim(coords['y'][0], coords['y'][-1])
   plt.title('Segments ' + plane)
   ax.margins(0)
   filename = SUBDIRECTORY + 'segments-' + plane + '.png'

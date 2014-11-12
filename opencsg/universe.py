@@ -639,7 +639,7 @@ class Lattice(Universe):
       clone._type = self._type
       clone._dimension = self._dimension
       clone._width = self._width
-      clone._width = self._halfwidth
+      clone._halfwidth = self._halfwidth
 
       clone._universes = np.empty(self._universes.shape, dtype=Universe)
       for i in range(self._dimension[0]):
@@ -1345,16 +1345,6 @@ class Lattice(Universe):
       raise ValueError(msg)
 
   def minSurfaceDist(self, point, direction):
-
-    if not isinstance(point, Point):
-      msg = 'Unable to get intersection point with Surface ID={0} ' \
-            'since the input is not a Point object'.format(self._id)
-      raise ValueError(msg)
-
-    if not isinstance(direction, Direction):
-      msg = 'Unable to get intersection point with Surface ID={0} ' \
-            'since the input is not a Direction object'.format(self._id)
-      raise ValueError(msg)
 
     x, y, z = point._coords
     u, v, w = direction.normalize()

@@ -176,18 +176,6 @@ class Surface(object):
       return False
 
 
-  def minSurfaceDist(self, point, direction):
-    if not isinstance(point, Point):
-      msg = 'Unable to get intersection point with Surface ID={0} ' \
-            'since the input is not a Point object'.format(self._id)
-      raise ValueError(msg)
-
-    if not isinstance(direction, Direction):
-      msg = 'Unable to get intersection point with Surface ID={0} ' \
-            'since the input is not a Direction object'.format(self._id)
-      raise ValueError(msg)
-
-
   def setId(self, surface_id=None):
 
     global SURFACE_IDS
@@ -373,8 +361,6 @@ class Plane(Surface):
     return value
 
   def minSurfaceDist(self, point, direction):
-    
-    super(Plane, self).minSurfaceDist(point, direction)
 
     if self.onSurface(point):
       return 0.
@@ -918,8 +904,6 @@ class XCylinder(Cylinder):
 
   def minSurfaceDist(self, point, direction):
 
-    super(XCylinder, self).minSurfaceDist(point, direction)
-
     if self.onSurface(point):
       return 0.
 
@@ -1132,8 +1116,6 @@ class YCylinder(Cylinder):
     return (r - self._coeffs['R'])
 
   def minSurfaceDist(self, point, direction):
-
-    super(YCylinder, self).minSurfaceDist(point, direction)
 
     if self.onSurface(point):
       return 0.
@@ -1349,8 +1331,6 @@ class ZCylinder(Cylinder):
     return (r - self._coeffs['R'])
 
   def minSurfaceDist(self, point, direction):
-
-    super(ZCylinder, self).minSurfaceDist(point, direction)
 
     x, y, z = point._coords
     u, v, w = direction.normalize()
@@ -1643,8 +1623,6 @@ class Sphere(Surface):
 
   def minSurfaceDist(self, point, direction):
 
-    super(Sphere, self).minSurfaceDist(point, direction)
-
     if self.onSurface(point):
       return 0.
 
@@ -1886,8 +1864,6 @@ class XSquarePrism(SquarePrism):
 
   def minSurfaceDist(self, point, direction):
 
-    super(XSquarePrism, self).minSurfaceDist(point, direction)
-
     if self.onSurface(point):
       return 0.
 
@@ -2096,8 +2072,6 @@ class YSquarePrism(SquarePrism):
     return max(Rx, Rz)
 
   def minSurfaceDist(self, point, direction):
-
-    super(YSquarePrism, self).minSurfaceDist(point, direction)
 
     if self.onSurface(point):
       return 0.
@@ -2308,8 +2282,6 @@ class ZSquarePrism(SquarePrism):
 
 
   def minSurfaceDist(self, point, direction):
-
-    super(ZSquarePrism, self).minSurfaceDist(point, direction)
 
     if self.onSurface(point):
       return 0.

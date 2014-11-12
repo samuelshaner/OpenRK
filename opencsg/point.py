@@ -3,7 +3,6 @@ __email__ = 'wboyd@mit.edu'
 
 
 
-from opencsg import *
 import numpy as np
 import copy
 
@@ -40,38 +39,21 @@ class Point(object):
 
   def setCoords(self, coords):
 
-    if not isinstance(coords, tuple) and len(coords) != 3:
-      msg = 'Unable to set coords for point to {0} since it is ' \
-            'not a 3D tuple'.format(coords)
-      raise ValueError(msg)
-
     self.setX(coords[0])
     self.setY(coords[1])
     self.setZ(coords[2])
 
   def setX(self, x):
-    if not is_integer(x) and not is_float(x):
-      msg = 'Unable to set x coordinate for point to {0} since it is ' \
-            'not an integer or floating point value'.format(x)
-      raise ValueError(msg)
 
     self._coords[0] = np.float64(x)
 
 
   def setY(self, y):
-    if not is_integer(y) and not is_float(y):
-      msg = 'Unable to set y coordinate for point to {0} since it is ' \
-            'not an integer or floating point value'.format(y)
-      raise ValueError(msg)
 
     self._coords[1] = np.float64(y)
 
 
   def setZ(self, z):
-    if not is_integer(z) and not is_float(z):
-      msg = 'Unable to set z coordinate for point to {0} since it is ' \
-            'not an integer or floating point value'.format(z)
-      raise ValueError(msg)
 
     self._coords[2] = np.float64(z)
 
@@ -109,9 +91,9 @@ class Direction(object):
     # If this is the first time we have tried to copy this object, create a copy
     if existing is None:
 
-      clone = type(self).__new__(type(self))
-      clone._comps = copy.deepcopy(self._comps)
-      clone._is_normalized = copy.deepcopy(self._is_normalized)
+      clone = type(self).__new__(type(self), memo)
+      clone._comps = copy.deepcopy(self._comps, memo)
+      clone._is_normalized = copy.deepcopy(self._is_normalized, memo)
       return clone
 
     # If this object has been copied before, return the first copy made
@@ -121,38 +103,21 @@ class Direction(object):
 
   def setComps(self, comps):
 
-    if not isinstance(comps, tuple) and len(comps) != 3:
-      msg = 'Unable to set comps for direction to {0} since it is ' \
-            'not a 3D tuple'.format(comps)
-      raise ValueError(msg)
-
     self.setU(comps[0])
     self.setV(comps[1])
     self.setW(comps[2])
 
   def setU(self, u):
-    if not is_integer(u) and not is_float(u):
-      msg = 'Unable to set u component for direction to {0} since it is ' \
-            'not an integer or floating point value'.format(u)
-      raise ValueError(msg)
 
     self._comps[0] = np.float64(u)
     self._is_normalized = False
 
   def setV(self, v):
-    if not is_integer(v) and not is_float(v):
-      msg = 'Unable to set v component for point to {0} since it is ' \
-            'not an integer or floating point value'.format(v)
-      raise ValueError(msg)
 
     self._comps[1] = np.float64(v)
     self._is_normalized = False
 
   def setW(self, w):
-    if not is_integer(w) and not is_float(w):
-      msg = 'Unable to set w component for point to {0} since it is ' \
-            'not an integer or floating point value'.format(w)
-      raise ValueError(msg)
 
     self._comps[2] = np.float64(w)
     self._is_normalized = False
@@ -182,5 +147,5 @@ class Direction(object):
   def __repr__(self):
 
     string = 'Direction\n'
-    string += '{0: <16}{1}{2}\n'.format('\tComps', '=\t', self._comps)
+    string += '{0: <16}{1}{2}\n'.format('\tComponents', '=\t', self._comps)
     return string
