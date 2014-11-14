@@ -2,6 +2,8 @@ __author__ = 'Will Boyd'
 __email__ = 'wboyd@mit.edu'
 
 
+from point import Point, Direction
+from checkvalue import *
 from opencsg.point import Point
 from opencsg.checkvalue import *
 import numpy as np
@@ -10,6 +12,9 @@ import copy
 
 # Threshold for determining how close a point must be to a surface to be on it
 ON_SURFACE_THRESH = 1e-12
+
+# Threshold for determining if particle is travelling parallel to axis
+PARALLEL_TO_AXIS_THRESH = 1e-5
 
 # A list of all IDs for all Surfaces created
 SURFACE_IDS = list()
@@ -57,7 +62,7 @@ class Surface(object):
     self._neighbor_cells[+1] = set()
 
     # A dictionary of the quadratic surface coefficients
-    # Key   - coefficient name
+    # Key - coefficient name
     # Value - coefficient value
     self._coeffs = dict()
 
@@ -185,7 +190,7 @@ class Surface(object):
     elif is_integer(surface_id):
 
       # If the Material already has an ID, remove it from global list
-      if not self._id is None:
+      if self._id is not None:
         SURFACE_IDS.remove(self._id)
 
       elif surface_id in SURFACE_IDS:
@@ -289,16 +294,16 @@ class Plane(Surface):
     self._coeffs['C'] = None
     self._coeffs['D'] = None
 
-    if not A is None:
+    if A is not None:
       self.setA(A)
 
-    if not B is None:
+    if B is not None:
       self.setB(B)
 
-    if not C is None:
+    if C is not None:
       self.setC(C)
 
-    if not D is None:
+    if D is not None:
       self.setD(D)
 
 
@@ -355,7 +360,34 @@ class Plane(Surface):
 
     return value
 
+  def minSurfaceDist(self, point, direction):
 
+    if self.onSurface(point):
+      return 0.
+
+    x, y, z = point._coords
+    u, v, w = direction.normalize()
+    
+    numerator = self._coeffs['D'] - \
+                self._coeffs['A'] * x - \
+                self._coeffs['B'] * y - \
+                self._coeffs['C'] * z
+    denominator = self._coeffs['A'] * u + \
+                  self._coeffs['B'] * v + \
+                  self._coeffs['C'] * w
+
+    if abs(denominator) < ON_SURFACE_THRESH:
+      return None
+
+    dist = numerator/denominator
+
+    if dist < 0:
+      return None
+
+    intersect = Point()
+    intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
+    dist = point.distanceToPoint(intersect)
+    return dist
 
 class XPlane(Plane):
 
@@ -369,7 +401,7 @@ class XPlane(Plane):
     self._type = 'x-plane'
     self._coeffs['x0'] = None
 
-    if not x0 is None:
+    if x0 is not None:
       self.setX0(x0)
 
 
@@ -439,6 +471,28 @@ class XPlane(Plane):
     self._min_x = np.float64(x0)
 
 
+  def minSurfaceDist(self, point, direction):
+
+    super(XPlane, self).minSurfaceDist(point, direction)
+
+    if self.onSurface(point):
+      return 0.
+
+    x, y, z = point._coords
+    u, v, w = direction.normalize()
+
+    if abs(u) < ON_SURFACE_THRESH:
+      return None
+
+    dist = (self._coeffs['x0'] - x)/u
+
+    if dist < 0:
+      return None
+
+    intersect = Point()
+    intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
+    dist = point.distanceToPoint(intersect)
+    return dist
 
 class YPlane(Plane):
 
@@ -452,7 +506,7 @@ class YPlane(Plane):
     self._type = 'y-plane'
     self._coeffs['y0'] = None
 
-    if not y0 is None:
+    if y0 is not None:
       self.setY0(y0)
 
 
@@ -521,6 +575,29 @@ class YPlane(Plane):
     self._min_y = np.float64(y0)
 
 
+  def minSurfaceDist(self, point, direction):
+
+    super(YPlane, self).minSurfaceDist(point, direction)
+
+    if self.onSurface(point):
+      return 0.
+
+    x, y, z = point._coords
+    u, v, w = direction.normalize()
+
+    if abs(v) < ON_SURFACE_THRESH:
+      return None
+
+    dist = (self._coeffs['y0'] - y)/v
+
+    if dist < 0:
+      return None
+
+    intersect = Point()
+    intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
+    dist = point.distanceToPoint(intersect)
+    return dist
+
 class ZPlane(Plane):
 
   def __init__(self, surface_id=None, name='',
@@ -533,7 +610,7 @@ class ZPlane(Plane):
     self._type = 'z-plane'
     self._coeffs['z0'] = None
 
-    if not z0 is None:
+    if z0 is not None:
       self.setZ0(z0)
 
 
@@ -602,6 +679,28 @@ class ZPlane(Plane):
     self._min_z = z0
 
 
+  def minSurfaceDist(self, point, direction):
+
+    super(ZPlane, self).minSurfaceDist(point, direction)
+
+    if self.onSurface(point):
+      return 0.
+
+    x, y, z = point._coords
+    u, v, w = direction.normalize()
+
+    if abs(w) < ON_SURFACE_THRESH:
+      return None
+
+    dist = (self._coeffs['z0'] - z)/w
+
+    if dist < 0:
+      return None
+
+    intersect = Point()
+    intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
+    dist = point.distanceToPoint(intersect)
+    return dist
 
 class Cylinder(Surface):
 
@@ -638,13 +737,13 @@ class XCylinder(Cylinder):
     self._coeffs['z0'] = 0.
     self._coeffs['R'] = None
 
-    if not y0 is None:
+    if y0 is not None:
       self.setY0(y0)
 
-    if not z0 is None:
+    if z0 is not None:
       self.setZ0(z0)
 
-    if not R is None:
+    if R is not None:
       self.setR(R)
 
 
@@ -761,7 +860,7 @@ class XCylinder(Cylinder):
 
     self._coeffs['y0'] = np.float64(y0)
 
-    if not self._coeffs['R'] is None:
+    if self._coeffs['R'] is not None:
       self._max_y = y0 + self._coeffs['R']
       self._min_y = y0 - self._coeffs['R']
 
@@ -775,7 +874,7 @@ class XCylinder(Cylinder):
 
     self._coeffs['z0'] = np.float64(z0)
 
-    if not self._coeffs['R'] is None:
+    if self._coeffs['R'] is not None:
       self._max_z = z0 + self._coeffs['R']
       self._min_z = z0 - self._coeffs['R']
 
@@ -784,11 +883,11 @@ class XCylinder(Cylinder):
 
     super(XCylinder, self).setR(R)
 
-    if not self._coeffs['y0'] is None:
+    if self._coeffs['y0'] is not None:
       self._max_y = self._coeffs['y0'] + self._coeffs['R']
       self._min_y = self._coeffs['y0'] - self._coeffs['R']
 
-    if not self._coeffs['z0'] is None:
+    if self._coeffs['z0'] is not None:
       self._max_z = self._coeffs['z0'] + self._coeffs['R']
       self._min_z = self._coeffs['z0'] - self._coeffs['R']
 
@@ -802,6 +901,41 @@ class XCylinder(Cylinder):
         (coords[2] - self._coeffs['z0'])**2
     r = np.sqrt(r2)
     return (r - self._coeffs['R'])
+
+  def minSurfaceDist(self, point, direction):
+
+    if self.onSurface(point):
+      return 0.
+
+    x, y, z = point._coords
+    u, v, w = direction.normalize()
+
+    ybar = y-self._coeffs['y0']
+    zbar = z-self._coeffs['z0']
+    a = v**2 + w**2
+    k = ybar*v + zbar*w
+    c = ybar**2 + zbar**2 - self._coeffs['R']**2
+
+    if abs(a) < ON_SURFACE_THRESH or k**2-a*c < 0:
+      return None
+
+    if c < 0:
+      dist = (-k + np.sqrt(k**2-a*c))/a
+      intersect = Point()
+      intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
+      dist = point.distanceToPoint(intersect)
+      return dist
+
+    else:
+      dist = (-k - np.sqrt(k**2-a*c))/a
+      if dist > 0:
+        intersect = Point()
+        intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
+        dist = point.distanceToPoint(intersect)
+        return dist
+
+      else:
+        return None
 
 
 class YCylinder(Cylinder):
@@ -817,13 +951,13 @@ class YCylinder(Cylinder):
     self._coeffs['z0'] = 0.
     self._coeffs['R'] = None
 
-    if not x0 is None:
+    if x0 is not None:
       self.setX0(x0)
 
-    if not z0 is None:
+    if z0 is not None:
       self.setZ0(z0)
 
-    if not R is None:
+    if R is not None:
       self.setR(R)
 
 
@@ -939,7 +1073,7 @@ class YCylinder(Cylinder):
 
     self._coeffs['x0'] = np.float64(x0)
 
-    if not self._coeffs['R'] is None:
+    if self._coeffs['R'] is not None:
       self._max_x = x0 + self._coeffs['R']
       self._min_x = x0 - self._coeffs['R']
 
@@ -953,7 +1087,7 @@ class YCylinder(Cylinder):
 
     self._coeffs['z0'] = np.float64(z0)
 
-    if not self._coeffs['R'] is None:
+    if self._coeffs['R'] is not None:
       self._max_z = z0 + self._coeffs['R']
       self._min_z = z0 - self._coeffs['R']
 
@@ -962,11 +1096,11 @@ class YCylinder(Cylinder):
 
     super(YCylinder, self).setR(R)
 
-    if not self._coeffs['x0'] is None:
+    if self._coeffs['x0'] is not None:
       self._max_x = self._coeffs['x0'] + self._coeffs['R']
       self._min_x = self._coeffs['x0'] - self._coeffs['R']
 
-    if not self._coeffs['z0'] is None:
+    if self._coeffs['z0'] is not None:
       self._max_z = self._coeffs['z0'] + self._coeffs['R']
       self._min_z = self._coeffs['z0'] - self._coeffs['R']
 
@@ -980,6 +1114,41 @@ class YCylinder(Cylinder):
         (coords[2] - self._coeffs['z0'])**2
     r = np.sqrt(r2)
     return (r - self._coeffs['R'])
+
+  def minSurfaceDist(self, point, direction):
+
+    if self.onSurface(point):
+      return 0.
+
+    x, y, z = point._coords
+    u, v, w = direction.normalize()
+
+    xbar = x-self._coeffs['x0']
+    zbar = z-self._coeffs['z0']
+    a = u**2 + w**2
+    k = xbar*u + zbar*w
+    c = xbar**2 + zbar**2 - self._coeffs['R']**2
+
+    if abs(a) < ON_SURFACE_THRESH or k**2-a*c < 0:
+      return None
+
+    if c < 0:
+      dist = (-k + np.sqrt(k**2-a*c))/a
+      intersect = Point()
+      intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
+      dist = point.distanceToPoint(intersect)
+      return dist
+
+    else:
+      dist = (-k - np.sqrt(k**2-a*c))/a
+      if dist > 0:
+        intersect = Point()
+        intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
+        dist = point.distanceToPoint(intersect)
+        return dist
+
+      else:
+        return None
 
 
 class ZCylinder(Cylinder):
@@ -996,13 +1165,13 @@ class ZCylinder(Cylinder):
     self._coeffs['R'] = None
 
 
-    if not x0 is None:
+    if x0 is not None:
       self.setX0(x0)
 
-    if not y0 is None:
+    if y0 is not None:
       self.setY0(y0)
 
-    if not R is None:
+    if R is not None:
       self.setR(R)
 
 
@@ -1119,7 +1288,7 @@ class ZCylinder(Cylinder):
 
     self._coeffs['x0'] = np.float64(x0)
 
-    if not self._coeffs['R'] is None:
+    if self._coeffs['R'] is not None:
       self._max_x = x0 + self._coeffs['R']
       self._min_x = x0 - self._coeffs['R']
 
@@ -1133,7 +1302,7 @@ class ZCylinder(Cylinder):
 
     self._coeffs['y0'] = np.float64(y0)
 
-    if not self._coeffs['R'] is None:
+    if self._coeffs['R'] is not None:
       self._max_y = y0 + self._coeffs['R']
       self._min_y = y0 - self._coeffs['R']
 
@@ -1142,11 +1311,11 @@ class ZCylinder(Cylinder):
 
     super(ZCylinder, self).setR(R)
 
-    if not self._coeffs['x0'] is None:
+    if self._coeffs['x0'] is not None:
       self._max_x = self._coeffs['x0'] + self._coeffs['R']
       self._min_x = self._coeffs['x0'] - self._coeffs['R']
 
-    if not self._coeffs['y0'] is None:
+    if self._coeffs['y0'] is not None:
       self._max_y = self._coeffs['y0'] + self._coeffs['R']
       self._min_y = self._coeffs['y0'] - self._coeffs['R']
 
@@ -1161,7 +1330,37 @@ class ZCylinder(Cylinder):
     r = np.sqrt(r2)
     return (r - self._coeffs['R'])
 
+  def minSurfaceDist(self, point, direction):
 
+    x, y, z = point._coords
+    u, v, w = direction.normalize()
+
+    xbar = x-self._coeffs['x0']
+    ybar = y-self._coeffs['y0']
+    a = u**2 + v**2
+    k = xbar*u + ybar*v
+    c = xbar**2 + ybar**2 - self._coeffs['R']**2
+
+    if abs(a) < ON_SURFACE_THRESH or k**2-a*c < 0:
+      return None
+
+    if c < 0:
+      dist = (-k + np.sqrt(k**2-a*c))/a
+      intersect = Point()
+      intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
+      dist = point.distanceToPoint(intersect)
+      return dist
+
+    else:
+      dist = (-k - np.sqrt(k**2-a*c))/a
+      if dist > 0:
+        intersect = Point()
+        intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
+        dist = point.distanceToPoint(intersect)
+        return dist
+
+      else:
+        return None
 
 class Sphere(Surface):
 
@@ -1177,16 +1376,16 @@ class Sphere(Surface):
     self._coeffs['z0'] = None
     self._coeffs['R'] = None
 
-    if not x0 is None:
+    if x0 is not None:
       self.setX0(x0)
 
-    if not y0 is None:
+    if y0 is not None:
       self.setY0(y0)
 
-    if not z0 is None:
+    if z0 is not None:
       self.setZ0(z0)
 
-    if not R is None:
+    if R is not None:
       self.setZ0(R)
 
 
@@ -1355,7 +1554,7 @@ class Sphere(Surface):
 
     self._coeffs['x0'] = np.float64(x0)
 
-    if not self._coeffs['R'] is None:
+    if self._coeffs['R'] is not None:
       self._max_x = x0 + self._coeffs['R']
       self._min_x = x0 - self._coeffs['R']
 
@@ -1369,7 +1568,7 @@ class Sphere(Surface):
 
     self._coeffs['y0'] = np.float64(y0)
 
-    if not self._coeffs['R'] is None:
+    if self._coeffs['R'] is not None:
       self._max_y = y0 + self._coeffs['R']
       self._min_y = y0 - self._coeffs['R']
 
@@ -1383,7 +1582,7 @@ class Sphere(Surface):
 
     self._coeffs['z0'] = np.float64(z0)
 
-    if not self._coeffs['R'] is None:
+    if self._coeffs['R'] is not None:
       self._max_z = z0 + self._coeffs['R']
       self._min_z = z0 - self._coeffs['R']
 
@@ -1397,15 +1596,15 @@ class Sphere(Surface):
 
     self._coeffs['R'] = np.float64(R)
 
-    if not self._coeffs['x0'] is None:
+    if self._coeffs['x0'] is not None:
       self._max_x = self._coeffs['x0'] + R
       self._min_x = self._coeffs['x0'] - R
 
-    if not self._coeffs['y0'] is None:
+    if self._coeffs['y0'] is not None:
       self._max_y = self._coeffs['y0'] + R
       self._min_y = self._coeffs['y0'] - R
 
-    if not self._coeffs['z0'] is None:
+    if self._coeffs['z0'] is not None:
       self._max_z = self._coeffs['z0'] + R
       self._min_z = self._coeffs['z0'] - R
 
@@ -1422,6 +1621,43 @@ class Sphere(Surface):
     R = np.sqrt(R2)
     return (R - self._coeffs['R'])
 
+  def minSurfaceDist(self, point, direction):
+
+    if self.onSurface(point):
+      return 0.
+
+    x, y, z = point._coords
+    u, v, w = direction.normalize()
+
+    xbar = x-self._coeffs['x0']
+    ybar = y-self._coeffs['y0']
+    zbar = z-self._coeffs['z0']
+    k = xbar*u + ybar*v + zbar*w
+    c = xbar**2 + ybar**2 + zbar**2 - self._coeffs['R']**2
+
+    if k**2-c < 0:
+      return None
+
+
+    if c < 0:
+      dist = (-k + np.sqrt(k**2-c))
+      intersect = Point()
+      intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
+      dist = point.distanceToPoint(intersect)
+      return dist
+
+
+    else:
+      dist1 = (-k + np.sqrt(k**2-c))
+      dist2 = (-k - np.sqrt(k**2-c))
+      if abs(dist1) < abs(dist2):
+        dist = dist1
+      else:
+        dist = dist2
+      intersect = Point()
+      intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
+      dist = point.distanceToPoint(intersect)
+      return dist
 
 
 class SquarePrism(Surface):
@@ -1459,13 +1695,13 @@ class XSquarePrism(SquarePrism):
     self._coeffs['z0'] = 0.
     self._coeffs['R'] = None
 
-    if not y0 is None:
+    if y0 is not None:
       self.setY0(y0)
 
-    if not z0 is None:
+    if z0 is not None:
       self.setZ0(z0)
 
-    if not R is None:
+    if R is not None:
       self.setR(R)
 
 
@@ -1582,7 +1818,7 @@ class XSquarePrism(SquarePrism):
 
     self._coeffs['x0'] = np.float64(y0)
 
-    if not self._coeffs['R'] is None:
+    if self._coeffs['R'] is not None:
       self._max_x = y0 + self._coeffs['R']
       self._min_x = y0 - self._coeffs['R']
 
@@ -1596,7 +1832,7 @@ class XSquarePrism(SquarePrism):
 
     self._coeffs['z0'] = np.float64(z0)
 
-    if not self._coeffs['R'] is None:
+    if self._coeffs['R'] is not None:
       self._max_y = z0 + self._coeffs['R']
       self._min_y = z0 - self._coeffs['R']
 
@@ -1605,11 +1841,11 @@ class XSquarePrism(SquarePrism):
 
     super(XSquarePrism, self).setR(R)
 
-    if not self._coeffs['y0'] is None:
+    if self._coeffs['y0'] is not None:
       self._max_y = self._coeffs['y0'] + R
       self._min_y = self._coeffs['y0'] - R
 
-    if not self._coeffs['z0'] is None:
+    if self._coeffs['z0'] is not None:
       self._max_z = self._coeffs['z0'] + R
       self._min_z = self._coeffs['z0'] - R
 
@@ -1626,6 +1862,36 @@ class XSquarePrism(SquarePrism):
     return max(Ry, Rz)
 
 
+  def minSurfaceDist(self, point, direction):
+
+    if self.onSurface(point):
+      return 0.
+
+    x, y, z = point._coords
+    u, v, w = direction.normalize()
+
+    dist_y = (np.sign(v)*self._coeffs['R'] - y)/v
+    dist_z = (np.sign(w)*self._coeffs['R'] - z)/w
+
+    if abs(v) < PARALLEL_TO_AXIS_THRESH:
+      dist_y = 0.
+    if abs(w) < PARALLEL_TO_AXIS_THRESH:
+      dist_z = 0.
+
+    for dist in [dist_y, dist_z]:
+      new_x = x + dist*u
+      new_y = y + dist*v
+      new_z = z + dist*w
+      if (abs((abs(new_y) - self._coeffs['R'])) < ON_SURFACE_THRESH and
+         abs(new_z) < self._coeffs['R']) or \
+         (abs((abs(new_z) - self._coeffs['R'])) < ON_SURFACE_THRESH and
+          abs(new_y) < self._coeffs['R']):
+        intersect = Point()
+        intersect.setCoords((new_x, new_y, new_z))
+        dist = point.distanceToPoint(intersect)
+        return dist
+
+
 class YSquarePrism(SquarePrism):
 
   def __init__(self, surface_id=None, name='',
@@ -1639,13 +1905,13 @@ class YSquarePrism(SquarePrism):
     self._coeffs['z0'] = 0.
     self._coeffs['R'] = None
 
-    if not x0 is None:
+    if x0 is not None:
       self.setX0(x0)
 
-    if not z0 is None:
+    if z0 is not None:
       self.setZ0(z0)
 
-    if not R is None:
+    if R is not None:
       self.setR(R)
 
 
@@ -1762,7 +2028,7 @@ class YSquarePrism(SquarePrism):
 
     self._coeffs['x0'] = np.float64(x0)
 
-    if not self._coeffs['R'] is None:
+    if self._coeffs['R'] is not None:
       self._max_x = x0 + self._coeffs['R']
       self._min_x = x0 - self._coeffs['R']
 
@@ -1776,7 +2042,7 @@ class YSquarePrism(SquarePrism):
 
     self._coeffs['z0'] = np.float64(z0)
 
-    if not self._coeffs['R'] is None:
+    if self._coeffs['R'] is not None:
       self._max_y = z0 + self._coeffs['R']
       self._min_y = z0 - self._coeffs['R']
 
@@ -1785,11 +2051,11 @@ class YSquarePrism(SquarePrism):
 
     super(YSquarePrism, self).setR(R)
 
-    if not self._coeffs['x0'] is None:
+    if self._coeffs['x0'] is not None:
       self._max_x = self._coeffs['x0'] + R
       self._min_x = self._coeffs['x0'] - R
 
-    if not self._coeffs['z0'] is None:
+    if self._coeffs['z0'] is not None:
       self._max_z = self._coeffs['z0'] + R
       self._min_z = self._coeffs['z0'] - R
 
@@ -1805,6 +2071,35 @@ class YSquarePrism(SquarePrism):
 
     return max(Rx, Rz)
 
+  def minSurfaceDist(self, point, direction):
+
+    if self.onSurface(point):
+      return 0.
+
+    x, y, z = point._coords
+    u, v, w = direction.normalize()
+
+    dist_x = (np.sign(u)*self._coeffs['R'] - x)/u
+    dist_z = (np.sign(w)*self._coeffs['R'] - z)/w
+
+    if abs(u) < PARALLEL_TO_AXIS_THRESH:
+      dist_x = 0.
+    if abs(w) < PARALLEL_TO_AXIS_THRESH:
+      dist_z = 0.
+
+    for dist in [dist_x, dist_z]:
+      new_x = x + dist*u
+      new_y = y + dist*v
+      new_z = z + dist*w
+      if (abs((abs(new_x) - self._coeffs['R'])) < ON_SURFACE_THRESH and
+         abs(new_z) < self._coeffs['R']) or \
+         (abs((abs(new_z) - self._coeffs['R'])) < ON_SURFACE_THRESH and
+          abs(new_x) < self._coeffs['R']):
+        intersect = Point()
+        intersect.setCoords((new_x, new_y, new_z))
+        dist = point.distanceToPoint(intersect)
+        return dist
+
 
 class ZSquarePrism(SquarePrism):
 
@@ -1819,13 +2114,13 @@ class ZSquarePrism(SquarePrism):
     self._coeffs['y0'] = 0.
     self._coeffs['R'] = None
 
-    if not x0 is None:
+    if x0 is not None:
       self.setX0(x0)
 
-    if not y0 is None:
+    if y0 is not None:
       self.setY0(y0)
 
-    if not R is None:
+    if R is not None:
       self.setR(R)
 
 
@@ -1942,7 +2237,7 @@ class ZSquarePrism(SquarePrism):
 
     self._coeffs['x0'] = np.float64(x0)
 
-    if not self._coeffs['R'] is None:
+    if self._coeffs['R'] is not None:
       self._max_x = x0 + self._coeffs['R']
       self._min_x = x0 - self._coeffs['R']
 
@@ -1956,7 +2251,7 @@ class ZSquarePrism(SquarePrism):
 
     self._coeffs['y0'] = np.float64(y0)
 
-    if not self._coeffs['R'] is None:
+    if self._coeffs['R'] is not None:
       self._max_y = y0 + self._coeffs['R']
       self._min_y = y0 - self._coeffs['R']
 
@@ -1965,11 +2260,11 @@ class ZSquarePrism(SquarePrism):
 
     super(ZSquarePrism, self).setR(R)
 
-    if not self._coeffs['x0'] is None:
+    if self._coeffs['x0'] is not None:
       self._max_x = self._coeffs['x0'] + R
       self._min_x = self._coeffs['x0'] - R
 
-    if not self._coeffs['y0'] is None:
+    if self._coeffs['y0'] is not None:
       self._max_y = self._coeffs['y0'] + R
       self._min_y = self._coeffs['y0'] - R
 
@@ -1984,3 +2279,33 @@ class ZSquarePrism(SquarePrism):
     Ry = abs(self._coeffs['y0'] - y) - self._coeffs['R']
 
     return max(Rx, Ry)
+
+
+  def minSurfaceDist(self, point, direction):
+
+    if self.onSurface(point):
+      return 0.
+
+    x, y, z = point._coords
+    u, v, w = direction.normalize()
+
+    dist_x = (np.sign(u)*self._coeffs['R'] - x)/u
+    dist_y = (np.sign(v)*self._coeffs['R'] - y)/v
+
+    if abs(u) < PARALLEL_TO_AXIS_THRESH:
+      dist_x = 0.
+    if abs(v) < PARALLEL_TO_AXIS_THRESH:
+      dist_y = 0.
+
+    for dist in [dist_x, dist_y]:
+      new_x = x + dist*u
+      new_y = y + dist*v
+      new_z = z + dist*w
+      if (abs((abs(new_x) - self._coeffs['R'])) < ON_SURFACE_THRESH and
+         abs(new_y) < self._coeffs['R']) or \
+         (abs((abs(new_y) - self._coeffs['R'])) < ON_SURFACE_THRESH and
+          abs(new_x) < self._coeffs['R']):
+        intersect = Point()
+        intersect.setCoords((new_x, new_y, new_z))
+        dist = point.distanceToPoint(intersect)
+        return dist

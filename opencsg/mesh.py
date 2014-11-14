@@ -21,7 +21,7 @@ class RadialMesh(object):
     self._with_outer = False
     self._with_inner = False
 
-    if not num_rings is None:
+    if num_rings is not None:
       self.setNumRings(num_rings)
 
 
@@ -388,7 +388,7 @@ class SectorMesh(object):
     # Initialize SectorMesh class attributes
     self._num_sectors = 0.
 
-    if not num_sectors is None:
+    if num_sectors is not None:
       self.setNumSectors(num_sectors)
 
 

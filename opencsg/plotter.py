@@ -380,6 +380,93 @@ def plot_neighbor_cells(geometry, plane='xy', offset=0.,
   plt.close(fig)
 
 
+def plot_segments(rays, geometry, plane='xy', linewidths=1):
+
+  global SUBDIRECTORY
+
+  # Make directory if it does not exist
+  if not os.path.exists(SUBDIRECTORY):
+    os.makedirs(SUBDIRECTORY)
+
+  # Error checking
+  for ray in rays:
+    if not isinstance(ray, Ray):
+      msg = 'Unable to plot the segments since input does not ' \
+            'completely consist of ray objects'
+      raise ValueError(msg)
+
+  if not isinstance(geometry, Geometry):
+    msg = 'Unable to plot the segments since input was not ' \
+          'a Geometry class object'
+    raise ValueError(msg)
+
+  if not is_integer(linewidths):
+    msg = 'Unable to plot the segments since the linewidths {0} is' \
+          'is not an integer'.format(linewidths)
+    raise ValueError(msg)
+
+  if linewidths <= 0:
+    msg = 'Unable to plot the segments with a negative ' \
+          'linewidths {0}'.format(linewidths)
+    raise ValueError(msg)
+
+  if plane not in ['xy', 'xz', 'yz']:
+    msg = 'Unable to plot the segments with an invalid ' \
+        'plane {0}. Plane options xy, xz, yz'.format(plane)
+    raise ValueError(msg)
+
+  print('Plotting the Segments...')
+
+  # Get the number of regions
+  num_regions = geometry._num_regions
+
+  # Create array of equally spaced randomized floats as a color map for plots
+  # Seed the NumPy random number generator to ensure reproducible color maps
+  numpy.random.seed(1)
+  color_map = list()
+  for i in xrange(num_regions):
+    color_map.append(np.random.rand(4))
+
+  # Initialize a NumPy array for the segment colors
+  colors = list()
+
+  # Generate start and end points for segments and assign color by region id
+  segments = list()
+  for ray in rays:
+    start = Point()
+    start.setCoords(ray._point._coords)
+    dir = ray._direction.toPolar()
+    for segment in xrange(ray._num_segments):
+      colors.append(color_map[ray._segments[segment]._region_id % num_regions])
+      length = ray._segments[segment]._length
+      x = start._coords[0] + length*np.sin(dir[2])*np.cos(dir[1])
+      y = start._coords[1] + length*np.sin(dir[2])*np.sin(dir[1])
+      z = start._coords[2] + length*np.cos(dir[2])
+      end = np.array([x, y, z])
+      if plane == 'xy':
+        segments.append([start._coords[:2], end[:2]])
+        start = Point()
+        start.setCoords(end + TINY_BIT*ray._direction._comps)
+      elif plane == 'xz':
+        segments.append([start._coords[::2], end[::2]])
+        start = Point()
+        start.setCoords(end + TINY_BIT*ray._direction._comps)
+      elif plane == 'yz':
+        segments.append([start._coords[1:], end[1:]])
+        start = Point()
+        start.setCoords(end + TINY_BIT*ray._direction._comps)
+
+  colors = np.array(colors)
+
+  # Plot a 2D color map of the segments
+  lc = matplotlib.collections.LineCollection(segments, colors=colors, linewidths=linewidths)
+  fig, ax = plt.subplots()
+  ax.add_collection(lc)
+  plt.title('Segments ' + plane)
+  ax.margins(0)
+  filename = SUBDIRECTORY + 'segments-' + plane + '.png'
+  fig.savefig(filename, bbox_inches='tight')
+
 def get_pixel_coords(geometry, plane, offset, gridsize):
 
   # initialize variables to be returned

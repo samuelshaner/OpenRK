@@ -103,6 +103,47 @@ geometry.setVolume(volume=16., tolerance=1e-1)
 
 
 ###############################################################################
+###############################   Ray Tracing   ###############################
+###############################################################################
+
+print('Tracing Sample Rays...')
+
+num_rays = 1000
+
+rays = list()
+bounds = geometry.getBounds()
+
+# initialize random rays
+for ray in xrange(num_rays):
+  edge = np.random.randint(4)
+  if edge == 0:
+    x = bounds[edge] + TINY_BIT
+    y = np.random.uniform(bounds[2], bounds[3])
+    z = np.random.uniform(-1e12, 1e12)
+  elif edge == 1:
+    x = bounds[edge] - TINY_BIT
+    y = np.random.uniform(bounds[2], bounds[3])
+    z = np.random.uniform(-1e12, 1e12)
+  elif edge == 2:
+    x = np.random.uniform(bounds[0], bounds[1])
+    y = bounds[edge] + TINY_BIT
+    z = np.random.uniform(-1e12, 1e12)
+  else:
+    x = np.random.uniform(bounds[0], bounds[1])
+    y = bounds[edge] - TINY_BIT
+    z = np.random.uniform(-1e12, 1e12)
+
+  u, v = np.random.rand(2)-0.5
+  w = 0.
+  point = Point(x=x, y=y, z=z)
+  direction = Direction(u=u, v=v, w=w)
+  ray = Ray(point=point, direction=direction)
+  rays.append(ray)
+
+rays = geometry.traceRays(rays)
+
+
+###############################################################################
 ##########################   Plotting the Geometry   ##########################
 ###############################################################################
 
@@ -112,4 +153,4 @@ print('Plotting Geometry...')
 #plotter.plot_materials(geometry)
 #plotter.plot_regions(geometry)
 #plotter.plot_neighbor_cells(geometry)
-
+#plotter.plot_segments(rays, geometry)
