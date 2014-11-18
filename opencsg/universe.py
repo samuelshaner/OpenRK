@@ -383,7 +383,7 @@ class Universe(object):
     self._cells.clear()
 
 
-  def containsCell(cell=None, cell_id=None, name=None):
+  def containsCell(self, cell=None, cell_id=None, name=None):
 
     if not cell is None:
       for cell_id in self._cells.keys():
@@ -1129,6 +1129,10 @@ class Lattice(Universe):
     
     self._universes = np.asarray(universes, dtype=Universe)
 
+    # Reverse the NumPy array such that it matches
+    # the ordered seen by the user in the input file
+    self._universes = self._universes[:,::-1,:]
+
     for i in range(self._dimension[0]):
       for j in range(self._dimension[1]):
         for k in range(self._dimension[2]):
@@ -1699,6 +1703,7 @@ class Cell(object):
 
     self._fill = fill
 
+
   def setRotation(self, rotation):
 
     # TODO: error checking
@@ -1720,18 +1725,19 @@ class Cell(object):
     psi = -self._rotation[2] * math.pi / 180.
 
     # Calculate rotation matrix based on angles given
+    # Indexed by (y,x) since the universe array is indexed by (z,y,z)
     self._rotation_matrix = np.zeros((3,3), dtype=np.float64)
     self._rotation_matrix[0,0] = math.cos(theta) * math.cos(psi)
-    self._rotation_matrix[0,1] = math.cos(theta) * math.sin(psi)
-    self._rotation_matrix[0,2] = -math.sin(theta)
-    self._rotation_matrix[1,0] = -math.cos(phi) * math.sin(psi) + \
+    self._rotation_matrix[1,0] = math.cos(theta) * math.sin(psi)
+    self._rotation_matrix[2,0] = -math.sin(theta)
+    self._rotation_matrix[0,1] = -math.cos(phi) * math.sin(psi) + \
                                  math.sin(phi) * math.sin(theta) * math.cos(psi)
     self._rotation_matrix[1,1] = math.cos(phi) * math.cos(psi) + \
                                  math.sin(phi) * math.sin(theta) * math.sin(psi)
-    self._rotation_matrix[1,2] = math.sin(phi) * math.cos(theta)
-    self._rotation_matrix[2,0] = math.sin(phi) * math.sin(psi) + \
+    self._rotation_matrix[2,1] = math.sin(phi) * math.cos(theta)
+    self._rotation_matrix[0,2] = math.sin(phi) * math.sin(psi) + \
                                  math.cos(phi) * math.sin(theta) * math.cos(psi)
-    self._rotation_matrix[2,1] = -math.sin(phi) * math.cos(psi) + \
+    self._rotation_matrix[1,2] = -math.sin(phi) * math.cos(psi) + \
                                  math.cos(phi) * math.sin(theta) * math.sin(psi)
     self._rotation_matrix[2,2] = math.cos(phi) * math.cos(theta)
 
