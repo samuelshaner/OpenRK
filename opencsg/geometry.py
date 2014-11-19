@@ -4,8 +4,12 @@ __email__ = 'wboyd@mit.edu'
 
 import opencsg
 from opencsg.universe import *
-from opencsg.point import Point
+from opencsg.point import *
+from opencsg.ray import *
+import copy
 
+# Small displacement for moving a point across a surface in ray tracing
+TINY_BIT = 1e-10
 
 def reset_auto_ids():
   opencsg.reset_auto_material_id()
@@ -334,7 +338,7 @@ class Geometry(object):
     if coords._cell is None:
       return np.nan
 
-    while not coords is None:
+    while coords is not None:
 
       # The coords is a UnivCoords object
       if isinstance(coords, UnivCoords):
@@ -406,11 +410,91 @@ class Geometry(object):
 
     return localcoords
 
+  def getNearestIntersection(self, point, direction):
+
+    x, y, z = point._coords
+    distances = []
+
+    # initialize linked list for point
+    next = self.findCoords(x=x, y=y, z=z)
+
+    # Loop through linked list and retrieve intersection distances
+    while next is not None:
+      if isinstance(next, UnivCoords):
+        cell = next._cell
+        if cell is not None:
+          surfaces = cell._surfaces
+          for surface in surfaces.values():
+            dist = surface[0].minSurfaceDist(next._point, direction)
+            if dist is not None:
+              distances.append(dist)
+
+      elif isinstance(next, LatCoords):
+        lat = next._lattice
+        x_lat, y_lat, z_lat = next._point._coords - lat._offset
+        x_lat = x_lat + 0.5*lat._dimension[0]*lat._width[0] - next._lat_x*lat._width[0] - lat._halfwidth[0]
+        y_lat = y_lat + 0.5*lat._dimension[1]*lat._width[1] - next._lat_y*lat._width[1] - lat._halfwidth[1]
+        z_lat = z_lat + 0.5*lat._dimension[2]*lat._width[2] - next._lat_z*lat._width[2] - lat._halfwidth[2]
+        lat_point = Point(x=x_lat, y=y_lat, z=z_lat)
+        dist = lat.minSurfaceDist(lat_point, direction)
+        if dist is not None:
+          distances.append(dist)
+
+      next = next._next
+
+    if distances == []:
+      return None
+
+
+    # find smallest distance
+    min_dist = min(distances)
+
+
+    # sets coordinates for nearest intersection
+    nearestpoint = Point()
+    poldir = direction.toPolar()
+    sines = np.sin(poldir)
+    cosines = np.cos(poldir)
+    nearestpoint.setX(point._coords[0] + min_dist*sines[2]*cosines[1])
+    nearestpoint.setY(point._coords[1] + min_dist*sines[2]*sines[1])
+    nearestpoint.setZ(point._coords[2] + min_dist*cosines[2])
+
+    return nearestpoint
+
+  def getShortestSegment(self, point, direction):
+
+    intersect = self.getNearestIntersection(point, direction)
+    if intersect is None:
+      return None
+
+    segment = Segment(geometry=self, start=point, end=intersect)
+    return segment
+
+  def traceRays(self, rays):
+
+    start = Point()
+    for ray in rays:
+
+      # sets starting point of ray
+      start.setCoords(ray._point._coords)
+      direction = ray._direction
+
+      # traces ray until edge of the geometry is reached
+      intersect = self.getNearestIntersection(start, direction)
+
+      while intersect is not None:
+        segment = Segment(geometry=self, start=start, end=intersect)
+        ray.addSegment(segment)
+
+        # adjusts next segment in ray to start at found intersection
+        start.setCoords(intersect._coords + TINY_BIT*direction._comps)
+        intersect = self.getNearestIntersection(start,direction)
+
+    return rays
 
   def getNeighbors(self, region_id):
     coords = self.findRegion(region_id)
     return coords.getNeighbors()
-
 
   def getUniqueNeighbors(self, region_id):
     coords = self.findRegion(region_id)
@@ -456,7 +540,6 @@ class Geometry(object):
         self._unique_neighbor_ids[unique_neighbors]
 
     return self._regions_to_unique_neighbors[region_id]
-
 
   def toString(self):
     string = self._root_universe.toString()

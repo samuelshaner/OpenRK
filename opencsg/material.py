@@ -80,7 +80,7 @@ class Material(object):
     elif is_integer(material_id):
 
       # If the Material already has an ID, remove it from global list
-      if not self._id is None:
+      if self._id is not None:
         MATERIAL_IDS.remove(self._id)
 
       if material_id in MATERIAL_IDS:

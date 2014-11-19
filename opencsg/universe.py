@@ -5,7 +5,7 @@ import warnings
 
 from opencsg.material import Material
 from opencsg.surface import Surface, ON_SURFACE_THRESH
-from opencsg.point import Point
+from opencsg.point import Point, Direction
 from opencsg.checkvalue import *
 from collections import OrderedDict
 from hashlib import sha1
@@ -16,7 +16,10 @@ import copy, math
 
 # Error threshold for determining how close to the boundary of a Lattice cell
 # a Point needs to be to be considered on it
-ON_LATTICE_CELL_THRESH = 1e-12
+ON_LATTICE_CELL_THRESH = 1e-06
+
+# Error threshold for directional components very close to parallel with axes
+PARALLEL_TO_AXIS_THRESHOLD = 1e-5
 
 # Lists of all IDs for all Universes created
 UNIVERSE_IDS = list()
@@ -309,7 +312,7 @@ class Universe(object):
     elif is_integer(universe_id):
 
       # If the Universe already has an ID, remove it from global list
-      if not self._id is None:
+      if self._id is not None:
         UNIVERSE_IDS.remove(self._id)
 
       if universe_id in UNIVERSE_IDS:
@@ -385,16 +388,16 @@ class Universe(object):
 
   def containsCell(self, cell=None, cell_id=None, name=None):
 
-    if not cell is None:
+    if cell is not None:
       for cell_id in self._cells.keys():
         if cell == self._cells[cell_id]:
           return True
 
-    if not cell_id is None:
+    if cell_id is not None:
       if cell_id in self._cells.keys():
         return True
 
-    if not name is None:
+    if name is not None:
       for cell_id in self._cells.keys():
         if cell._name == self._cells[cell_id]._name:
           return True
@@ -496,9 +499,6 @@ class Universe(object):
           if not cell._rotation is None:
             point = localcoords._point
             point._coords = np.dot(cell._rotation_matrix, point._coords)
-#            print('rotated point in cell {0}'.format(cell._name))
-#            print('{0}'.format(point))
-#            print localcoords.getHeadNode()
 
           if isinstance(fill, Lattice):
             next_coords = LatCoords(localcoords._point)
@@ -620,6 +620,7 @@ class Lattice(Universe):
     self._type = ''
     self._dimension = None
     self._width = None
+    self._halfwidth = None
     self._universes = None
     self._cell_offsets = None
     self._num_regions = None
@@ -648,6 +649,7 @@ class Lattice(Universe):
       clone._type = self._type
       clone._dimension = self._dimension
       clone._width = self._width
+      clone._halfwidth = self._halfwidth
 
       clone._universes = np.empty(self._universes.shape, dtype=Universe)
       for i in range(self._dimension[0]):
@@ -977,7 +979,7 @@ class Lattice(Universe):
     elif is_integer(lattice_id):
 
       # If the Lattice already has an ID, remove it from global list
-      if not self._id is None:
+      if self._id is not None:
         UNIVERSE_IDS.remove(self._id)
 
       if lattice_id in UNIVERSE_IDS:
@@ -1109,10 +1111,12 @@ class Lattice(Universe):
     # Initialize width array to infinity by default
     self._width = np.zeros(3, dtype=np.float64)
     self._width[:] = MAX_FLOAT
+    self._halfwidth = np.zeros(3, dtype=np.float64)
+    self._halfwidth[:] = MAX_FLOAT
 
     for i in range(len(width)):
       self._width[i] = width[i]
-
+      self._halfwidth[i] = width[i]/2
 
   def setUniverses(self, universes):
 
@@ -1126,17 +1130,18 @@ class Lattice(Universe):
     shape = np.shape(universes)
     if len(shape) == 2:
       universes = [universes]
-    
-    self._universes = np.asarray(universes, dtype=Universe)
+
+    universes = np.asarray(universes, dtype=Universe)
+    self._universes = copy.deepcopy(universes)
+    max_y = self._dimension[1]-1
 
     # Reverse the NumPy array such that it matches
     # the ordered seen by the user in the input file
-    self._universes = self._universes[:,::-1,:]
-
     for i in range(self._dimension[0]):
       for j in range(self._dimension[1]):
         for k in range(self._dimension[2]):
 
+          self._universes[k][j][i] = universes[k][max_y-j][i]
           universe = self._universes[k][j][i]
 
           if self._width[0] != MAX_FLOAT:
@@ -1173,7 +1178,7 @@ class Lattice(Universe):
   def initializeCellOffsets(self):
 
     # If we have already called this routine, return the total number of regions
-    if not self._num_regions is None:
+    if self._num_regions is not None:
       return self._num_regions
 
     # Initialize an array for the cell offsets
@@ -1398,6 +1403,49 @@ class Lattice(Universe):
             'ID={1}'.format(region_id, self._id)
       raise ValueError(msg)
 
+  def minSurfaceDist(self, point, direction):
+
+    x, y, z = point._coords
+    u, v, w = direction.normalize()
+
+    # Compute the distance to the Lattice cell boundaries
+    dist_x = (np.sign(u)*self._halfwidth[0] - x)/u
+    dist_y = (np.sign(v)*self._halfwidth[1] - y)/v
+    dist_z = (np.sign(w)*self._halfwidth[2] - z)/w
+
+    # Check if ray is parallel to a lattice wall
+    if abs(u) < PARALLEL_TO_AXIS_THRESHOLD:
+      dist_x = 0
+    if abs(v) < PARALLEL_TO_AXIS_THRESHOLD:
+      dist_y = 0
+    if abs(w) < PARALLEL_TO_AXIS_THRESHOLD:
+      dist_z = 0
+
+    # Check if point is on lattice boundary and return
+    if dist_x < ON_LATTICE_CELL_THRESH and abs(u) > PARALLEL_TO_AXIS_THRESHOLD:
+      return 0.
+
+    if dist_y < ON_LATTICE_CELL_THRESH and abs(v) > PARALLEL_TO_AXIS_THRESHOLD:
+      return 0.
+
+    if dist_z < ON_LATTICE_CELL_THRESH and abs(w) > PARALLEL_TO_AXIS_THRESHOLD:
+      return 0.
+
+    # Find intersection in lattice cell
+    for dist in [dist_x, dist_y, dist_z]:
+      new_x = x + dist*u
+      new_y = y + dist*v
+      new_z = z + dist*w
+      if (abs((abs(new_x) - self._halfwidth[0])) < ON_LATTICE_CELL_THRESH and
+         abs(new_y) < self._halfwidth[1] and abs(new_z) < self._halfwidth[2]) or \
+         (abs((abs(new_y) - self._halfwidth[1])) < ON_LATTICE_CELL_THRESH and
+         abs(new_x) < self._halfwidth[0] and abs(new_z) < self._halfwidth[2]) or \
+         (abs((abs(new_z) - self._halfwidth[2])) < ON_LATTICE_CELL_THRESH and
+         abs(new_x) < self._halfwidth[0] and abs(new_y) < self._halfwidth[1]):
+        intersect = Point()
+        intersect.setCoords((new_x, new_y, new_z))
+        dist = point.distanceToPoint(intersect)
+        return dist
 
   def toString(self):
     string = self.__repr__()
@@ -1494,7 +1542,7 @@ class Cell(object):
     self.setMinY(MIN_FLOAT)
     self.setMinZ(MIN_FLOAT)
 
-    if not fill is None:
+    if fill is not None:
       self.setFill(fill)
 
 
@@ -1655,7 +1703,7 @@ class Cell(object):
     elif is_integer(cell_id):
 
       # If the Cell already has an ID, remove it from global list
-      if not self._id is None:
+      if self._id is not None:
         CELL_IDS.remove(self._id)
 
       if cell_id in CELL_IDS:
@@ -1992,7 +2040,7 @@ class Cell(object):
   def getNumSubCells(self):
 
     # If we have already called this routine, return the number of subcells
-    if not self._num_subcells is None:
+    if self._num_subcells is not None:
       return self._num_subcells
 
     # The cell offsets have not yet been initialized - we must compute them
@@ -2220,7 +2268,7 @@ class Cell(object):
 
     string += '{0: <16}{1}'.format('\tFill', '=\t')
 
-    if not self._fill is None:
+    if self._fill is not None:
 
       if self._type == 'material':
         string += 'Material ID='
@@ -2261,13 +2309,13 @@ class LocalCoords(object):
     self._next = None
     self._prev = None
 
-    if not point is None:
+    if point is not None:
       self.setPoint(point)
 
-    if not next is None:
+    if next is not None:
       self.setNext(next)
 
-    if not prev is None:
+    if prev is not None:
       self.setPrev(prev)
 
 
@@ -2305,7 +2353,7 @@ class LocalCoords(object):
 
   def setNext(self, next):
 
-    if not isinstance(next, LocalCoords) and not next is None:
+    if not isinstance(next, LocalCoords) and next is not None:
       msg = 'Unable to set the next to {0} for LocalCoords since it is not ' \
             'a LocalCoords object'.format(next)
       raise ValueError(msg)
@@ -2315,7 +2363,7 @@ class LocalCoords(object):
 
   def setPrev(self, prev):
 
-    if not isinstance(prev, LocalCoords) and not prev is None:
+    if not isinstance(prev, LocalCoords) and prev is not None:
       msg = 'Unable to set the prev to {0} for LocalCoords since it is not ' \
             'a LocalCoords object'.format(prev)
       raise ValueError(msg)
@@ -2328,7 +2376,7 @@ class LocalCoords(object):
     curr = self
     prev = self._prev
 
-    while not prev is None:
+    while prev is not None:
       curr = prev
       prev = curr._prev
 
@@ -2340,7 +2388,7 @@ class LocalCoords(object):
     curr = self
     next = self._next
 
-    while not next is None:
+    while next is not None:
       curr = next
       next = curr._next
 
@@ -2377,7 +2425,7 @@ class LocalCoords(object):
 
     string += '{0: <16}{1}'.format('\tPoint', '=\t')
 
-    if not self._point is None:
+    if self._point is not None:
       string += '{0}'.format(self._point._coords)
 
     string += '\n'
@@ -2397,10 +2445,10 @@ class UnivCoords(LocalCoords):
     self._universe = None
     self._cell = None
 
-    if not universe is None:
+    if universe is not None:
       self.setUniverse(universe)
 
-    if not cell is None:
+    if cell is not None:
       self.setCell(cell)
 
 
@@ -2510,7 +2558,7 @@ class UnivCoords(LocalCoords):
     string += '{0: <16}{1}{2}\n'.format('\tUniverse', '=\t', self._universe._id)
     string += '{0: <16}{1}'.format('\tCell', '=\t')
 
-    if not self._cell is None:
+    if self._cell is not None:
       string += '{0}'.format(self._cell._id)
 
     return string
@@ -2530,16 +2578,16 @@ class LatCoords(LocalCoords):
     self._lat_y = None
     self._lat_z = None
 
-    if not lattice is None:
+    if lattice is not None:
       self.setLattice(lattice)
 
-    if not lat_x is None:
+    if lat_x is not None:
       self.setLatticeX(lat_x)
 
-    if not lat_y is None:
+    if lat_y is not None:
       self.setLatticeY(lat_y)
 
-    if not lat_z is None:
+    if lat_z is not None:
       self.setLatticeY(lat_z)
 
 
