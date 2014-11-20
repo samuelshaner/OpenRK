@@ -1764,7 +1764,6 @@ class Cell(object):
 
   def setRotation(self, rotation):
 
-    # TODO: error checking
     if not isinstance(rotation, (np.ndarray, tuple, list)):
       msg = 'Unable to set rotation for Cell ID={0} to {1} since it is not ' \
             'a list/tuple or NumPy array'.format(self._id, rotation)

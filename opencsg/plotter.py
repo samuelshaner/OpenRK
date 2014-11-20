@@ -95,28 +95,35 @@ def plot_cells(geometry, plane='xy', offset=0., gridsize=250,
       else:
         surface[j][i] = cell._id
 
-  # Get the number of Cells in the plot
-  num_colors = np.unique(surface).size
+  # Get the number of Material Cells in the Geometry
+  material_cells = geometry.getAllMaterialCells()
+  num_cells = len(material_cells)
 
-  # Create array of equally spaced randomized floats as a color map for plots
-  # Seed the NumPy random number generator to ensure reproducible color maps
+  # Create array of all Cell IDs and randomly (but reproducibly) permute it
+  cell_ids = [cell_id for cell_id in material_cells]
   numpy.random.seed(1)
-  colors = np.arange(0., num_colors, 1, dtype=np.int64)
-  numpy.random.shuffle(colors)
+  numpy.random.shuffle(cell_ids)
 
-  # Replace Cell IDs with monotonically increasing integers (starting at 0)
-  surface = get_unique_integers(surface)
-  surface = colors[surface]
+  # Create an array of the colors (array indices) for each value in the surface
+  colors = list()
+  for cell_id in surface.ravel():
+    if cell_id != -1:
+      colors.append(cell_ids.index(cell_id))
+    else:
+      colors.append(np.nan)
+
+  colors = np.asarray(colors)
+  colors.shape = surface.shape
 
   # Make Matplotlib color "bad" numbers (ie, NaN, INF) with transparent pixels
   cmap = plt.get_cmap('spectral')
   cmap.set_bad(alpha=0.0)
 
-  # Plot a 2D color map of the flat source regions
+  # Plot a 2D color map of the Materials
   fig = plt.figure()
-  surface = np.flipud(surface)
-  plt.imshow(surface, extent=coords['bounds'],
-             interpolation='nearest', cmap=cmap)
+  colors = np.flipud(colors)
+  plt.imshow(colors, extent=coords['bounds'],
+             interpolation='nearest', cmap=cmap, vmin=0, vmax=num_cells)
   plt.title('Cells ' + plane)
   filename = SUBDIRECTORY + 'cells-' + plane + '.png'
   fig.savefig(filename, bbox_inches='tight')
@@ -184,28 +191,35 @@ def plot_materials(geometry, plane='xy', offset=0., gridsize=250,
       else:
         surface[j][i] = cell._fill._id
 
-  # Get the number of Materials in the plot
-  num_colors = np.unique(surface).size
+  # Get the number of Materials in the Geometry
+  materials = geometry.getAllMaterials()
+  num_materials = len(materials)
 
-  # Create array of equally spaced randomized floats as a color map for plots
-  # Seed the NumPy random number generator to ensure reproducible color maps
+  # Create array of all Material IDs and randomly (but reproducibly) permute it
+  material_ids = [material_id for material_id in materials]
   numpy.random.seed(1)
-  colors = np.arange(0., num_colors, 1, dtype=np.int64)
-  numpy.random.shuffle(colors)
+  numpy.random.shuffle(material_ids)
 
-  # Replace Material IDs with monotonically increasing integers (starting at 0)
-  surface = get_unique_integers(surface)
-  surface = colors[surface]
+  # Create an array of the colors (array indices) for each value in the surface
+  colors = list()
+  for material_id in surface.ravel():
+    if material_id != -1:
+      colors.append(material_ids.index(material_id))
+    else:
+      colors.append(np.nan)
+
+  colors = np.asarray(colors)
+  colors.shape = surface.shape
 
   # Make Matplotlib color "bad" numbers (ie, NaN, INF) with transparent pixels
   cmap = plt.get_cmap('spectral')
   cmap.set_bad(alpha=0.0)
 
-  # Plot a 2D color map of the flat source regions
+  # Plot a 2D color map of the Materials
   fig = plt.figure()
-  surface = np.flipud(surface)
-  plt.imshow(surface, extent=coords['bounds'],
-             interpolation='nearest', cmap=cmap)
+  colors = np.flipud(colors)
+  plt.imshow(colors, extent=coords['bounds'],
+             interpolation='nearest', cmap=cmap, vmin=0, vmax=num_materials)
   plt.title('Materials ' + plane)
   filename = SUBDIRECTORY + 'materials-' + plane + '.png'
   fig.savefig(filename, bbox_inches='tight')
@@ -272,28 +286,35 @@ def plot_regions(geometry, plane='xy', offset=0., gridsize=250,
       else:
        surface[j][i] = region_id
 
-  # Get the number of regions in the plot
-  num_colors = np.unique(surface).size
+  # Get the number of Regions in the Geometry
+  num_regions = geometry._num_regions
+  regions = np.arange(num_regions)
 
-  # Create array of equally spaced randomized floats as a color map for plots
-  # Seed the NumPy random number generator to ensure reproducible color maps
+  # Create array of all Region IDs and randomly (but reproducibly) permute it
+  region_ids = [region_id for region_id in regions]
   numpy.random.seed(1)
-  colors = np.arange(0., num_colors, 1, dtype=np.int64)
-  numpy.random.shuffle(colors)
+  numpy.random.shuffle(region_ids)
 
-  # Replace region IDs with monotonically increasing integers (starting at 0)
-  surface = get_unique_integers(surface)
-  surface = colors[surface]
+  # Create an array of the colors (array indices) for each value in the surface
+  colors = list()
+  for region_id in surface.ravel():
+    if region_id != -1:
+      colors.append(region_ids.index(region_id))
+    else:
+      colors.append(np.nan)
+
+  colors = np.asarray(colors)
+  colors.shape = surface.shape
 
   # Make Matplotlib color "bad" numbers (ie, NaN, INF) with transparent pixels
   cmap = plt.get_cmap('spectral')
   cmap.set_bad(alpha=0.0)
 
-  # Plot a 2D color map of the flat source regions
+  # Plot a 2D color map of the regions
   fig = plt.figure()
-  surface = np.flipud(surface)
-  plt.imshow(surface, extent=coords['bounds'],
-             interpolation='nearest', cmap=cmap)
+  colors = np.flipud(colors)
+  plt.imshow(colors, extent=coords['bounds'],
+             interpolation='nearest', cmap=cmap, vmin=0, vmax=num_regions)
   plt.title('Regions ' + plane)
   filename = SUBDIRECTORY + 'regions-' + plane + '.png'
   fig.savefig(filename, bbox_inches='tight')
