@@ -1,6 +1,7 @@
 __author__ = 'Will Boyd'
 __email__ = 'wboyd@mit.edu'
 
+import warnings
 
 from opencsg.material import Material
 from opencsg.surface import Surface, ON_SURFACE_THRESH
@@ -115,6 +116,16 @@ class Universe(object):
 
     return cells
 
+
+  def getCellByName(self, name):
+    
+    for cell_id in self._cells:
+      if self._cells[cell_id]._name == name:
+        return self._cells[cell_id]
+    msg = 'Unable to find cell by name "{0}" in universe "{1}"'.format(
+          name, self._name)
+    raise ValueError(msg)
+    
 
   def getAllUniverses(self):
 
@@ -385,7 +396,7 @@ class Universe(object):
     self._cells.clear()
 
 
-  def containsCell(cell=None, cell_id=None, name=None):
+  def containsCell(self, cell=None, cell_id=None, name=None):
 
     if cell is not None:
       for cell_id in self._cells.keys():
@@ -479,8 +490,9 @@ class Universe(object):
     for cell_id in self._cells:
 
       cell = self._cells[cell_id]
-      
+
       if cell.containsPoint(localcoords._point):
+
         localcoords.setCell(cell)
 
         # 'material' type Cell - lowest level, terminate search for Cell
@@ -492,6 +504,11 @@ class Universe(object):
         else:
 
           fill = cell._fill
+
+          # Apply rotation
+          if not cell._rotation is None:
+            point = localcoords._point
+            point._coords = np.dot(cell._rotation_matrix, point._coords)
 
           if isinstance(fill, Lattice):
             next_coords = LatCoords(localcoords._point)
@@ -618,8 +635,11 @@ class Lattice(Universe):
     self._cell_offsets = None
     self._num_regions = None
     self._offset = np.zeros(3, dtype=np.float64)
+
     self._neighbor_universes = None
     self._neighbor_depth = 1
+    self._neighbors_hash = None
+    self._unique_neighbors_hash = None
 
     self.setId(lattice_id)
     self.setName(name)
@@ -653,6 +673,8 @@ class Lattice(Universe):
       clone._offset = copy.deepcopy(self._offset, memo)
       clone._neighbor_universes = copy.deepcopy(self._neighbor_universes, memo)
       clone._neighbor_depth = self._neighbor_depth
+      clone._neighbors_hash = copy.deepcopy(self._neighbors_hash)
+      clone._unique_neighbors_hash = copy.deepcopy(self._unique_neighbors_hash)
 
       memo[id(self)] = clone
 
@@ -853,19 +875,33 @@ class Lattice(Universe):
 
   def getNeighborsHash(self, lat_x, lat_y, lat_z=None):
 
-    neighbors_universes = self.getNeighbors(lat_x, lat_y, lat_z)
-    neighbors_universes.sort()
-    raw_data = neighbors_universes.view()
-    neighbors_hash = int(sha1(raw_data).hexdigest(), 16)
+    if lat_z == None:
+      lat_z = 0
+
+    if self._neighbors_hash[lat_x, lat_y, lat_z] == 0:
+      neighbors_universes = self.getNeighbors(lat_x, lat_y, lat_z)
+      neighbors_universes.sort()
+      raw_data = neighbors_universes.view()
+      neighbors_hash = int(sha1(raw_data).hexdigest(), 16)
+    else:
+      neighbors_hash = self._neighbors_hash[lat_x, lat_y, lat_z]
+
     return neighbors_hash
 
 
   def getUniqueNeighborsHash(self, lat_x, lat_y, lat_z=None):
 
-    neighbors_universes = self.getUniqueNeighbors(lat_x, lat_y, lat_z)
-    neighbors_universes.sort()
-    raw_data = neighbors_universes.view()
-    neighbors_hash = int(sha1(raw_data).hexdigest(), 16)
+    if lat_z == None:
+      lat_z = 0
+
+    if self._unique_neighbors_hash[lat_x, lat_y, lat_z] == 0:
+      neighbors_universes = self.getUniqueNeighbors(lat_x, lat_y, lat_z)
+      neighbors_universes.sort()
+      raw_data = neighbors_universes.view()
+      neighbors_hash = int(sha1(raw_data).hexdigest(), 16)
+    else:
+      neighbors_hash = self._unique_neighbors_hash[lat_x, lat_y, lat_z]
+
     return neighbors_hash
 
 
@@ -1050,11 +1086,12 @@ class Lattice(Universe):
               'is a negative value'.format(self._id, dim)
         raise ValueError(msg)
 
+    # Copy the dimension into a NumPy array
     self._dimension = np.ones(3, dtype=np.int64)
 
     for i in range(len(dimension)):
       self._dimension[i] = dimension[i]
-        
+
 
   def setWidth(self, width):
 
@@ -1103,13 +1140,18 @@ class Lattice(Universe):
     shape = np.shape(universes)
     if len(shape) == 2:
       universes = [universes]
-    
-    self._universes = np.asarray(universes, dtype=Universe)
 
+    universes = np.asarray(universes, dtype=Universe)
+    self._universes = copy.deepcopy(universes)
+    max_y = self._dimension[1]-1
+
+    # Reverse the NumPy array such that it matches
+    # the ordered seen by the user in the input file
     for i in range(self._dimension[0]):
       for j in range(self._dimension[1]):
         for k in range(self._dimension[2]):
 
+          self._universes[k][j][i] = universes[k][max_y-j][i]
           universe = self._universes[k][j][i]
 
           if self._width[0] != MAX_FLOAT:
@@ -1188,6 +1230,33 @@ class Lattice(Universe):
 
     for universe_id, universe in unique_universes.items():
       universe.buildNeighbors()
+
+    # Initialize Neighbors Hash
+    self._neighbors_hash = np.zeros(tuple(self._dimension), dtype=np.int)
+    self._unique_neighbors_hash =np.zeros(tuple(self._dimension), dtype=np.int)
+
+    neighbors_counter = 0
+    unique_neighbors_counter = 0
+    neighbors_hash = dict()
+    unique_neighbors_hash = dict()
+
+    for i in range(self._dimension[0]):
+      for j in range(self._dimension[1]):
+        for k in range(self._dimension[2]):
+
+          hash = self.getNeighborsHash(i,j,k)
+          unique_hash = self.getUniqueNeighborsHash(i,j,k)
+
+          if hash not in neighbors_hash:
+            neighbors_hash[hash] = neighbors_counter
+            neighbors_counter += 1
+
+          if unique_hash not in unique_neighbors_hash:
+            unique_neighbors_hash[unique_hash] = unique_neighbors_counter
+            unique_neighbors_counter += 1
+
+          self._neighbors_hash[i,j,k] = neighbors_hash[hash]
+          self._unique_neighbors_hash[i,j,k] = unique_neighbors_hash[unique_hash]
 
 
   def findCell(self, localcoords):
@@ -1450,12 +1519,16 @@ class Cell(object):
     self._id = None
     self._name = None
     self._fill = None
+    self._rotation = None
+    self._rotation_matrix = None
     self._type = None
     self._num_subcells = None
     self._volume_fraction = np.float64(0.)
     self._volume = np.float64(0.)
 
     self._neighbor_cells = np.empty(shape=(0,), dtype=Cell)
+    self._neighbors_hash = None
+    self._unique_neighbors_hash = None
 
     # Keys   - Surface IDs
     # Values - (halfpsace, Surface) tuples
@@ -1494,11 +1567,15 @@ class Cell(object):
       clone._id = self._id
       clone._name = self._name
       clone._fill = copy.deepcopy(self._fill, memo)
+      clone._rotation = copy.deepcopy(self._rotation)
+      clone._rotation_matrix = copy.deepcopy(self._rotation_matrix)
       clone._type = self._type
       clone._num_subcells = self._num_subcells
       clone._volume_fraction = self._volume_fraction
       clone._volume = self._volume
       clone._neighbor_cells = copy.deepcopy(self._neighbor_cells, memo)
+      clone._neighbors_hash = self._neighbors_hash
+      clone._unique_neighbors_hash = self._unique_neighbors_hash
 
       clone._surfaces = dict()
       for surface_id in self._surfaces.keys():
@@ -1601,19 +1678,25 @@ class Cell(object):
 
 
   def getNeighborsHash(self):
-    neighbor_cells = np.copy(self.getNeighbors())
-    neighbor_cells.sort()
-    raw_data = neighbor_cells.view()
-    neighbors_hash = int(sha1(raw_data).hexdigest(), 16)
-    return neighbors_hash
+
+    if self._neighbors_hash is None:
+      neighbor_cells = np.copy(self.getNeighbors())
+      neighbor_cells.sort()
+      raw_data = neighbor_cells.view()
+      self._neighbors_hash = int(sha1(raw_data).hexdigest(), 16)
+
+    return self._neighbors_hash
 
 
   def getUniqueNeighborsHash(self):
-    neighbor_cells = np.copy(self.getUniqueNeighbors())
-    neighbor_cells.sort()
-    raw_data = neighbor_cells.view()
-    neighbors_hash = int(sha1(raw_data).hexdigest(), 16)
-    return neighbors_hash
+
+    if self._unique_neighbors_hash is None:
+      neighbor_cells = np.copy(self.getUniqueNeighbors())
+      neighbor_cells.sort()
+      raw_data = neighbor_cells.view()
+      self._unique_neighbors_hash = int(sha1(raw_data).hexdigest(), 16)
+
+    return self._unique_neighbors_hash
 
 
   def setId(self, cell_id=None):
@@ -1677,6 +1760,43 @@ class Cell(object):
       raise ValueError(msg)
 
     self._fill = fill
+
+
+  def setRotation(self, rotation):
+
+    if not isinstance(rotation, (np.ndarray, tuple, list)):
+      msg = 'Unable to set rotation for Cell ID={0} to {1} since it is not ' \
+            'a list/tuple or NumPy array'.format(self._id, rotation)
+      raise ValueError(msg)
+
+    elif len(rotation) != 3:
+      msg = 'Unable to set rotation for Cell ID={0} to {1} since it is not ' \
+            'of length 3'.format(self._id, rotation)
+      raise ValueError(msg)
+
+    self._rotation = rotation
+
+    # Compute rotation angles in x,y,z directions
+    phi = -self._rotation[0] * math.pi / 180.
+    theta = -self._rotation[1] * math.pi / 180.
+    psi = -self._rotation[2] * math.pi / 180.
+
+    # Calculate rotation matrix based on angles given
+    # Indexed by (y,x) since the universe array is indexed by (z,y,z)
+    self._rotation_matrix = np.zeros((3,3), dtype=np.float64)
+    self._rotation_matrix[0,0] = math.cos(theta) * math.cos(psi)
+    self._rotation_matrix[1,0] = math.cos(theta) * math.sin(psi)
+    self._rotation_matrix[2,0] = -math.sin(theta)
+    self._rotation_matrix[0,1] = -math.cos(phi) * math.sin(psi) + \
+                                 math.sin(phi) * math.sin(theta) * math.cos(psi)
+    self._rotation_matrix[1,1] = math.cos(phi) * math.cos(psi) + \
+                                 math.sin(phi) * math.sin(theta) * math.sin(psi)
+    self._rotation_matrix[2,1] = math.sin(phi) * math.cos(theta)
+    self._rotation_matrix[0,2] = math.sin(phi) * math.sin(psi) + \
+                                 math.cos(phi) * math.sin(theta) * math.cos(psi)
+    self._rotation_matrix[1,2] = -math.sin(phi) * math.cos(psi) + \
+                                 math.cos(phi) * math.sin(theta) * math.sin(psi)
+    self._rotation_matrix[2,2] = math.cos(phi) * math.cos(theta)
 
 
   def setType(self, type):
@@ -1779,12 +1899,20 @@ class Cell(object):
           coeffs = surface._coeffs
           test_coeffs = test_surface._coeffs
 
+          match = True
           for key in coeffs.keys():
             coeff = coeffs[key]
             test_coeff = test_coeffs[key]
-
-          if abs(coeff-test_coeff) < 1e-10:
-            return
+            if abs(coeff-test_coeff) < 1e-10:
+              match = False
+              break
+          if match:
+            warnings.warn('Skipping redundant surface <{0}> ' + \
+                          'for cell <{1}>: ' +\
+                          'matches <{2}>'.format(surface._name,
+                                                 self._name,
+                                                 test_surface._name))
+            return  
 
     surface_id = surface._id
 
@@ -2151,9 +2279,9 @@ class Cell(object):
 
     if self._fill is not None:
 
-      if self._type is 'material':
+      if self._type == 'material':
         string += 'Material ID='
-      elif self._type is 'universe':
+      elif self._type == 'universe':
         string += 'Universe ID='
       else:
         string += 'Lattice ID='
@@ -2383,7 +2511,7 @@ class UnivCoords(LocalCoords):
       return self._next.getUniqueNeighbors(neighbors)
 
 
-  def getNeighborsHash(self, neighbors=None):
+  def getNeighborsHash(self, neighbors=None, first_level=0):
 
     if neighbors is None:
       neighbors = list()
@@ -2393,12 +2521,12 @@ class UnivCoords(LocalCoords):
 
     # Make recursive call to next LocalCoords or return
     if self._next is None:
-      return hash(tuple(neighbors))
+      return hash(tuple(neighbors)[first_level:])
     else:
-      return self._next.getNeighborsHash(neighbors=neighbors)
+      return self._next.getNeighborsHash(neighbors, first_level)
 
 
-  def getUniqueNeighborsHash(self, neighbors=None):
+  def getUniqueNeighborsHash(self, neighbors=None, first_level=0):
 
     if neighbors is None:
       neighbors = list()
@@ -2408,9 +2536,9 @@ class UnivCoords(LocalCoords):
 
     # Make recursive call to next LocalCoords or return
     if self._next is None:
-      return hash(tuple(neighbors))
+      return hash(tuple(neighbors)[first_level:])
     else:
-      return self._next.getUniqueNeighborsHash(neighbors=neighbors)
+      return self._next.getUniqueNeighborsHash(neighbors, first_level)
 
 
   def setUniverse(self, universe):
@@ -2529,7 +2657,7 @@ class LatCoords(LocalCoords):
       return self._next.getUniqueNeighbors(neighbors)
 
 
-  def getNeighborsHash(self, neighbors=None):
+  def getNeighborsHash(self, neighbors=None, first_level=0):
 
     if neighbors is None:
       neighbors = list()
@@ -2542,12 +2670,12 @@ class LatCoords(LocalCoords):
 
     # Make recursive call to next LocalCoords if it exists or return
     if self._next is None:
-      return hash(tuple(neighbors))
+      return hash(tuple(neighbors)[first_level:])
     else:
-      return self._next.getNeighborsHash(neighbors=neighbors)
+      return self._next.getNeighborsHash(neighbors, first_level)
 
 
-  def getUniqueNeighborsHash(self, neighbors=None):
+  def getUniqueNeighborsHash(self, neighbors=None, first_level=0):
 
     if neighbors is None:
       neighbors = list()
@@ -2560,9 +2688,9 @@ class LatCoords(LocalCoords):
 
     # Make recursive call to next LocalCoords if it exists or return
     if self._next is None:
-      return hash(tuple(neighbors))
+      return hash(tuple(neighbors)[first_level:])
     else:
-      return self._next.getUniqueNeighborsHash(neighbors)
+      return self._next.getUniqueNeighborsHash(neighbors, first_level)
 
 
   def setLattice(self, lattice):

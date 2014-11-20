@@ -46,6 +46,9 @@ class Geometry(object):
     self._regions_to_neighbors = dict()
     self._regions_to_unique_neighbors = dict()
 
+    # Flag indicating whether or not the neighbors have been built
+    self._built_neighbors = False
+
 
   def __deepcopy__(self, memo):
 
@@ -65,6 +68,7 @@ class Geometry(object):
       clone._unique_neighbor_ids = copy.deepcopy(self._unique_neighbor_ids, memo)
       clone._regions_to_neighbors = copy.deepcopy(self._regions_to_neighbors, memo)
       clone._regions_to_unique_neighbors = copy.deepcopy(self._regions_to_unique_neighbors, memo)
+      clone._built_neighbors = self._built_neighbors
       clone._all_cells = copy.deepcopy(self._all_cells, memo)
 
       memo[id(self)] = clone
@@ -279,6 +283,16 @@ class Geometry(object):
     self._num_regions = self._root_universe._num_regions
 
 
+  def clearNeighbors(self):
+    self._num_neighbors = 0
+    self._neighbor_ids = dict()
+    self._num_unique_neighbors = 0
+    self._unique_neighbor_ids = dict()
+    self._regions_to_neighbors = dict()
+    self._regions_to_unique_neighbors = dict()
+    self._built_neighbors = False
+
+
   def buildNeighbors(self):
 
     if self._root_universe is None:
@@ -287,7 +301,7 @@ class Geometry(object):
       raise ValueError(msg)
 
     # If the neighbors have already been built, just return
-    if self._num_neighbors > 0:
+    if self._built_neighbors:
       return
 
     self._root_universe.buildNeighbors()
@@ -295,7 +309,7 @@ class Geometry(object):
     # Initialize offsets maps
     self.initializeCellOffsets()
 
-    # Build dictionaries mapping neighbor hashes to consecutive integers
+    # Initialize dictionaries mapping neighbor hashes to consecutive integers
     # Keys    - hashes of the tuples of (unique) neighbors
     # Values  - monotonically consecutive non-negative integers
     # Reinitialize each time this routine is called
@@ -304,31 +318,14 @@ class Geometry(object):
     self._num_unique_neighbors = 0
     self._unique_neighbor_ids = dict()
 
-    # Map regions to neighbors
+    # Initialize dictionaries mapping regions to neighbors
     # Keys    - region IDs
     # Values  - hashes of the tuples of (unique) neighbors
     self._regions_to_neighbors = dict()
     self._regions_to_unique_neighbors = dict()
 
-    for region in range(self._num_regions):
-
-      # Build lists of neighbor Cells/Universes
-      neighbors = self.getNeighborsHash(region)
-      unique_neighbors = self.getUniqueNeighborsHash(region)
-
-      # Store the hashes to the region-to-neighbor hash maps
-      self._regions_to_neighbors[region] = neighbors
-      self._regions_to_unique_neighbors[region] = unique_neighbors
-
-      # Add the neighbor hash to the neighbor maps
-      if not neighbors in self._neighbor_ids.keys():
-        self._neighbor_ids[neighbors] = self._num_neighbors
-        self._num_neighbors += 1
-
-      # Add the unique neighbor hash to the unique neighbor maps
-      if not unique_neighbors in self._unique_neighbor_ids.keys():
-        self._unique_neighbor_ids[unique_neighbors] = self._num_unique_neighbors
-        self._num_unique_neighbors += 1
+    # Set a flag indicating that the neighbors have been built
+    self._built_neighbors = True
 
 
   def getRegionId(self, x=0., y=0., z=0.):
@@ -503,13 +500,46 @@ class Geometry(object):
     coords = self.findRegion(region_id)
     return coords.getUniqueNeighbors()
 
-  def getNeighborsHash(self, region_id):
-    coords = self.findRegion(region_id)
-    return coords.getNeighborsHash()
 
-  def getUniqueNeighborsHash(self, region_id):
-    coords = self.findRegion(region_id)
-    return coords.getUniqueNeighborsHash()
+  def getNeighborsHash(self, region_id, first_level=0):
+
+    # Memoize unique neighbors hash for this region ID
+    if region_id not in self._regions_to_neighbors:
+
+      # Compute the neighbor hash for this region ID
+      coords = self.findRegion(region_id)
+      neighbors = coords.getNeighborsHash(first_level=first_level)
+
+      # Add the neighbor hash to the neighbor maps
+      if not neighbors in self._neighbor_ids.keys():
+        self._neighbor_ids[neighbors] = self._num_neighbors
+        self._num_neighbors += 1
+
+      # Store unique hash to the region-to-neighbor hash maps
+      self._regions_to_neighbors[region_id] = self._neighbor_ids[neighbors]
+
+    return self._regions_to_neighbors[region_id]
+
+
+  def getUniqueNeighborsHash(self, region_id, first_level=0):
+
+    # Memoize unique neighbors hash for this region ID
+    if region_id not in self._regions_to_unique_neighbors:
+
+      # Compute the unique neighbor hash for this region ID
+      coords = self.findRegion(region_id)
+      unique_neighbors = coords.getUniqueNeighborsHash(first_level=first_level)
+
+      # Add the unique neighbor hash to the unique neighbor maps
+      if not unique_neighbors in self._unique_neighbor_ids.keys():
+        self._unique_neighbor_ids[unique_neighbors] = self._num_unique_neighbors
+        self._num_unique_neighbors += 1
+
+      # Store unique neighbor hash to the region-to-unique neighbor hash map
+      self._regions_to_unique_neighbors[region_id] = \
+        self._unique_neighbor_ids[unique_neighbors]
+
+    return self._regions_to_unique_neighbors[region_id]
 
   def toString(self):
     string = self._root_universe.toString()
