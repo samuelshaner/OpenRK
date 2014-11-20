@@ -117,6 +117,16 @@ class Universe(object):
     return cells
 
 
+  def getCellByName(self, name):
+    
+    for cell_id in self._cells:
+      if self._cells[cell_id]._name == name:
+        return self._cells[cell_id]
+    msg = 'Unable to find cell by name "{0}" in universe "{1}"'.format(
+          name, self._name)
+    raise ValueError(msg)
+    
+
   def getAllUniverses(self):
 
     # Get all Cells in this Universe
