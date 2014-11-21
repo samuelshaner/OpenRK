@@ -1,15 +1,15 @@
 ===============================================================================
-OpenCSG                         VERSION 0.1.1                          8/4/2014
+OpenCG                         VERSION 0.1.1                         11/21/2014
 ===============================================================================
-         _______  _______  _______  _        _______  _______  _______ 
-        (  ___  )(  ____ )(  ____ \( (    /|(  ____ \(  ____ \(  ____ \
-        | (   ) || (    )|| (    \/|  \  ( || (    \/| (    \/| (    \/
-        | |   | || (____)|| (__    |   \ | || |      | (_____ | |      
-        | |   | ||  _____)|  __)   | (\ \) || |      (_____  )| | ____ 
-        | |   | || (      | (      | | \   || |            ) || | \_  )
-        | (___) || )      | (____/\| )  \  || (____/\/\____) || (___) |
-        (_______)|/       (_______/|/    )_)(_______/\_______)(_______)
-
+             _______  _______  _______  _        _______  _______ 
+            (  ___  )(  ____ )(  ____ \( (    /|(  ____ \(  ____ \
+            | (   ) || (    )|| (    \/|  \  ( || (    \/| (    \/
+            | |   | || (____)|| (__    |   \ | || |      | |      
+            | |   | ||  _____)|  __)   | (\ \) || |      | | ____ 
+            | |   | || (      | (      | | \   || |      | | \_  )
+            | (___) || )      | (____/\| )  \  || (____/\| (___) |
+            (_______)|/       (_______/|/    )_)(_______/(_______)
+                                                      
 ===============================================================================
 
 
@@ -34,21 +34,20 @@ Faculty Advisors----------------------------------------------------------------
                                   INTRODUCTION
 ===============================================================================
 
-OpenCSG is a Python package for Constructive Solid Geometry (CSG) models. The
-goal for OpenCSG is to provide an easy-to-use, physics-agnostic library to
-build geometry models of nuclear reactor cores. Compatibility modules for 
-commonly used nuclear reactor physics codes, such as OpenMC, OpenMOC, Serpent,
-MCNP are being concurrently developed for rapid and easy exportation of an
-OpenCSG model directly into the relevant input file format for each code of
-interest. 
+OpenCG is a Python package for Combinatorial Geometry (CG) models. The goal
+for OpenCG is to provide an easy-to-use, physics-agnostic library to build
+geometry models of nuclear reactor cores. Compatibility modules for commonly
+used nuclear reactor physics codes, such as OpenMC, OpenMOC, Serpent, MCNP
+are being concurrently developed for rapid and easy exportation of an OpenCG
+model directly into the relevant input file format for each code of interest.
 
-OpenCSG can provide users a number of key benefits, including the following:
+OpenCG can provide users a number of key benefits, including the following:
 
   1) Easy validation & verification between codes of a single geometric model
   2) Pythonic interface facilitates easy parametric optimization studies
-  3) CSG tree traversal routines to facilitate downstream data processing
+  3) CG tree traversal routines to facilitate downstream data processing
 
-The OpenCSG development project was started by graduate and undergraduate 
+The OpenCG development project was started by graduate and undergraduate 
 students in the MIT Nuclear Science & Engineering Department working in the
 Computational Reactor Physics Group.
 
@@ -61,40 +60,40 @@ Make sure Git an the NumPy, h5py, and matplotlib python modules are installed
 on your machine. These packages can easily be installed on any Linux or Mac
 machine using a package manager such as apt-get, yum or macports. For machines
 running Debian-based Linux, such as Ubuntu, the following terminal command will
-install all of the necessary pre-requisites for OpenCSG:
+install all of the necessary pre-requisites for OpenCG:
 
     > sudo get-apt install git python-numpy python-h5py python-matplotlib
 
-Next, download OpenCSG from GitHub using the following command:
+Next, download OpenCG from GitHub using the following command:
     
-    > git clone https://github.com/mit-crpg/OpenCSG.git
+    > git clone https://github.com/mit-crpg/OpenCG.git
 
-This will create an "OpenCSG" directory with the code. Enter this directory and
-install the OpenCSG Python package with the following commands:
+This will create an "OpenCG" directory with the code. Enter this directory and
+install the OpenCG Python package with the following commands:
 
-    > cd OpenCSG
+    > cd OpenCG
     > python setup.py install --user
 
 To test that everything works as expected, open up an interactive Python console
-and import OpenCSG:
+and import OpenCG:
 
     > python
-    > import opencsg
+    > import opencg
 
-If this worked without any errors, you now have OpenCSG installed as the 
-"opencsg" Python package importable from any directory on your machine. 
+If this worked without any errors, you now have OpenCG installed as the 
+"opencg" Python package importable from any directory on your machine. 
 
 
 ===============================================================================
-                                  USING OPENCSG
+                                  USING OPENCG
 ===============================================================================
 
 At the time of this writing, there is no documentation on the API provided to 
-users by OpenCSG. It is expected that such documentation will be provided in an 
-early release version of OpenCSG. Currently, the recommended way to learn the
-OpenCSG API is through the example input files in the "OpenCSG/sample-input"
+users by OpenCG. It is expected that such documentation will be provided in an 
+early release version of OpenCG. Currently, the recommended way to learn the
+OpenCG API is through the example input files in the "OpenCG/sample-input"
 directory. These files show how a user may create simple pin cell and 
-rectangular lattice geometries and plot them in OpenCSG.
+rectangular lattice geometries and plot them in OpenCG.
 
 To run the "pin-cell.py" sample input file, simply enter the directory and run
 it in Python:
@@ -103,8 +102,8 @@ it in Python:
     > python pin-cell.py
 
 The compatibility modules for nuclear reactor physics codes, such as OpenMC, 
-are distributed separately from OpenCSG with the codes themselves. To learn how
-to use these modules to interface with OpenCSG, please reference the 
+are distributed separately from OpenCG with the codes themselves. To learn how
+to use these modules to interface with OpenCG, please reference the 
 documentation provided with your code of interest.
 
 
@@ -120,7 +119,7 @@ include the following:
   3) Intrinsics for hexagonal lattices as commonly used in fast reactor designs
   4) Optimization using vectorization with NumPy, as well as Cython and/or Numba
 
-If you would like to contribute to the OpenCSG project, please contact the 
+If you would like to contribute to the OpenCG project, please contact the 
 development team.
 
 
@@ -128,7 +127,7 @@ development team.
                                     LICENSE                                    
 ===============================================================================
 
-OpenCSG is currently going through review from the MIT Technology Licensing
+OpenCG is currently going through review from the MIT Technology Licensing
 Office for open source distribution under the MIT/X License:
 
 Copyright © 2014-2015 Massachusetts Institute of Technology
