@@ -2,7 +2,7 @@ __author__ = 'Davis Tran'
 __email__ = 'dvtran@mit.edu'
 
 
-from opencsg import *
+from opencg import *
 import numpy as np
 import copy
 import os

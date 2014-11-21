@@ -3,10 +3,10 @@ __email__ = 'wboyd@mit.edu'
 
 import warnings
 
-from opencsg.material import Material
-from opencsg.surface import Surface, ON_SURFACE_THRESH
-from opencsg.point import Point, Direction
-from opencsg.checkvalue import *
+from opencg.material import Material
+from opencg.surface import Surface, ON_SURFACE_THRESH
+from opencg.point import Point, Direction
+from opencg.checkvalue import *
 from collections import OrderedDict
 from hashlib import sha1
 import numpy as np

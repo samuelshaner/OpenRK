@@ -4,8 +4,8 @@ __email__ = 'wboyd@mit.edu'
 
 from point import Point, Direction
 from checkvalue import *
-from opencsg.point import Point
-from opencsg.checkvalue import *
+from opencg.point import Point
+from opencg.checkvalue import *
 import numpy as np
 import copy
 
@@ -241,7 +241,7 @@ class Surface(object):
 
   def addNeighborCell(self, cell, halfspace):
 
-    if not 'opencsg.universe.Cell' in str(type(cell)):
+    if not 'opencg.universe.Cell' in str(type(cell)):
       msg = 'Unable to add a neighbor Cell to Surface ID={0} ' \
             'since {1} is not a Cell object'.format(self._id, type(cell))
       raise ValueError(msg)

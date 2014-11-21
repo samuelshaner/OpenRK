@@ -2,20 +2,20 @@ __author__ = 'Will Boyd'
 __email__ = 'wboyd@mit.edu'
 
 
-import opencsg
-from opencsg.universe import *
-from opencsg.point import *
-from opencsg.ray import *
+import opencg
+from opencg.universe import *
+from opencg.point import *
+from opencg.ray import *
 import copy
 
 # Small displacement for moving a point across a surface in ray tracing
 TINY_BIT = 1e-10
 
 def reset_auto_ids():
-  opencsg.reset_auto_material_id()
-  opencsg.reset_auto_surface_id()
-  opencsg.reset_auto_cell_id()
-  opencsg.reset_auto_universe_id()
+  opencg.reset_auto_material_id()
+  opencg.reset_auto_surface_id()
+  opencg.reset_auto_cell_id()
+  opencg.reset_auto_universe_id()
 
 
 class Geometry(object):

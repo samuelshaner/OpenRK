@@ -3,7 +3,7 @@ __email__ = 'wboyd@mit.edu'
 
 
 import matplotlib
-from opencsg import *
+from opencg import *
 
 # force headless backend, or set 'backend' to 'Agg'
 # in your ~/.matplotlib/matplotlibrc

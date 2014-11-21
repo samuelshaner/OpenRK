@@ -2,7 +2,7 @@ __author__ = 'Will Boyd'
 __email__ = 'wboyd@mit.edu'
 
 
-from opencsg.checkvalue import *
+from opencg.checkvalue import *
 
 
 # A list of all IDs for all Materials created

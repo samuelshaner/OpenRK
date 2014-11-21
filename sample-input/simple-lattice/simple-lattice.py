@@ -1,5 +1,5 @@
-from opencsg import *
-import opencsg.plotter as plotter
+from opencg import *
+import opencg.plotter as plotter
 
 
 ###############################################################################

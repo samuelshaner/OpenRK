@@ -2,9 +2,9 @@ __author__ = 'wbinventor'
 __email__ = 'wboyd@mit.edu'
 
 
-from opencsg.universe import *
-from opencsg.surface import *
-from opencsg.checkvalue import *
+from opencg.universe import *
+from opencg.surface import *
+from opencg.checkvalue import *
 from collections import MappingView
 
 
