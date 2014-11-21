@@ -1,4 +1,4 @@
-import opencsg
+import opencg
 from datasets.BEAVRS.lattices import *
 
 
@@ -25,9 +25,9 @@ boundaries = dict()
 
 width = lattice_width * 3.
 
-boundaries['Box'] = opencsg.ZSquarePrism(boundary='reflective', R=width/2.)
-boundaries['Z-Min'] = opencsg.ZPlane(z0=-slice_height / 2.)
-boundaries['Z-Max'] = opencsg.ZPlane(z0=slice_height / 2.)
+boundaries['Box'] = opencg.ZSquarePrism(boundary='reflective', R=width/2.)
+boundaries['Z-Min'] = opencg.ZPlane(z0=-slice_height / 2.)
+boundaries['Z-Max'] = opencg.ZPlane(z0=slice_height / 2.)
 
 for index in boundaries.keys():
   boundaries[index].setBoundaryType('reflective')
@@ -39,8 +39,8 @@ for index in boundaries.keys():
 
 print('Discretizing the Cells...')
 
-sectormesh = opencsg.SectorMesh(num_sectors=sectors)
-radialmesh = opencsg.RadialMesh(num_rings=fuel_rings)
+sectormesh = opencg.SectorMesh(num_sectors=sectors)
+radialmesh = opencg.RadialMesh(num_rings=fuel_rings)
 
 # Loop over all pin types
 for pin in pin_cells.keys():
@@ -64,16 +64,16 @@ for pin in pin_cells.keys():
 lattice1 = lattices['1.6% Fuel - 0BA']
 lattice2 = lattices['3.1% Fuel - 16BA']
 
-cell1 = opencsg.Cell(name=lattice1._name, fill=lattice1)
-cell2 = opencsg.Cell(name=lattice2._name, fill=lattice2)
+cell1 = opencg.Cell(name=lattice1._name, fill=lattice1)
+cell2 = opencg.Cell(name=lattice2._name, fill=lattice2)
 
-universe1 = opencsg.Universe(name=cell1._name)
+universe1 = opencg.Universe(name=cell1._name)
 universe1.addCell(cell1)
 
-universe2 = opencsg.Universe(name=cell2._name)
+universe2 = opencg.Universe(name=cell2._name)
 universe2.addCell(cell2)
 
-lattice = opencsg.Lattice(name='3x3 Lattice')
+lattice = opencg.Lattice(name='3x3 Lattice')
 lattice.setDimension((3, 3))
 lattice.setWidth((lattice_width, lattice_width))
 lattice.setUniverses([[universe2, universe1, universe2],
@@ -88,8 +88,8 @@ lattice.setUniverses([[universe2, universe1, universe2],
 print('Creating the root Universe...')
 
 # Root Cell fills the root Universe which encapsulates the complete Geometry
-root_universe = opencsg.Universe(universe_id=0, name='Root Universe')
-root_cell = opencsg.Cell(name='Root Cell', fill=lattice)
+root_universe = opencg.Universe(universe_id=0, name='Root Universe')
+root_cell = opencg.Cell(name='Root Cell', fill=lattice)
 root_universe.addCell(root_cell)
 
 # Append the bounding surfaces for the Geometry to the root Cell
@@ -104,7 +104,7 @@ root_cell.addSurface(surface=boundaries['Z-Max'], halfspace=-1)
 
 print('Creating the Geometry...')
 
-geometry = opencsg.Geometry()
+geometry = opencg.Geometry()
 geometry.setRootUniverse(root_universe)
 
 geometry.initializeCellOffsets()

@@ -1,4 +1,4 @@
-import opencsg
+import opencg
 from datasets.BEAVRS.pin_cells import *
 from datasets.BEAVRS.lattices import pin_pitch
 
@@ -24,9 +24,9 @@ print('Creating the bounding Surfaces...')
 
 boundaries = dict()
 
-boundaries['Box'] = opencsg.ZSquarePrism(boundary='reflective', R=pin_pitch/2.)
-boundaries['Z-Min'] = opencsg.ZPlane(z0=-slice_height / 2.)
-boundaries['Z-Max'] = opencsg.ZPlane(z0=slice_height / 2.)
+boundaries['Box'] = opencg.ZSquarePrism(boundary='reflective', R=pin_pitch/2.)
+boundaries['Z-Min'] = opencg.ZPlane(z0=-slice_height / 2.)
+boundaries['Z-Max'] = opencg.ZPlane(z0=slice_height / 2.)
 
 for index in boundaries.keys():
   boundaries[index].setBoundaryType('reflective')
@@ -38,8 +38,8 @@ for index in boundaries.keys():
 
 print('Discretizing the Cells...')
 
-sectormesh = opencsg.SectorMesh(num_sectors=sectors)
-radialmesh = opencsg.RadialMesh(num_rings=fuel_rings)
+sectormesh = opencg.SectorMesh(num_sectors=sectors)
+radialmesh = opencg.RadialMesh(num_rings=fuel_rings)
 
 universe = pin_cells['1.6% Fuel Pin']
 sectormesh.subdivideUniverse(universe=universe)
@@ -59,8 +59,8 @@ for cell_id in cells.keys():
 print('Creating the root Universe...')
 
 # Root Cell fills the root Universe which encapsulates the complete Geometry
-root_universe = opencsg.Universe(universe_id=0, name='Root Universe')
-root_cell = opencsg.Cell(name='Root Cell', fill=universe)
+root_universe = opencg.Universe(universe_id=0, name='Root Universe')
+root_cell = opencg.Cell(name='Root Cell', fill=universe)
 root_universe.addCell(root_cell)
 
 # Append the bounding surfaces for the Geometry to the root Cell
@@ -75,7 +75,7 @@ root_cell.addSurface(surface=boundaries['Z-Max'], halfspace=-1)
 
 print('Creating the Geometry...')
 
-geometry = opencsg.Geometry()
+geometry = opencg.Geometry()
 geometry.setRootUniverse(root_universe)
 
 geometry.initializeCellOffsets()

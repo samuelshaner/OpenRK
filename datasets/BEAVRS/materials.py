@@ -1,5 +1,5 @@
 from openmc.material import Material
-from openmc.opencsg_compatible import get_opencsg_material
+from openmc.opencg_compatible import get_opencg_material
 from datasets.BEAVRS import nuclides
 
 
@@ -7,8 +7,8 @@ from datasets.BEAVRS import nuclides
 # with nuclides
 openmc_materials = dict()
 
-# Keys are string material names and values are OpenCSG Materials
-opencsg_materials = dict()
+# Keys are string material names and values are OpenCG Materials
+opencg_materials = dict()
 
 
 ################################################################################
@@ -174,9 +174,9 @@ openmc_materials['Steel'].add_nuclide(nuclides['Ni-64'], 7.6261e-5)
 
 
 ################################################################################
-#############################  OpenCSG Materials  ##############################
+#############################  OpenCG Materials  ##############################
 ################################################################################
 
-# Store each OpenMC Material object as an OpenCSG Material object
+# Store each OpenMC Material object as an OpenCG Material object
 for key in openmc_materials.keys():
-  opencsg_materials[key] = get_opencsg_material(openmc_materials[key])
+  opencg_materials[key] = get_opencg_material(openmc_materials[key])

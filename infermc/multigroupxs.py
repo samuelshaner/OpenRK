@@ -248,6 +248,51 @@ class MultiGroupXS(object):
         self._tallies[key].add_filter(filter)
 
 
+  def getTallyData(self, corr=False):
+
+    if self._tallies is None:
+      msg = 'Unable to get tally data without any Tallies'
+      raise ValueError(msg)
+
+    tally_data = dict()
+    zero_indices = dict()
+
+    for key, tally in self._tallies.items():
+
+      # Get the Tally batch mean and std. dev.
+      mean = tally._mean
+      std_dev = tally._std_dev
+
+      # Determine shape of the Tally data from its Filters, Nuclides
+      new_shape = tuple()
+      energy_axes = list()
+
+      for i, filter in enumerate(tally._filters):
+        new_shape += (filter.get_num_bins(), )
+
+        if 'energy' in filter._type:
+          energy_axes.append(i)
+
+      new_shape += (tally.get_num_nuclides(), )
+
+      # Reshape the array
+      mean = np.reshape(mean, new_shape)
+      std_dev = np.reshape(std_dev, new_shape)
+
+      # Reverse arrays so they are ordered from high to low energy
+      for energy_axis in energy_axes:
+        mean = flip_axis(mean, axis=energy_axis)
+        std_dev = flip_axis(std_dev, axis=energy_axis)
+
+      # Get the array of indices of zero elements
+      zero_indices[key] = mean[...] == 0.
+
+      # Store the tally data to the dictionary
+      tally_data[key] = np.array([mean, std_dev])
+
+    return tally_data, zero_indices
+
+
   @abc.abstractmethod
   def computeXS(self, corr=False):
 

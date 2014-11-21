@@ -1,6 +1,6 @@
-from opencsg import surface
+from opencg import surface
 
-# Keys are Surface string names and values are OpenCSG Surfaces.
+# Keys are Surface string names and values are OpenCG Surfaces.
 surfaces = dict()
 
 

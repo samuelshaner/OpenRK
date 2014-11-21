@@ -1,4 +1,4 @@
-from statepoint import StatePoint
+import openmc.statepoint
 import glob
 from geometry import geometry
 import infermc.plotter as plotter
@@ -7,6 +7,6 @@ import infermc.plotter as plotter
 files = glob.glob('statepoint.*.h5')
 
 for file in files:
-  sp = StatePoint(file)
+  sp = openmc.statepoint.StatePoint(file)
   sp.read_results()
   plotter.plot_fluxes(geometry, sp, energies=[0, 1], gridsize=200)

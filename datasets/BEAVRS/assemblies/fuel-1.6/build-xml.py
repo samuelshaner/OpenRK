@@ -3,7 +3,7 @@ from datasets.BEAVRS.materials import openmc_materials
 from openmc import *
 from geometry import geometry
 from infermc.build import *
-import opencsg.plotter as plotter
+import opencg.plotter as plotter
 
 
 ###############################################################################

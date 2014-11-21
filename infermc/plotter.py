@@ -103,7 +103,7 @@ def scatter_multigroup_xs(extractor, filename, xs_types='all',
       colors[i] = domain_types[i]
 
   # Get color maps for each domain within each domain type
-  geometry = extractor._opencsg_geometry
+  geometry = extractor._opencg_geometry
   color_maps = get_color_maps(geometry)
 
   # Get lists of all Materials, Cells, Universes
@@ -205,7 +205,7 @@ def scatter_micro_xs(extractor, filename, nuclides='all', xs_types='all',
       colors[i] = domain_types[i]
 
   # Get color maps for each domain within each domain type
-  geometry = extractor._opencsg_geometry
+  geometry = extractor._opencg_geometry
   color_maps = get_color_maps(geometry)
 
   # Create a color for each type of domain
@@ -285,6 +285,81 @@ def scatter_micro_xs(extractor, filename, nuclides='all', xs_types='all',
         plt.savefig(full_filename, bbox_inches='tight')
 
       plt.close(fig)
+
+
+def scatter_rxn_rate_flux(multigroup_xs, filename, nuclide,
+                          energy_group, uncertainties=False,
+                          extension='png', xlim=None, ylim=None):
+
+  if multigroup_xs._xs_type == 'scatter matrix':
+    msg = 'Unable to make scatter plot for scattering matrices'
+    raise ValueError(msg)
+
+  elif multigroup_xs._xs_type == 'capture':
+    msg = 'Unable to make scatter plot for capture cross-sections'
+    raise ValueError(msg)
+
+  elif multigroup_xs._xs_type == 'transport':
+    msg = 'Unable to make scatter plot for capture cross-sections'
+    raise ValueError(msg)
+
+  global DIRECTORY
+  global SCATTER_SIZES
+
+  xs_type = multigroup_xs._xs_type
+  group_index = multigroup_xs._energy_groups.getGroupIndices([energy_group])
+  nuclide_index = multigroup_xs.getNuclideIndices([nuclide])
+
+  # Extract and clean the Tally data
+  tally_data, zero_indices = multigroup_xs.getTallyData()
+  rxn_rate = tally_data[xs_type][0, :, group_index, nuclide_index, ...].ravel()
+  flux = tally_data['flux'][0, :, group_index, ...].ravel()
+
+  # Normalize the data so it can be viewed on a reasonable scale
+  flux /= np.linalg.norm(flux)
+  rxn_rate /= np.linalg.norm(rxn_rate)
+
+  fig = plt.figure()
+  ax = fig.add_subplot(111)
+  axis_formatter = matplotlib.ticker.ScalarFormatter(useOffset=False)
+
+  # Get the cross-section type and domain
+  xs_type = multigroup_xs._xs_type
+  domain = multigroup_xs._domain
+
+  plt.scatter(flux, rxn_rate, s=SCATTER_SIZES['distribcell'])
+
+  plt.xlabel('Flux')
+  plt.ylabel('RXN Rate')
+  plt.title('{0} {1} RXN Rate / Flux'.format(nuclide._name, xs_type.capitalize()))
+
+  if not xlim is None:
+    plt.xlim(xlim)
+
+  if not ylim is None:
+    plt.ylim(ylim)
+
+  ax.yaxis.set_major_formatter(axis_formatter)
+  ax.xaxis.set_major_formatter(axis_formatter)
+
+  subdirectory = 'rxn-rate-flux/distribcell-{0}/{1}/{2}'.format(domain._id,
+                                                               nuclide._name,
+                                                               xs_type)
+  full_directory = DIRECTORY + '/' + subdirectory
+
+  if not os.path.exists(full_directory):
+    os.makedirs(full_directory)
+
+  full_filename = full_directory + '/' + filename + '.' + extension
+
+  if extension is 'pkl':
+    import pickle
+    ax = plt.subplot(111)
+    pickle.dump(ax, file(full_filename, 'w'))
+  else:
+    plt.savefig(full_filename, bbox_inches='tight')
+
+  plt.close(fig)
 
 
 def scatter_neighbor_xs(multigroup_xs, filename, nuclide,

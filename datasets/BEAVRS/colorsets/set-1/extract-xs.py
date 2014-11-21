@@ -16,7 +16,7 @@ for batch in batches:
 
   print batch
 
-  filename = 'statepoint.{0:02}.h5'.format(batch)
+  filename = 'statepoint.30.h5'.format(batch)
 
   # Initialize a handle on the OpenMC statepoint file
   statepoint = openmc.statepoint.StatePoint(filename)

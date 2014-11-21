@@ -1,5 +1,5 @@
 import openmc
-import opencsg
+import opencg
 import infermc
 import numpy as np
 
@@ -46,7 +46,7 @@ class XSTallyExtractor(object):
     # Initialize TallyExtractor class attributes
     self._statepoint = None
     self._openmc_geometry = None
-    self._opencsg_geometry = None
+    self._opencg_geometry = None
 
     # Dictionaries mapping cells/materials to Tallies
     # Keys   - Region ID
@@ -87,9 +87,9 @@ class XSTallyExtractor(object):
     self._statepoint.compute_ci()
 
     # Retrieve the OpenMC Geometry from the statepoint and convert it
-    # into an OpenCSG geometry object using the compatibility module
+    # into an OpenCG geometry object using the compatibility module
     self._openmc_geometry = self._statepoint._geometry
-    self._opencsg_geometry = openmc.get_opencsg_geometry(self._openmc_geometry)
+    self._opencg_geometry = openmc.get_opencg_geometry(self._openmc_geometry)
 
     # Build maps to optimize tally lookups
     self._buildTallyMaps()
@@ -210,12 +210,12 @@ class XSTallyExtractor(object):
   def buildAllPaths(self):
 
     # Create a list of "paths" for each unique region in the Geometry
-    self._opencsg_geometry.initializeCellOffsets()
+    self._opencg_geometry.initializeCellOffsets()
 
-    num_regions = self._opencsg_geometry._num_regions
+    num_regions = self._opencg_geometry._num_regions
 
     for region in range(num_regions):
-      coord = self._opencsg_geometry.findRegion(region)
+      coord = self._opencg_geometry.findRegion(region)
       self._all_paths[region] = get_path(coord)
 
 
@@ -223,7 +223,7 @@ class XSTallyExtractor(object):
 
     # If this region has not been requested before, memoize its path
     if region not in self._all_paths:
-      coord = self._opencsg_geometry.findRegion(region)
+      coord = self._opencg_geometry.findRegion(region)
       self._all_paths[region] = get_path(coord)
 
     return self._all_paths[region]
@@ -232,7 +232,7 @@ class XSTallyExtractor(object):
   def buildNeighborMaps(self, first_level=0, unique=False):
 
     distribcell_xs = self._multigroup_xs['distribcell']
-    geometry = self._opencsg_geometry
+    geometry = self._opencg_geometry
     geometry.clearNeighbors()
     geometry.buildNeighbors()
 
@@ -526,7 +526,7 @@ class XSTallyExtractor(object):
       domain_offset = multigroup_xs._offset
 
       # "Cache" a dictionary of region IDs to offsets
-      num_regions = self._opencsg_geometry._num_regions
+      num_regions = self._opencg_geometry._num_regions
 
       for region in range(num_regions):
         path = self.getPath(region)
@@ -859,7 +859,7 @@ class MicroXSTallyExtractor(XSTallyExtractor):
       domain_offset = multigroup_xs._offset
 
       # "Cache" a dictionary of region IDs to offsets
-      num_regions = self._opencsg_geometry._num_regions
+      num_regions = self._opencg_geometry._num_regions
 
       for region in range(num_regions):
         path = self.getPath(region)

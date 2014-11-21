@@ -80,6 +80,6 @@ micro_tally_factory.createAllMultiGroupXS(groups, domain_type='cell')
 #micro_tally_factory.createAllMultiGroupXS(groups, domain_type='universe')
 micro_tally_factory.createTalliesFile()
 
-#import opencsg.plotter as plotter
+#import opencg.plotter as plotter
 #plotter.plot_neighbor_cells(geometry)
 #plotter.plot_materials(geometry)

@@ -1,10 +1,10 @@
 import copy
-from opencsg import Lattice
+from opencg import Lattice
 from datasets.BEAVRS.pin_cells import pin_cells
 from datasets.BEAVRS.templates import *
 
 
-# Keys are Lattice string names and values are OpenCSG Lattices.
+# Keys are Lattice string names and values are OpenCG Lattices.
 lattices = dict()
 
 

@@ -1,4 +1,4 @@
-from opencsg import Universe, Cell
+from opencg import Universe, Cell
 from datasets.BEAVRS.surfaces import *
 from datasets.BEAVRS.materials import opencsg_materials
 
@@ -7,7 +7,7 @@ from datasets.BEAVRS.materials import opencsg_materials
 # NOTE - The instrument tubes are assumed to be empty.
 
 # Keys are pin cell string names. Values are dictionaries with string name keys
-# for each cell in the pin cell and OpenCSG Cells as values.
+# for each cell in the pin cell and OpenCG Cells as values.
 pin_cells = dict()
 
 
