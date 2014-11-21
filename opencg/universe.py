@@ -4,8 +4,8 @@ __email__ = 'wboyd@mit.edu'
 import warnings
 
 from opencg.material import Material
-from opencg.surface import Surface, ON_SURFACE_THRESH
-from opencg.point import Point, Direction
+from opencg.surface import Surface
+from opencg.point import Point
 from opencg.checkvalue import *
 from collections import OrderedDict
 from hashlib import sha1
@@ -504,6 +504,11 @@ class Universe(object):
         else:
 
           fill = cell._fill
+
+          # Apply translation
+          if not cell._translation is None:
+            point = localcoords._point
+            point._coords -= cell._translation
 
           # Apply rotation
           if not cell._rotation is None:
@@ -1519,6 +1524,7 @@ class Cell(object):
     self._id = None
     self._name = None
     self._fill = None
+    self._translation = None
     self._rotation = None
     self._rotation_matrix = None
     self._type = None
@@ -1567,15 +1573,16 @@ class Cell(object):
       clone._id = self._id
       clone._name = self._name
       clone._fill = copy.deepcopy(self._fill, memo)
-      clone._rotation = copy.deepcopy(self._rotation)
-      clone._rotation_matrix = copy.deepcopy(self._rotation_matrix)
+      clone._translation = copy.deepcopy(self._translation, memo)
+      clone._rotation = copy.deepcopy(self._rotation, memo)
+      clone._rotation_matrix = copy.deepcopy(self._rotation_matrix, memo)
       clone._type = self._type
       clone._num_subcells = self._num_subcells
       clone._volume_fraction = self._volume_fraction
       clone._volume = self._volume
-      clone._neighbor_cells = copy.deepcopy(self._neighbor_cells, memo)
-      clone._neighbors_hash = self._neighbors_hash
-      clone._unique_neighbors_hash = self._unique_neighbors_hash
+      clone._neighbor_cells = np.empty(shape=(0,), dtype=Cell)
+      clone._neighbors_hash = None
+      clone._unique_neighbors_hash = None
 
       clone._surfaces = dict()
       for surface_id in self._surfaces.keys():
@@ -1760,6 +1767,21 @@ class Cell(object):
       raise ValueError(msg)
 
     self._fill = fill
+
+
+  def setTranslation(self, translation):
+
+    if not isinstance(translation, (np.ndarray, tuple, list)):
+      msg = 'Unable to set translation for Cell ID={0} to {1} since it is ' \
+            'not a list/tuple or NumPy array'.format(self._id, translation)
+      raise ValueError(msg)
+
+    elif len(translation) != 3:
+      msg = 'Unable to set translation for Cell ID={0} to {1} since it is not ' \
+            'of length 3'.format(self._id, translation)
+      raise ValueError(msg)
+
+    self._translation = translation
 
 
   def setRotation(self, rotation):
