@@ -12,7 +12,7 @@ from infermc.build import *
 # OpenMC simulation parameters
 batches = 30
 inactive = 10
-particles = 10000
+particles = 1000
 
 
 ###############################################################################
@@ -72,7 +72,7 @@ plot_file.export_to_xml()
 tally_factory = XSTallyFactory(openmc_geometry)
 micro_tally_factory = MicroXSTallyFactory(openmc_geometry)
 
-groups = group_structures['CASMO']['8-group']
+groups = group_structures['CASMO']['2-group']
 
 micro_tally_factory.createAllMultiGroupXS(groups, domain_type='distribcell')
 micro_tally_factory.createAllMultiGroupXS(groups, domain_type='material')

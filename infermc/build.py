@@ -1,6 +1,6 @@
-from openmc import Nuclide, Geometry
+from openmc import Nuclide
 from openmc.tallies import TalliesFile
-import infermc
+from infermc.multigroupxs import *
 from infermc.microxs import *
 
 
@@ -30,27 +30,27 @@ class XSTallyFactory(object):
                          domain_type='distribcell'):
 
     if xs_type == 'total':
-      xs = infermc.TotalXS(domain, domain_type, energy_groups)
+      xs = TotalXS(domain, domain_type, energy_groups)
     elif xs_type == 'transport':
-      xs = infermc.TransportXS(domain, domain_type, energy_groups)
+      xs = TransportXS(domain, domain_type, energy_groups)
     elif xs_type == 'absorption':
-      xs = infermc.AbsorptionXS(domain, domain_type, energy_groups)
+      xs = AbsorptionXS(domain, domain_type, energy_groups)
     elif xs_type == 'capture':
-      xs = infermc.CaptureXS(domain, domain_type, energy_groups)
+      xs = CaptureXS(domain, domain_type, energy_groups)
     elif xs_type == 'fission':
-      xs = infermc.FissionXS(domain, domain_type, energy_groups)
+      xs = FissionXS(domain, domain_type, energy_groups)
     elif xs_type == 'nu-fission':
-      xs = infermc.NuFissionXS(domain, domain_type, energy_groups)
+      xs = NuFissionXS(domain, domain_type, energy_groups)
     elif xs_type == 'scatter':
-      xs = infermc.ScatterXS(domain, domain_type, energy_groups)
+      xs = ScatterXS(domain, domain_type, energy_groups)
     elif xs_type == 'nu-scatter':
-      xs = infermc.NuScatterXS(domain, domain_type, energy_groups)
+      xs = NuScatterXS(domain, domain_type, energy_groups)
     elif xs_type == 'scatter matrix':
-      xs = infermc.ScatterMatrixXS(domain, domain_type, energy_groups)
+      xs = ScatterMatrixXS(domain, domain_type, energy_groups)
     elif xs_type == 'diffusion':
-      xs = infermc.DiffusionCoeff(domain, domain_type, energy_groups)
+      xs = DiffusionCoeff(domain, domain_type, energy_groups)
     elif xs_type == 'chi':
-      xs = infermc.Chi(domain, domain_type, energy_groups)
+      xs = Chi(domain, domain_type, energy_groups)
     else:
       msg = 'The XSTallyBuilder is unable to create cross-section type ' \
             '{0} which is not one of the supported types'.format(xs_type)
@@ -104,7 +104,7 @@ class MicroXSTallyFactory(XSTallyFactory):
       for nuclide_density in nuclides_densities:
         nuclides.append(nuclide_density[0])
 
-      nuclides.append(openmc.Nuclide('total'))
+      nuclides.append(Nuclide('total'))
 
     if xs_type == 'total':
       xs = MicroTotalXS(domain, domain_type, energy_groups, nuclides)

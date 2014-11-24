@@ -17,7 +17,7 @@ class EnergyGroups(object):
     if existing is None:
 
       clone = type(self).__new__(type(self))
-      clone.group_edges = copy.deepcopy(self._group_edges)
+      clone.group_edges = copy.deepcopy(self._group_edges, memo)
 
       memo[id(self)] = clone
 

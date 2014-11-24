@@ -6,7 +6,7 @@ import numpy as np
 
 def get_path(coords):
 
-  # Build "path" from LocalCoords
+  # Build "path" from LocalCoords for OpenMC
   path = list()
 
   while coords is not None:
@@ -19,12 +19,12 @@ def get_path(coords):
     # If the LocalCoords is at a Lattice
     else:
       # Add 1 for Fortran indexing
-      lat_x = coords._lat_x+1
-      lat_y = coords._lat_y+1
+      lat_x = coords._lat_x + 1
+      lat_y = coords._lat_y + 1
 
       # 3D Lattices only
       if coords._lat_z != None:
-        lat_z = coords._lat_z+1
+        lat_z = coords._lat_z + 1
 
       # 2D Lattices
       else:
@@ -41,10 +41,11 @@ def get_path(coords):
 
 class XSTallyExtractor(object):
 
-  def __init__(self, statepoint=None):
+  def __init__(self, statepoint=None, summary=None):
 
     # Initialize TallyExtractor class attributes
     self._statepoint = None
+    self._summary = None
     self._openmc_geometry = None
     self._opencg_geometry = None
 
@@ -74,6 +75,9 @@ class XSTallyExtractor(object):
     if not statepoint is None:
       self.statepoint = statepoint
 
+    if not summary is None:
+      self.summary = summary
+
 
   @property
   def statepoint(self):
@@ -86,13 +90,32 @@ class XSTallyExtractor(object):
     self._statepoint.read_results()
     self._statepoint.compute_ci()
 
+    if self._summary is not None:
+      self._statepoint.link_with_summary(self._summary)
+
+      # Build maps to optimize tally lookups
+      self._buildTallyMaps()
+
+  @property
+  def summary(self):
+    return self._summary
+
+  @summary.setter
+  def summary(self, summary):
+
+    self._summary = summary
+
     # Retrieve the OpenMC Geometry from the statepoint and convert it
     # into an OpenCG geometry object using the compatibility module
-    self._openmc_geometry = self._statepoint._geometry
+    self._openmc_geometry = self._summary.geometry
     self._opencg_geometry = openmc.get_opencg_geometry(self._openmc_geometry)
 
-    # Build maps to optimize tally lookups
-    self._buildTallyMaps()
+    if self._statepoint is not None:
+      self._statepoint.link_with_summary(self._summary)
+
+      # Build maps to optimize tally lookups
+      self._buildTallyMaps()
+
 
 
   def _buildTallyMaps(self):
@@ -382,6 +405,11 @@ class XSTallyExtractor(object):
     if self._statepoint is None:
       msg = 'Unable to get cross-sections since the TallyExtractor ' \
             'statepoint attribute has not been set'
+      raise ValueError(msg)
+
+    elif self._summary is None:
+      msg = 'Unable to get cross-sections since the TallyExtractor ' \
+            'summary attribute has not been set'
       raise ValueError(msg)
 
     # Initialize a list of filters
@@ -683,6 +711,11 @@ class MicroXSTallyExtractor(XSTallyExtractor):
             'statepoint attribute has not been set'
       raise ValueError(msg)
 
+    if self._summary is None:
+      msg = 'Unable to get cross-sections since the TallyExtractor ' \
+            'summary attribute has not been set'
+      raise ValueError(msg)
+
     # Initialize a list of filters
     filters = list()
 
@@ -699,7 +732,6 @@ class MicroXSTallyExtractor(XSTallyExtractor):
     nuclides_densities = domain.get_all_nuclides().values()
     densities = list()
     nuclides = list()
-
 
     for nuclide_density in nuclides_densities:
 
@@ -924,3 +956,43 @@ class MicroXSTallyExtractor(XSTallyExtractor):
       min_xs = min(min_xs, np.amin(data.ravel()))
 
     return min_xs
+
+
+  def getMaxRelErr(self, xs_type, nuclide, domain_type, group):
+
+    max_rel_err = -1.
+
+    for domain in self._multigroup_xs[domain_type].keys():
+      xs = self.getMultiGroupXS(xs_type, domain, domain_type)
+
+      if not xs.containsNuclide(nuclide):
+        continue
+
+      if xs_type != 'scatter matrix':
+        data = xs.getRelErr(groups=[group], nuclides=[nuclide])
+      else:
+        data = xs.getRelErr(in_groups=[group], out_groups=[group], nuclides=[nuclide])
+
+      max_rel_err = max(max_rel_err, np.amax(data.ravel()))
+
+    return max_rel_err
+
+
+  def getMinRelErr(self, xs_type, nuclide, domain_type, group):
+
+    min_rel_err = 1e10
+
+    for domain in self._multigroup_xs[domain_type].keys():
+      xs = self.getMultiGroupXS(xs_type, domain, domain_type)
+
+      if not xs.containsNuclide(nuclide):
+        continue
+
+      if xs_type != 'scatter matrix':
+        data = xs.getRelErr(groups=[group], nuclides=[nuclide])
+      else:
+        data = xs.getRelErr(in_groups=[group], out_groups=[group], nuclides=[nuclide])
+
+      min_rel_err = min(min_rel_err, np.amin(data.ravel()))
+
+    return min_rel_err

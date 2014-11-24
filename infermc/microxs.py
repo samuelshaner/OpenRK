@@ -127,13 +127,15 @@ class MicroXS(infermc.MultiGroupXS):
     return indices
 
 
-  def computeXS(self, corr=True):
+  def computeXS(self, corr=False):
 
     super(MicroXS, self).computeXS(corr)
 
     # Divide out the densities to convert xs to barns
     if self._xs_type != 'chi':
-      self._xs = infermc.error_prop.arithmetic.divide_by_scalar(self._xs, self._densities, corr)
+      self._xs = \
+        infermc.error_prop.arithmetic.divide_by_scalar(self._xs,
+                                                       self._densities, corr)
 
 
   def getXS(self, groups='all', nuclides='all', subdomains='all', metric='mean'):
@@ -490,8 +492,8 @@ class MicroXS(infermc.MultiGroupXS):
     all_xs = all_xs.sum(axis=-1)
 
     if not np.allclose(total_xs.ravel(), all_xs.ravel()):
-      print('The nuclide micro xs {0} in {1} {2} is not equal to the total macro ' \
-            'macro xs'.format(self._xs_type, self._domain_type, self._domain._id))
+      print('The micro xs {0} in {1} {2} is not equal to the total macro ' \
+            'xs'.format(self._xs_type, self._domain_type, self._domain._id))
 
 
 class MicroTotalXS(MicroXS, infermc.TotalXS):
