@@ -2,7 +2,7 @@ import openmc
 from openmc.statepoint import StatePoint
 from openmc.summary import Summary
 from datasets.energy_groups import group_structures
-from infermc.process import XSTallyExtractor, MicroXSTallyExtractor
+from infermc.process import MicroXSTallyExtractor
 from infermc.multigroupxs import xs_types
 import infermc.plotter as plotter
 

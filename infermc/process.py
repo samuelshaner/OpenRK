@@ -83,6 +83,7 @@ class XSTallyExtractor(object):
   def statepoint(self):
     return self._statepoint
 
+
   @statepoint.setter
   def statepoint(self, statepoint):
 
@@ -96,9 +97,11 @@ class XSTallyExtractor(object):
       # Build maps to optimize tally lookups
       self._buildTallyMaps()
 
+
   @property
   def summary(self):
     return self._summary
+
 
   @summary.setter
   def summary(self, summary):
@@ -117,7 +120,6 @@ class XSTallyExtractor(object):
 
       # Build maps to optimize tally lookups
       self._buildTallyMaps()
-
 
 
   def _buildTallyMaps(self):

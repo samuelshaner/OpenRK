@@ -23,10 +23,24 @@ FILE_FORMATS = ['png', 'jpg', 'pdf', 'svg', 'eps', 'pkl']
 
 # Dictionary of data point sizes for each domain type
 SCATTER_SIZES = dict()
-SCATTER_SIZES['distribcell'] = 30
-SCATTER_SIZES['material'] = 100
-SCATTER_SIZES['cell'] = 100
-SCATTER_SIZES['universe'] = 100
+SCATTER_SIZES['distribcell'] = 40
+SCATTER_SIZES['material'] = 150
+SCATTER_SIZES['cell'] = 150
+SCATTER_SIZES['universe'] = 150
+
+# Dictionary of data point markers for each domain type
+MARKERS = dict()
+MARKERS['distribcell'] = "o"
+MARKERS['material'] = "s"
+MARKERS['cell'] = "8"
+MARKERS['universe'] = "D"
+
+# Dictionary of data point linewidths for each domain type
+LINEWIDTHS = dict()
+LINEWIDTHS['distribcell'] = 0
+LINEWIDTHS['material'] = 1
+LINEWIDTHS['cell'] = 1
+LINEWIDTHS['universe'] = 1
 
 
 # Build color maps
@@ -140,6 +154,7 @@ def scatter_multigroup_xs(extractor, filename, xs_types='all',
 
         # Plot the data for this domain
         plt.scatter(data[:,0,...].ravel(), data[:,1,...].ravel(), c=color,
+                    lw=LINEWIDTHS[domain_type], marker=MARKERS[domain_type],
                     edgecolors='k', s=SCATTER_SIZES[domain_type])
 
     plt.xlabel('Group {0} [cm^-1]'.format(energy_groups[0]))
@@ -247,6 +262,7 @@ def scatter_micro_xs(extractor, filename, nuclides='all', xs_types='all',
 
             # Plot the data for this domain
             plt.scatter(data[:,0,...].ravel(), data[:,1,...].ravel(), c=color,
+                        lw=LINEWIDTHS[domain_type], marker=MARKERS[domain_type],
                         edgecolors='k', s=SCATTER_SIZES[domain_type])
 
           except (KeyError, ValueError):
@@ -327,7 +343,8 @@ def scatter_rxn_rate_flux(multigroup_xs, filename, nuclide,
   xs_type = multigroup_xs._xs_type
   domain = multigroup_xs._domain
 
-  plt.scatter(flux, rxn_rate, s=SCATTER_SIZES['distribcell'])
+  plt.scatter(flux, rxn_rate, s=SCATTER_SIZES['distribcell'],
+              lw=LINEWIDTHS['distribcell'], marker=MARKERS['distribcell'])
 
   plt.xlabel('Flux')
   plt.ylabel('RXN Rate')
@@ -419,9 +436,11 @@ def scatter_neighbor_xs(multigroup_xs, filename, nuclide,
     # Plot the data for all subdomains color-coded by neighbor ID
     if uncertainties:
       plots.append(plt.scatter(data[:,0,...].ravel(), data[:,1,...].ravel(),
+                   lw=LINEWIDTHS['distribcell'], marker=MARKERS['distribcell'],
                    c=next(color_map), edgecolors='k', s=radii, alpha=0.6))
     else:
       plots.append(ax.scatter(data[:,0,...].ravel(), data[:,1,...].ravel(),
+                   lw=LINEWIDTHS['distribcell'], marker=MARKERS['distribcell'],
                    c=next(color_map), edgecolors='k', s=SCATTER_SIZES['distribcell']))
 
   plt.xlabel('Group {0} [barns]'.format(energy_groups[0]))
