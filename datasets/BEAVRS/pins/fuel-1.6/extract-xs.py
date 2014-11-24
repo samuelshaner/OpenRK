@@ -1,5 +1,6 @@
 import openmc
-import openmc.statepoint
+from openmc.statepoint import StatePoint
+from openmc.summary import Summary
 from datasets.energy_groups import group_structures
 from infermc.process import XSTallyExtractor, MicroXSTallyExtractor
 from infermc.multigroupxs import xs_types
@@ -11,6 +12,8 @@ batches = [20]
 
 groups = group_structures['CASMO']['8-group']
 
+summary = Summary('summary.h5')
+
 for batch in batches:
 
   print batch
@@ -18,7 +21,7 @@ for batch in batches:
   filename = 'statepoint.20.h5'#.format(batch)
 
   # Initialize a handle on the OpenMC statepoint file
-  statepoint = openmc.statepoint.StatePoint(filename)
+  statepoint = StatePoint(filename)
 
   ## MICROS
   micro_extractor = MicroXSTallyExtractor(statepoint)

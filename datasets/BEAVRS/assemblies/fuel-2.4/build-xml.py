@@ -45,7 +45,7 @@ settings_file.set_batches(batches)
 settings_file.set_inactive(inactive)
 settings_file.set_particles(particles)
 settings_file.set_statepoint_interval(5)
-settings_file.set_output({'tallies': False})
+settings_file.set_output({'tallies': False, 'summary': True})
 settings_file.set_ptables(True)
 source_bounds = [geometry.getMinX(), geometry.getMinY(), geometry.getMinZ(), \
                  geometry.getMaxX(), geometry.getMaxY(), geometry.getMaxZ()]

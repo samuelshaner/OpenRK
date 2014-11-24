@@ -46,7 +46,7 @@ settings_file.set_inactive(inactive)
 settings_file.set_particles(particles)
 settings_file.set_statepoint_interval(5)
 settings_file.set_ptables(True)
-settings_file.set_output({'tallies': False})
+settings_file.set_output({'tallies': False, 'summary': True})
 settings_file.set_source_space('box', geometry.getBounds())
 settings_file.export_to_xml()
 
