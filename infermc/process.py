@@ -104,11 +104,13 @@ class XSTallyExtractor(object):
   def summary(self, summary):
 
     self._summary = summary
+    self._summary.make_opencg_geometry()
+    self._summary.opencg_geometry.buildNeighbors()
 
     # Retrieve the OpenMC Geometry from the statepoint and convert it
     # into an OpenCG geometry object using the compatibility module
-    self._openmc_geometry = self._summary.geometry
-    self._opencg_geometry = openmc.get_opencg_geometry(self._openmc_geometry)
+    self._openmc_geometry = self._summary.openmc_geometry
+    self._opencg_geometry = self._summary.opencg_geometry
 
     if self._statepoint is not None:
       self._statepoint.link_with_summary(self._summary)

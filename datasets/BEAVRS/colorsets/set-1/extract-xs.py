@@ -7,8 +7,8 @@ from infermc.multigroupxs import xs_types
 import infermc.plotter as plotter
 
 
-#batches = range(30, 255, 30)
-batches = [30]
+batches = range(10, 35, 5)
+#batches = [30]
 
 groups = group_structures['CASMO']['2-group']
 
@@ -18,13 +18,13 @@ for batch in batches:
 
   print batch
 
-  filename = 'statepoint.30.h5'.format(batch)
+  filename = 'statepoint.{0:02}.h5'.format(batch)
 
   # Initialize a handle on the OpenMC statepoint file
   statepoint = StatePoint(filename)
 
   ## MICROS
-  micro_extractor = MicroXSTallyExtractor(statepoint)
+  micro_extractor = MicroXSTallyExtractor(statepoint, summary)
   micro_extractor.extractAllMultiGroupXS(groups, 'cell')
   micro_extractor.extractAllMultiGroupXS(groups, 'distribcell')
   micro_extractor.checkXS()

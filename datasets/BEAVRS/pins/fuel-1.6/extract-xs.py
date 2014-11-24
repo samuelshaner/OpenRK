@@ -25,8 +25,8 @@ for batch in batches:
 
   ## MICROS
   micro_extractor = MicroXSTallyExtractor(statepoint, summary)
-  micro_extractor.extractAllMultiGroupXS(groups, 'material', corr=False)
-  micro_extractor.extractAllMultiGroupXS(groups, 'distribcell', corr=False)
+  micro_extractor.extractAllMultiGroupXS(groups, 'material')
+  micro_extractor.extractAllMultiGroupXS(groups, 'distribcell')
   micro_extractor.checkXS()
 
 

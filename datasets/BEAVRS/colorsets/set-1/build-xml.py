@@ -11,9 +11,9 @@ import opencg.plotter as plotter
 ###############################################################################
 
 # OpenMC simulation parameters
-batches = 250
-inactive = 25
-particles = 100000
+batches = 30
+inactive = 5
+particles = 1000
 
 
 ###############################################################################
@@ -75,14 +75,6 @@ tally_factory = XSTallyFactory(openmc_geometry)
 micro_tally_factory = MicroXSTallyFactory(openmc_geometry)
 
 groups = group_structures['CASMO']['2-group']
-
-'''
-tally_factory.createAllMultiGroupXS(groups, domain_type='distribcell')
-tally_factory.createAllMultiGroupXS(groups, domain_type='material')
-tally_factory.createAllMultiGroupXS(groups, domain_type='cell')
-tally_factory.createAllMultiGroupXS(groups, domain_type='universe')
-tally_factory.createTalliesFile()
-'''
 
 micro_tally_factory.createAllMultiGroupXS(groups, domain_type='distribcell')
 micro_tally_factory.createAllMultiGroupXS(groups, domain_type='material')
