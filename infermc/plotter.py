@@ -50,45 +50,41 @@ def get_color_maps(geometry):
   geometry.initializeCellOffsets()
 
   materials = geometry.getAllMaterials()
-  cells = geometry.getAllMaterialCells()
+  material_cells = geometry.getAllMaterialCells()
   universes = geometry.getAllMaterialUniverses()
 
   num_materials = len(materials)
-  num_cells = len(cells)
+  num_cells = len(material_cells)
   num_universes = len(universes)
-  num_regions = geometry._num_regions
-
-  # Create arrays of equally spaced randomized floats as a color map for plots
-  # Seed the NumPy random number generator to ensure reproducible color maps
 
   # Initialize dictionary for all color maps
-  # Keys    - color type string (ie, 'materials', 'cells', 'neighbors', etc.)
-  # Values  - randomized NumPy array of floats in [0, 1)
+  # Keys    - color type string (ie, 'materials', 'cells', etc.)
+  # Values  - randomized NumPy arrays of non-negative integers
   color_maps = dict()
 
   # Create color map for Materials
+  material_ids = [material_id for material_id in materials]
   np.random.seed(1)
-  color_map = np.linspace(0., 1., num_materials, endpoint=False)
-  np.random.shuffle(color_map)
-  color_maps['material'] = itertools.cycle(matplotlib.cm.Spectral(color_map))
+  np.random.shuffle(material_ids)
+  color_maps['material'] = (material_ids, num_materials)
 
   # Create color map for Cells
+  cell_ids = [cell_id for cell_id in material_cells]
   np.random.seed(1)
-  color_map = np.linspace(0., 1., num_cells, endpoint=False)
-  np.random.shuffle(color_map)
-  color_maps['cell'] = itertools.cycle(matplotlib.cm.hsv(color_map))
+  np.random.shuffle(cell_ids)
+  color_maps['cell'] = (cell_ids, num_cells)
 
   # Create color map for Distribcells
+  cell_ids = [cell_id for cell_id in material_cells]
   np.random.seed(1)
-  color_map = np.linspace(0., 1., num_cells, endpoint=False)
-  np.random.shuffle(color_map)
-  color_maps['distribcell'] = itertools.cycle(matplotlib.cm.Set1(color_map))
+  np.random.shuffle(cell_ids)
+  color_maps['distribcell'] = (cell_ids, num_cells)
 
   # Create color map for Universes
+  universe_ids = [universe_id for universe_id in universes]
   np.random.seed(1)
-  color_map = np.linspace(0., 1., num_universes, endpoint=False)
-  np.random.shuffle(color_map)
-  color_maps['universe'] = itertools.cycle(matplotlib.cm.Dark2(color_map))
+  np.random.shuffle(universe_ids)
+  color_maps['universe'] = (universe_ids, num_universes)
 
   return color_maps
 
@@ -99,7 +95,7 @@ def scatter_multigroup_xs(extractor, filename, xs_types='all',
                           xlim=None, ylim=None):
 
   global DIRECTORY
-  global SCATTER_SIZES
+  global SCATTER_SIZES, LINEWIDTHS, MARKERS
 
   if domain_types == 'all':
     domain_types = infermc.domain_types
@@ -107,7 +103,7 @@ def scatter_multigroup_xs(extractor, filename, xs_types='all',
   if xs_types == 'all':
     xs_types = infermc.xs_types
 
-  # Creat a list of colors the length of the number of domains to plot
+  # Create a list of colors the length of the number of domains to plot
   if len(colors) == 1:
     colors = [colors[0] for i in range(len(domain_types))]
 
@@ -119,13 +115,14 @@ def scatter_multigroup_xs(extractor, filename, xs_types='all',
   # Get color maps for each domain within each domain type
   geometry = extractor._opencg_geometry
   color_maps = get_color_maps(geometry)
+  cmap = plt.get_cmap('spectral')
 
   # Get lists of all Materials, Cells, Universes
   domains = dict()
   domains['material'] = geometry.getAllMaterials()
   domains['cell'] = geometry.getAllMaterialCells()
-  domains['universe'] = geometry.getAllMaterialUniverses()
   domains['distribcell'] = geometry.getAllMaterialCells()
+  domains['universe'] = geometry.getAllMaterialUniverses()
 
   axis_formatter = matplotlib.ticker.ScalarFormatter(useOffset=False)
 
@@ -140,9 +137,6 @@ def scatter_multigroup_xs(extractor, filename, xs_types='all',
     for j, domain_type in enumerate(domain_types):
       for domain_id in domains[domain_type]:
 
-        # Get the color for this domain ID
-        color = next(color_maps[colors[j]])
-
         # Get the MultiGroupXS object for this domain
         xs = extractor.getMultiGroupXS(xs_type, domain_id, domain_type)
 
@@ -150,10 +144,13 @@ def scatter_multigroup_xs(extractor, filename, xs_types='all',
         data = xs.getXS(groups=energy_groups)
 
         # Get the color for this domain ID
-        color = next(color_maps[colors[j]])
+        color = color_maps[domain_type][0].index(domain_id)
+        max_color = color_maps[domain_type][1]
+        colors = np.ones(data.size/2) * color
 
         # Plot the data for this domain
-        plt.scatter(data[:,0,...].ravel(), data[:,1,...].ravel(), c=color,
+        plt.scatter(data[:,0,...].ravel(), data[:,1,...].ravel(),
+                    cmap=cmap, c=colors, vmin=0, vmax=max_color,
                     lw=LINEWIDTHS[domain_type], marker=MARKERS[domain_type],
                     edgecolors='k', s=SCATTER_SIZES[domain_type])
 
@@ -196,7 +193,7 @@ def scatter_micro_xs(extractor, filename, nuclides='all', xs_types='all',
                      xlim=None, ylim=None):
 
   global DIRECTORY
-  global SCATTER_SIZES
+  global SCATTER_SIZES, LINEWIDTHS, MARKERS
 
   if nuclides == 'all':
     all_nuclides = extractor._openmc_geometry.get_all_nuclides()
@@ -222,9 +219,7 @@ def scatter_micro_xs(extractor, filename, nuclides='all', xs_types='all',
   # Get color maps for each domain within each domain type
   geometry = extractor._opencg_geometry
   color_maps = get_color_maps(geometry)
-
-  # Create a color for each type of domain
-  domain_colors = np.linspace(0, 1, len(domain_types), endpoint=False)
+  cmap = plt.get_cmap('spectral')
 
   # Get lists of all Materials, Cells, Universes
   domains = dict()
@@ -247,9 +242,6 @@ def scatter_micro_xs(extractor, filename, nuclides='all', xs_types='all',
       for j, domain_type in enumerate(domain_types):
         for domain_id in domains[domain_type]:
 
-          # Get the color for this domain ID
-          color = next(color_maps[colors[j]])
-
           # Get the MultiGroupXS object for this domain
           try:
             xs = extractor.getMultiGroupXS(xs_type, domain_id, domain_type)
@@ -260,13 +252,19 @@ def scatter_micro_xs(extractor, filename, nuclides='all', xs_types='all',
             # Get the cross-section data for all subdomain and store to the array
             data = xs.getXS(groups=energy_groups, nuclides=[nuclide])
 
+            # Get the color for this domain ID
+            color = color_maps[domain_type][0].index(domain_id)
+            max_color = color_maps[domain_type][1]
+            colors = np.ones(data.size/2) * color
+
             # Plot the data for this domain
-            plt.scatter(data[:,0,...].ravel(), data[:,1,...].ravel(), c=color,
+            plt.scatter(data[:,0,...].ravel(), data[:,1,...].ravel(),
+                        cmap=cmap, c=colors, vmin=0, vmax=max_color,
                         lw=LINEWIDTHS[domain_type], marker=MARKERS[domain_type],
                         edgecolors='k', s=SCATTER_SIZES[domain_type])
 
+          # If the xs does not exist, continue
           except (KeyError, ValueError):
-            # If the xs does not exist, continue
             pass
 
       plt.xlabel('Group {0} [barns]'.format(energy_groups[0]))
