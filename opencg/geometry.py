@@ -328,6 +328,13 @@ class Geometry(object):
     self._built_neighbors = True
 
 
+  def countNeighbors(self):
+
+    for region in range(self._num_regions):
+      self.getNeighborsHash(region)
+      self.getUniqueNeighborsHash(region)
+
+
   def getRegionId(self, x=0., y=0., z=0.):
 
     coords = self.findCoords(x=x, y=y, z=z)
