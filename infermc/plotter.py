@@ -12,7 +12,7 @@ plt.ioff()
 
 import infermc
 import numpy as np
-import os, itertools
+import os
 
 
 # A static variable for the output directory in which to save plots
@@ -41,6 +41,18 @@ LINEWIDTHS['distribcell'] = 0
 LINEWIDTHS['material'] = 1
 LINEWIDTHS['cell'] = 1
 LINEWIDTHS['universe'] = 1
+
+
+def get_unique_integers(data):
+  '''Replace unique values in array with integers from monotonic sequence'''
+
+  # Inspired by the following post on StackOverflow:
+  # http://stackoverflow.com/questions/15709169/numpy-replace-groups-of-elements-with-integers-incrementally
+
+  values, indices, inverse = np.unique(data, True, True)
+  values, inverse = np.unique(indices[inverse], False, True)
+  inverse = np.reshape(inverse, data.shape)
+  return inverse
 
 
 # Build color maps
@@ -301,6 +313,123 @@ def scatter_micro_xs(extractor, filename, nuclides='all', xs_types='all',
       plt.close(fig)
 
 
+def scatter_neighbor_xs(multigroup_xs, opencg_geometry, filename, nuclide,
+                        first_level=0, energy_groups=(1,2),
+                        extension='png', xlim=None, ylim=None):
+
+  if multigroup_xs._xs_type == 'scatter matrix':
+    msg = 'Unable to make scatter plot for scattering matrices'
+    raise ValueError(msg)
+
+  global DIRECTORY
+  global SCATTER_SIZES, LINEWIDTHS, MARKERS
+
+  # Build the neighbor Cells/Universes
+  opencg_geometry.buildNeighbors()
+  opencg_geometry.countNeighbors(first_level)
+  unique = multigroup_xs._unique_neighbors
+
+  # Get the number of neighbors in the plot
+  if unique:
+    num_neighbors = opencg_geometry._num_unique_neighbors
+  else:
+    num_neighbors = opencg_geometry._num_neighbors
+
+  color_map = np.arange(num_neighbors)
+
+  # Create array of all Neighbor IDs and randomly (but reproducibly) permute it
+  color_map = [neighbor_id for neighbor_id in color_map]
+  np.random.seed(1)
+  np.random.shuffle(color_map)
+  cmap = plt.get_cmap('spectral')
+
+  fig = plt.figure()
+  ax = fig.add_subplot(111)
+  axis_formatter = matplotlib.ticker.ScalarFormatter(useOffset=False)
+
+  # Get the cross-section type and domain
+  xs_type = multigroup_xs._xs_type
+  domain = multigroup_xs._domain
+
+  # Get the neighbor ID for each data point
+  neighbors = multigroup_xs.getSubDomainNeighbors()
+  unique_neighbors = np.unique(neighbors)
+
+  # Initialize lists to store plot handles
+  plots = list()
+
+  for i, unique_neighbor in enumerate(unique_neighbors):
+
+    subdomains = multigroup_xs.getNeighborSubDomains(unique_neighbor)
+
+    # Get the cross-section data for all subdomains
+    data = multigroup_xs.getXS(groups=energy_groups,
+                               subdomains=subdomains, nuclides=[nuclide])
+
+    # Get the color for this neighbor
+    color = color_map.index(unique_neighbor)
+    colors = np.ones(data.size/2) * color
+
+    plots.append(ax.scatter(data[:,0,...].ravel(), data[:,1,...].ravel(),
+                 cmap=cmap, c=colors, vmin=0, vmax=num_neighbors,
+                 lw=LINEWIDTHS['distribcell'], marker=MARKERS['distribcell'],
+                 edgecolors='k', s=SCATTER_SIZES['distribcell']))
+
+  plt.xlabel('Group {0} [barns]'.format(energy_groups[0]))
+  plt.ylabel('Group {0} [barns]'.format(energy_groups[1]))
+  plt.title('{0} {1} Cross-Section'.format(nuclide._name, xs_type.capitalize()))
+  plt.grid()
+
+  if not xlim is None:
+    plt.xlim(xlim)
+
+  if not ylim is None:
+    plt.ylim(ylim)
+
+  ax.yaxis.set_major_formatter(axis_formatter)
+  ax.xaxis.set_major_formatter(axis_formatter)
+
+  subdirectory = 'neighbors/distribcell-{0}/{1}/{2}'.format(domain._id,
+                                                            nuclide._name,
+                                                            xs_type)
+  full_directory = DIRECTORY + '/' + subdirectory
+
+  if not os.path.exists(full_directory):
+    os.makedirs(full_directory)
+
+  full_filename = full_directory + '/' + filename + '.' + extension
+
+  if extension is 'pkl':
+    import pickle
+    ax = plt.subplot(111)
+    pickle.dump(ax, file(full_filename, 'w'))
+  else:
+    plt.savefig(full_filename, bbox_inches='tight')
+
+  plt.close(fig)
+
+
+def scatter_all_neighbors(micro_extractor, filename, first_level=0,
+                          energy_groups=(1,2), extension='png',
+                          xlim=None, ylim=None):
+
+  opencg_geometry = micro_extractor._opencg_geometry
+  distribcell_xs = micro_extractor._multigroup_xs['distribcell']
+
+  for domain_id in distribcell_xs:
+    for xs_type in distribcell_xs[domain_id]:
+
+      if xs_type == 'scatter matrix':
+        continue
+
+      multigroup_xs = distribcell_xs[domain_id][xs_type]
+      nuclides = multigroup_xs._nuclides
+
+      for nuclide in nuclides:
+        scatter_neighbor_xs(multigroup_xs, opencg_geometry, filename, nuclide,
+                            first_level, energy_groups, extension, xlim, ylim)
+
+
 def scatter_rxn_rate_flux(multigroup_xs, filename, nuclide,
                           energy_group, uncertainties=False,
                           extension='png', xlim=None, ylim=None):
@@ -375,122 +504,3 @@ def scatter_rxn_rate_flux(multigroup_xs, filename, nuclide,
     plt.savefig(full_filename, bbox_inches='tight')
 
   plt.close(fig)
-
-
-def scatter_neighbor_xs(multigroup_xs, filename, nuclide,
-                        energy_groups=(1,2), uncertainties=False,
-                        extension='png', xlim=None, ylim=None):
-
-  if multigroup_xs._xs_type == 'scatter matrix':
-    msg = 'Unable to make scatter plot for scattering matrices'
-    raise ValueError(msg)
-
-  global DIRECTORY
-  global SCATTER_SIZES
-
-  fig = plt.figure()
-  ax = fig.add_subplot(111)
-  axis_formatter = matplotlib.ticker.ScalarFormatter(useOffset=False)
-
-  # Get the cross-section type and domain
-  xs_type = multigroup_xs._xs_type
-  domain = multigroup_xs._domain
-
-  # Get the neighbor ID for each data point
-  neighbors = multigroup_xs.getSubDomainNeighbors()
-  unique_neighbors = np.unique(neighbors)
-
-  # Initialize a color map for each neighbor
-  np.random.seed(1)
-  color_map = np.linspace(0., 1., len(unique_neighbors), endpoint=False)
-  np.random.shuffle(color_map)
-  color_map = itertools.cycle(matplotlib.cm.hsv(color_map))
-
-  # Initialize lists to store plot handles and labels to create a legend
-  plots = list()
-  labels = list()
-
-  for unique_neighbor in unique_neighbors:
-
-    subdomains = multigroup_xs.getNeighborSubDomains(unique_neighbor)
-
-    # Get the cross-section data for all subdomains
-    data = multigroup_xs.getXS(groups=energy_groups,
-                               subdomains=subdomains, nuclides=[nuclide])
-
-    # If the user requested uncertainties, find 1-sigma "radius" for each point
-    if uncertainties:
-      x_std_dev = multigroup_xs.getXS(groups=[energy_groups[0]],
-                                      subdomains=subdomains,
-                                    nuclides=[nuclide], metric='std_dev')
-      y_std_dev = multigroup_xs.getXS(groups=[energy_groups[1]],
-                                      subdomains=subdomains,
-                                    nuclides=[nuclide], metric='std_dev')
-      radii = np.sqrt(x_std_dev**2 + y_std_dev**2)
-
-    label = 'neighbor {0}'.format(unique_neighbor)
-    labels.append(label)
-
-    # Plot the data for all subdomains color-coded by neighbor ID
-    if uncertainties:
-      plots.append(plt.scatter(data[:,0,...].ravel(), data[:,1,...].ravel(),
-                   lw=LINEWIDTHS['distribcell'], marker=MARKERS['distribcell'],
-                   c=next(color_map), edgecolors='k', s=radii, alpha=0.6))
-    else:
-      plots.append(ax.scatter(data[:,0,...].ravel(), data[:,1,...].ravel(),
-                   lw=LINEWIDTHS['distribcell'], marker=MARKERS['distribcell'],
-                   c=next(color_map), edgecolors='k', s=SCATTER_SIZES['distribcell']))
-
-  plt.xlabel('Group {0} [barns]'.format(energy_groups[0]))
-  plt.ylabel('Group {0} [barns]'.format(energy_groups[1]))
-  plt.title('{0} {1} Cross-Section'.format(nuclide._name, xs_type.capitalize()))
-  plt.legend(plots, labels, scatterpoints=1, loc='best', fontsize=12)
-  plt.grid()
-
-  if not xlim is None:
-    plt.xlim(xlim)
-
-  if not ylim is None:
-    plt.ylim(ylim)
-
-  ax.yaxis.set_major_formatter(axis_formatter)
-  ax.xaxis.set_major_formatter(axis_formatter)
-
-  subdirectory = 'neighbors/distribcell-{0}/{1}/{2}'.format(domain._id,
-                                                            nuclide._name,
-                                                            xs_type)
-  full_directory = DIRECTORY + '/' + subdirectory
-
-  if not os.path.exists(full_directory):
-    os.makedirs(full_directory)
-
-  full_filename = full_directory + '/' + filename + '.' + extension
-
-  if extension is 'pkl':
-    import pickle
-    ax = plt.subplot(111)
-    pickle.dump(ax, file(full_filename, 'w'))
-  else:
-    plt.savefig(full_filename, bbox_inches='tight')
-
-  plt.close(fig)
-
-
-def scatter_all_neighbors(micro_extractor, filename, energy_groups=(1,2),
-                          uncertainties=False, extension='png',
-                          xlim=None, ylim=None):
-
-  distribcell_xs = micro_extractor._multigroup_xs['distribcell']
-
-  for domain_id in distribcell_xs:
-    for xs_type in distribcell_xs[domain_id]:
-
-      if xs_type == 'scatter matrix':
-        continue
-
-      multigroup_xs = distribcell_xs[domain_id][xs_type]
-      nuclides = multigroup_xs._nuclides
-
-      for nuclide in nuclides:
-        scatter_neighbor_xs(multigroup_xs, filename, nuclide, energy_groups,
-                            uncertainties, extension, xlim, ylim)

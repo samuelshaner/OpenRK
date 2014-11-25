@@ -98,6 +98,8 @@ class MultiGroupXS(object):
     # Keys   - Subdomain ID (Region ID for districells)
     # Values - (Unique) neighbor ID
     self._subdomain_neighbors = dict()
+    self._unique_neighbors = False
+
 
     if not domain_type is None:
       self.domain_type = domain_type
@@ -127,6 +129,7 @@ class MultiGroupXS(object):
       clone._subdomain_offsets = copy.deepcopy(self._subdomain_offsets, memo)
       clone._offset = copy.deepcopy(self._offset, memo)
       clone._subdomain_neighbors = copy.deepcopy(self._subdomain_neighbors, memo)
+      clone._unique_neighbors = self._unique_neighbors
 
       clone._tallies = dict()
       for tally_type, tally in self._tallies.items():
@@ -214,6 +217,10 @@ class MultiGroupXS(object):
 
   def setSubDomainNeighbor(self, domain_id, neighbor):
     self._subdomain_neighbors[domain_id] = neighbor
+
+
+  def setUniqueNeighbors(self, unique_neighbors):
+    self._unique_neighbors = unique_neighbors
 
 
   @abc.abstractmethod
@@ -555,6 +562,7 @@ class MultiGroupXS(object):
     xs_results['offset'] = self._offset
     xs_results['subdomain offsets'] = self._subdomain_offsets
     xs_results['subdomain neighbors'] = self._subdomain_neighbors
+    xs_results['unique neighbors'] = self._unique_neighbors
 
     # Pickle the MultiGroupXS results to a file
     filename = directory + '/' + filename + '.pkl'
@@ -589,6 +597,7 @@ class MultiGroupXS(object):
     offset = xs_results['offset']
     subdomain_offsets = xs_results['subdomain offsets']
     subdomain_neighbors = xs_results['subdomain neighbors']
+    unique_neighbors = xs_results['unique neighbors']
 
     # Store the MultiGroupXS class attributes
     self._xs_type = xs_type
@@ -599,7 +608,8 @@ class MultiGroupXS(object):
     self._xs = xs
     self._offset = offset
     self._subdomain_offsets = subdomain_offsets
-    self._subdomain_neighbors = subdomain_offsets
+    self._subdomain_neighbors = subdomain_neighbors
+    self._unique_neighbors = unique_neighbors
 
 
   def exportResults(self, subdomains='all', filename='multigroupxs',

@@ -27,11 +27,15 @@ for batch in batches:
   micro_extractor.extractAllMultiGroupXS(groups, 'distribcell')
   micro_extractor.checkXS()
 
-  plotter.scatter_micro_xs(micro_extractor,
-                           domain_types=['distribcell', 'cell'],
-                           colors=['cell', 'cell'],
+#  plotter.scatter_micro_xs(micro_extractor,
+#                           domain_types=['distribcell', 'cell'],
+#                           colors=['cell', 'cell'],
+#                           filename='{0}-batch'.format(batch))
 
-                           filename='{0}-batch'.format(batch))
+  micro_extractor.buildNeighborMaps(unique=True)
+  plotter.scatter_all_neighbors(micro_extractor,
+                                filename='{0}-batch'.format(batch))
+
   materials = micro_extractor._openmc_geometry.get_all_materials()
 
   # DUMP-TO-FILE and PRINT XS

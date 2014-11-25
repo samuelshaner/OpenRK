@@ -262,11 +262,13 @@ class XSTallyExtractor(object):
     geometry = self._opencg_geometry
     geometry.clearNeighbors()
     geometry.buildNeighbors()
+    geometry.countNeighbors()
 
     for domain_id in distribcell_xs:
       for xs_type in distribcell_xs[domain_id]:
 
         multigroup_xs = distribcell_xs[domain_id][xs_type]
+        multigroup_xs.setUniqueNeighbors(unique)
         subdomains = multigroup_xs.getSubDomains()
 
         for subdomain in subdomains:
