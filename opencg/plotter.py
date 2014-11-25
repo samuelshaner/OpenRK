@@ -364,7 +364,7 @@ def plot_neighbor_cells(geometry, plane='xy', offset=0.,
 
   # Build the neighbor Cells/Universes
   geometry.buildNeighbors()
-  geometry.countNeighbors()
+  geometry.countNeighbors(first_level)
 
   # Initialize a NumPy array for the surface colors
   surface = numpy.zeros((gridsize, gridsize))

@@ -328,11 +328,11 @@ class Geometry(object):
     self._built_neighbors = True
 
 
-  def countNeighbors(self):
+  def countNeighbors(self, first_level=0):
 
     for region in range(self._num_regions):
-      self.getNeighborsHash(region)
-      self.getUniqueNeighborsHash(region)
+      self.getNeighborsHash(region, first_level)
+      self.getUniqueNeighborsHash(region, first_level)
 
 
   def getRegionId(self, x=0., y=0., z=0.):
