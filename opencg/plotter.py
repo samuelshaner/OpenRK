@@ -364,6 +364,7 @@ def plot_neighbor_cells(geometry, plane='xy', offset=0.,
 
   # Build the neighbor Cells/Universes
   geometry.buildNeighbors()
+  geometry.countNeighbors()
 
   # Initialize a NumPy array for the surface colors
   surface = numpy.zeros((gridsize, gridsize))
@@ -393,17 +394,28 @@ def plot_neighbor_cells(geometry, plane='xy', offset=0.,
         surface[j][i] = neighbors_hash
 
   # Get the number of neighbors in the plot
-  num_colors = np.unique(surface).size
+  if unique:
+    num_neighbors = geometry._num_unique_neighbors
+  else:
+    num_neighbors = geometry._num_neighbors
 
-  # Create array of equally spaced randomized floats as a color map for plots
-  # Seed the NumPy random number generator to ensure reproducible color maps
+  neighbors = np.arange(num_neighbors)
+
+  # Create array of all Neighbor IDs and randomly (but reproducibly) permute it
+  neighbors = [neighbor for neighbor in neighbors]
   numpy.random.seed(1)
-  colors = np.arange(0., num_colors, 1, dtype=np.int64)
-  numpy.random.shuffle(colors)
+  numpy.random.shuffle(neighbors)
 
-  # Replace neighbor IDs with monotonically increasing integers (starting at 0)
-  surface = get_unique_integers(surface)
-  surface = colors[surface]
+  # Create an array of the colors (array indices) for each value in the surface
+  colors = list()
+  for neighbor in surface.ravel():
+    if neighbor != -1:
+      colors.append(neighbors.index(neighbor))
+    else:
+      colors.append(np.nan)
+
+  colors = np.asarray(colors)
+  colors.shape = surface.shape
 
   # Make Matplotlib color "bad" numbers (ie, NaN, INF) with transparent pixels
   cmap = plt.get_cmap('spectral')
@@ -411,9 +423,9 @@ def plot_neighbor_cells(geometry, plane='xy', offset=0.,
 
   # Plot a 2D color map of the neighbor cells
   fig = plt.figure()
-  surface = np.flipud(surface)
-  plt.imshow(surface, extent=surf['bounds'],
-             interpolation='nearest', cmap=cmap)
+  colors = np.flipud(colors)
+  plt.imshow(colors, extent=surf['bounds'], interpolation='nearest',
+             cmap=cmap, vmin=0, vmax=num_neighbors)
 
   if unique:
     plt.title('Unique Neighbor Cells ' + plane)
