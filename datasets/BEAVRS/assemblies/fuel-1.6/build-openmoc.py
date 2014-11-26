@@ -1,4 +1,4 @@
-from openmoc.compatible.opencsg_compatible import *
+from openmoc.compatible.opencg_compatible import *
 from geometry import geometry
 
 

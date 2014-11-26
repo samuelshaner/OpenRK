@@ -286,12 +286,17 @@ class MicroXS(infermc.MultiGroupXS):
         else:
           subdomain_group = domain_group
 
+
         # Loop over all Nuclides
-        for nuclide in nuclides:
+        for j, nuclide in enumerate(nuclides):
 
           # Create an HDF5 group for the Nuclide and xs type
           group_name = self._nuclides[nuclide]._name
           nuclide_group = subdomain_group.require_group(group_name)
+
+          nuclide_group.require_dataset('density', dtype=np.float64,
+                                   shape=(1,), data=[self._densities[j]])
+
           xs_group = nuclide_group.require_group(self._xs_type)
 
           # Add MultiGroupXS results data to the HDF5 group
