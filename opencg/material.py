@@ -83,11 +83,6 @@ class Material(object):
       if self._id is not None:
         MATERIAL_IDS.remove(self._id)
 
-      if material_id in MATERIAL_IDS:
-        msg = 'Unable to set Material ID to {0} since a Material ' \
-              'with this ID was already initialized'.format(material_id)
-        raise ValueError(msg)
-
       if material_id < 0:
         msg = 'Unable to set Material ID to {0} since it must be a ' \
               'non-negative integer'.format(material_id)

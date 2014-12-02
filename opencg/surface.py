@@ -193,11 +193,6 @@ class Surface(object):
       if self._id is not None:
         SURFACE_IDS.remove(self._id)
 
-      elif surface_id in SURFACE_IDS:
-        msg = 'Unable to set Surface ID to {0} since a Surface with ' \
-              'this ID was already initialized'.format(surface_id)
-        raise ValueError(msg)
-
       elif surface_id < 0:
         msg = 'Unable to set Surface ID to {0} since it must be a ' \
               'non-negative integer'.format(surface_id)

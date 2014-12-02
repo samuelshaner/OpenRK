@@ -325,11 +325,6 @@ class Universe(object):
       if self._id is not None:
         UNIVERSE_IDS.remove(self._id)
 
-      if universe_id in UNIVERSE_IDS:
-        msg = 'Unable to set Universe ID to {0} since a Universe with this ' \
-              'ID was already initialized'.format(universe_id)
-        raise ValueError(msg)
-
       if universe_id < 0:
         msg = 'Unable to set Univeres ID to {0} since it must be a ' \
               'non-negative integer'.format(universe_id)
@@ -996,11 +991,6 @@ class Lattice(Universe):
       # If the Lattice already has an ID, remove it from global list
       if self._id is not None:
         UNIVERSE_IDS.remove(self._id)
-
-      if lattice_id in UNIVERSE_IDS:
-        msg = 'Unable to set Lattice ID to {0} since a Lattice ' \
-              'with this ID was already initialized'.format(lattice_id)
-        raise ValueError(msg)
 
       if lattice_id < 0:
         msg = 'Unable to set Lattice ID to {0} since it must be a ' \
@@ -1723,10 +1713,10 @@ class Cell(object):
       if self._id is not None:
         CELL_IDS.remove(self._id)
 
-      if cell_id in CELL_IDS:
-        msg = 'Unable to set Cell ID to {0} since a Cell with this ID was ' \
-              'already initialized'.format(cell_id)
-        raise ValueError(msg)
+#      if cell_id in CELL_IDS:
+#        msg = 'Unable to set Cell ID to {0} since a Cell with this ID was ' \
+#              'already initialized'.format(cell_id)
+#        raise ValueError(msg)
 
       if cell_id < 0:
         msg = 'Unable to set Cell ID to {0} since it must be a ' \
