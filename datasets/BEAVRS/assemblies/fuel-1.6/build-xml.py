@@ -1,6 +1,6 @@
-from datasets.energy_groups import group_structures
-from datasets.BEAVRS.materials import openmc_materials
 from openmc import *
+from datasets.BEAVRS.materials import openmc_materials
+from datasets.energy_groups import group_structures
 from geometry import geometry
 from infermc.build import *
 import opencg.plotter as plotter
@@ -13,7 +13,7 @@ import opencg.plotter as plotter
 # OpenMC simulation parameters
 batches = 30
 inactive = 5
-particles = 1000
+particles = 10000
 
 
 ###############################################################################
@@ -75,10 +75,10 @@ micro_tally_factory = MicroXSTallyFactory(openmc_geometry)
 
 groups = group_structures['CASMO']['2-group']
 
-micro_tally_factory.createAllMultiGroupXS(groups, domain_type='distribcell')
+#micro_tally_factory.createAllMultiGroupXS(groups, domain_type='distribcell')
 micro_tally_factory.createAllMultiGroupXS(groups, domain_type='material')
-micro_tally_factory.createAllMultiGroupXS(groups, domain_type='cell')
-micro_tally_factory.createAllMultiGroupXS(groups, domain_type='universe')
+#micro_tally_factory.createAllMultiGroupXS(groups, domain_type='cell')
+#micro_tally_factory.createAllMultiGroupXS(groups, domain_type='universe')
 micro_tally_factory.createTalliesFile()
 
 
@@ -86,8 +86,8 @@ micro_tally_factory.createTalliesFile()
 #########################   Plotting the Geometry  ############################
 ###############################################################################
 
-plotter.plot_neighbor_cells(geometry)
-plotter.plot_neighbor_cells(geometry, unique=True)
-plotter.plot_materials(geometry)
-plotter.plot_cells(geometry)
-plotter.plot_regions(geometry)
+#plotter.plot_neighbor_cells(geometry)
+#plotter.plot_neighbor_cells(geometry, unique=True)
+#plotter.plot_materials(geometry)
+#plotter.plot_cells(geometry)
+#plotter.plot_regions(geometry)

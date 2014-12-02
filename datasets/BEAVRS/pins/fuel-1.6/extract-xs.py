@@ -10,7 +10,8 @@ import infermc.plotter as plotter
 #batches = range(15, 35, 5)
 batches = [30]
 
-groups = group_structures['CASMO']['2-group']
+num_groups = 70
+groups = group_structures['CASMO']['70-group']
 
 summary = Summary('summary.h5')
 
@@ -26,9 +27,6 @@ for batch in batches:
   ## MICROS
   micro_extractor = MicroXSTallyExtractor(statepoint, summary)
   micro_extractor.extractAllMultiGroupXS(groups, 'material')
-  micro_extractor.extractAllMultiGroupXS(groups, 'distribcell')
-  micro_extractor.checkXS()
-
 
 #  plotter.scatter_micro_xs(micro_extractor,
 #                           domain_types=['distribcell', 'material'],
@@ -41,8 +39,7 @@ for batch in batches:
   for material in materials:
     for xs_type in xs_types:
       xs = micro_extractor._multigroup_xs['material'][material._id][xs_type]
-      xs.exportResults()
-#      xs.printPDF(directory='micro', filename='material-{0}-{1}'.format(material._id, xs_type))
+      xs.exportResults(filename='multigroupxs-{0}-group'.format(num_groups))
 
   openmc.reset_auto_ids()
   del micro_extractor, statepoint

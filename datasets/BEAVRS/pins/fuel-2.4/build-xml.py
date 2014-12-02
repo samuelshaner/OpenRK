@@ -69,6 +69,7 @@ plot_file.export_to_xml()
 ##################   Exporting to OpenMC tallies.xml File  ####################
 ###############################################################################
 
+'''
 tally_factory = XSTallyFactory(openmc_geometry)
 
 groups = group_structures['CASMO']['8-group']
@@ -79,3 +80,4 @@ tally_factory.createAllXS(groups, domain_type='cell')
 tally_factory.createAllXS(groups, domain_type='universe')
 
 tally_factory.createTalliesFile()
+'''

@@ -124,10 +124,10 @@ class XSTallyExtractor(object):
 
   def _buildTallyMaps(self):
 
-    self._buildDistribcellTallyMaps()
-    self._buildCellTallyMaps()
-    self._buildUniverseTallyMaps()
     self._buildMaterialTallyMaps()
+    self._buildUniverseTallyMaps()
+    self._buildCellTallyMaps()
+    self._buildDistribcellTallyMaps()
 
 
   def _buildMaterialTallyMaps(self):
@@ -522,6 +522,7 @@ class XSTallyExtractor(object):
 
       # Get the Tally objects needed to compute the scatter matrix
       flux = self.getTally('flux', filters, estimator='analog')
+      nu_scatter1 = self.getTally('scatter-1', filters, estimator='analog')
 
       filters.append(openmc.Filter(type='energyout', bins=group_edges))
       nu_scatter = self.getTally('nu-scatter', filters, estimator='analog')
@@ -529,6 +530,7 @@ class XSTallyExtractor(object):
       # Initialize a MultiGroupXS object
       multigroup_xs = infermc.ScatterMatrixXS(domain, domain_type, energy_groups)
       multigroup_xs._tallies['flux'] = flux
+      multigroup_xs._tallies['nu-scatter-1'] = nu_scatter1
       multigroup_xs._tallies['nu-scatter'] = nu_scatter
 
     elif xs_type == 'chi':
@@ -853,6 +855,7 @@ class MicroXSTallyExtractor(XSTallyExtractor):
 
       # Get the Tally objects needed to compute the scatter matrix
       flux = self.getTally('flux', filters, estimator='analog')
+      nu_scatter1 = self.getTally('nu-scatter-1', filters, nuclides, estimator='analog')
 
       filters.append(openmc.Filter(type='energyout', bins=group_edges))
       nu_scatter = self.getTally('nu-scatter', filters, nuclides, estimator='analog')
@@ -861,6 +864,7 @@ class MicroXSTallyExtractor(XSTallyExtractor):
       multigroup_xs = infermc.MicroScatterMatrixXS(domain, domain_type, energy_groups)
       multigroup_xs._tallies['flux'] = flux
       multigroup_xs._tallies['nu-scatter'] = nu_scatter
+      multigroup_xs._tallies['nu-scatter-1'] = nu_scatter1
 
     elif xs_type == 'chi':
 

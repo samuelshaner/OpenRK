@@ -1225,7 +1225,7 @@ class ScatterMatrixXS(MultiGroupXS):
   def createTallies(self):
 
     # Create a list of scores for each Tally to be created
-    scores = ['flux', 'nu-scatter']
+    scores = ['flux', 'nu-scatter', 'nu-scatter-1']
     estimator = 'analog'
     keys = scores
 
@@ -1233,7 +1233,7 @@ class ScatterMatrixXS(MultiGroupXS):
     group_edges = self._energy_groups._group_edges
     energy_filter = openmc.Filter('energy', group_edges)
     energyout_filter = openmc.Filter('energyout', group_edges)
-    filters = [[energy_filter], [energy_filter, energyout_filter]]
+    filters = [[energy_filter], [energy_filter, energyout_filter], [energy_filter]]
 
     # Intialize the Tallies
     super(ScatterMatrixXS, self).createTallies(scores, filters, keys, estimator)
@@ -1244,20 +1244,26 @@ class ScatterMatrixXS(MultiGroupXS):
     # Extract and clean the Tally data
     tally_data, zero_indices = super(ScatterMatrixXS, self).getTallyData(corr)
     nu_scatter = tally_data['nu-scatter']
+    nu_scatter1 = tally_data['nu-scatter-1']
     flux = tally_data['flux']
 
     # Set any subdomain's zero fluxes and reaction rates to a negative value
     flux[:, zero_indices['flux']] = -1.
     nu_scatter[:, zero_indices['nu-scatter']] = -1.
+    nu_scatter1[:, zero_indices['nu-scatter-1']] = -1
 
+    # FIXME
     # Tile the flux to correspond to the nu-scatter array
-    flux = np.repeat(flux[:,:,np.newaxis,:,:], self._num_groups, axis=2)
+    flux = np.repeat(flux[:,:,np.newaxis,:,:], self._num_groups, axis=3)
+    flux = np.reshape(flux, nu_scatter.shape[0:-1] + (1,))
+
+    # FIXME
+    shape = nu_scatter.shape
+    nu_scatter[:,:,range(shape[2]), range(shape[3]),:] -= nu_scatter1
 
     # Compute the xs with uncertainty propagation
     self._xs = infermc.error_prop.arithmetic.divide_by_array(nu_scatter, flux,
                                                              corr, False)
-
-
 
     # For any region without flux or reaction rate, convert xs to zero
     all_zero_indices = np.logical_or(zero_indices['flux'][...,np.newaxis],
