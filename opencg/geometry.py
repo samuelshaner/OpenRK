@@ -213,12 +213,6 @@ class Geometry(object):
             'not a Universe'.format(root_universe)
       raise ValueError(msg)
 
-    if not root_universe._id == 0:
-      msg = 'Unable to set the root Universe for the Geometry with a ' \
-            'Universe with ID={0}. The root Universe must have ' \
-            'ID=0.'.format(root_universe._id)
-      raise ValueError(msg)
-
     self._root_universe = root_universe
 
 
