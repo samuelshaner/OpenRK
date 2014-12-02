@@ -17,7 +17,7 @@ import numpy, h5py
 ################################################################################
 
 # OpenMC simulation parameters
-batches = 50 #100
+batches = 100
 inactive = 5
 particles = 10000
 structures = [2,4,8,12,16,25] #,40,70]
@@ -229,17 +229,21 @@ for i, num_groups in enumerate(structures):
 ###############################   Plot k-inf Error  ############################
 
 kinf_ref = numpy.zeros(batches-inactive-4)
+kinf_std_dev = numpy.zeros(batches-inactive-4)
 
 for i, batch in enumerate(range(inactive+5, batches+1, 1)):
   statepoint = StatePoint('statepoint.{0:03}.h5'.format(batch))
   statepoint.read_results()
   kinf_ref[i] = statepoint.k_combined[0]
+  kinf_std_dev[:] = statepoint.k_combined[1]
   statepoint.close()
   del statepoint
 
 print('reference openmc kinf: {0}'.format(kinf_ref[-1]))
 
-fig = plt.figure()
+kinf_std_dev *= 1E5
+
+fix, ax = plt.subplots(1)
 legend = list()
 batches = numpy.arange(inactive+5, batches+1)
 
@@ -251,6 +255,9 @@ for i, num_groups in enumerate(structures):
   kinf_err = (kinf[i,:] - kinf_ref[-1]) * 1E5
   plt.plot(batches, kinf_err, linewidth=2)
   legend.append('{0}-group'.format(num_groups))
+
+ax.fill_between(batches, +kinf_std_dev, -kinf_std_dev,
+                facecolor='blue', alpha=0.3)
 
 plt.xlabel('Batch #')
 plt.ylabel('Error [pcm]')

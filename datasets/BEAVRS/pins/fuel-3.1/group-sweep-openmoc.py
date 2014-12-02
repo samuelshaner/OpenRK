@@ -17,7 +17,7 @@ import numpy, h5py
 ################################################################################
 
 # OpenMC simulation parameters
-batches = 50 #100
+batches = 100
 inactive = 5
 particles = 10000
 structures = [2,4,8,12,16,25] #,40,70]
@@ -66,13 +66,12 @@ universes = geometry.getAllMaterialUniverses()
 cells = geometry._root_universe.getAllCells()
 for cell_id, cell in cells.items():
   if cell._type == 'material':
-    if cell._fill._id == 10011:
+    if cell._fill._id == 10003:
       new_cells = water_mesh.subdivideCell(cell=cell, universe=universes[10002])
-    if cell._fill._id == 10008:
+    if cell._fill._id == 10002:
       new_cells = fuel_mesh.subdivideCell(cell=cell, universe=universes[10002])
 
 mesh.subdivideUniverse(universe=universes[10002])
-
 
 #####################   Parametric Sweep Over Energy Groups ####################
 
@@ -222,17 +221,21 @@ for i, num_groups in enumerate(structures):
 ###############################   Plot k-inf Error  ############################
 
 kinf_ref = numpy.zeros(batches-inactive-4)
+kinf_std_dev = numpy.zeros(batches-inactive-4)
 
 for i, batch in enumerate(range(inactive+5, batches+1, 1)):
   statepoint = StatePoint('statepoint.{0:03}.h5'.format(batch))
   statepoint.read_results()
   kinf_ref[i] = statepoint.k_combined[0]
+  kinf_std_dev[:] = statepoint.k_combined[1]
   statepoint.close()
   del statepoint
 
 print('reference openmc kinf: {0}'.format(kinf_ref[-1]))
 
-fig = plt.figure()
+kinf_std_dev *= 1E5
+
+fix, ax = plt.subplots(1)
 legend = list()
 batches = numpy.arange(inactive+5, batches+1)
 
@@ -245,9 +248,12 @@ for i, num_groups in enumerate(structures):
   plt.plot(batches, kinf_err, linewidth=2)
   legend.append('{0}-group'.format(num_groups))
 
+ax.fill_between(batches, +kinf_std_dev, -kinf_std_dev,
+                facecolor='blue', alpha=0.3)
+
 plt.xlabel('Batch #')
 plt.ylabel('Error [pcm]')
-plt.title('1.6% Enr. k-inf Error')
+plt.title('3.1% Enr. k-inf Error')
 plt.legend(legend)
 plt.grid()
 plt.savefig('k-inf-err.png')
