@@ -74,7 +74,7 @@ for cell_id, cell in cells.items():
 mesh.subdivideUniverse(universe=universes[10002])
 
 #####################   Parametric Sweep Over Energy Groups ####################
-
+'''
 for i, num_groups in enumerate(structures):
 
   print('testing {0} groups'.format(num_groups))
@@ -95,7 +95,7 @@ for i, num_groups in enumerate(structures):
   print('running openmc...')
 
   executor = openmc.Executor()
-  executor.run_simulation(output=False)
+  executor.run_simulation(output=True, mpi_procs=6)
 
   ########################   Extracting Cross-Sections  ########################
 
@@ -216,9 +216,26 @@ for i, num_groups in enumerate(structures):
     f.close()
 
     kinf[i,j] = solver.getKeff()
-
+'''
 
 ###############################   Plot k-inf Error  ############################
+
+for i, num_groups in enumerate(structures):
+
+  filename = 'simulation-states/sim-state-{0}-group.h5'.format(num_groups)
+  f = h5py.File(filename, 'r')
+  date_key = f.keys()[0]
+  date_group = f[date_key]
+
+  for time in date_group.keys():
+    time_group = date_group[time]
+    note = time_group.attrs['note']
+    batch = int(note.split('-')[1])
+    keff = time_group['keff'][...]
+    kinf[i,batch-10] = keff
+
+  f.close()
+
 
 kinf_ref = numpy.zeros(batches-inactive-4)
 kinf_std_dev = numpy.zeros(batches-inactive-4)
