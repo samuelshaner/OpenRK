@@ -1713,11 +1713,6 @@ class Cell(object):
       if self._id is not None:
         CELL_IDS.remove(self._id)
 
-#      if cell_id in CELL_IDS:
-#        msg = 'Unable to set Cell ID to {0} since a Cell with this ID was ' \
-#              'already initialized'.format(cell_id)
-#        raise ValueError(msg)
-
       if cell_id < 0:
         msg = 'Unable to set Cell ID to {0} since it must be a ' \
               'non-negative integer'.format(cell_id)
