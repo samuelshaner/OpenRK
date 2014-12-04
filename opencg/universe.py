@@ -21,16 +21,12 @@ ON_LATTICE_CELL_THRESH = 1e-06
 # Error threshold for directional components very close to parallel with axes
 PARALLEL_TO_AXIS_THRESHOLD = 1e-5
 
-# Lists of all IDs for all Universes created
-UNIVERSE_IDS = list()
-
 # A static variable for auto-generated Universe IDs
 AUTO_UNIVERSE_ID = 10000
 
 def reset_auto_universe_id():
-  global AUTO_UNIVERSE_ID, UNIVERSE_IDS
+  global AUTO_UNIVERSE_ID
   AUTO_UNIVERSE_ID = 10000
-  UNIVERSE_IDS = list()
 
 MAX_FLOAT = np.finfo(np.float64).max
 MIN_FLOAT = np.finfo(np.float64).min
@@ -310,20 +306,13 @@ class Universe(object):
 
   def setId(self, universe_id=None):
 
-    global UNIVERSE_IDS
-
     if universe_id is None:
       global AUTO_UNIVERSE_ID
       self._id = AUTO_UNIVERSE_ID
-      UNIVERSE_IDS.append(AUTO_UNIVERSE_ID)
       AUTO_UNIVERSE_ID += 1
 
     # Check that the ID is an integer and wasn't already used
     elif is_integer(universe_id):
-
-      # If the Universe already has an ID, remove it from global list
-      if self._id is not None:
-        UNIVERSE_IDS.remove(self._id)
 
       if universe_id < 0:
         msg = 'Unable to set Univeres ID to {0} since it must be a ' \
@@ -332,7 +321,6 @@ class Universe(object):
 
       else:
         self._id = universe_id
-        UNIVERSE_IDS.append(universe_id)
 
     else:
       msg = 'Unable to set Universe ID to a non-integer {0}'.format(universe_id)
@@ -977,20 +965,13 @@ class Lattice(Universe):
 
   def setId(self, lattice_id=None):
 
-    global UNIVERSE_IDS
-
     if lattice_id is None:
       global AUTO_UNIVERSE_ID
       self._id = AUTO_UNIVERSE_ID
-      UNIVERSE_IDS.append(AUTO_UNIVERSE_ID)
       AUTO_UNIVERSE_ID += 1
 
     # Check that the ID is an integer and wasn't already used
     elif is_integer(lattice_id):
-
-      # If the Lattice already has an ID, remove it from global list
-      if self._id is not None:
-        UNIVERSE_IDS.remove(self._id)
 
       if lattice_id < 0:
         msg = 'Unable to set Lattice ID to {0} since it must be a ' \
@@ -999,7 +980,6 @@ class Lattice(Universe):
 
       else:
         self._id = lattice_id
-        UNIVERSE_IDS.append(lattice_id)
 
     else:
       msg = 'Unable to set a non-integer Lattice ID {0}'.format(lattice_id)
@@ -1494,16 +1474,12 @@ class Lattice(Universe):
 ################################################################################
 
 
-# Lists of all IDs for all Cells created
-CELL_IDS = list()
-
 # A static variable for auto-generated Cell IDs
 AUTO_CELL_ID = 10000
 
 def reset_auto_cell_id():
-  global AUTO_CELL_ID, CELL_IDS
+  global AUTO_CELL_ID
   AUTO_CELL_ID = 10000
-  CELL_IDS = list()
 
 
 class Cell(object):
@@ -1698,20 +1674,13 @@ class Cell(object):
 
   def setId(self, cell_id=None):
 
-    global CELL_IDS
-
     if cell_id is None:
       global AUTO_CELL_ID
       self._id = AUTO_CELL_ID
-      CELL_IDS.append(AUTO_CELL_ID)
       AUTO_CELL_ID += 1
 
     # Check that the ID is an integer and wasn't already used
     elif is_integer(cell_id):
-
-      # If the Cell already has an ID, remove it from global list
-      if self._id is not None:
-        CELL_IDS.remove(self._id)
 
       if cell_id < 0:
         msg = 'Unable to set Cell ID to {0} since it must be a ' \
@@ -1720,7 +1689,6 @@ class Cell(object):
 
       else:
         self._id = cell_id
-        CELL_IDS.append(cell_id)
 
     else:
       msg = 'Unable to set Cell ID to a non-integer {0}'.format(cell_id)

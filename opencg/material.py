@@ -5,16 +5,12 @@ __email__ = 'wboyd@mit.edu'
 from opencg.checkvalue import *
 
 
-# A list of all IDs for all Materials created
-MATERIAL_IDS = list()
-
 # A static variable for auto-generated Material IDs
 AUTO_MATERIAL_ID = 10000
 
 def reset_auto_material_id():
-  global AUTO_MATERIAL_ID, MATERIAL_IDS
+  global AUTO_MATERIAL_ID
   AUTO_MATERIAL_ID = 10000
-  MATERIAL_IDS = list()
 
 
 class Material(object):
@@ -68,20 +64,13 @@ class Material(object):
 
   def setId(self, material_id=None):
 
-    global MATERIAL_IDS
-
     if material_id is None:
       global AUTO_MATERIAL_ID
       self._id = AUTO_MATERIAL_ID
-      MATERIAL_IDS.append(AUTO_MATERIAL_ID)
       AUTO_MATERIAL_ID += 1
 
     # Check that the ID is an integer and wasn't already used
     elif is_integer(material_id):
-
-      # If the Material already has an ID, remove it from global list
-      if self._id is not None:
-        MATERIAL_IDS.remove(self._id)
 
       if material_id < 0:
         msg = 'Unable to set Material ID to {0} since it must be a ' \
@@ -90,7 +79,6 @@ class Material(object):
 
       else:
         self._id = material_id
-        MATERIAL_IDS.append(material_id)
 
     else:
       msg = 'Unable to set Material ID to non-integer {0}'.format(material_id)

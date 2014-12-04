@@ -16,16 +16,12 @@ ON_SURFACE_THRESH = 1e-12
 # Threshold for determining if particle is travelling parallel to axis
 PARALLEL_TO_AXIS_THRESH = 1e-5
 
-# A list of all IDs for all Surfaces created
-SURFACE_IDS = list()
-
 # A static variable for auto-generated Surface IDs
 AUTO_SURFACE_ID = 10000
 
 def reset_auto_surface_id():
-  global AUTO_SURFACE_ID, SURFACE_IDS
+  global AUTO_SURFACE_ID
   AUTO_SURFACE_ID = 10000
-  SURFACE_IDS = list()
 
 
 # The Surface boundary conditions
@@ -178,29 +174,21 @@ class Surface(object):
 
   def setId(self, surface_id=None):
 
-    global SURFACE_IDS
-
     if surface_id is None:
       global AUTO_SURFACE_ID
       self._id = AUTO_SURFACE_ID
-      SURFACE_IDS.append(AUTO_SURFACE_ID)
       AUTO_SURFACE_ID += 1
 
     # Check that the ID is an integer and wasn't already used
     elif is_integer(surface_id):
 
-      # If the Material already has an ID, remove it from global list
-      if self._id is not None:
-        SURFACE_IDS.remove(self._id)
-
-      elif surface_id < 0:
+      if surface_id < 0:
         msg = 'Unable to set Surface ID to {0} since it must be a ' \
               'non-negative integer'.format(surface_id)
         raise ValueError(msg)
 
       else:
         self._id = surface_id
-        SURFACE_IDS.append(surface_id)
 
     else:
       msg = 'Unable to set a non-integer Surface ID {0}'.format(surface_id)
