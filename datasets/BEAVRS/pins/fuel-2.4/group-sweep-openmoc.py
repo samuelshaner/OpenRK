@@ -175,6 +175,10 @@ for i, num_groups in enumerate(structures):
             micro_xs = nuclide_group[rxn_type]['average'][...]
             macro_xs[rxn_type] += micro_xs * density
 
+      # Manually set transport to absorption + scattering
+      macro_xs['transport'] = macro_xs['absorption'] + \
+                              numpy.sum(macro_xs['scatter matrix'], axis=1)
+
       #########################  Create OpenMOC Materials  #######################
 
       if material_id != 10004:
@@ -217,6 +221,8 @@ for i, num_groups in enumerate(structures):
     f.close()
 
     kinf[i,j] = solver.getKeff()
+
+    del openmoc_geometry, track_generator, solver
 '''
 
 ###############################   Plot k-inf Error  ############################

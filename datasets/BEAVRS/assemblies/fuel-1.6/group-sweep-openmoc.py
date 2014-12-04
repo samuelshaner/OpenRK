@@ -1,5 +1,6 @@
 import opencg, openmc, openmoc
 from openmoc.process import store_simulation_state
+import openmoc.cuda
 from openmc.statepoint import StatePoint
 from openmc.summary import Summary
 from datasets.energy_groups import group_structures
@@ -17,14 +18,13 @@ import numpy, h5py
 ################################################################################
 
 # OpenMC simulation parameters
-batches = 20 #100
+batches = 100
 inactive = 5
-particles = 200
-structures = [2,4] #,8,12,16,25] #,40,70]
+particles = 50000
+structures = [2,4,8,12,16,25,40,70]
 
 # Initialize array to contain all data
 kinf = numpy.zeros((len(structures), batches-inactive-4), dtype=numpy.float64)
-
 
 ################################################################################
 ##################   Exporting to OpenMC settings.xml File  ####################
@@ -77,8 +77,10 @@ mesh.subdivideUniverse(universe=universes[10000])
 mesh.subdivideUniverse(universe=universes[10003])
 mesh.subdivideUniverse(universe=universes[10004])
 
+openmoc.reset_auto_ids()
 openmoc_geometry = get_openmoc_geometry(geometry)
 cells = openmoc_geometry.getRootUniverse().getAllCells()
+
 
 #####################   Parametric Sweep Over Energy Groups ####################
 
@@ -102,7 +104,7 @@ for i, num_groups in enumerate(structures):
   print('running openmc...')
 
   executor = openmc.Executor()
-  executor.run_simulation(output=True, mpi_procs=4)
+  executor.run_simulation(output=True, mpi_procs=12)
 
   ########################   Extracting Cross-Sections  ########################
 
@@ -117,8 +119,8 @@ for i, num_groups in enumerate(structures):
     openmc.reset_auto_ids()
 
     # Initialize handle on the OpenMC statepoint file
-    filename = 'statepoint.{0:02}.h5'.format(batch)
-    statepoint = StatePoint('statepoint.{0:02}.h5'.format(batch))
+    filename = 'statepoint.{0:03}.h5'.format(batch)
+    statepoint = StatePoint('statepoint.{0:03}.h5'.format(batch))
 
     micro_extractor = MicroXSTallyExtractor(statepoint, summary)
     micro_extractor.extractAllMultiGroupXS(groups, 'material')
@@ -178,6 +180,10 @@ for i, num_groups in enumerate(structures):
             micro_xs = nuclide_group[rxn_type]['average'][...]
             macro_xs[rxn_type] += micro_xs * density
 
+      # Manually set transport to absorption + scattering
+      macro_xs['transport'] = macro_xs['absorption'] + \
+                              numpy.sum(macro_xs['scatter matrix'], axis=1)
+
       #########################  Create OpenMOC Materials  #######################
 
       if material_id != 10004 and material_id != 10006:
@@ -193,42 +199,81 @@ for i, num_groups in enumerate(structures):
 
       ######################  Set Materials for OpenMOC Cells  ###################
 
+      old_material = None
+
       for cell_id, cell in cells.items():
         if cell.getType() == openmoc.MATERIAL:
           cell = openmoc.castCellToCellBasic(cell)
           if cell.getMaterial().getId() == material_id:
+            old_material = cell.getMaterial()
             cell.setMaterial(openmoc_material)
+
+      # Delete the old Materials to save on memory
+      del old_material
+
+    # Close the HDF5 multi-group cross-section file
+    f.close()
 
     #############################   Running OpenMOC  ###########################
 
     print('running openmoc...')
 
+#    cmfd = openmoc.Cmfd()
+#    cmfd.setLatticeStructure(17,17)
+#    openmoc_geometry.setCmfd(cmfd)
+
     openmoc_geometry.initializeFlatSourceRegions()
     track_generator = openmoc.TrackGenerator(openmoc_geometry, 128, 0.05)
     track_generator.generateTracks()
 
-    solver = openmoc.CPUSolver(openmoc_geometry, track_generator)
+#    solver = openmoc.CPUSolver(openmoc_geometry, track_generator)
+#    solver.setNumThreads(12)
+#    solver.setSourceConvergenceThreshold(1E-5)
+#    solver.convergeSource(1000)
+#    solver.printTimerReport()
+
+    import openmoc.cuda
+    openmoc.cuda.attach_gpu(1)
+    solver = openmoc.cuda.GPUSolver(openmoc_geometry, track_generator)
     solver.setSourceConvergenceThreshold(1E-6)
     solver.convergeSource(1000)
     solver.printTimerReport()
 
     store_simulation_state(solver, use_hdf5=True,
+                           fission_rates=True,
                            filename='sim-state-{0}-group'.format(num_groups),
                            note='batch-{0}'.format(batch))
 
     print('stored simulation state...')
-    f.close()
 
     kinf[i,j] = solver.getKeff()
 
+    del track_generator, solver
 
 ###############################   Plot k-inf Error  ############################
+
+for i, num_groups in enumerate(structures):
+
+  filename = 'simulation-states/sim-state-{0}-group.h5'.format(num_groups)
+  f = h5py.File(filename, 'r')
+  date_key = f.keys()[0]
+  date_group = f[date_key]
+
+  for time in date_group.keys():
+    time_group = date_group[time]
+    note = time_group.attrs['note']
+    batch = int(note.split('-')[1])
+    keff = time_group['keff'][...]
+    kinf[i,batch-10] = keff
+
+  f.close()
+
 
 kinf_ref = numpy.zeros(batches-inactive-4)
 kinf_std_dev = numpy.zeros(batches-inactive-4)
 
 for i, batch in enumerate(range(inactive+5, batches+1, 1)):
-  statepoint = StatePoint('statepoint.{0:02}.h5'.format(batch))
+  statepoint = StatePoint('statepoint.{0:03}.h5'.format(batch))
   statepoint.read_results()
   kinf_ref[i] = statepoint.k_combined[0]
   kinf_std_dev[:] = statepoint.k_combined[1]
@@ -257,7 +302,7 @@ ax.fill_between(batches, +kinf_std_dev, -kinf_std_dev,
 
 plt.xlabel('Batch #')
 plt.ylabel('Error [pcm]')
-plt.title('2.4% Enr. k-inf Error')
+plt.title('1.6% Enr. k-inf Error')
 plt.legend(legend)
 plt.grid()
 plt.savefig('k-inf-err.png')
