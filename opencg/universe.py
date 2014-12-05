@@ -1160,7 +1160,7 @@ class Lattice(Universe):
 
     unique_universes = self.getUniqueUniverses()
 
-    for universe_id, universe in unique_universes:
+    for universe_id, universe in unique_universes.items():
       universe.updateIds()
 
 
