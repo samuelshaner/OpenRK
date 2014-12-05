@@ -1,9 +1,6 @@
-__author__ = 'Will Boyd'
-__email__ = 'wboyd@mit.edu'
-
-
 import matplotlib
-from opencg import *
+import opencg
+from opencg.checkvalue import *
 
 # force headless backend, or set 'backend' to 'Agg'
 # in your ~/.matplotlib/matplotlibrc
@@ -45,7 +42,7 @@ def plot_cells(geometry, plane='xy', offset=0., gridsize=250,
     os.makedirs(SUBDIRECTORY)
 
   # Error checking
-  if not isinstance(geometry, Geometry):
+  if not isinstance(geometry, opencg.Geometry):
     msg = 'Unable to plot the cells since input was not ' \
           'a Geometry class object'
     raise ValueError(msg)
@@ -71,6 +68,8 @@ def plot_cells(geometry, plane='xy', offset=0., gridsize=250,
     raise ValueError(msg)
 
   print('Plotting the Cells...')
+
+  geometry.assignAutoIds()
 
   # Initialize a NumPy array for the surface colors
   surface = numpy.zeros((gridsize, gridsize), dtype=np.int64)
@@ -141,7 +140,7 @@ def plot_materials(geometry, plane='xy', offset=0., gridsize=250,
     os.makedirs(SUBDIRECTORY)
 
   # Error checking
-  if not isinstance(geometry, Geometry):
+  if not isinstance(geometry, opencg.Geometry):
     msg = 'Unable to plot the materials since input was not ' \
           'a Geometry class object'
     raise ValueError(msg)
@@ -167,6 +166,8 @@ def plot_materials(geometry, plane='xy', offset=0., gridsize=250,
     raise ValueError(msg)
 
   print('Plotting the Materials...')
+
+  geometry.assignAutoIds()
 
   # Initialize a NumPy array for the surface colors
   surface = numpy.zeros((gridsize, gridsize))
@@ -236,7 +237,7 @@ def plot_regions(geometry, plane='xy', offset=0., gridsize=250,
     os.makedirs(SUBDIRECTORY)
 
   # Error checking
-  if not isinstance(geometry, Geometry):
+  if not isinstance(geometry, opencg.Geometry):
     msg = 'Unable to plot the regions since input was not ' \
           'a Geometry class object'
     raise ValueError(msg)
@@ -262,6 +263,8 @@ def plot_regions(geometry, plane='xy', offset=0., gridsize=250,
     raise ValueError(msg)
 
   print('Plotting the Regions...')
+
+  geometry.assignAutoIds()
 
   # Initialize a NumPy array for the surface colors
   surface = numpy.zeros((gridsize, gridsize))
@@ -332,7 +335,7 @@ def plot_neighbor_cells(geometry, plane='xy', offset=0.,
     os.makedirs(SUBDIRECTORY)
 
   # Error checking
-  if not isinstance(geometry, Geometry):
+  if not isinstance(geometry, opencg.Geometry):
     msg = 'Unable to plot the neighbor cells since input was not ' \
           'a Geometry class object'
     raise ValueError(msg)
@@ -358,6 +361,8 @@ def plot_neighbor_cells(geometry, plane='xy', offset=0.,
     raise ValueError(msg)
 
   print('Plotting the Neighbor Cells...')
+
+  geometry.assignAutoIds()
 
   # Initialize the offsets used for computing region IDs
   geometry.initializeCellOffsets()
@@ -448,12 +453,12 @@ def plot_segments(rays, geometry, plane='xy', linewidths=1):
 
   # Error checking
   for ray in rays:
-    if not isinstance(ray, Ray):
+    if not isinstance(ray, opencg.Ray):
       msg = 'Unable to plot the segments since input does not ' \
             'completely consist of ray objects'
       raise ValueError(msg)
 
-  if not isinstance(geometry, Geometry):
+  if not isinstance(geometry, opencg.Geometry):
     msg = 'Unable to plot the segments since input was not ' \
           'a Geometry class object'
     raise ValueError(msg)
@@ -475,6 +480,8 @@ def plot_segments(rays, geometry, plane='xy', linewidths=1):
 
   print('Plotting the Segments...')
 
+  geometry.assignAutoIds()
+
   # Get the number of regions
   num_regions = geometry._num_regions
 
@@ -491,7 +498,7 @@ def plot_segments(rays, geometry, plane='xy', linewidths=1):
   # Generate start and end points for segments and assign color by region id
   segments = list()
   for ray in rays:
-    start = Point()
+    start = opencg.Point()
     start.setCoords(ray._point._coords)
     dir = ray._direction.toPolar()
     for segment in xrange(ray._num_segments):
@@ -503,16 +510,16 @@ def plot_segments(rays, geometry, plane='xy', linewidths=1):
       end = np.array([x, y, z])
       if plane == 'xy':
         segments.append([start._coords[:2], end[:2]])
-        start = Point()
-        start.setCoords(end + TINY_BIT*ray._direction._comps)
+        start = opencg.Point()
+        start.setCoords(end + opencg.TINY_BIT*ray._direction._comps)
       elif plane == 'xz':
         segments.append([start._coords[::2], end[::2]])
-        start = Point()
-        start.setCoords(end + TINY_BIT*ray._direction._comps)
+        start = opencg.Point()
+        start.setCoords(end + opencg.TINY_BIT*ray._direction._comps)
       elif plane == 'yz':
         segments.append([start._coords[1:], end[1:]])
-        start = Point()
-        start.setCoords(end + TINY_BIT*ray._direction._comps)
+        start = opencg.Point()
+        start.setCoords(end + opencg.TINY_BIT*ray._direction._comps)
 
   colors = np.array(colors)
 

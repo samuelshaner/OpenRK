@@ -1,6 +1,3 @@
-__author__ = 'Will Boyd'
-__email__ = 'wboyd@mit.edu'
-
 import numpy as np
 
 

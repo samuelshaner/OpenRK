@@ -1,9 +1,4 @@
-__author__ = 'wbinventor'
-__email__ = 'wboyd@mit.edu'
-
-
-from opencg.universe import *
-from opencg.surface import *
+import opencg
 from opencg.checkvalue import *
 from collections import MappingView
 
@@ -115,7 +110,7 @@ class RadialMesh(object):
 
   def subdivideCell(self, cell, universe=None):
 
-    if not isinstance(cell, Cell):
+    if not isinstance(cell, opencg.Cell):
       msg = 'Unable to subdivide Cell with RadialMesh since {0} is not ' \
             'a Cell'.format(cell)
       raise ValueError(msg)
@@ -149,7 +144,7 @@ class RadialMesh(object):
 
     # Create ZCylinders for each radius
     for radius in radii:
-      cylinders.append(ZCylinder(x0=0., y0=0., R=radius))
+      cylinders.append(opencg.ZCylinder(x0=0., y0=0., R=radius))
 
     # Initialize an empty list of the new subdivided cells
     new_cells = list()
@@ -187,7 +182,7 @@ class RadialMesh(object):
       new_cell.findBoundingBox()
       new_cell.removeRedundantSurfaces()
 
-    if isinstance(universe, Universe):
+    if isinstance(universe, opencg.Universe):
       universe.removeCell(cell)
       universe.addCells(new_cells)
 
@@ -241,7 +236,7 @@ class RectilinearMesh(object):
 
   def subdivideCell(self, cell, universe=None):
 
-    if not isinstance(cell, Cell):
+    if not isinstance(cell, opencg.Cell):
       msg = 'Unable to subdivide Cell with RectilinearMesh since {0} ' \
             'is not a Cell'.format(cell)
       raise ValueError(msg)
@@ -262,11 +257,11 @@ class RectilinearMesh(object):
     for point in self._mesh_points:
 
       if self._axis == 'x':
-        planes.append(XPlane(x0=point))
+        planes.append(opencg.XPlane(x0=point))
       elif self._axis == 'y':
-        planes.append(YPlane(y0=point))
+        planes.append(opencg.YPlane(y0=point))
       elif self._axis == 'z':
-        planes.append(ZPlane(z0=point))
+        planes.append(opencg.ZPlane(z0=point))
 
     # Create sectors using disjoint halfspaces of pairing Planes
     for i in range(self._num_mesh_cells):
@@ -281,7 +276,7 @@ class RectilinearMesh(object):
       # Store the clone in the container of new sector Cells
       new_cells.append(subcell)
 
-    if isinstance(universe, Universe):
+    if isinstance(universe, opencg.Universe):
       universe.removeCell(cell)
       universe.addCells(new_cells)
 
@@ -307,7 +302,7 @@ class RectilinearMesh(object):
     for cell in cells:
       new_cells.extend(self.subdivideCell(cell=cell))
 
-      if isinstance(universe, Universe):
+      if isinstance(universe, opencg.Universe):
         universe.removeCell(cell)
 
     universe.addCells(new_cells)
@@ -317,7 +312,7 @@ class RectilinearMesh(object):
 
   def subdivideUniverse(self, universe):
 
-    if not isinstance(universe, Universe):
+    if not isinstance(universe, opencg.Universe):
       msg = 'Unable to subdivide Universe with a RectilinearMesh since {0} ' \
             'is not a Universe'.format(universe)
       raise ValueError(msg)
@@ -428,7 +423,7 @@ class SectorMesh(object):
 
   def subdivideCell(self, cell, universe=None):
 
-    if not isinstance(cell, Cell):
+    if not isinstance(cell, opencg.Cell):
       msg = 'Unable to subdivide Cell with RadialMesh since {0} ' \
             'is not a Cell'.format(cell)
       raise ValueError(msg)
@@ -455,7 +450,7 @@ class SectorMesh(object):
       # Instantiate the plane
       A = np.cos(azim_angle)
       B = np.sin(azim_angle)
-      planes.append(Plane(A=A, B=B, C=0., D=0.))
+      planes.append(opencg.Plane(A=A, B=B, C=0., D=0.))
 
 
     # Create sectors using disjoint halfspaces of pairing Planes
@@ -478,7 +473,7 @@ class SectorMesh(object):
       # Store the clone in the container of new sector Cells
       new_cells.append(sector)
 
-    if isinstance(universe, Universe):
+    if isinstance(universe, opencg.Universe):
       universe.removeCell(cell)
       universe.addCells(new_cells)
 
@@ -504,7 +499,7 @@ class SectorMesh(object):
     for cell in cells:
       new_cells.extend(self.subdivideCell(cell=cell))
 
-      if isinstance(universe, Universe):
+      if isinstance(universe, opencg.Universe):
         universe.removeCell(cell)
 
     universe.addCells(new_cells)
@@ -514,7 +509,7 @@ class SectorMesh(object):
 
   def subdivideUniverse(self, universe):
 
-    if not isinstance(universe, Universe):
+    if not isinstance(universe, opencg.Universe):
       msg = 'Unable to subdivide Universe with a SectorMesh since {0} ' \
             'is not a Universe'.format(universe)
       raise ValueError(msg)
