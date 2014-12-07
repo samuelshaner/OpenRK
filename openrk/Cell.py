@@ -1,8 +1,8 @@
 
 from math import *
 import numpy as np
-from Surface import *
-from Material import *
+from surface import *
+from material import *
 
 class Cell(object):
     

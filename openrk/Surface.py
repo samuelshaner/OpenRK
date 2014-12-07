@@ -10,4 +10,4 @@ class Surface(object):
     self._current = np.zeros(num_groups)
     self._dif_hat = np.zeros(num_groups)
     self._dif_tilde = np.zeros(num_groups)
-        
+  

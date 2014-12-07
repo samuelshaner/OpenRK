@@ -2,7 +2,7 @@ __author__ = 'Samuel Shaner'
 __email__ = 'shaner@mit.edu'
 
 
-from openrk.checkvalue import *
+from checkvalue import *
 import numpy as np
 
 # A list of all IDs for all Materials created
@@ -29,6 +29,7 @@ class Material(object):
     self._nu_sigma_f = None
     self._sigma_s = None
     self._dif_coef = None
+    self._chi = None
 
     # Set the Material class attributes
     self.setId(material_id)
@@ -237,6 +238,28 @@ class Material(object):
         self._dif_coef = np.copy(dif_coef)
 
 
+  def setChi(self, chi):
+
+    # check if chi is a list
+    if not is_list(chi):
+      msg = 'Unable to set the chi for Material ID={0} '\
+          'with a non-list value {1}'.format(self._id, (chi))
+      raise ValueError(msg)
+
+    # check if chi is of length num_energy_groups
+    elif len(chi) != self._num_energy_groups:
+      msg = 'Unable to set the chi for Material ID={0} with'\
+          ' {1} groups as num energy groups is set to {2}'\
+          .format(self._id, len(chi), self._num_energy_groups)
+      raise ValueError(msg)
+
+    else:
+      if isinstance(chi, list):
+        self._chi = np.asarray(chi)
+      else:
+        self._chi = np.copy(chi)
+
+
   def setSigmaAByGroup(self, sigma_a, group):
 
     # check if sigma_a is a float
@@ -316,7 +339,7 @@ class Material(object):
 
   def setDifCoefByGroup(self, dif_coef, group):
 
-    # check if nu_sigma_f is a list
+    # check if dif_coef is a list
     if not is_float(dif_coef):
       msg = 'Unable to set dif coef for Material ID={0} with a '\
             'non-float value {1}'.format(self._id, (dif_coef))
@@ -331,6 +354,25 @@ class Material(object):
 
     else:
       self._dif_coef[group] = dif_coef
+
+
+  def setChiByGroup(self, chi, group):
+
+    # check if chi is a list
+    if not is_float(dif_coef):
+      msg = 'Unable to set chi for Material ID={0} with a '\
+            'non-float value {1}'.format(self._id, (chi))
+      raise ValueError(msg)
+
+    # check if group is valid
+    elif group < 1 or group > self._num_energy_groups:
+      msg = 'Unable to set chi for Material ID={0} for group {1} '\
+          'as num energy groups is set to {2}'\
+          .format(self._id, group, self._num_energy_groups)
+      raise ValueError(msg)
+
+    else:
+      self._chi[group] = chi
 
 
   def getSigmaAByGroup(self, group):
@@ -399,6 +441,19 @@ class Material(object):
       return self._dif_coef[group]
 
 
+  def getChiByGroup(self, group):
+
+    # check if group is valid
+    if group < 1 or group > self._num_energy_groups:
+      msg = 'Unable to set chi for Material ID={0} for group {1} '\
+          'as num energy groups is set to {2}'\
+          .format(self._id, group, self._num_energy_groups)
+      raise ValueError(msg)
+
+    else:
+      return self._chi[group]
+
+
   def setNumEnergyGroups(self, num_energy_groups):
 
     if is_integer(num_energy_groups):
@@ -415,6 +470,7 @@ class Material(object):
         self._nu_sigma_f = np.zeros(num_energy_groups)
         self._sigma_s = np.zeros((num_energy_groups, num_energy_groups))
         self._dif_coef = np.zeros(num_energy_groups)
+        self._chi = np.zeros(num_energy_groups)
 
     else:
       msg = 'Unable to set num energy groups to non-integer {0}'\
@@ -553,6 +609,29 @@ class FunctionalMaterial(Material):
         self._dif_coef = np.copy(dif_coef)
 
 
+  def setChi(self, chi):
+
+    # check if chi is a list
+    if not is_list(chi):
+      msg = 'Unable to set the chi for Material ID={0} '\
+          'with a non-list value {1}'.format(self._id, (chi))
+      raise ValueError(msg)
+
+    # check if chi is of length num_time_steps x num_energy_groups
+    elif np.shape(chi) != (self.num_time_steps, self._num_energy_groups):
+      msg = 'Unable to set chi for Material ID={0} with {1} groups '\
+          'and {2} time steps. Num groups is {3} and num time steps is {4}.'\
+          .format(self._id, np.shape(chi)[0], np.shape(chi)[1], \
+                  self._num_energy_groups, self._num_time_steps)
+      raise ValueError(msg)
+
+    else:
+      if isinstance(chi, list):
+        self._chi = np.asarray(chi)
+      else:
+        self._chi = np.copy(chi)
+
+
   def setSigmaAByGroup(self, sigma_a, group, time_step):
 
     # check if sigma_a is a float
@@ -660,7 +739,7 @@ class FunctionalMaterial(Material):
 
   def setDifCoefByGroup(self, dif_coef, group, time_step):
 
-    # check if nu_sigma_f is a list
+    # check if dif_coef is a list
     if not is_float(dif_coef):
       msg = 'Unable to set dif coef for Material ID={0} with a '\
             'non-float value {1}'.format(self._id, (dif_coef))
@@ -682,6 +761,32 @@ class FunctionalMaterial(Material):
 
     else:
       self._dif_coef[time_step][group] = dif_coef
+
+
+  def setChiByGroup(self, chi, group, time_step):
+
+    # check if chi is a list
+    if not is_float(chi):
+      msg = 'Unable to set chi for Material ID={0} with a '\
+            'non-float value {1}'.format(self._id, (chi))
+      raise ValueError(msg)
+
+    # check if group is valid
+    elif group < 1 or group > self._num_energy_groups:
+      msg = 'Unable to set chi for Material ID={0} for group {1} '\
+          'as num energy groups is set to {2}'\
+          .format(self._id, group, self._num_energy_groups)
+      raise ValueError(msg)
+
+    # check if time_step is valid
+    elif time_step < 1 or time_step > self._num_time_steps:
+      msg = 'Unable to set chi xs for Material ID={0} for time step {1} '\
+          'as num time steps is set to {2}'\
+          .format(self._id, group, self._num_time_steps)
+      raise ValueError(msg)
+
+    else:
+      self._chi[time_step][group] = chi
 
 
   def getSigmaAByGroup(self, group, time_step):
@@ -785,6 +890,26 @@ class FunctionalMaterial(Material):
       return self._dif_coef[time_step][group]
 
 
+  def getChiByGroup(self, group, time_step):
+
+    # check if group is valid
+    if group < 1 or group > self._num_energy_groups:
+      msg = 'Unable to set chi for Material ID={0} for group {1} '\
+          'as num energy groups is set to {2}'\
+          .format(self._id, group, self._num_energy_groups)
+      raise ValueError(msg)
+
+    # check if time_step is valid
+    elif time_step < 1 or time_step > self._num_time_steps:
+      msg = 'Unable to set chi xs for Material ID={0} for time step {1} '\
+          'as num time steps is set to {2}'\
+          .format(self._id, group, self._num_time_steps)
+      raise ValueError(msg)
+
+    else:
+      return self._chi[time_step][group]
+
+
   def setNumTimeSteps(self, num_time_steps):
 
     if is_integer(num_time_steps):
@@ -821,6 +946,7 @@ class FunctionalMaterial(Material):
         self._sigma_s = np.zeros((num_time_steps, num_energy_groups, \
                                     num_energy_groups))
         self._dif_coef = np.zeros((num_time_steps, num_energy_groups))
+        self._chi = np.zeros((num_time_steps, num_energy_groups))
 
     else:
       msg = 'Unable to set num energy groups to non-integer {0}'\

@@ -77,7 +77,8 @@ class configuration:
   sources = dict()
 
   sources['gcc'] = ['openrk/openrk_wrap.cpp',
-                    'src/linalg.cpp']
+                    'src/linalg.cpp',
+                    'src/log.cpp' ]
 
 
   #############################################################################

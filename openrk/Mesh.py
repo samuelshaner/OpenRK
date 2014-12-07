@@ -1,13 +1,13 @@
 
 from math import *
 import numpy as np
-from Cell import *
-from Surface import *
+from cell import *
+from surface import *
 
 
 class Mesh(object):
 
-  def __init__(self, width, height):
+  def __init__(self, width=1.0, height=1.0):
         
     # Initialize class attributes
     self._cells = None
@@ -52,19 +52,45 @@ class Mesh(object):
     else:
       self._height = height
 
+  def setBoundary(self, side, boundary):
 
+    if not is_integer(side):
+      msg = 'Unable to set boundary for non-integer side {0}'\
+          .format(side)
+      raise ValueError(msg)
+
+    elif not is_integer(boundary):
+      msg = 'Unable to set boundary for non-integer boundary {0}'\
+          .format(boundary)
+      raise ValueError(msg)
+
+    if side < 0 or side > 4:
+      msg = 'Unable to set boundary for invalid side {0}'\
+          .format(side)
+      raise ValueError(msg)
+
+    if boundary < 0 or boundary > 2:
+      msg = 'Unable to set boundary for invalid boundary {0}'\
+          .format(boundary)
+      raise ValueError(msg)
+
+    else:
+      self._boundaries[side] = boundary
+    
 
 
 class StructuredMesh(Mesh):
 
-  def __init__(self, width, height, cells_x, cells_y):
+  def __init__(self, width=1.0, height=1.0, cells_x=1, cells_y=1):
 
     # initialize FunctionalMaterial class attributes
-    super(Mesh, self).__init__(width, height)
+    super(StructuredMesh, self).__init__(width, height)
     
     # Initialize class attributes
     self._cells_x = None
     self._cells_y = None
+    self._cell_width = None
+    self._cell_height = None
     
     # Set Mesh properties
     self.setNumCellsX(cells_x)
@@ -85,6 +111,7 @@ class StructuredMesh(Mesh):
       for x in xrange(self._cells_x):
          
         cell = self._cells[y][x]
+        cell._volume = self._cell_width * self._cell_height
          
         if x != 0:
           cell._neighbor_cells[0] = self._cells[y][x - 1]
@@ -98,32 +125,30 @@ class StructuredMesh(Mesh):
         if y != self._cells_y - 1:
           cell._neighbor_cells[3] = self._cells[y+1][x]
 
+  def initializeSurfaces(self):
+
     for y in xrange(self._cells_y):
-      for x in xrange(self.cells_x):
+      for x in xrange(self._cells_x):
          
-        cell = self.cells[y*self.cells_x+x]
+        cell = self._cells[y][x]
         
         # Surface 0
         if x == 0:
-          cell.surfaces[0] = Surface(cell.material.num_groups)
+          cell._surfaces[0] = Surface(cell._material._num_energy_groups)
         else:
-          cell.surfaces[0] = self._cells[y][x-1].surfaces[2]
+          cell._surfaces[0] = self._cells[y][x-1]._surfaces[2]
                     
         # Surface 1
         if y == 0:
-          cell.surfaces[1] = Surface(cell.material.num_groups)
+          cell._surfaces[1] = Surface(cell._material._num_energy_groups)
         else:
-          cell.surfaces[1] = self._cells[y-1][x].surfaces[3]
+          cell._surfaces[1] = self._cells[y-1][x]._surfaces[3]
       
         # Surface 2 
-        cell.surfaces[2] = Surface(cell.material.num_groups)
+        cell._surfaces[2] = Surface(cell._material._num_energy_groups)
 
         # Surface 3
-        cell.surfaces[3] = Surface(cell.material.num_groups)
-
-
-
-
+        cell._surfaces[3] = Surface(cell._material._num_energy_groups)
 
 
   def setNumCellsX(self, cells_x):
@@ -140,6 +165,7 @@ class StructuredMesh(Mesh):
         
     else:
       self._cells_x = cells_x
+      self._cell_width = self._width / cells_x    
 
     if self._cells_y is not None:
       self.initializeCells()
@@ -159,6 +185,7 @@ class StructuredMesh(Mesh):
         
     else:
       self._cells_y = cells_y
+      self._cell_height = self._height / cells_y    
 
     if self._cells_x is not None:
       self.initializeCells()
