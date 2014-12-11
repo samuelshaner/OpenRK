@@ -1,20 +1,7 @@
-__author__ = 'Will Boyd'
-__email__ = 'wboyd@mit.edu'
-
-
 from opencg.checkvalue import *
 
-
-# A list of all IDs for all Materials created
-MATERIAL_IDS = list()
-
-# A static variable for auto-generated Material IDs
-AUTO_MATERIAL_ID = 10000
-
-def reset_auto_material_id():
-  global AUTO_MATERIAL_ID, MATERIAL_IDS
-  AUTO_MATERIAL_ID = 10000
-  MATERIAL_IDS = list()
+# A static variable for auto-generated Material UIDs
+AUTO_MATERIAL_UID = 1
 
 
 class Material(object):
@@ -22,11 +9,21 @@ class Material(object):
   def __init__(self, material_id=None, name=''):
 
     # Initialize class attributes
+    global AUTO_MATERIAL_UID
+    self._uid = AUTO_MATERIAL_UID
+    AUTO_MATERIAL_UID += 1
+
     self._id = None
+    self._set_id = False
     self._name = ''
 
     # Set the Material class attributes
-    self.setId(material_id)
+    if not material_id is None:
+      self.setId(material_id)
+    else:
+      self.setId(self._uid)
+      self._set_id = False
+
     self.setName(name)
 
 
@@ -38,7 +35,9 @@ class Material(object):
     if existing is None:
 
       clone = type(self).__new__(type(self))
+      clone._uid = self._uid
       clone._id = self._id
+      clone._set_id = self._set_id
       clone._name = self._name
 
       memo[id(self)] = clone
@@ -66,36 +65,18 @@ class Material(object):
     return (id(self) <= id(other))
 
 
-  def setId(self, material_id=None):
+  def setId(self, material_id):
 
-    global MATERIAL_IDS
+    # Check that the ID is a non-negative integer
+    if is_integer(material_id):
 
-    if material_id is None:
-      global AUTO_MATERIAL_ID
-      self._id = AUTO_MATERIAL_ID
-      MATERIAL_IDS.append(AUTO_MATERIAL_ID)
-      AUTO_MATERIAL_ID += 1
-
-    # Check that the ID is an integer and wasn't already used
-    elif is_integer(material_id):
-
-      # If the Material already has an ID, remove it from global list
-      if self._id is not None:
-        MATERIAL_IDS.remove(self._id)
-
-      if material_id in MATERIAL_IDS:
-        msg = 'Unable to set Material ID to {0} since a Material ' \
-              'with this ID was already initialized'.format(material_id)
-        raise ValueError(msg)
-
-      if material_id < 0:
+      if material_id >= 0:
+        self._id = material_id
+        self._set_id = True
+      else:
         msg = 'Unable to set Material ID to {0} since it must be a ' \
               'non-negative integer'.format(material_id)
         raise ValueError(msg)
-
-      else:
-        self._id = material_id
-        MATERIAL_IDS.append(material_id)
 
     else:
       msg = 'Unable to set Material ID to non-integer {0}'.format(material_id)

@@ -1,21 +1,9 @@
-__author__ = 'Will Boyd'
-__email__ = 'wboyd@mit.edu'
-
-
 import opencg
-from opencg.universe import *
-from opencg.point import *
-from opencg.ray import *
+from opencg.checkvalue import *
 import copy
 
 # Small displacement for moving a point across a surface in ray tracing
 TINY_BIT = 1e-10
-
-def reset_auto_ids():
-  opencg.reset_auto_material_id()
-  opencg.reset_auto_surface_id()
-  opencg.reset_auto_cell_id()
-  opencg.reset_auto_universe_id()
 
 
 class Geometry(object):
@@ -49,6 +37,12 @@ class Geometry(object):
     # Flag indicating whether or not the neighbors have been built
     self._built_neighbors = False
 
+    # Incrementer variables for auto-generated Surface IDs
+    self._auto_material_id = 10000
+    self._auto_surface_id = 10000
+    self._auto_cell_id = 10000
+    self._auto_universe_id = 10000
+
 
   def __deepcopy__(self, memo):
 
@@ -70,6 +64,10 @@ class Geometry(object):
       clone._regions_to_unique_neighbors = copy.deepcopy(self._regions_to_unique_neighbors, memo)
       clone._built_neighbors = self._built_neighbors
       clone._all_cells = copy.deepcopy(self._all_cells, memo)
+      clone._auto_material_id = self._auto_material_id
+      clone._auto_surface_id = self._auto_surface_id
+      clone._auto_cell_id = self._auto_cell_id
+      clone._auto_universe_id = self._auto_universe_id
 
       memo[id(self)] = clone
 
@@ -194,7 +192,7 @@ class Geometry(object):
     for universe_id, universe in all_universes.items():
 
       # Do not consider Lattices since they are not at the Material level
-      if isinstance(universe, Lattice):
+      if isinstance(universe, opencg.Lattice):
         continue
 
       cells = universe._cells
@@ -208,15 +206,9 @@ class Geometry(object):
 
   def setRootUniverse(self, root_universe):
 
-    if not isinstance(root_universe, Universe):
+    if not isinstance(root_universe, opencg.Universe):
       msg = 'Unable to set the root Universe for the Geometry since {0} is ' \
             'not a Universe'.format(root_universe)
-      raise ValueError(msg)
-
-    if not root_universe._id == 0:
-      msg = 'Unable to set the root Universe for the Geometry with a ' \
-            'Universe with ID={0}. The root Universe must have ' \
-            'ID=0.'.format(root_universe._id)
       raise ValueError(msg)
 
     self._root_universe = root_universe
@@ -259,6 +251,45 @@ class Geometry(object):
       self._region_volumes[region] = volume
 
 
+  def assignAutoIds(self):
+
+    materials = self.getAllMaterials()
+
+    for material_id, material in materials.items():
+      if not material._set_id:
+        material.setId(self._auto_material_id)
+        self._auto_material_id += 1
+
+    universes = self.getAllUniverses()
+    for universe_id, universe in universes.items():
+      if not universe._set_id:
+        universe.setId(self._auto_universe_id)
+        self._auto_universe_id += 1
+
+    cells = self.getAllCells()
+    for cell_id, cell in cells.items():
+      if not cell._set_id:
+        cell.setId(self._auto_cell_id)
+        self._auto_cell_id += 1
+
+      surfaces = cell._surfaces
+      for surface_id, surface_halfspace in surfaces.items():
+        surface = surface_halfspace[0]
+        if not surface._set_id:
+          surface.setId(self._auto_surface_id)
+          self._auto_surface_id += 1
+
+    self._root_universe.updateIds()
+    self._all_cells = self._root_universe.getAllCells()
+
+
+  def resetAutoIds(self):
+    self._auto_material_id = 10000
+    self._auto_surface_id = 10000
+    self._auto_cell_id = 10000
+    self._auto_universe_id = 10000
+
+
   def updateBoundingBoxes(self):
 
     if self._root_universe is None:
@@ -279,6 +310,7 @@ class Geometry(object):
             'does not contain the base Universe ID=0'
       raise ValueError(msg)
 
+    self.assignAutoIds()
     self._root_universe.initializeCellOffsets()
     self._num_regions = self._root_universe._num_regions
 
@@ -328,6 +360,13 @@ class Geometry(object):
     self._built_neighbors = True
 
 
+  def countNeighbors(self, first_level=0):
+
+    for region in range(self._num_regions):
+      self.getNeighborsHash(region, first_level)
+      self.getUniqueNeighborsHash(region, first_level)
+
+
   def getRegionId(self, x=0., y=0., z=0.):
 
     coords = self.findCoords(x=x, y=y, z=z)
@@ -341,7 +380,7 @@ class Geometry(object):
     while coords is not None:
 
       # The coords is a UnivCoords object
-      if isinstance(coords, UnivCoords):
+      if isinstance(coords, opencg.UnivCoords):
         universe = coords._universe
         cell = coords._cell
         region_id += universe.getCellOffset(cell)
@@ -356,7 +395,6 @@ class Geometry(object):
 
     return region_id
 
-
   def findCell(self, x=0., y=0., z=0.):
 
     if self._root_universe is None:
@@ -364,9 +402,9 @@ class Geometry(object):
             'contain the base Universe ID=0'
       raise ValueError(msg)
 
-    point = Point(x=x, y=y, z=z)
+    point = opencg.Point(x=x, y=y, z=z)
     
-    localcoords = UnivCoords(point=point)
+    localcoords = opencg.UnivCoords(point=point)
     localcoords.setUniverse(self._root_universe)
 
     return self._root_universe.findCell(localcoords=localcoords)
@@ -389,7 +427,7 @@ class Geometry(object):
             'a negative integer'.format(region_id)
       raise ValueError(msg)
 
-    localcoords = UnivCoords(universe=self._root_universe)
+    localcoords = opencg.UnivCoords(universe=self._root_universe)
     self._root_universe.findRegion(region_id=region_id, univ_coords=localcoords)
     localcoords = localcoords.getHeadNode()
     return localcoords
@@ -402,13 +440,14 @@ class Geometry(object):
             'contain the base Universe ID=0'
       raise ValueError(msg)
 
-    point = Point(x=x, y=y, z=z)
-    localcoords = UnivCoords(point=point)
+    point = opencg.Point(x=x, y=y, z=z)
+    localcoords = opencg.UnivCoords(point=point)
     localcoords.setUniverse(self._root_universe)
     cell = self._root_universe.findCell(localcoords=localcoords)
     localcoords = localcoords.getHeadNode()
 
     return localcoords
+
 
   def getNearestIntersection(self, point, direction):
 
@@ -420,7 +459,7 @@ class Geometry(object):
 
     # Loop through linked list and retrieve intersection distances
     while next is not None:
-      if isinstance(next, UnivCoords):
+      if isinstance(next, opencg.UnivCoords):
         cell = next._cell
         if cell is not None:
           surfaces = cell._surfaces
@@ -429,13 +468,13 @@ class Geometry(object):
             if dist is not None:
               distances.append(dist)
 
-      elif isinstance(next, LatCoords):
+      elif isinstance(next, opencg.LatCoords):
         lat = next._lattice
         x_lat, y_lat, z_lat = next._point._coords - lat._offset
         x_lat = x_lat + 0.5*lat._dimension[0]*lat._width[0] - next._lat_x*lat._width[0] - lat._halfwidth[0]
         y_lat = y_lat + 0.5*lat._dimension[1]*lat._width[1] - next._lat_y*lat._width[1] - lat._halfwidth[1]
         z_lat = z_lat + 0.5*lat._dimension[2]*lat._width[2] - next._lat_z*lat._width[2] - lat._halfwidth[2]
-        lat_point = Point(x=x_lat, y=y_lat, z=z_lat)
+        lat_point = opencg.Point(x=x_lat, y=y_lat, z=z_lat)
         dist = lat.minSurfaceDist(lat_point, direction)
         if dist is not None:
           distances.append(dist)
@@ -451,7 +490,7 @@ class Geometry(object):
 
 
     # sets coordinates for nearest intersection
-    nearestpoint = Point()
+    nearestpoint = opencg.Point()
     poldir = direction.toPolar()
     sines = np.sin(poldir)
     cosines = np.cos(poldir)
@@ -461,18 +500,20 @@ class Geometry(object):
 
     return nearestpoint
 
+
   def getShortestSegment(self, point, direction):
 
     intersect = self.getNearestIntersection(point, direction)
     if intersect is None:
       return None
 
-    segment = Segment(geometry=self, start=point, end=intersect)
+    segment = opencg.Segment(geometry=self, start=point, end=intersect)
     return segment
+
 
   def traceRays(self, rays):
 
-    start = Point()
+    start = opencg.Point()
     for ray in rays:
 
       # sets starting point of ray
@@ -483,7 +524,7 @@ class Geometry(object):
       intersect = self.getNearestIntersection(start, direction)
 
       while intersect is not None:
-        segment = Segment(geometry=self, start=start, end=intersect)
+        segment = opencg.Segment(geometry=self, start=start, end=intersect)
         ray.addSegment(segment)
 
         # adjusts next segment in ray to start at found intersection
@@ -492,9 +533,11 @@ class Geometry(object):
 
     return rays
 
+
   def getNeighbors(self, region_id):
     coords = self.findRegion(region_id)
     return coords.getNeighbors()
+
 
   def getUniqueNeighbors(self, region_id):
     coords = self.findRegion(region_id)
@@ -540,6 +583,7 @@ class Geometry(object):
         self._unique_neighbor_ids[unique_neighbors]
 
     return self._regions_to_unique_neighbors[region_id]
+
 
   def toString(self):
     string = self._root_universe.toString()

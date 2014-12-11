@@ -1,10 +1,4 @@
-__author__ = 'Will Boyd'
-__email__ = 'wboyd@mit.edu'
-
-
-from point import Point, Direction
-from checkvalue import *
-from opencg.point import Point
+import opencg
 from opencg.checkvalue import *
 import numpy as np
 import copy
@@ -16,17 +10,8 @@ ON_SURFACE_THRESH = 1e-12
 # Threshold for determining if particle is travelling parallel to axis
 PARALLEL_TO_AXIS_THRESH = 1e-5
 
-# A list of all IDs for all Surfaces created
-SURFACE_IDS = list()
-
-# A static variable for auto-generated Surface IDs
-AUTO_SURFACE_ID = 10000
-
-def reset_auto_surface_id():
-  global AUTO_SURFACE_ID, SURFACE_IDS
-  AUTO_SURFACE_ID = 10000
-  SURFACE_IDS = list()
-
+# A static variable for auto-generated Surface UIDs
+AUTO_SURFACE_UID = 1
 
 # The Surface boundary conditions
 BOUNDARY_TYPES = ['interface', 'vacuum', 'reflective']
@@ -53,7 +38,12 @@ class Surface(object):
   def __init__(self, surface_id=None, name='', boundary='interface'):
 
     # Initialize class attributes
+    global AUTO_SURFACE_UID
+    self._uid = AUTO_SURFACE_UID
+    AUTO_SURFACE_UID += 1
+
     self._id = None
+    self._set_id = False
     self._name = ''
     self._type = ''
     self._boundary_type = ''
@@ -74,7 +64,12 @@ class Surface(object):
     self._min_y = MIN_FLOAT
     self._min_z = MIN_FLOAT
 
-    self.setId(surface_id)
+    if not surface_id is None:
+      self.setId(surface_id)
+    else:
+      self.setId(self._uid)
+      self._set_id = False
+
     self.setName(name)
     self.setBoundaryType(boundary)
 
@@ -87,7 +82,9 @@ class Surface(object):
     if existing is None:
 
       clone = type(self).__new__(type(self))
+      clone._uid = self._uid
       clone._id = self._id
+      clone._set_id = self._set_id
       clone._name = self._name
       clone._type = self._type
       clone._boundary_type = self._boundary_type
@@ -158,14 +155,14 @@ class Surface(object):
 
 
   def evaluate(self, point):
-    if not isinstance(point, Point):
+    if not isinstance(point, opencg.Point):
       msg = 'Unable to evaluate point for Surface ID={0} since the input ' \
             'is not a Point object'.format(self._id)
       raise ValueError(msg)
 
 
   def onSurface(self, point):
-    if not isinstance(point, Point):
+    if not isinstance(point, opencg.Point):
       msg = 'Unable to determine whether a point is on Surface ID={0} since ' \
             'the input is not a Point object'.format(self._id)
       raise ValueError(msg)
@@ -176,36 +173,18 @@ class Surface(object):
       return False
 
 
-  def setId(self, surface_id=None):
+  def setId(self, surface_id):
 
-    global SURFACE_IDS
+    # Check that the ID is a non-negative integer
+    if is_integer(surface_id):
 
-    if surface_id is None:
-      global AUTO_SURFACE_ID
-      self._id = AUTO_SURFACE_ID
-      SURFACE_IDS.append(AUTO_SURFACE_ID)
-      AUTO_SURFACE_ID += 1
-
-    # Check that the ID is an integer and wasn't already used
-    elif is_integer(surface_id):
-
-      # If the Material already has an ID, remove it from global list
-      if self._id is not None:
-        SURFACE_IDS.remove(self._id)
-
-      elif surface_id in SURFACE_IDS:
-        msg = 'Unable to set Surface ID to {0} since a Surface with ' \
-              'this ID was already initialized'.format(surface_id)
-        raise ValueError(msg)
-
-      elif surface_id < 0:
+      if surface_id >= 0:
+        self._id = surface_id
+        self._set_id = True
+      else:
         msg = 'Unable to set Surface ID to {0} since it must be a ' \
               'non-negative integer'.format(surface_id)
         raise ValueError(msg)
-
-      else:
-        self._id = surface_id
-        SURFACE_IDS.append(surface_id)
 
     else:
       msg = 'Unable to set a non-integer Surface ID {0}'.format(surface_id)
@@ -384,7 +363,7 @@ class Plane(Surface):
     if dist < 0:
       return None
 
-    intersect = Point()
+    intersect = opencg.Point()
     intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
     dist = point.distanceToPoint(intersect)
     return dist
@@ -489,7 +468,7 @@ class XPlane(Plane):
     if dist < 0:
       return None
 
-    intersect = Point()
+    intersect = opencg.Point()
     intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
     dist = point.distanceToPoint(intersect)
     return dist
@@ -593,7 +572,7 @@ class YPlane(Plane):
     if dist < 0:
       return None
 
-    intersect = Point()
+    intersect = opencg.Point()
     intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
     dist = point.distanceToPoint(intersect)
     return dist
@@ -697,7 +676,7 @@ class ZPlane(Plane):
     if dist < 0:
       return None
 
-    intersect = Point()
+    intersect = opencg.Point()
     intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
     dist = point.distanceToPoint(intersect)
     return dist
@@ -921,7 +900,7 @@ class XCylinder(Cylinder):
 
     if c < 0:
       dist = (-k + np.sqrt(k**2-a*c))/a
-      intersect = Point()
+      intersect = opencg.Point()
       intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
       dist = point.distanceToPoint(intersect)
       return dist
@@ -929,7 +908,7 @@ class XCylinder(Cylinder):
     else:
       dist = (-k - np.sqrt(k**2-a*c))/a
       if dist > 0:
-        intersect = Point()
+        intersect = opencg.Point()
         intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
         dist = point.distanceToPoint(intersect)
         return dist
@@ -1134,7 +1113,7 @@ class YCylinder(Cylinder):
 
     if c < 0:
       dist = (-k + np.sqrt(k**2-a*c))/a
-      intersect = Point()
+      intersect = opencg.Point()
       intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
       dist = point.distanceToPoint(intersect)
       return dist
@@ -1142,7 +1121,7 @@ class YCylinder(Cylinder):
     else:
       dist = (-k - np.sqrt(k**2-a*c))/a
       if dist > 0:
-        intersect = Point()
+        intersect = opencg.Point()
         intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
         dist = point.distanceToPoint(intersect)
         return dist
@@ -1346,7 +1325,7 @@ class ZCylinder(Cylinder):
 
     if c < 0:
       dist = (-k + np.sqrt(k**2-a*c))/a
-      intersect = Point()
+      intersect = opencg.Point()
       intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
       dist = point.distanceToPoint(intersect)
       return dist
@@ -1354,7 +1333,7 @@ class ZCylinder(Cylinder):
     else:
       dist = (-k - np.sqrt(k**2-a*c))/a
       if dist > 0:
-        intersect = Point()
+        intersect = opencg.Point()
         intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
         dist = point.distanceToPoint(intersect)
         return dist
@@ -1641,7 +1620,7 @@ class Sphere(Surface):
 
     if c < 0:
       dist = (-k + np.sqrt(k**2-c))
-      intersect = Point()
+      intersect = opencg.Point()
       intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
       dist = point.distanceToPoint(intersect)
       return dist
@@ -1654,7 +1633,7 @@ class Sphere(Surface):
         dist = dist1
       else:
         dist = dist2
-      intersect = Point()
+      intersect = opencg.Point()
       intersect.setCoords((x+dist*u, y+dist*v, z+dist*w))
       dist = point.distanceToPoint(intersect)
       return dist
@@ -1886,7 +1865,7 @@ class XSquarePrism(SquarePrism):
          abs(new_z) < self._coeffs['R']) or \
          (abs((abs(new_z) - self._coeffs['R'])) < ON_SURFACE_THRESH and
           abs(new_y) < self._coeffs['R']):
-        intersect = Point()
+        intersect = opencg.Point()
         intersect.setCoords((new_x, new_y, new_z))
         dist = point.distanceToPoint(intersect)
         return dist
@@ -2095,7 +2074,7 @@ class YSquarePrism(SquarePrism):
          abs(new_z) < self._coeffs['R']) or \
          (abs((abs(new_z) - self._coeffs['R'])) < ON_SURFACE_THRESH and
           abs(new_x) < self._coeffs['R']):
-        intersect = Point()
+        intersect = opencg.Point()
         intersect.setCoords((new_x, new_y, new_z))
         dist = point.distanceToPoint(intersect)
         return dist
@@ -2305,7 +2284,7 @@ class ZSquarePrism(SquarePrism):
          abs(new_y) < self._coeffs['R']) or \
          (abs((abs(new_y) - self._coeffs['R'])) < ON_SURFACE_THRESH and
           abs(new_x) < self._coeffs['R']):
-        intersect = Point()
+        intersect = opencg.Point()
         intersect.setCoords((new_x, new_y, new_z))
         dist = point.distanceToPoint(intersect)
         return dist

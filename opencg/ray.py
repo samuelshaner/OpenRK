@@ -1,12 +1,8 @@
-__author__ = 'Davis Tran'
-__email__ = 'dvtran@mit.edu'
-
-
-from opencg import *
+import opencg
 import numpy as np
-import copy
-import os
+import copy, os
 import h5py
+
 
 class Ray(object):
 
@@ -148,7 +144,7 @@ def exportRays(rays, directory = 'ray-segments/', filename = 'rays-data.h5'):
     ray_group.create_dataset('Direction', data = rays[i]._direction._comps)
     segments = rays[i]._segments
     segments_group = ray_group.create_group('Segments')
-    for j in xrange(ray._num_segments):
+    for j in xrange(rays[i]._num_segments):
       segment = segments_group.create_group('Segment (%d)' % (j))
       segment.create_dataset('Region ID', data = segments[j]._region_id)
       segment.create_dataset('Cell ID', data = segments[j]._cell_id)
@@ -169,8 +165,8 @@ def importRays(directory = 'ray-segments/', filename = 'rays-data.h5'):
 
   # extract and create rays from file
   for i in xrange(len(f['Rays'])):
-    start = Point()
-    direction = Direction()
+    start = opencg.Point()
+    direction = opencg.Direction()
     start.setCoords(f['Rays']['Ray (%d)' % (i)]['Start Point'])
     direction.setComps(f['Rays']['Ray (%d)' % (i)]['Direction'])
     ray = Ray(point=start, direction=direction)

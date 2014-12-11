@@ -1,17 +1,11 @@
-__author__ = 'Will Boyd'
-__email__ = 'wboyd@mit.edu'
-
-import warnings
-
-from opencg.material import Material
-from opencg.surface import Surface
-from opencg.point import Point
+import opencg
 from opencg.checkvalue import *
 from collections import OrderedDict
 from hashlib import sha1
 import numpy as np
 from numpy.lib.stride_tricks import as_strided
 import copy, math
+import warnings
 
 
 # Error threshold for determining how close to the boundary of a Lattice cell
@@ -21,16 +15,8 @@ ON_LATTICE_CELL_THRESH = 1e-06
 # Error threshold for directional components very close to parallel with axes
 PARALLEL_TO_AXIS_THRESHOLD = 1e-5
 
-# Lists of all IDs for all Universes created
-UNIVERSE_IDS = list()
-
-# A static variable for auto-generated Universe IDs
-AUTO_UNIVERSE_ID = 10000
-
-def reset_auto_universe_id():
-  global AUTO_UNIVERSE_ID, UNIVERSE_IDS
-  AUTO_UNIVERSE_ID = 10000
-  UNIVERSE_IDS = list()
+# A static variable for auto-generated Universe UIDs
+AUTO_UNIVERSE_UID = 1
 
 MAX_FLOAT = np.finfo(np.float64).max
 MIN_FLOAT = np.finfo(np.float64).min
@@ -38,11 +24,15 @@ MIN_FLOAT = np.finfo(np.float64).min
 
 class Universe(object):
 
-
   def __init__(self, universe_id=None, name=''):
 
     # Initialize Universe class attributes
+    global AUTO_UNIVERSE_UID
+    self._uid = AUTO_UNIVERSE_UID
+    AUTO_UNIVERSE_UID += 1
+
     self._id = None
+    self._set_id = False
     self._name = None
 
     # Keys   - Cell IDs
@@ -55,7 +45,12 @@ class Universe(object):
     self._num_regions = 0
     self._volume = np.finfo(np.float64)
 
-    self.setId(universe_id)
+    if not universe_id is None:
+      self.setId(universe_id)
+    else:
+      self.setId(self._uid)
+      self._set_id = False
+
     self.setName(name)
 
 
@@ -67,7 +62,9 @@ class Universe(object):
     if existing is None:
 
       clone = type(self).__new__(type(self))
+      clone._uid = self._uid
       clone._id = self._id
+      clone._set_id = self._set_id
       clone._name = self._name
 
       clone._cells = dict()
@@ -308,36 +305,18 @@ class Universe(object):
       cell.setMinZ(min_z=min_z)
 
 
-  def setId(self, universe_id=None):
+  def setId(self, universe_id):
 
-    global UNIVERSE_IDS
+    # Check that the ID is a non-negative integer
+    if is_integer(universe_id):
 
-    if universe_id is None:
-      global AUTO_UNIVERSE_ID
-      self._id = AUTO_UNIVERSE_ID
-      UNIVERSE_IDS.append(AUTO_UNIVERSE_ID)
-      AUTO_UNIVERSE_ID += 1
-
-    # Check that the ID is an integer and wasn't already used
-    elif is_integer(universe_id):
-
-      # If the Universe already has an ID, remove it from global list
-      if self._id is not None:
-        UNIVERSE_IDS.remove(self._id)
-
-      if universe_id in UNIVERSE_IDS:
-        msg = 'Unable to set Universe ID to {0} since a Universe with this ' \
-              'ID was already initialized'.format(universe_id)
-        raise ValueError(msg)
-
-      if universe_id < 0:
+      if universe_id >= 0:
+        self._id = universe_id
+        self._set_id = True
+      else:
         msg = 'Unable to set Univeres ID to {0} since it must be a ' \
               'non-negative integer'.format(universe_id)
         raise ValueError(msg)
-
-      else:
-        self._id = universe_id
-        UNIVERSE_IDS.append(universe_id)
 
     else:
       msg = 'Unable to set Universe ID to a non-integer {0}'.format(universe_id)
@@ -413,6 +392,16 @@ class Universe(object):
           return True
 
     return False
+
+
+  def updateIds(self):
+
+    for cell_id, cell in self._cells.items():
+
+      cell.updateIds()
+
+      if cell._id != cell_id:
+        self._cells[cell._id] = self._cells.pop(cell_id)
 
 
   def computeVolumeFractions(self, volume=np.float64(1.), tolerance=1e-3):
@@ -592,7 +581,7 @@ class Universe(object):
       fill.findRegion(region_id, next_coords)
 
     # We have found the cell in the base nested universe
-    elif region_id == 0 and isinstance(fill, Material):
+    elif region_id == 0 and isinstance(fill, opencg.Material):
       return
 
     # We were unable to find the cell
@@ -630,7 +619,12 @@ class Lattice(Universe):
   def __init__(self, lattice_id=None, name='', type='rectangular'):
 
     # Initialize Lattice class attributes
+    global AUTO_UNIVERSE_UID
+    self._uid = AUTO_UNIVERSE_UID
+    AUTO_UNIVERSE_UID += 1
+
     self._id = None
+    self._set_id = False
     self._name = None
     self._type = ''
     self._dimension = None
@@ -646,7 +640,12 @@ class Lattice(Universe):
     self._neighbors_hash = None
     self._unique_neighbors_hash = None
 
-    self.setId(lattice_id)
+    if not lattice_id is None:
+      self.setId(lattice_id)
+    else:
+      self.setId(self._uid)
+      self._set_id = False
+
     self.setName(name)
     self.setType(type)
 
@@ -659,7 +658,9 @@ class Lattice(Universe):
     if existing is None:
 
       clone = type(self).__new__(type(self))
+      clone._uid = self._uid
       clone._id = self._id
+      clone._set_id = self._set_id
       clone._name = self._name
       clone._type = self._type
       clone._dimension = self._dimension
@@ -980,36 +981,18 @@ class Lattice(Universe):
     return all_universes
 
 
-  def setId(self, lattice_id=None):
+  def setId(self, lattice_id):
 
-    global UNIVERSE_IDS
+    # Check that the ID is a non-negative integer
+    if is_integer(lattice_id):
 
-    if lattice_id is None:
-      global AUTO_UNIVERSE_ID
-      self._id = AUTO_UNIVERSE_ID
-      UNIVERSE_IDS.append(AUTO_UNIVERSE_ID)
-      AUTO_UNIVERSE_ID += 1
-
-    # Check that the ID is an integer and wasn't already used
-    elif is_integer(lattice_id):
-
-      # If the Lattice already has an ID, remove it from global list
-      if self._id is not None:
-        UNIVERSE_IDS.remove(self._id)
-
-      if lattice_id in UNIVERSE_IDS:
-        msg = 'Unable to set Lattice ID to {0} since a Lattice ' \
-              'with this ID was already initialized'.format(lattice_id)
-        raise ValueError(msg)
-
-      if lattice_id < 0:
+      if lattice_id >= 0:
+        self._id = lattice_id
+        self._set_id = True
+      else:
         msg = 'Unable to set Lattice ID to {0} since it must be a ' \
               'non-negative integer'.format(lattice_id)
         raise ValueError(msg)
-
-      else:
-        self._id = lattice_id
-        UNIVERSE_IDS.append(lattice_id)
 
     else:
       msg = 'Unable to set a non-integer Lattice ID {0}'.format(lattice_id)
@@ -1133,6 +1116,7 @@ class Lattice(Universe):
       self._width[i] = width[i]
       self._halfwidth[i] = width[i]/2
 
+
   def setUniverses(self, universes):
 
     if not isinstance(universes, (tuple, list, np.ndarray)):
@@ -1170,6 +1154,14 @@ class Lattice(Universe):
           if self._width[2] != MAX_FLOAT:
             universe.setMaxZ(self._width[2]/2.)
             universe.setMinZ(-self._width[2]/2.)
+
+
+  def updateIds(self):
+
+    unique_universes = self.getUniqueUniverses()
+
+    for universe_id, universe in unique_universes.items():
+      universe.updateIds()
 
 
   def computeVolumeFractions(self, volume=np.float64(1.), tolerance=1e-3):
@@ -1341,7 +1333,7 @@ class Lattice(Universe):
                     + (lat_y + 0.5) * self._width[1])
     next_z = z - (-self._dimension[2]*self._width[2]*0.5 + self._offset[2] \
                     + (lat_z + 0.5) * self._width[2])
-    next_point = Point(x=next_x, y=next_y, z=next_z)
+    next_point = opencg.Point(x=next_x, y=next_y, z=next_z)
 
     universe = self._universes[lat_z][lat_y][lat_x]
 
@@ -1457,7 +1449,7 @@ class Lattice(Universe):
          abs(new_x) < self._halfwidth[0] and abs(new_z) < self._halfwidth[2]) or \
          (abs((abs(new_z) - self._halfwidth[2])) < ON_LATTICE_CELL_THRESH and
          abs(new_x) < self._halfwidth[0] and abs(new_y) < self._halfwidth[1]):
-        intersect = Point()
+        intersect = opencg.Point()
         intersect.setCoords((new_x, new_y, new_z))
         dist = point.distanceToPoint(intersect)
         return dist
@@ -1504,16 +1496,8 @@ class Lattice(Universe):
 ################################################################################
 
 
-# Lists of all IDs for all Cells created
-CELL_IDS = list()
-
-# A static variable for auto-generated Cell IDs
-AUTO_CELL_ID = 10000
-
-def reset_auto_cell_id():
-  global AUTO_CELL_ID, CELL_IDS
-  AUTO_CELL_ID = 10000
-  CELL_IDS = list()
+# A static variable for auto-generated Cell UIDs
+AUTO_CELL_UID = 1
 
 
 class Cell(object):
@@ -1521,7 +1505,12 @@ class Cell(object):
   def __init__(self, cell_id=None, name='', fill=None):
 
     # Initialize Cell class attributes
+    global AUTO_CELL_UID
+    self._uid = AUTO_CELL_UID
+    AUTO_CELL_UID += 1
+
     self._id = None
+    self._set_id = False
     self._name = None
     self._fill = None
     self._translation = None
@@ -1548,7 +1537,12 @@ class Cell(object):
     self._min_y = None
     self._min_z = None
 
-    self.setId(cell_id)
+    if not cell_id is None:
+      self.setId(cell_id)
+    else:
+      self.setId(self._uid)
+      self._set_id = False
+
     self.setName(name)
 
     self.setMaxX(MAX_FLOAT)
@@ -1570,7 +1564,9 @@ class Cell(object):
     if existing is None:
 
       clone = type(self).__new__(type(self))
+      clone._uid = self._uid
       clone._id = self._id
+      clone._set_id = self._set_id
       clone._name = self._name
       clone._fill = copy.deepcopy(self._fill, memo)
       clone._translation = copy.deepcopy(self._translation, memo)
@@ -1706,36 +1702,18 @@ class Cell(object):
     return self._unique_neighbors_hash
 
 
-  def setId(self, cell_id=None):
+  def setId(self, cell_id):
 
-    global CELL_IDS
+    # Check that the ID is a non-negative integer
+    if is_integer(cell_id):
 
-    if cell_id is None:
-      global AUTO_CELL_ID
-      self._id = AUTO_CELL_ID
-      CELL_IDS.append(AUTO_CELL_ID)
-      AUTO_CELL_ID += 1
-
-    # Check that the ID is an integer and wasn't already used
-    elif is_integer(cell_id):
-
-      # If the Cell already has an ID, remove it from global list
-      if self._id is not None:
-        CELL_IDS.remove(self._id)
-
-      if cell_id in CELL_IDS:
-        msg = 'Unable to set Cell ID to {0} since a Cell with this ID was ' \
-              'already initialized'.format(cell_id)
-        raise ValueError(msg)
-
-      if cell_id < 0:
+      if cell_id >= 0:
+        self._id = cell_id
+        self._set_id = True
+      else:
         msg = 'Unable to set Cell ID to {0} since it must be a ' \
               'non-negative integer'.format(cell_id)
         raise ValueError(msg)
-
-      else:
-        self._id = cell_id
-        CELL_IDS.append(cell_id)
 
     else:
       msg = 'Unable to set Cell ID to a non-integer {0}'.format(cell_id)
@@ -1759,7 +1737,7 @@ class Cell(object):
       self.setType('lattice')
     elif isinstance(fill, Universe):
       self.setType('universe')
-    elif isinstance(fill, Material):
+    elif isinstance(fill, opencg.Material):
       self.setType('material')
     else:
       msg = 'Unable to set fill for Cell ID={0} to {1} since it is not a ' \
@@ -1898,7 +1876,7 @@ class Cell(object):
 
   def addSurface(self, surface, halfspace):
 
-    if not isinstance(surface, Surface):
+    if not isinstance(surface, opencg.Surface):
       msg = 'Unable to add a Surface to Cell ID={0} since {1} is ' \
             'not a Surface'.format(self._id, surface)
       raise ValueError(msg)
@@ -1968,7 +1946,7 @@ class Cell(object):
 
   def removeSurface(self, surface):
 
-    if not isinstance(surface, Surface):
+    if not isinstance(surface, opencg.Surface):
       msg = 'Unable to remove a surface from Cell ID={0} since {1} is not a ' \
             'Surface'.format(self._id, surface)
       raise ValueError(msg)
@@ -1979,6 +1957,18 @@ class Cell(object):
       del self._surfaces[surf_id]
 
     self.findBoundingBox()
+
+
+  def updateIds(self):
+
+    if self._type == 'universe' or self._type == 'lattice':
+      self._fill.updateIds()
+
+    for surface_id, surface_halfspace in self._surfaces.items():
+      surface = surface_halfspace[0]
+
+      if surface._id != surface_id:
+        self._surfaces[surface._id] = self._surfaces.pop(surface_id)
 
 
   def removeRedundantSurfaces(self):
@@ -2075,7 +2065,7 @@ class Cell(object):
       return self._num_subcells
 
     # The cell offsets have not yet been initialized - we must compute them
-    elif isinstance(self._fill, Material):
+    elif isinstance(self._fill, opencg.Material):
       self._num_subcells = 1
 
     elif isinstance(self._fill, (Universe, Lattice)):
@@ -2160,7 +2150,7 @@ class Cell(object):
 
   def containsPoint(self, point):
 
-    if not isinstance(point, Point):
+    if not isinstance(point, opencg.Point):
       msg = 'Unable to determine if point is in Cell ID={1} since {0} is not ' \
             'a Point'.format(self._id, point)
       raise ValueError(msg)
@@ -2206,7 +2196,7 @@ class Cell(object):
     from numpy.random import uniform
 
     # Initialize the point
-    point = Point()
+    point = opencg.Point()
 
     # Compute the volume/area of the bounding box we sample from
     box_volume = np.float64(1.)
@@ -2284,7 +2274,7 @@ class Cell(object):
 
   def toString(self):
     string = self.__repr__()
-    if not isinstance(self._fill, Material):
+    if not isinstance(self._fill, opencg.Material):
       string += self._fill.toString()
     return string
 
@@ -2374,7 +2364,7 @@ class LocalCoords(object):
 
   def setPoint(self, point):
 
-    if not isinstance(point, Point):
+    if not isinstance(point, opencg.Point):
       msg = 'Unable to set the point {0} for LocalCoords since it is not ' \
             'a Point object'.format(point)
       raise ValueError(msg)
