@@ -225,7 +225,8 @@ dist = setup(name = 'openrk',
 
       # Inject our custom compiler and linker triggers
       cmdclass={ 'build_ext': custom_build_ext,
-                 'install': custom_install}
+                 'install': custom_install},
+
 )
 
 # Rerun the build_py to setup links for C++ extension modules created by SWIG

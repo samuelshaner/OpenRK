@@ -67,7 +67,7 @@ class configuration:
   # List of the packages to install - only openmoc is guaranteed to be built
   # while the others will be built based on which flags are specified
   # at compile time
-  packages = ['openrk']
+  packages = ['openrk', 'openrk.compatible']
 
   #############################################################################
   #                                 Source Code
