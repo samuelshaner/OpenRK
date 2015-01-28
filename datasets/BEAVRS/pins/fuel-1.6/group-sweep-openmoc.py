@@ -17,10 +17,10 @@ import numpy, h5py
 ################################################################################
 
 # OpenMC simulation parameters
-batches = 100
+batches = 20 #100
 inactive = 5
-particles = 10000
-structures = [2,4,8,12,16,25] #,40,70]
+particles = 100 #10000
+structures = [2,4] #[2,4,8,12,16,25] #,40,70]
 
 # Initialize array to contain all data
 kinf = numpy.zeros((len(structures), batches-inactive-4), dtype=numpy.float64)
@@ -82,7 +82,6 @@ for i, num_groups in enumerate(structures):
 
   groups = group_structures['CASMO']['{0}-group'.format(num_groups)]
 
-  '''
   ##################   Exporting to OpenMC tallies.xml File  ###################
 
 
@@ -99,7 +98,6 @@ for i, num_groups in enumerate(structures):
 
   executor = openmc.Executor()
   executor.run_simulation(output=False)
-  '''
 
   ########################   Extracting Cross-Sections  ########################
 
@@ -113,7 +111,6 @@ for i, num_groups in enumerate(structures):
 
     openmc.reset_auto_ids()
 
-    '''
     # Initialize handle on the OpenMC statepoint file
     filename = 'statepoint.{0:03}.h5'.format(batch)
     statepoint = StatePoint('statepoint.{0:03}.h5'.format(batch))
@@ -122,12 +119,10 @@ for i, num_groups in enumerate(structures):
     micro_extractor.extractAllMultiGroupXS(groups, 'material')
 
     materials = summary.openmc_geometry.get_all_materials()
-    '''
 
     # DUMP-TO-FILE and PRINT XS
     filename = 'mgxs-batch-{0}-groups-{1}'.format(batch, num_groups)
 
-    '''
     for material in materials:
       for xs_type in xs_types:
         xs = micro_extractor._multigroup_xs['material'][material._id][xs_type]
@@ -135,7 +130,6 @@ for i, num_groups in enumerate(structures):
 
     statepoint.close()
     del statepoint
-    '''
 
     ###################   Injecting Cross-Sections into OpenMOC  #################
 
