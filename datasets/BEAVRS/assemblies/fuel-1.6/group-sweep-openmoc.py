@@ -21,7 +21,7 @@ import numpy, h5py
 batches = 100
 inactive = 5
 particles = 50000
-structures = [2,4,8,12,16,25,40,70]
+structures = [2,4,8,12,16]#,25,40,70]
 
 # Initialize array to contain all data
 kinf = numpy.zeros((len(structures), batches-inactive-4), dtype=numpy.float64)
@@ -81,7 +81,6 @@ openmoc.reset_auto_ids()
 openmoc_geometry = get_openmoc_geometry(geometry)
 cells = openmoc_geometry.getRootUniverse().getAllCells()
 
-
 #####################   Parametric Sweep Over Energy Groups ####################
 
 for i, num_groups in enumerate(structures):
@@ -89,6 +88,8 @@ for i, num_groups in enumerate(structures):
   print('testing {0} groups'.format(num_groups))
 
   groups = group_structures['CASMO']['{0}-group'.format(num_groups)]
+
+  '''
 
   ##################   Exporting to OpenMC tallies.xml File  ###################
 
@@ -105,6 +106,7 @@ for i, num_groups in enumerate(structures):
 
   executor = openmc.Executor()
   executor.run_simulation(output=True, mpi_procs=12)
+  '''
 
   ########################   Extracting Cross-Sections  ########################
 
@@ -116,6 +118,7 @@ for i, num_groups in enumerate(structures):
 
     print('batch {0}...'.format(batch))
 
+    '''
     openmc.reset_auto_ids()
 
     # Initialize handle on the OpenMC statepoint file
@@ -126,10 +129,12 @@ for i, num_groups in enumerate(structures):
     micro_extractor.extractAllMultiGroupXS(groups, 'material')
 
     materials = summary.openmc_geometry.get_all_materials()
+    '''
 
     # DUMP-TO-FILE and PRINT XS
     filename = 'mgxs-batch-{0}-groups-{1}'.format(batch, num_groups)
 
+    '''
     for material in materials:
       for xs_type in xs_types:
         xs = micro_extractor._multigroup_xs['material'][material._id][xs_type]
@@ -137,6 +142,7 @@ for i, num_groups in enumerate(structures):
 
     statepoint.close()
     del statepoint
+    '''
 
     ###################   Injecting Cross-Sections into OpenMOC  #################
 
@@ -235,13 +241,13 @@ for i, num_groups in enumerate(structures):
     import openmoc.cuda
     openmoc.cuda.attach_gpu(1)
     solver = openmoc.cuda.GPUSolver(openmoc_geometry, track_generator)
-    solver.setSourceConvergenceThreshold(1E-6)
+    solver.setSourceConvergenceThreshold(1E-5)
     solver.convergeSource(1000)
     solver.printTimerReport()
 
     store_simulation_state(solver, use_hdf5=True,
                            fission_rates=True,
-                           filename='sim-state-{0}-group'.format(num_groups),
+                           filename='sim-state-{0}-group-2'.format(num_groups),
                            note='batch-{0}'.format(batch))
 
     print('stored simulation state...')
