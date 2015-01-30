@@ -43,6 +43,16 @@ settings_file.set_source_space('box', source_bounds)
 settings_file.export_to_xml()
 
 
+###############################################################################
+##################   Exporting to OpenMC geometry.xml File  ###################
+###############################################################################
+
+openmc_geometry = get_openmc_geometry(geometry)
+geometry_file = openmc.GeometryFile()
+geometry_file.set_geometry(openmc_geometry)
+geometry_file.export_to_xml()
+
+
 ################################################################################
 ########################   Creating OpenMOC Geometry  ##########################
 ################################################################################
@@ -62,20 +72,29 @@ fuel_mesh.setWithOuter(False)
 mesh = opencg.SectorMesh(num_sectors=8)
 
 universes = geometry.getAllMaterialUniverses()
+universe = universes.values()[0]
 
 cells = geometry._root_universe.getAllCells()
 for cell_id, cell in cells.items():
   if cell._type == 'material':
-    if cell._fill._id == 10003:
-      new_cells = water_mesh.subdivideCell(cell=cell, universe=universes[10002])
-    if cell._fill._id == 10002:
-      new_cells = fuel_mesh.subdivideCell(cell=cell, universe=universes[10002])
+    if cell._fill._name == 'Borated Water':
+      new_cells = water_mesh.subdivideCell(cell=cell, universe=universe)
+    if cell._fill._name == '3.1% Fuel':
+      new_cells = fuel_mesh.subdivideCell(cell=cell, universe=universe)
 
-mesh.subdivideUniverse(universe=universes[10002])
+mesh.subdivideUniverse(universe=universe)
+geometry.assignAutoIds()
+
+# Get the Gap's ID
+materials = geometry.getAllMaterials()
+for material_id, material in materials.items():
+  if material._name == 'Gap':
+    gap_id = material_id
+
 
 #####################   Parametric Sweep Over Energy Groups ####################
 
-'''
+
 for i, num_groups in enumerate(structures):
 
   print('testing {0} groups'.format(num_groups))
@@ -84,19 +103,16 @@ for i, num_groups in enumerate(structures):
 
   ##################   Exporting to OpenMC tallies.xml File  ###################
 
-  openmc_geometry = get_openmc_geometry(geometry)
   tally_factory = MicroXSTallyFactory(openmc_geometry)
-
   tally_factory.createAllMultiGroupXS(groups, domain_type='material')
   tally_factory.createTalliesFile()
-
 
   ###############################   Running OpenMC  ############################
 
   print('running openmc...')
 
   executor = openmc.Executor()
-  executor.run_simulation(output=True, mpi_procs=6)
+  executor.run_simulation(output=False, mpi_procs=6)
 
   ########################   Extracting Cross-Sections  ########################
 
@@ -112,7 +128,7 @@ for i, num_groups in enumerate(structures):
 
     # Initialize handle on the OpenMC statepoint file
     filename = 'statepoint.{0:03}.h5'.format(batch)
-    statepoint = StatePoint('statepoint.{0:03}.h5'.format(batch))
+    statepoint = StatePoint(filename)
 
     micro_extractor = MicroXSTallyExtractor(statepoint, summary)
     micro_extractor.extractAllMultiGroupXS(groups, 'material')
@@ -176,12 +192,12 @@ for i, num_groups in enumerate(structures):
             macro_xs[rxn_type] += micro_xs * density
 
       # Manually set transport to absorption + scattering
-      macro_xs['transport'] = macro_xs['absorption'] + \
-                              numpy.sum(macro_xs['scatter matrix'], axis=1)
+#      macro_xs['transport'] = macro_xs['absorption'] + \
+#                              numpy.sum(macro_xs['scatter matrix'], axis=1)
 
       #########################  Create OpenMOC Materials  #######################
 
-      if material_id != 10004:
+      if material_id != gap_id:
         openmoc_material.setSigmaT(macro_xs['transport'])
       else:
         openmoc_material.setSigmaT(macro_xs['total'])
@@ -223,26 +239,9 @@ for i, num_groups in enumerate(structures):
     kinf[i,j] = solver.getKeff()
 
     del openmoc_geometry, track_generator, solver
-'''
+
 
 ###############################   Plot k-inf Error  ############################
-
-for i, num_groups in enumerate(structures):
-
-  filename = 'simulation-states/sim-state-{0}-group.h5'.format(num_groups)
-  f = h5py.File(filename, 'r')
-  date_key = f.keys()[0]
-  date_group = f[date_key]
-
-  for time in date_group.keys():
-    time_group = date_group[time]
-    note = time_group.attrs['note']
-    batch = int(note.split('-')[1])
-    keff = time_group['keff'][...]
-    kinf[i,batch-10] = keff
-
-  f.close()
-
 
 kinf_ref = numpy.zeros(batches-inactive-4)
 kinf_std_dev = numpy.zeros(batches-inactive-4)
@@ -278,6 +277,7 @@ ax.fill_between(batches, +kinf_std_dev, -kinf_std_dev,
 plt.xlabel('Batch #')
 plt.ylabel('Error [pcm]')
 plt.title('3.1% Enr. k-inf Error')
+plt.xlim((20,100))
 plt.legend(legend)
 plt.grid()
 plt.savefig('k-inf-err.png')

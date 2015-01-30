@@ -31,7 +31,7 @@ geometry_file.export_to_xml()
 ###############################################################################
 
 materials_file = MaterialsFile()
-materials_file.set_default_xs('70c')
+materials_file.set_default_xs('71c')
 materials_file.add_materials(openmc_materials.values())
 materials_file.export_to_xml()
 
@@ -73,9 +73,9 @@ tally_factory = XSTallyFactory(openmc_geometry)
 
 groups = group_structures['CASMO']['8-group']
 
-tally_factory.createAllXS(groups, domain_type='distribcell')
-tally_factory.createAllXS(groups, domain_type='material')
-tally_factory.createAllXS(groups, domain_type='cell')
-tally_factory.createAllXS(groups, domain_type='universe')
+#tally_factory.createAllXS(groups, domain_type='distribcell')
+#tally_factory.createAllXS(groups, domain_type='material')
+#tally_factory.createAllXS(groups, domain_type='cell')
+#tally_factory.createAllXS(groups, domain_type='universe')
 
-tally_factory.createTalliesFile()
+#tally_factory.createTalliesFile()

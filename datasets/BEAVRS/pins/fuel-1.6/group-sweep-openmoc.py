@@ -17,10 +17,10 @@ import numpy, h5py
 ################################################################################
 
 # OpenMC simulation parameters
-batches = 20 #100
+batches = 100
 inactive = 5
-particles = 100 #10000
-structures = [2,4] #[2,4,8,12,16,25] #,40,70]
+particles = 10000
+structures = [2,4,8,12,16,25] #,40,70]
 
 # Initialize array to contain all data
 kinf = numpy.zeros((len(structures), batches-inactive-4), dtype=numpy.float64)
@@ -43,6 +43,16 @@ settings_file.set_source_space('box', source_bounds)
 settings_file.export_to_xml()
 
 
+###############################################################################
+##################   Exporting to OpenMC geometry.xml File  ###################
+###############################################################################
+
+openmc_geometry = get_openmc_geometry(geometry)
+geometry_file = openmc.GeometryFile()
+geometry_file.set_geometry(openmc_geometry)
+geometry_file.export_to_xml()
+
+
 ################################################################################
 ########################   Creating OpenMOC Geometry  ##########################
 ################################################################################
@@ -62,16 +72,24 @@ fuel_mesh.setWithOuter(False)
 mesh = opencg.SectorMesh(num_sectors=8)
 
 universes = geometry.getAllMaterialUniverses()
+universe = universes.values()[0]
 
 cells = geometry._root_universe.getAllCells()
 for cell_id, cell in cells.items():
   if cell._type == 'material':
-    if cell._fill._id == 10003:
-      new_cells = water_mesh.subdivideCell(cell=cell, universe=universes[10000])
-    if cell._fill._id == 10000:
-      new_cells = fuel_mesh.subdivideCell(cell=cell, universe=universes[10000])
+    if cell._fill._name == 'Borated Water':
+      new_cells = water_mesh.subdivideCell(cell=cell, universe=universe)
+    if cell._fill._name == '1.6% Fuel':
+      new_cells = fuel_mesh.subdivideCell(cell=cell, universe=universe)
 
-mesh.subdivideUniverse(universe=universes[10000])
+mesh.subdivideUniverse(universe=universe)
+geometry.assignAutoIds()
+
+# Get the Gap's ID
+materials = geometry.getAllMaterials()
+for material_id, material in materials.items():
+  if material._name == 'Gap':
+    gap_id = material_id
 
 
 #####################   Parametric Sweep Over Energy Groups ####################
@@ -84,10 +102,7 @@ for i, num_groups in enumerate(structures):
 
   ##################   Exporting to OpenMC tallies.xml File  ###################
 
-
-  openmc_geometry = get_openmc_geometry(geometry)
   tally_factory = MicroXSTallyFactory(openmc_geometry)
-
   tally_factory.createAllMultiGroupXS(groups, domain_type='material')
   tally_factory.createTalliesFile()
 
@@ -97,7 +112,7 @@ for i, num_groups in enumerate(structures):
   print('running openmc...')
 
   executor = openmc.Executor()
-  executor.run_simulation(output=False)
+  executor.run_simulation(output=False, mpi_procs=8)
 
   ########################   Extracting Cross-Sections  ########################
 
@@ -113,7 +128,7 @@ for i, num_groups in enumerate(structures):
 
     # Initialize handle on the OpenMC statepoint file
     filename = 'statepoint.{0:03}.h5'.format(batch)
-    statepoint = StatePoint('statepoint.{0:03}.h5'.format(batch))
+    statepoint = StatePoint(filename)
 
     micro_extractor = MicroXSTallyExtractor(statepoint, summary)
     micro_extractor.extractAllMultiGroupXS(groups, 'material')
@@ -178,7 +193,7 @@ for i, num_groups in enumerate(structures):
 
       #########################  Create OpenMOC Materials  #######################
 
-      if material_id != 10004:
+      if material_id != gap_id:
         openmoc_material.setSigmaT(macro_xs['transport'])
       else:
         openmoc_material.setSigmaT(macro_xs['total'])
@@ -256,6 +271,7 @@ ax.fill_between(batches, +kinf_std_dev, -kinf_std_dev,
 plt.xlabel('Batch #')
 plt.ylabel('Error [pcm]')
 plt.title('1.6% Enr. k-inf Error')
+plt.xlim((20,100))
 plt.legend(legend)
 plt.grid()
 plt.savefig('k-inf-err.png')
