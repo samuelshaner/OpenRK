@@ -1,16 +1,17 @@
+__author__ = 'Samuel Shaner'
+__email__ = 'shaner@mit.edu'
 
+# Import modules
 from math import *
 import numpy as np
-from openrk import *
 from checkvalue import *
-
-# A static variable for auto-generated Material UIDs
-CLOCK_POSITIONS = ['START', 'PREVIOUS_OUT', 'PREVIOUS_IN', 'CURRENT', 'FORWARD_OUT', 'END']
 
 class Clock(object):
     
   def __init__(self, start_time=0.0, end_time=3.0, dt_outer=1e-2, dt_inner=1e-3):
 
+    self._positions = ['START', 'PREVIOUS_OUT', 'PREVIOUS_IN', 'CURRENT', 'FORWARD_OUT', 'END']
+    
     # Initialize class attributes
     self._times = {}
     self._times['START'] = start_time
@@ -24,6 +25,12 @@ class Clock(object):
     
     self.setDtOuter(dt_outer)
     self.setDtInner(dt_inner)
+
+
+  def getPositions(self):
+
+    return self._positions
+
     
   def setDtOuter(self, dt_outer):
 

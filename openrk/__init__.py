@@ -13,3 +13,12 @@ else:
 # Tell Python to recognize CTRL+C and stop the C++ extension module
 # when this is passed in from the keyboard
 signal.signal(signal.SIGINT, signal.SIG_DFL)
+
+from clock import *
+from checkvalue  import *
+from material import *
+from mesh import *
+from checkvalue import *
+from cell import *
+from solver import *
+from plotter import *

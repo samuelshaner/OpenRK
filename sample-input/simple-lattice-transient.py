@@ -1,8 +1,5 @@
 import openrk as rk
 import openrk.compatible as compat
-import openrk.mesh
-import openrk.material
-import openrk.plotter
 
 from openmoc import *
 import openmoc.log as log
@@ -150,7 +147,7 @@ print moc_mesh._flux['MOC new flux']
 
 cmfd_mesh = compat.extract_openrk_cmfd_mesh(geometry)
 compat.extract_openmoc_cmfd_fluxes(cmfd, cmfd_mesh)
-openrk.plotter.plot_flux(cmfd_mesh, 'AMP new flux')
+rk.plot_flux(cmfd_mesh, 'AMP new flux')
 
 ###############################################################################
 ############################   Generating Plots   #############################

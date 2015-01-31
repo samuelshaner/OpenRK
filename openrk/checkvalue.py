@@ -1,8 +1,8 @@
 __author__ = 'Samuel Shaner'
 __email__ = 'shaner@mit.edu'
 
+# Import modules
 import numpy as np
-
 
 def is_integer(val):
   return isinstance(val, (int, np.int32, np.int64))
@@ -90,5 +90,13 @@ def check_is_float_or_int(val, name, param):
   if not is_integer(val) and not is_float(val):
     msg = 'Unable to get/set {0} with a non-int and not-float value {1} for'\
           ' parameter {2}'.format(name, val, param)
+    raise ValueError(msg)
+    
+
+def check_clock_position(position, name):
+
+  if position not in ['START', 'PREVIOUS_OUT', 'PREVIOUS_IN', 'CURRENT', 'FORWARD_OUT', 'END']:
+    msg = 'Unable to get/set {0} with a non valid clock position {1}'\
+          .format(name, position)
     raise ValueError(msg)
     

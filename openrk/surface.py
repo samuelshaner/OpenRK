@@ -1,4 +1,7 @@
+__author__ = 'Samuel Shaner'
+__email__ = 'shaner@mit.edu'
 
+# Import modules
 from math import *
 import numpy as np
 from checkvalue import *

@@ -1,10 +1,14 @@
+__author__ = 'Samuel Shaner'
+__email__ = 'shaner@mit.edu'
+
+# Import modules
 import numpy as np
 from math import *
 from cell import *
 from material import *
 from mesh import *
-import openrk
 from checkvalue import *
+import openrk
 
 class Solver(object):
 
@@ -26,16 +30,15 @@ class Solver(object):
     self._num_threads = num_threads
 
 
-class CmfdSolver(self, cmfd_mesh):
+class CmfdSolver(Solver):
 
-  def __init__(self):
+  def __init__(self, cmfd_mesh):
 
     super(CmfdSolver, self).__init__()
 
     self._cmfd_mesh = cmfd_mesh
-    self.setNumCMFDEnergyGroups(cmfd_mesh.getNumCmfdEnergyGroups())
-    nc = cmfd_mesh.getCellsX() * cmfd_mesh.getCellsY()
-    ng = self._num_energy_groups
+    nc = self._cmfd_mesh.getNumX() * self._cmfd_mesh.getNumY()
+    ng = self._cmfd_mesh.getNumShapeEnergyGroups()
     self._A   = np.zeros((nc, ng*(ng+4)))
     self._AM  = np.zeros((nc, ng*(ng+4)))
     self._M   = np.zeros((nc, ng*ng))
@@ -45,21 +48,21 @@ class CmfdSolver(self, cmfd_mesh):
 
   def computeSurfaceDifCoefs(self):
 
-    cw = self._cmfd_mesh.getCellsX()
-    ch = self._mesh.getCellsY()
-    ng = self._num_energy_groups
-    width = self._mesh.getCellWidth()
-    height = self._mesh.getCellHeight()
+    cw = self._cmfd_mesh.getNumX()
+    ch = self._cmfd_mesh.getNumY()
+    ng = self._cmfd_mesh.getNumShapeEnergyGroups()
+    width = self._cmfd_mesh.getCellWidth()
+    height = self._cmfd_mesh.getCellHeight()
 
     for y in xrange(ch):
       for x in xrange(cw):
         
-        cell = self._mesh.getCell(x,y)
+        cell = self._cmfd_mesh.getCell(x,y)
         
         for side in xrange(4):
           
           surface = cell.getSurface(side)
-          cell_next = self._mesh.getNeighborCell(x, y, side)
+          cell_next = self._cmfd_mesh.getNeighborCell(x, y, side)
           material = cell.getMaterial()
           
           for e in xrange(ng):
@@ -74,7 +77,7 @@ class CmfdSolver(self, cmfd_mesh):
 
             if cell_next is None:
               dif_hat = 2 * d / length_perpen / (1 + 4 * d / length_perpen)
-              dif_hat *= self._mesh.getBoundary(side)
+              dif_hat *= self._cmfd_mesh.getBoundary(side)
 
             else:
 
@@ -86,16 +89,17 @@ class CmfdSolver(self, cmfd_mesh):
               d_next = cell_next.getMaterial().getDifCoefByGroup(e)
               dif_hat = 2 * d * d_next / (length_perpen * d + next_length_perpen * d_next)
 
-            surface.setDifCoefLinearByGroup(dif_hat, group)
+            surface.setDifCoefLinearByGroup(dif_hat, e)
 
 
   def makeAM(self):
       
-    cw = self._mesh._cells_x
-    ch = self._mesh._cells_y
-    ng = self._num_energy_groups
-    height = self._mesh._cell_height
-    width = self._mesh._cell_width
+    cw = self._cmfd_mesh.getNumX()
+    ch = self._cmfd_mesh.getNumY()
+    ng = self._cmfd_mesh.getNumShapeEnergyGroups()
+    height = self._cmfd_mesh.getCellHeight()
+    width = self._cmfd_mesh.getCellWidth()
+    volume = width * height
     
     # reinitialize matrices to zero
     self._A.fill(0.0)
@@ -106,25 +110,25 @@ class CmfdSolver(self, cmfd_mesh):
 
         for e in range(ng):
 
-          cell = self._mesh.getCell(x, y)
+          cell = self._cmfd_mesh.getCell(x, y)
           material = cell.getMaterial()
 
           # absorption term on diagonal
-          self._A[y*cw+x][e*(ng+4)+e+2] += material.getSigmaAByGroup(e) * cell.getVolume()
+          self._A[y*cw+x][e*(ng+4)+e+2] += material.getSigmaAByGroup(e) * volume
 
           # out scattering term on diagonal
           for g in xrange(ng):
             if e != g:
-              self._A[y*cw+x][e*(ng+4)+e+2] += material.getSigmaSByGroup[e,g] * cell.getVolume()
+              self._A[y*cw+x][e*(ng+4)+e+2] += material.getSigmaSByGroup(e,g) * volume
               
           # fission terms on diagonal
           for g in xrange(ng):
-            self._M[y*cw+x][e*ng+g] = material.getChiByGroup(e) * material.getNuSigmaFByGroup(g) * cell.getVolume()
+            self._M[y*cw+x][e*ng+g] = material.getChiByGroup(e) * material.getNuSigmaFByGroup(g) * volume
 
           # in scattering terms on off diagonals
           for g in xrange(ng):
             if e != g:
-              self._A[y*cw+x][e*(ng+4)+g+2] -= material.getSigmaSByGroup(g,e) * cell.getVolume()
+              self._A[y*cw+x][e*(ng+4)+g+2] -= material.getSigmaSByGroup(g,e) * volume
 
           # RIGHT SURFACE
           surface = cell.getSurface(2)
@@ -140,65 +144,66 @@ class CmfdSolver(self, cmfd_mesh):
           surface = cell.getSurface(0)
                     
           # transport term on diagonal
-          self._A[y*cw+x][e*(ng+4)+e+2] += cell._surfaces[0]._dif_hat[e] * height
+          self._A[y*cw+x][e*(ng+4)+e+2] += surface.getDifCoefLinearByGroup(e) * height
                         
           # transport terms on off diagonals
           if x != 0:
-            self._A[y*cw+x][e*(ng+4)] -= cell._surfaces[0]._dif_hat[e] * height
+            self._A[y*cw+x][e*(ng+4)] -= surface.getDifCoefLinearByGroup(e) * height
 
           # BOTTOM SURFACE
+          surface = cell.getSurface(1)
 
           # transport term on diagonal
-          self._A[y*cw+x][e*(ng+4)+e+2] += cell._surfaces[1]._dif_hat[e] * width
+          self._A[y*cw+x][e*(ng+4)+e+2] += surface.getDifCoefLinearByGroup(e) * width
 
           # transport terms on off diagonals
           if y != 0:
-            self._A[y*cw+x][e*(ng+4)+1] -= cell._surfaces[1]._dif_hat[e] * width
+            self._A[y*cw+x][e*(ng+4)+1] -= surface.getDifCoefLinearByGroup(e) * width
 
           # TOP SURFACE
-
+          surface = cell.getSurface(3)
+          
           # transport term on diagonal
-          self._A[y*cw+x][e*(ng+4)+e+2] += cell._surfaces[3]._dif_hat[e] * width
+          self._A[y*cw+x][e*(ng+4)+e+2] += surface.getDifCoefLinearByGroup(e) * width
 
           # transport terms on off diagonals
           if y != ch - 1:
-            self._A[y*cw+x][e*(ng+4)+ng+3] -= cell._surfaces[3]._dif_hat[e] * width
+            self._A[y*cw+x][e*(ng+4)+ng+3] -= surface.getDifCoefLinearByGroup(e) * width
 
 
   def solve(self, tol, iterations):
 
-    self.computeDs()
+    # Compute the surface diffusion coefficients
+    self.computeSurfaceDifCoefs()
+
+    # Create the production and loss matrices
     self.makeAM()
-    nc = self._mesh._cells_x * self._mesh._cells_y
-    ng = self._num_energy_groups
-    old_source = np.zeros(nc*ng)
-    flux_temp = np.zeros(nc*ng)
+
+    # Initialize the old source and a temporary flux variable
+    nx = self._cmfd_mesh.getNumX()
+    ny = self._cmfd_mesh.getNumY()
+    ng = self._cmfd_mesh.getNumShapeEnergyGroups()
+    old_source = np.zeros(nx*ny*ng)
+    flux_temp = np.zeros(nx*ny*ng)
+
+    # solve the eigenvalue problem
     self._k_eff = openrk.eigenvalueSolve(self._A, self._M, self._phi, self._b, old_source, flux_temp,
-                                         ng, self._mesh._cells_x, self._mesh._cells_y, tol)
+                                         ng, nx, ny, tol)
 
     print 'DIFFUSION: --- k_eff = ' + str(self._k_eff)[0:10]
 
-    # pass flux to cells
-    cw = self._mesh._cells_x
-    ch = self._mesh._cells_y
-    for y in xrange(ch): 
-      for x in xrange(cw):
-        cell = self._mesh._cells[y][x]
-        for e in range(ng):          
-          cell._flux[e] = self._phi[(y*cw+x)*ng + e]
 
+class NonlinearCmfdSolver(CmfdSolver):
 
-class NonlinearCmfdSolver(self, cmfd_mesh):
-
-  def __init__(self):
+  def __init__(self, cmfd_mesh):
 
     super(NonlinearCmfdSolver, self).__init__()
 
 
   def computeSurfaceDifCoefs(self):
 
-    cw = self._cmfd_mesh.getCellsX()
-    ch = self._mesh.getCellsY()
+    cw = self._cmfd_mesh.getNumX()
+    ch = self._mesh.getNumY()
     ng = self._num_energy_groups
     width = self._mesh.getCellWidth()
     height = self._mesh.getCellHeight()
@@ -248,7 +253,8 @@ class NonlinearCmfdSolver(self, cmfd_mesh):
     ng = self._num_energy_groups
     height = self._mesh._cell_height
     width = self._mesh._cell_width
-    
+    volume = width * height
+
     # reinitialize matrices to zero
     self._A.fill(0.0)
     self._M.fill(0.0)
@@ -261,21 +267,21 @@ class NonlinearCmfdSolver(self, cmfd_mesh):
           cell = self._mesh._cells[y][x]
 
           # absorption term on diagonal
-          self._A[y*cw+x][e*(ng+4)+e+2] += cell._material._sigma_a[e] * cell.getVolume()
+          self._A[y*cw+x][e*(ng+4)+e+2] += cell._material._sigma_a[e] * volume
 
           # out scattering term on diagonal
           for g in xrange(ng):
             if e != g:
-              self._A[y*cw+x][e*(ng+4)+e+2] += cell._material._sigma_s[e,g] * cell.getVolume()
+              self._A[y*cw+x][e*(ng+4)+e+2] += cell._material._sigma_s[e,g] * volume
               
           # fission terms on diagonal
           for g in xrange(ng):
-            self._M[y*cw+x][e*ng+g] = cell._material._chi[e] * cell._material._nu_sigma_f[g] * cell.getVolume()
+            self._M[y*cw+x][e*ng+g] = cell._material._chi[e] * cell._material._nu_sigma_f[g] * volume
 
           # in scattering terms on off diagonals
           for g in xrange(ng):
             if e != g:
-              self._A[y*cw+x][e*(ng+4)+g+2] -= cell._material._sigma_s[g,e] * cell.getVolume()
+              self._A[y*cw+x][e*(ng+4)+g+2] -= cell._material._sigma_s[g,e] * volume
 
           # RIGHT SURFACE
                     
@@ -401,6 +407,7 @@ class TransientMOCSolver(Solver):
     ng = self._num_energy_groups
     height = self._mesh._cell_height
     width = self._mesh._cell_width
+    volume = width * height
     
     # reinitialize matrices to zero
     self._A.fill(0.0)
@@ -414,21 +421,21 @@ class TransientMOCSolver(Solver):
           cell = self._mesh._cells[y][x]
 
           # absorption term on diagonal
-          self._A[y*cw+x][e*(ng+4)+e+2] += cell._material._sigma_a[e] * cell.getVolume()
+          self._A[y*cw+x][e*(ng+4)+e+2] += cell._material._sigma_a[e] * volume
 
           # out scattering term on diagonal
           for g in xrange(ng):
             if e != g:
-              self._A[y*cw+x][e*(ng+4)+e+2] += cell._material._sigma_s[e,g] * cell.getVolume()
+              self._A[y*cw+x][e*(ng+4)+e+2] += cell._material._sigma_s[e,g] * volume
               
           # fission terms on diagonal
           for g in xrange(ng):
-            self._M[y*cw+x][e*ng+g] = cell._material._chi[e] * cell._material._nu_sigma_f[g] * cell.getVolume()
+            self._M[y*cw+x][e*ng+g] = cell._material._chi[e] * cell._material._nu_sigma_f[g] * volume
 
           # in scattering terms on off diagonals
           for g in xrange(ng):
             if e != g:
-              self._A[y*cw+x][e*(ng+4)+g+2] -= cell._material._sigma_s[g,e] * cell.getVolume()
+              self._A[y*cw+x][e*(ng+4)+g+2] -= cell._material._sigma_s[g,e] * volume
 
           # RIGHT SURFACE
                     

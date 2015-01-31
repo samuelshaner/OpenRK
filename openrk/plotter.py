@@ -1,9 +1,10 @@
 __author__ = 'Sam Shaner'
 __email__ = 'shaner@mit.edu'
 
-
+# Import modules
 import matplotlib
-import openrk
+from cell import *
+from material import *
 from mesh import *
 
 # force headless backend, or set 'backend' to 'Agg'

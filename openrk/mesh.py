@@ -1,7 +1,12 @@
+__author__ = 'Samuel Shaner'
+__email__ = 'shaner@mit.edu'
+
+# Import modules
 from math import *
 import numpy as np
+from checkvalue import *
 from cell import *
-from surface import *
+from clock import *
 
 # A static variable for auto-generated Mesh UIDs
 AUTO_MESH_UID = 1
@@ -32,6 +37,8 @@ class Mesh(object):
     self._num_amp_energy_groups = None
     self._num_delayed_groups = None
     self._flux = {}
+    self._temperature = {}
+    self._clock = None
     
     # Set Mesh properties
     self.setXMin(-width/2.0)
@@ -40,12 +47,23 @@ class Mesh(object):
     self.setYMax(height/2.0)
     self.setName(name)
 
+    # Set mesh ID
     if not mesh_id is None:
       self.setId(mesh_id)
     else:
       self.setId(self._uid)
       self._set_id = False
 
+
+  def setClock(self, clock):
+
+    # Initialize clock
+    if not isinstance(clock, Clock):
+      msg = 'Unable to initialize Mesh clock since clock input is not of type '\
+          'Clock: {0}'.format(clock)
+    else:
+      self._clock = clock
+    
 
   def setName(self, name):
 
@@ -191,6 +209,12 @@ class Mesh(object):
       self._num_shape_energy_groups = num_groups
 
 
+  def getNumShapeEnergyGroups(self):
+
+    check_set(self._num_shape_energy_groups, 'Mesh get num shape energy groups', 'self._num_shape_energy_groups')
+    return self._num_shape_energy_groups
+
+
   def setNumAmpEnergyGroups(self, num_groups):
 
     if not is_integer(num_groups):
@@ -205,6 +229,12 @@ class Mesh(object):
     
     else:
       self._num_amp_energy_groups = num_groups
+
+
+  def getNumAmpEnergyGroups(self):
+
+    check_set(self._num_amp_energy_groups, 'Mesh get num amp energy groups', 'self._num_amp_energy_groups')
+    return self._num_amp_energy_groups
 
 
   def setNumDelayedGroups(self, num_groups):
@@ -294,7 +324,7 @@ class StructuredMesh(Mesh):
 
       neighbor_cell = None
 
-      if size == 0:
+      if side == 0:
         if x != 0:
           neighbor_cell = self._cells[y][x-1]
       elif side == 1:
@@ -310,12 +340,12 @@ class StructuredMesh(Mesh):
       return neighbor_cell
 
 
-  def getCellsX(self):
+  def getNumX(self):
 
     return self._num_x
 
 
-  def getCellsY(self):
+  def getNumY(self):
 
     return self._num_y
 
@@ -342,7 +372,6 @@ class StructuredMesh(Mesh):
       return self._cell_height
 
 
-
   def initializeCells(self):
                 
     self._cells = np.empty(shape=[self._num_y, self._num_x], dtype=object)
@@ -351,25 +380,6 @@ class StructuredMesh(Mesh):
     for y in range(self._num_y):
       for x in range(self._num_x):
         self._cells[y][x] = CmfdCell()
-                                
-    # set neighbor cells and allocate for each cell
-    for y in xrange(self._num_y):
-      for x in xrange(self._num_x):
-         
-        cell = self._cells[y][x]
-        cell._volume = self._cell_width * self._cell_height
-         
-        if x != 0:
-          cell._neighbor_cells[0] = self._cells[y][x - 1]
-        
-        if y != 0:
-          cell._neighbor_cells[1] = self._cells[y-1][x]
-                    
-        if x != self._num_x - 1:
-          cell._neighbor_cells[2] = self._cells[y][x + 1]
-
-        if y != self._num_y - 1:
-          cell._neighbor_cells[3] = self._cells[y+1][x]
 
 
   def setNumX(self, num_x):
@@ -444,11 +454,11 @@ class AmpMesh(StructuredMesh):
     # initialize FunctionalMaterial class attributes
     super(AmpMesh, self).__init__(mesh_id, name, width, height, num_x, num_y)
 
-    self._flux['AMP new flux'] = np.empty
-    self._flux['AMP old flux'] = np.empty
-    self._current['AMP new current'] = np.empty
-    self._current['AMP old current'] = np.empty
-    self._current['AMP new current'] = np.empty
+    # Initialize flux and current arrays
+    clock = Clock()    
+    for position in clock.getPositions():
+      self._flux[position] = np.empty
+      self._current[position] = np.empty
 
   def setNumFSRs(self, num_fsrs):
 
@@ -463,25 +473,6 @@ class AmpMesh(StructuredMesh):
     for y in range(self._num_y):
       for x in range(self._num_x):
         self._cells[y][x] = TcmfdCell()
-
-    # set neighbor cells and allocate for each cell
-    for y in xrange(self._num_y):
-      for x in xrange(self._num_x):
-         
-        cell = self._cells[y][x]
-        cell._volume = self._cell_width * self._cell_height
-         
-        if x != 0:
-          cell._neighbor_cells[0] = self._cells[y][x - 1]
-        
-        if y != 0:
-          cell._neighbor_cells[1] = self._cells[y-1][x]
-                    
-        if x != self._num_x - 1:
-          cell._neighbor_cells[2] = self._cells[y][x + 1]
-
-        if y != self._num_y - 1:
-          cell._neighbor_cells[3] = self._cells[y+1][x]
 
 
   def initializeSurfaces(self):
@@ -510,15 +501,24 @@ class AmpMesh(StructuredMesh):
         cell._surfaces[3] = Surface(cell._material._num_energy_groups)
 
 
-  def getFlux(self, name, cell, group):
-    
+  def getFlux(self, name, cell, group, time='CURRENT'):
+
+    check_clock_position(time, 'AmpMesh flux')
     return self._flux[name][cell*self._num_amp_energy_groups+group]
 
 
   def initializeFlux(self):
 
-    self._flux['AMP new flux'] = np.zeros(self._num_x*self._num_y*self._num_amp_energy_groups)
-    self._flux['AMP old flux'] = np.zeros(self._num_x*self._num_y*self._num_amp_energy_groups)
+    clock = Clock()    
+    for position in clock.getPositions():
+      self._flux[position] = np.zeros(self._num_x*self._num_y*self._num_amp_energy_groups)
+
+
+  def initializeCurrent(self):
+
+    clock = Clock()    
+    for position in clock.getPositions():
+      self._current[position] = np.zeros(self._num_x*self._num_y*self._num_amp_energy_groups*4)
 
 
   def __repr__(self):
@@ -598,20 +598,26 @@ class UnstructuredMesh(Mesh):
     return string
 
 
-class MOCMesh(UnstructuredMesh):
+class UnstructuredShapeMesh(UnstructuredMesh):
 
   def __init__(self, mesh_id=None, name='', width=1.0, height=1.0):
 
     # initialize FunctionalMaterial class attributes
     super(MOCMesh, self).__init__(mesh_id, name, width, height)
 
-    self._flux['MOC new flux'] = np.empty
-    self._flux['MOC old flux'] = np.empty
+    # Initialize flux and current arrays
+    clock = Clock()    
+    for position in clock.getPositions():
+      self._flux[position] = np.empty
+
 
   def initializeFlux(self):
 
-    self._flux['MOC new flux'] = np.zeros(self._num_cells*self._num_shape_energy_groups)
-    self._flux['MOC old flux'] = np.zeros(self._num_cells*self._num_shape_energy_groups)
+    # Initialize flux and current arrays
+    clock = Clock()    
+    for position in clock.getPositions():
+      self._flux[position] = np.zeros(self._num_cells*self._num_shape_energy_groups)
+
 
   def __repr__(self):
 

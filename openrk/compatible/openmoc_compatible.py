@@ -1,11 +1,26 @@
-#!/usr/bin/env python
+__author__ = 'Samuel Shaner'
+__email__ = 'shaner@mit.edu'
 
-import openrk
-import openrk.mesh
-import openrk.material
+# Import modules
 import openmoc
 import copy
 import numpy as np
+import openrk as rk
+
+
+def extract_openmoc_fsr_fluxes(tcmfd, moc_mesh, fluxes=['MOC new flux', 'MOC old flux']):
+
+  for flux in fluxes:
+    tcmfd.exportFSRScalarFluxes(moc_mesh._flux[flux])
+
+
+def extract_openmoc_cmfd_fluxes(cmfd, cmfd_mesh, fluxes=['AMP new flux', 'AMP old flux']):
+
+  if 'AMP new flux' in fluxes:
+    cmfd.exportCmfdFluxNew(cmfd_mesh._flux['AMP new flux'])
+
+  if 'AMP old flux' in fluxes:
+    cmfd.exportCmfdFluxOld(cmfd_mesh._flux['AMP old flux'])
 
 
 def extract_openrk_fsr_mesh(geometry):
@@ -24,7 +39,7 @@ def extract_openrk_fsr_mesh(geometry):
   width = x_max - x_min
   height = y_max - y_min
   num_energy_groups = geometry.getNumEnergyGroups()
-  fsr_mesh = openrk.mesh.MOCMesh(name='MOC mesh', width=width, height=height)
+  fsr_mesh = rk.MOCMesh(name='MOC mesh', width=width, height=height)
   fsr_mesh.setXMin(x_min)
   fsr_mesh.setXMax(x_max)
   fsr_mesh.setYMin(y_min)
@@ -39,29 +54,57 @@ def extract_openrk_fsr_mesh(geometry):
   return fsr_mesh
   
 
-def create_openmoc_material(openrk_material):
+def create_openmoc_material(openrk_material, time=None, temp=None, clock_position='CURRENT'):
 
-  if not isinstance(openrk_material, openrk.material.Material):
+  # Check input value
+  if not isinstance(openrk_material, rk.Material):
     msg = 'Unable to create an OpenMOC Material from {0} ' \
           'which is not an OpenRK Material'.format(openrk_material)
     raise ValueError(msg)
 
   # Create OpenMOC material
   openmoc_material = openmoc.TransientMaterial(openmoc.material_id())
+  copy_openrk_material_to_openmoc(openrk_material, openmoc_material, time, temp, clock_position)
+
+  return openmoc_material
+
+
+def copy_openrk_material_to_openmoc(openrk_material, openmoc_material, time=None, temp=None, clock_position='CURRENT'):
+
+  # Check input value
+  if not isinstance(openrk_material, rk.Material):
+    msg = 'Unable to copy to an OpenMOC Material from {0} ' \
+          'which is not an OpenRK Material'.format(openrk_material)
+    raise ValueError(msg)
+
+  # Create OpenMOC material
   openmoc_material.setNumEnergyGroups(openrk_material._num_energy_groups)
 
-  if isinstance(openrk_material, openrk.material.FunctionalMaterial):
+  if isinstance(openrk_material, rk.FunctionalMaterial):
+
+    # Check input require to create a transient material
+
+    check_is_float_or_int(time, 'create openmoc material', 'time')
+    check_is_float_or_int(temp, 'create openmoc material', 'temp')
+    check_clock_position(clock_position, 'create openmoc material')
+
+    for e in xrange(openrk_material._num_energy_groups):
+      openmoc_material.setSigmaTByGroup(openrk_material.getSigmaTByGroup(e, time, temp), e)
+      openmoc_material.setSigmaAByGroup(openrk_material.getSigmaAByGroup(e, time, temp), e)
+      openmoc_material.setSigmaFByGroup(openrk_material.getSigmaFByGroup(e, time, temp), e)
+      openmoc_material.setNuSigmaFByGroup(openrk_material.getNuSigmaFByGroup(e, time, temp), e)
+      openmoc_material.setChiByGroup(openrk_material.getChiByGroup(e, time, temp), e)
+      openmoc_material.setVelocityByGroup(openrk_material.getVelocityByGroup(e), e)
+
+      for g in xrange(openrk_material._num_energy_groups):
+        openmoc_material.setSigmaSByGroup(openrk_material.getSigmaSByGroup(e, g, time, temp), e, g)
+
     openmoc_material.setNumDelayedGroups(openrk_material._num_delayed_groups)
-    openmoc_material.setSigmaT(openrk_material._sigma_t[0])
-    openmoc_material.setSigmaA(openrk_material._sigma_a[0])
-    openmoc_material.setSigmaF(openrk_material._sigma_f[0])
-    openmoc_material.setNuSigmaF(openrk_material._nu_sigma_f[0])
-    openmoc_material.setSigmaS(openrk_material._sigma_s[0])
-    openmoc_material.setChi(openrk_material._chi[0])
-    openmoc_material.setPrecursorConc(openrk_material._precursor_conc[0])
-    openmoc_material.setVelocity(openrk_material._velocity[0])
-    openmoc_material.setDelayedFraction(openrk_material._delayed_fraction[0])
-    openmoc_material.setDecayConstant(openrk_material._decay_constant[0])    
+    for d in xrange(openrk_material._num_delayed_groups):
+      openmoc_material.setDelayedFractionByGroup(openrk_material.getDelayedFractionByGroup(d), d)
+      openmoc_material.setDecayConstantByGroup(openrk_material.getDecayConstantByGroup(d), d)    
+      openmoc_material.setPrecursorConcByGroup(openrk_material.getPrecursorConcByGroup(d, clock_position), d)
+
   else:
     openmoc_material.setSigmaT(openrk_material._sigma_t)
     openmoc_material.setSigmaA(openrk_material._sigma_a)
@@ -69,8 +112,6 @@ def create_openmoc_material(openrk_material):
     openmoc_material.setNuSigmaF(openrk_material._nu_sigma_f)
     openmoc_material.setSigmaS(openrk_material._sigma_s)
     openmoc_material.setChi(openrk_material._chi)
-
-  return openmoc_material
 
 
 def extract_openrk_tcmfd_mesh(geometry):
@@ -91,7 +132,7 @@ def extract_openrk_tcmfd_mesh(geometry):
   num_tcmfd_energy_groups = mesh.getNumMeshGroups()
 
   # Create and initialize CMFD Mesh
-  tcmfd_mesh = openrk.mesh.AmpMesh(name='Amp Mesh', width=width, height=height, num_x=num_x, num_y=num_y)
+  tcmfd_mesh = rk.AmpMesh(name='Amp Mesh', width=width, height=height, num_x=num_x, num_y=num_y)
   tcmfd_mesh.setNumShapeEnergyGroups(num_moc_energy_groups)
   tcmfd_mesh.setNumAmpEnergyGroups(num_tcmfd_energy_groups)
   tcmfd_mesh.setXMin(-width/2.0)
@@ -133,18 +174,7 @@ def copy_openrk_xs_to_openmoc(moc_mesh, geometry):
     openrk_material = cell._material
     openmoc_material = geometry.findFSRMaterial(fsr_id)
     temp = cell.getCurrentTemperature()
-    
-    # loop over energy groups
-    for e in xrange(moc_mesh._num_shape_energy_groups):
-      
-      openmoc_material.setSigmaTByGroup(openrk_material.getSigmaTByGroup(e, current_time, temp), e)
-      openmoc_material.setSigmaAByGroup(openrk_material.getSigmaAByGroup(e, current_time, temp), e)
-      openmoc_material.setSigmaFByGroup(openrk_material.getSigmaFByGroup(e, current_time, temp), e)
-      openmoc_material.setNuSigmaFByGroup(openrk_material.getNuSigmaFByGroup(e, current_time, temp), e)
-      openmoc_material.setChiByGroup(openrk_material.getChiByGroup(e, current_time, temp), e)
-      
-      for g in xrange(moc_mesh._num_moc_energy_groups):
-        openmoc_material.setSigmaSByGroup(openrk_material.getSigmaSByGroup(e, g, current_time, temp), e, g)
+    copy_openrk_material_to_openmoc(openrk_material, openmoc_material, current_time, temp, 'CURRENT')
 
   
 def extract_openrk_cmfd_mesh(geometry):
@@ -165,7 +195,7 @@ def extract_openrk_cmfd_mesh(geometry):
   num_tcmfd_energy_groups = mesh.getNumMeshGroups()
 
   # Create and initialize CMFD Mesh
-  cmfd_mesh = openrk.mesh.AmpMesh(name='Amp Mesh', width=width, height=height, num_x=num_x, num_y=num_y)
+  cmfd_mesh = rk.AmpMesh(name='Amp Mesh', width=width, height=height, num_x=num_x, num_y=num_y)
   cmfd_mesh.setNumShapeEnergyGroups(num_moc_energy_groups)
   cmfd_mesh.setNumAmpEnergyGroups(num_tcmfd_energy_groups)
   cmfd_mesh.setXMin(-width/2.0)

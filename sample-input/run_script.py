@@ -1,11 +1,8 @@
 import openrk as rk
 import openrk.compatible as compat
-import openrk.mesh
-import openrk.material
 
 from openmoc import *
 import openmoc.log as log
-import openmoc.plotter as plotter
 import openmoc.materialize as materialize
 from openmoc.options import Options
 
@@ -26,7 +23,7 @@ log.set_log_level('NORMAL')
 
 log.py_printf('NORMAL', 'Importing materials data from HDF5...')
 
-materials = materialize.materialize('../OpenMOC-mitcrpg/sample-input/c5g7-materials.h5')
+materials = materialize.materialize('../../OpenMOC-sam/sample-input/c5g7-materials.h5')
 
 uo2_id = materials['UO2'].getId()
 water_id = materials['Water'].getId()

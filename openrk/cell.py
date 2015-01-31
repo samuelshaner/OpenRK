@@ -1,19 +1,20 @@
 __author__ = 'Samuel Shaner'
 __email__ = 'shaner@mit.edu'
 
+# Import modules
 from math import *
 import numpy as np
-from surface import *
-from material import *
 from checkvalue import *
 from clock import *
+from material import *
+from surface import *
 
 # A static variable for auto-generated Material UIDs
 AUTO_CELL_UID = 1
 
 class Cell(object):
     
-  def __init__(self):
+  def __init__(self, clock=None):
 
     # Initialize class attributes
     global AUTO_CELL_UID
@@ -26,11 +27,18 @@ class Cell(object):
     self._clock = None
     self._id = None
 
-    # A static variable for auto-generated Material UIDs
-    global CLOCK_POSITIONS
+    # Initialize clock
+    if clock is None:
+      self._clock = Clock()
+    elif not isinstance(clock, Clock):
+      msg = 'Unable to initialize Cell since clock input is not of type '\
+          'Clock: {0}'.format(clock)
+    else:
+      self._clock = clock
 
+    # Initialize temperatures
     self._temperature = {}
-    for position in CLOCK_POSITIONS:
+    for position in self._clock._positions:
       self._temperature[position] =  0.0
 
     
@@ -81,39 +89,30 @@ class Cell(object):
 
 class MOCCell(Cell):
     
-  def __init__(self):
+  def __init__(self, clock=None):
 
     # initialize FunctionalMaterial class attributes
-    super(MOCCell, self).__init__()
+    super(MOCCell, self).__init__(clock)
 
 
 class CmfdCell(Cell):
     
-  def __init__(self):
+  def __init__(self, clock=None):
 
     # initialize FunctionalMaterial class attributes
-    super(CmfdCell, self).__init__()
+    super(CmfdCell, self).__init__(clock)
 
     # Initialize class attributes
     self._surfaces = np.empty(4, dtype=object)
     
 
-  def initializeSurfaces(self, num_energy_groups):
+  def initializeSurfaces(self):
 
     # Check input values
-    check_is_int(num_energy_groups, 'initialize Cell ID={0} surfaces'.format(self._id), 'num energy groups')
+    check_set(self._material, 'initialize Cell ID={0} surfaces'.format(self._id), 'self._material')
 
-    # check if group is valid
-    if group < 1:
-      msg = 'Unable to initialize surfaces for Cell ID={0} for non-positive '\
-          'number of groups {1}.'\
-          .format(self._id, num_energy_groups)
-      raise ValueError(msg)
-
-    else:
-
-      for i in range(4):
-        self._surfaces[i] = Surface(num_energy_groups)
+    for i in range(4):
+      self._surfaces[i] = Surface(self._material.getNumEnergyGroups())
 
 
   def getSurface(self, side):
@@ -138,10 +137,10 @@ class CmfdCell(Cell):
 
 class TcmfdCell(CmfdCell):
     
-  def __init__(self):
+  def __init__(self, clock=None):
 
     # initialize FunctionalMaterial class attributes
-    super(TcmfdCell, self).__init__()
+    super(TcmfdCell, self).__init__(clock)
 
     # Initialize class attributes
     self._fsrs = None

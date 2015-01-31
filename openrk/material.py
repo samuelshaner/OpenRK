@@ -1,6 +1,7 @@
 __author__ = 'Samuel Shaner'
 __email__ = 'shaner@mit.edu'
 
+# Import modules
 from checkvalue import *
 import numpy as np
 from clock import *
@@ -151,7 +152,7 @@ class Material(object):
     elif len(sigma_s) != self._num_energy_groups*self._num_energy_groups:
       msg = 'Unable to set scattering xs for Material ID={0} with {1} groups '\
           'as num energy groups is set to {2}'\
-          .format(self._id, sqrt(len(_sigma_s)), self._num_energy_groups)
+          .format(self._id, sqrt(len(sigma_s)), self._num_energy_groups)
       raise ValueError(msg)
 
     else:
@@ -431,6 +432,13 @@ class Material(object):
       return self._chi[group]
 
 
+  def getNumEnergyGroups(self):
+
+    check_set(self._num_energy_groups, 'Material ID={0} get num energy groups'.format(self._id), 'num energy groups')
+
+    return self._num_energy_groups
+
+
   def setNumEnergyGroups(self, num_energy_groups):
 
     if is_integer(num_energy_groups):
@@ -492,7 +500,7 @@ class Material(object):
 
 class FunctionalMaterial(Material):
 
-  def __init__(self, material_id=None, name=''):
+  def __init__(self, material_id=None, name='', clock=None):
 
     super(FunctionalMaterial, self).__init__(material_id, name)
 
@@ -504,6 +512,24 @@ class FunctionalMaterial(Material):
     self._precursor_conc = None
     self._velocity = None
     self._energy_per_fission = None
+    self._clock = None
+
+    # Initialize clock
+    if clock is None:
+      self.setClock(Clock())
+    else:
+      self.setClock(clock)
+
+
+  def setClock(self, clock):
+
+    # Initialize clock
+    if not isinstance(clock, Clock):
+      msg = 'Unable to initialize FunctionalMaterial clock since clock input is not of type '\
+          'Clock: {0}'.format(clock)
+    else:
+      self._clock = clock
+
 
   def setDopplerCoefficients(self, doppler_coefs):
 
@@ -763,10 +789,10 @@ class FunctionalMaterial(Material):
 
     else:
 
-      sigma_t = getSigmaAByGroup(group, time, temp)
+      sigma_t = self.getSigmaAByGroup(group, time, temp)
 
       for g in xrange(self._num_energy_groups):
-        sigma_t += getSigmaSByGroup(group, g, time, temp)
+        sigma_t += self.getSigmaSByGroup(group, g, time, temp)
 
       return sigma_t
 
@@ -951,6 +977,97 @@ class FunctionalMaterial(Material):
       return chi
 
 
+  def getVelocityByGroup(self, group):
+
+    # Check if necessary variables have been set
+    check_set(self._num_energy_groups, 'Material ID={0} velocity by group'.format(self._id), 'Num Energy Groups')
+    check_is_int(group, 'Material ID={0} velocity by group'.format(self._id), 'group')
+
+    # check if group is valid
+    if group < 0 or group > self._num_energy_groups-1:
+      msg = 'Unable to get velocity for Material ID={0} for group {1} '\
+          'as num energy groups is set to {2}'\
+          .format(self._id, group, self._num_energy_groups)
+      raise ValueError(msg)
+
+    else:
+
+      return self._velocity[group]
+
+
+  def getDopplerCoefficientByGroup(self, group):
+
+    # Check if necessary variables have been set
+    check_set(self._num_energy_groups, 'Doppler Coef', 'Num Energy Groups')
+    check_is_int(group, 'Material ID={0} doppler coefficient by group'.format(self._id), 'group')
+
+    # check if group is valid
+    if group < 0 or group > self._num_energy_groups-1:
+      msg = 'Unable to get doppler coefficient for Material ID={0} for group {1} '\
+          'as num energy groups is set to {2}'\
+          .format(self._id, group, self._num_energy_groups)
+      raise ValueError(msg)
+
+    else:
+
+      return self._doppler_coefficients[group]
+
+
+  def getDelayedFractionByGroup(self, group):
+
+    # Check if necessary variables have been set
+    check_set(self._num_delayed_groups, 'Delayed Fraction', 'Num Delayed Groups')
+    check_is_int(group, 'Material ID={0} delayed fraction by group'.format(self._id), 'group')
+
+    # check if group is valid
+    if group < 0 or group > self._num_delayed_groups-1:
+      msg = 'Unable to get delayed fraction for Material ID={0} for group {1} '\
+          'as num delayed groups is set to {2}'\
+          .format(self._id, group, self._num_delayed_groups)
+      raise ValueError(msg)
+
+    else:
+
+      return self._delayed_fractions[group]
+
+
+  def getDecayConstantByGroup(self, group):
+
+    # Check if necessary variables have been set
+    check_set(self._num_delayed_groups, 'Decay constant', 'Num Energy Groups')
+    check_is_int(group, 'Material ID={0} decay constant by group'.format(self._id), 'group')
+
+    # check if group is valid
+    if group < 0 or group > self._num_delayed_groups-1:
+      msg = 'Unable to get decay constant for Material ID={0} for group {1} '\
+          'as num delayed groups is set to {2}'\
+          .format(self._id, group, self._num_delayed_groups)
+      raise ValueError(msg)
+
+    else:
+
+      return self._decay_constants[group]
+
+
+  def getPrecursorConcByGroup(self, group, clock_position='CURRENT'):
+
+    # Check if necessary variables have been set
+    check_set(self._num_delayed_groups, 'Precursor Concentration', 'Num Energy Groups')
+    check_is_int(group, 'Material ID={0} precursor concentration by group'.format(self._id), 'group')
+    check_clock_position(clock_position, 'Material ID={0} precursor concentration by group'.format(self._id))
+
+    # check if group is valid
+    if group < 0 or group > self._num_delayed_groups-1:
+      msg = 'Unable to get precursor concentration for Material ID={0} for group {1} '\
+          'as num delayed groups is set to {2}'\
+          .format(self._id, group, self._num_delayed_groups)
+      raise ValueError(msg)
+
+    else:
+
+      return self._precursor_conc[clock_position][group]
+
+
   def setNumTimeSteps(self, num_time_steps):
 
     # Check if necessary variables have been set
@@ -1012,7 +1129,7 @@ class FunctionalMaterial(Material):
       self._decay_constants = np.zeros(num_delayed_groups)
       self._delayed_fractions = np.zeros(num_delayed_groups)
       self._precursor_conc = {}
-      for i in CLOCK_POSITIONS:
+      for i in self._clock._positions:
         self._precursor_conc[i] = np.zeros(num_delayed_groups)
 
 
@@ -1085,8 +1202,6 @@ class FunctionalMaterial(Material):
 
   def __repr__(self):
 
-    global CLOCK_POSITIONS
-
     string = 'OpenRK FunctionalMaterial\n'
     string += ' Name \t\t\t= {0} \n'.format(self._name)
     string += ' ID \t\t\t= {0} \n'.format(self._id)
@@ -1108,7 +1223,7 @@ class FunctionalMaterial(Material):
       string += ' Dif Coef \t\t= {0} \n'.format(self._dif_coef[i])
       string += ' Chi \t\t\t= {0} \n'.format(self._chi[i])
       string += ' Sigma S \t\t= {0} \n'.format(self._sigma_s[i])
-    for i in CLOCK_POSITIONS:
+    for i in self._clock._positions:
       string += ' Precursor Conc ({:^12s}) \t'.format(i)
       string += '= {0} \n'.format(self._precursor_conc[i])
 
