@@ -91,7 +91,7 @@ double eigenvalueSolve(double *A, int A1, int A2,
     /* Normalize the new source to have an average value of 1.0 */
     scale_val = (cx*cy*ng) / sum_new;
     vector_scale(new_source, scale_val, cx*cy*ng);
-    vector_copy(new_source, old_source, cx*cy*ng);
+    vector_copy(new_source, cx*cy*ng, old_source, cx*cy*ng);
     
     log_printf(NORMAL, "CMFD iter: %i, keff: %f, error: %f", 
                iter, _k_eff, residual);
@@ -129,7 +129,7 @@ void linearSolve(double *A, int A1, int A2,
   while (iter < 1000){
 
     /* Pass new flux to old flux */
-    vector_copy(flux, flux_temp, cx*cy*ng);
+    vector_copy(flux, cx*cy*ng, flux_temp, cx*cy*ng);
 
     /* Iteration over red cells */
     #pragma omp parallel for private(row, val, cell)
@@ -267,9 +267,9 @@ void linearSolve(double *A, int A1, int A2,
  * @param vector_from vector to be copied
  * @param vector_to vector to receive copied data
  */
-void vector_copy(double* vector_from, double* vector_to, int length){
+void vector_copy(double* vector_from, int length_from, double* vector_to, int length_to){
 
-  for (int i = 0; i < length; i++)
+  for (int i = 0; i < length_to; i++)
     vector_to[i] = vector_from[i];
 }
 

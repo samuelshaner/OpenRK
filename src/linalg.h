@@ -23,7 +23,8 @@ void linearSolve(double *A, int A1, int A2,
                  double* flux_temp, int flux_temp1, 
                  int cx, int cy, int ng, double tol);
 
-void vector_copy(double* vector_from, double* vector_to, int length);
+void vector_copy(double* vector_from, int length_from,
+                 double* vector_to, int length_to);
 void matrix_zero(double *matrix, int width, int length);
 void vector_zero(double* vector, int length);
 void matrix_multiplication(double *matrix, double* vector_x, 

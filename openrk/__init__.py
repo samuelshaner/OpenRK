@@ -15,7 +15,7 @@ else:
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 from clock import *
-from checkvalue  import *
+from checkvalue import *
 from material import *
 from mesh import *
 from checkvalue import *

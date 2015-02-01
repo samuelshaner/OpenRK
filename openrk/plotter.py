@@ -3,9 +3,10 @@ __email__ = 'shaner@mit.edu'
 
 # Import modules
 import matplotlib
-from cell import *
-from material import *
+from cell import Cell
+from material import Material, FunctionalMaterial
 from mesh import *
+import checkvalue as cv
 
 # force headless backend, or set 'backend' to 'Agg'
 # in your ~/.matplotlib/matplotlibrc
@@ -24,72 +25,265 @@ import os
 ## A static variable for the output directory in which to save plots
 SUBDIRECTORY = "plots/"
 
-def plot_flux(mesh, name, energy_groups=[0], gridsize=250):
 
-  global SUBDIRECTORY
+def plot_flux(mesh, time='CURRENT', energy_groups=[0], gridsize=250, name='mesh-flux'):
+    global SUBDIRECTORY
 
-  # Make directory if it does not exist
-  if not os.path.exists(SUBDIRECTORY):
-    os.makedirs(SUBDIRECTORY)
+    # Make directory if it does not exist
+    if not os.path.exists(SUBDIRECTORY):
+        os.makedirs(SUBDIRECTORY)
 
-  # Error checking
-  if not isinstance(mesh, Mesh):
-    msg = 'Unable to plot the cells since input was not ' \
-          'a Mesh class object'
-    raise ValueError(msg)
+    # Error checking
+    if not isinstance(mesh, Mesh):
+        msg = 'Unable to plot the cells since input was not ' \
+              'a Mesh class object'
+        raise ValueError(msg)
 
-  if not is_integer(gridsize):
-    msg = 'Unable to plot the cells since the gridsize {0} ' \
-          'is not an integer'.format(gridsize)
-    raise ValueError(msg)
+    if not cv.is_integer(gridsize):
+        msg = 'Unable to plot the cells since the gridsize {0} ' \
+              'is not an integer'.format(gridsize)
+        raise ValueError(msg)
 
-  if gridsize <= 0:
-    msg = 'Unable to plot the cells with a negative ' \
-          'gridsize {0}'.format(gridsize)
-    raise ValueError(msg)
+    if gridsize <= 0:
+        msg = 'Unable to plot the cells with a negative ' \
+              'gridsize {0}'.format(gridsize)
+        raise ValueError(msg)
 
-  if not isinstance(energy_groups, list):
-    energy_groups = [energy_groups]
+    if not isinstance(energy_groups, list):
+        energy_groups = [energy_groups]
 
-  print('Plotting the fluxes...')
+    print('Plotting the fluxes...')
 
-  # Initialize a numpy array for the groupwise scalar fluxes
-  fluxes = numpy.zeros((len(energy_groups), gridsize, gridsize))
+    # Initialize a numpy array for the groupwise scalar fluxes
+    fluxes = numpy.zeros((len(energy_groups), gridsize, gridsize))
 
-  TINY_MOVE = 1.0e-8
-  bounds = mesh.getBounds()
+    tiny_move = 1.0e-8
+    bounds = mesh.get_bounds()
 
-  # Retrieve the bounding box for the geometry
-  xmin = bounds[0] + TINY_MOVE
-  xmax = bounds[1] - TINY_MOVE
-  ymin = bounds[2] + TINY_MOVE
-  ymax = bounds[3] - TINY_MOVE
-  
-  # Initialize numpy arrays for the grid points
-  xcoords = np.linspace(xmin, xmax, gridsize)
-  ycoords = np.linspace(ymin, ymax, gridsize)
+    # Retrieve the bounding box for the geometry
+    xmin = bounds[0] + tiny_move
+    xmax = bounds[1] - tiny_move
+    ymin = bounds[2] + tiny_move
+    ymax = bounds[3] - tiny_move
 
-  for i in range(gridsize):
-    for j in range(gridsize):
+    # Initialize numpy arrays for the grid points
+    xcoords = np.linspace(xmin, xmax, gridsize)
+    ycoords = np.linspace(ymin, ymax, gridsize)
 
-      # Find the flat source region IDs for each grid point
-      x = xcoords[i]
-      y = ycoords[j]
+    for i in range(gridsize):
+        for j in range(gridsize):
 
-      cell = mesh.findCell(x, y)
+            # Find the flat source region IDs for each grid point
+            x = xcoords[i]
+            y = ycoords[j]
 
-      for index, group in enumerate(energy_groups):
-        fluxes[index][j][i] = mesh.getFlux(name, cell, group)
+            cell = mesh.find_cell(x, y)
 
-  # Loop over all energy group and create a plot
-  for index, group in enumerate(energy_groups):
+            for index, group in enumerate(energy_groups):
+                fluxes[index][j][i] = mesh.get_flux_by_value(cell, group, time)
+
+    # Loop over all energy group and create a plot
+    for index, group in enumerate(energy_groups):
+        # Plot a 2D color map of the flat source regions
+        fig = plt.figure()
+        plt.imshow(np.flipud(fluxes[index, :, :]), extent=[xmin, xmax, ymin, ymax])
+        # plt.colorbar()
+        plt.title('Mesh Cell Scalar Flux in Group ' + str(group))
+        filename = SUBDIRECTORY + name + '-group-' + str(group) + '.png'
+        fig.savefig(filename, bbox_inches='tight')
+
+
+def plot_power(mesh, time='CURRENT', gridsize=250, name='mesh-power'):
+    global SUBDIRECTORY
+
+    # Make directory if it does not exist
+    if not os.path.exists(SUBDIRECTORY):
+        os.makedirs(SUBDIRECTORY)
+
+    # Error checking
+    if not isinstance(mesh, Mesh):
+        msg = 'Unable to plot the cells since input was not ' \
+              'a Mesh class object'
+        raise ValueError(msg)
+
+    if not cv.is_integer(gridsize):
+        msg = 'Unable to plot the cells since the gridsize {0} ' \
+              'is not an integer'.format(gridsize)
+        raise ValueError(msg)
+
+    if gridsize <= 0:
+        msg = 'Unable to plot the cells with a negative ' \
+              'gridsize {0}'.format(gridsize)
+        raise ValueError(msg)
+
+    print('Plotting the power...')
+
+    # Initialize a numpy array for the groupwise scalar fluxes
+    power = numpy.zeros((gridsize, gridsize))
+
+    tiny_move = 1.0e-8
+    bounds = mesh.get_bounds()
+
+    # Retrieve the bounding box for the geometry
+    xmin = bounds[0] + tiny_move
+    xmax = bounds[1] - tiny_move
+    ymin = bounds[2] + tiny_move
+    ymax = bounds[3] - tiny_move
+
+    # Initialize numpy arrays for the grid points
+    xcoords = np.linspace(xmin, xmax, gridsize)
+    ycoords = np.linspace(ymin, ymax, gridsize)
+
+    for i in range(gridsize):
+        for j in range(gridsize):
+
+            # Find the flat source region IDs for each grid point
+            x = xcoords[i]
+            y = ycoords[j]
+
+            cell = mesh.find_cell(x, y)
+
+            power[j][i] = mesh.get_power_by_value(cell, time)
 
     # Plot a 2D color map of the flat source regions
     fig = plt.figure()
-    plt.imshow(np.flipud(fluxes[index,:,:]), extent=[xmin, xmax, ymin, ymax])
-    #plt.colorbar()
-    plt.title('Mesh Cell Scalar Flux in Group ' + str(group))
-    filename = SUBDIRECTORY + 'mesh-flux-group-' + str(group) + '.png'
+    plt.imshow(np.flipud(power[:, :]), extent=[xmin, xmax, ymin, ymax])
+    # plt.colorbar()
+    plt.title('Mesh Cell Power')
+    filename = SUBDIRECTORY + name + '.png'
     fig.savefig(filename, bbox_inches='tight')
 
 
+def plot_materials(mesh, gridsize=250, name='mesh-materials'):
+    global SUBDIRECTORY
+
+    # Make directory if it does not exist
+    if not os.path.exists(SUBDIRECTORY):
+        os.makedirs(SUBDIRECTORY)
+
+    # Error checking
+    if not isinstance(mesh, Mesh):
+        msg = 'Unable to plot the cells since input was not ' \
+              'a Mesh class object'
+        raise ValueError(msg)
+
+    if not cv.is_integer(gridsize):
+        msg = 'Unable to plot the cells since the gridsize {0} ' \
+              'is not an integer'.format(gridsize)
+        raise ValueError(msg)
+
+    if gridsize <= 0:
+        msg = 'Unable to plot the cells with a negative ' \
+              'gridsize {0}'.format(gridsize)
+        raise ValueError(msg)
+
+    print('Plotting the materials...')
+
+    # Initialize a numpy array for the groupwise scalar fluxes
+    materials = numpy.zeros((gridsize, gridsize))
+
+    tiny_move = 1.0e-8
+    bounds = mesh.get_bounds()
+
+    # Retrieve the bounding box for the geometry
+    xmin = bounds[0] + tiny_move
+    xmax = bounds[1] - tiny_move
+    ymin = bounds[2] + tiny_move
+    ymax = bounds[3] - tiny_move
+
+    # Initialize numpy arrays for the grid points
+    xcoords = np.linspace(xmin, xmax, gridsize)
+    ycoords = np.linspace(ymin, ymax, gridsize)
+
+    unique_materials = []
+
+    for i in range(gridsize):
+        for j in range(gridsize):
+
+            # Find the flat source region IDs for each grid point
+            x = xcoords[i]
+            y = ycoords[j]
+
+            mat_name = mesh.get_material(mesh.find_cell(x, y)).get_name()
+
+            if mat_name in unique_materials:
+                materials[j][i] = unique_materials.index(mat_name)
+            else:
+                materials[j][i] = len(unique_materials)
+                unique_materials.append(mat_name)
+
+    # Plot a 2D color map of the flat source regions
+    fig = plt.figure()
+    plt.imshow(np.flipud(materials[:, :]), extent=[xmin, xmax, ymin, ymax])
+    # plt.colorbar()
+    plt.title('Mesh Cell Materials')
+    filename = SUBDIRECTORY + name + '.png'
+    fig.savefig(filename, bbox_inches='tight')
+
+
+def plot_precursor_conc(mesh, time='CURRENT', delayed_groups=[0], gridsize=250, name='mesh-precursor-conc'):
+    global SUBDIRECTORY
+
+    # Make directory if it does not exist
+    if not os.path.exists(SUBDIRECTORY):
+        os.makedirs(SUBDIRECTORY)
+
+    # Error checking
+    if not isinstance(mesh, Mesh):
+        msg = 'Unable to plot the cells since input was not ' \
+              'a Mesh class object'
+        raise ValueError(msg)
+
+    if not cv.is_integer(gridsize):
+        msg = 'Unable to plot the cells since the gridsize {0} ' \
+              'is not an integer'.format(gridsize)
+        raise ValueError(msg)
+
+    if gridsize <= 0:
+        msg = 'Unable to plot the cells with a negative ' \
+              'gridsize {0}'.format(gridsize)
+        raise ValueError(msg)
+
+    if not isinstance(delayed_groups, list):
+        delayed_groups = [delayed_groups]
+
+    print('Plotting the precursor conc...')
+
+    # Initialize a numpy array for the groupwise precursor conc
+    precursor_conc = numpy.zeros((len(delayed_groups), gridsize, gridsize))
+
+    tiny_move = 1.0e-8
+    bounds = mesh.get_bounds()
+
+    # Retrieve the bounding box for the geometry
+    xmin = bounds[0] + tiny_move
+    xmax = bounds[1] - tiny_move
+    ymin = bounds[2] + tiny_move
+    ymax = bounds[3] - tiny_move
+
+    # Initialize numpy arrays for the grid points
+    xcoords = np.linspace(xmin, xmax, gridsize)
+    ycoords = np.linspace(ymin, ymax, gridsize)
+
+    for i in range(gridsize):
+        for j in range(gridsize):
+
+            # Find the flat source region IDs for each grid point
+            x = xcoords[i]
+            y = ycoords[j]
+
+            cell = mesh.find_cell(x, y)
+
+            for index, group in enumerate(delayed_groups):
+                if isinstance(mesh.get_material(cell), TransientMaterial):
+                    precursor_conc[index][j][i] = mesh.get_material(cell).get_precursor_conc_by_group(group, time)
+
+    # Loop over all energy group and create a plot
+    for index, group in enumerate(delayed_groups):
+        # Plot a 2D color map of the flat source regions
+        fig = plt.figure()
+        plt.imshow(np.flipud(precursor_conc[index, :, :]), extent=[xmin, xmax, ymin, ymax])
+        # plt.colorbar()
+        plt.title('Mesh Cell Precursor Conc in Group ' + str(group))
+        filename = SUBDIRECTORY + name + '-group-' + str(group) + '.png'
+        fig.savefig(filename, bbox_inches='tight')
