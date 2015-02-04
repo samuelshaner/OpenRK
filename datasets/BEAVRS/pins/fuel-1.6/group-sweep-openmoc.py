@@ -92,6 +92,22 @@ for material_id, material in materials.items():
     gap_id = material_id
 
 
+tally_factory = MicroXSTallyFactory(openmc_geometry)
+
+for i, num_groups in enumerate(structures):
+
+  print('testing {0} groups'.format(num_groups))
+  groups = group_structures['CASMO']['{0}-group'.format(num_groups)]
+  tally_factory.createAllMultiGroupXS(groups, domain_type='material')
+
+tally_factory.createTalliesFile()
+
+print('running openmc...')
+
+executor = openmc.Executor()
+executor.run_simulation(output=False, mpi_procs=8)
+
+
 #####################   Parametric Sweep Over Energy Groups ####################
 
 for i, num_groups in enumerate(structures):
@@ -102,17 +118,17 @@ for i, num_groups in enumerate(structures):
 
   ##################   Exporting to OpenMC tallies.xml File  ###################
 
-  tally_factory = MicroXSTallyFactory(openmc_geometry)
-  tally_factory.createAllMultiGroupXS(groups, domain_type='material')
-  tally_factory.createTalliesFile()
+#  tally_factory = MicroXSTallyFactory(openmc_geometry)
+#  tally_factory.createAllMultiGroupXS(groups, domain_type='material')
+#  tally_factory.createTalliesFile()
 
 
   ###############################   Running OpenMC  ############################
 
-  print('running openmc...')
+#  print('running openmc...')
 
-  executor = openmc.Executor()
-  executor.run_simulation(output=False, mpi_procs=8)
+#  executor = openmc.Executor()
+#  executor.run_simulation(output=False, mpi_procs=8)
 
   ########################   Extracting Cross-Sections  ########################
 
