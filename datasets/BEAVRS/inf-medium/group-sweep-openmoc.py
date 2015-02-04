@@ -18,7 +18,7 @@ import numpy, h5py
 # OpenMC simulation parameters
 batches = 100
 inactive = 5
-particles = 100
+particles = 100000
 structures = [2,4,8,12,16,25] #,40,70]
 
 # Initialize array to contain all data
@@ -120,7 +120,7 @@ tally_factory.createTalliesFile()
 print('running openmc...')
 
 executor = openmc.Executor()
-executor.run_simulation(output=True, mpi_procs=3)
+#executor.run_simulation(output=True, mpi_procs=16)
 
 
 #####################   Parametric Sweep Over Energy Groups ####################
