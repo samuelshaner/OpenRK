@@ -32,7 +32,7 @@ geometry_file.export_to_xml()
 ###############################################################################
 
 materials_file = MaterialsFile()
-materials_file.set_default_xs('70c')
+materials_file.set_default_xs('71c')
 materials_file.add_materials(openmc_materials.values())
 materials_file.export_to_xml()
 
