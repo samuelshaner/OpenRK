@@ -18,7 +18,7 @@ import numpy, h5py
 # OpenMC simulation parameters
 batches = 100
 inactive = 5
-particles = 100
+particles = 10000
 structures = [2,4,8,12,16,25] #,40,70]
 
 # Initialize array to contain all data
@@ -154,7 +154,7 @@ for i, num_groups in enumerate(structures):
 
     # DUMP-TO-FILE and PRINT XS
     filename = 'mgxs-batch-{0}-groups-{1}'.format(batch, num_groups)
-    
+
     for material in materials:
       for xs_type in xs_types:
         xs = micro_extractor._multigroup_xs['material'][material._id][xs_type]
@@ -206,8 +206,6 @@ for i, num_groups in enumerate(structures):
         for rxn_type in nuclide_group.keys():
           if rxn_type in macro_xs.keys():
             micro_xs = nuclide_group[rxn_type]['average'][...]
-            print type(micro_xs), type(density)
-            print len(micro_xs), len(micro_xs)
             macro_xs[rxn_type] += micro_xs * density
 
       #########################  Create OpenMOC Materials  #######################
