@@ -522,7 +522,7 @@ class XSTallyExtractor(object):
 
       # Get the Tally objects needed to compute the scatter matrix
       flux = self.getTally('flux', filters, estimator='analog')
-      nu_scatter1 = self.getTally('scatter-1', filters, estimator='analog')
+      nu_scatter1 = self.getTally('nu-scatter-1', filters, estimator='analog')
 
       filters.append(openmc.Filter(type='energyout', bins=group_edges))
       nu_scatter = self.getTally('nu-scatter', filters, estimator='analog')
