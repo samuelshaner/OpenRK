@@ -75,7 +75,7 @@ def flip_axis(arr, axis=0):
 class MultiGroupXS(object):
 
   # This is an abstract class which cannot be instantiated
-  __metaclass__ = abc.ABCMeta
+  metaclass__ = abc.ABCMeta
 
   def __init__(self, domain=None, domain_type=None, energy_groups=None):
 
@@ -99,7 +99,6 @@ class MultiGroupXS(object):
     # Values - (Unique) neighbor ID
     self._subdomain_neighbors = dict()
     self._unique_neighbors = False
-
 
     if not domain_type is None:
       self.domain_type = domain_type
@@ -256,7 +255,38 @@ class MultiGroupXS(object):
         self._tallies[key].add_filter(filter)
 
 
-  def getTallyData(self, corr=False):
+  def getTallyData(self, tally):
+    '''Shape the tally data appropriately and return it'''
+
+    # Get the Tally batch mean and std. dev.
+    mean = tally._mean
+    std_dev = tally._std_dev
+
+    # Determine shape of the Tally data from its Filters, Nuclides
+    new_shape = tuple()
+    energy_axes = list()
+
+    for i, filter in enumerate(tally._filters):
+      new_shape += (filter.get_num_bins(), )
+
+      if 'energy' in filter._type:
+        energy_axes.append(i)
+
+    new_shape += (tally.get_num_nuclides(), )
+
+    # Reshape the array
+    mean = np.reshape(mean, new_shape)
+    std_dev = np.reshape(std_dev, new_shape)
+
+    # Reverse arrays so they are ordered from high to low energy
+    for energy_axis in energy_axes:
+      mean = flip_axis(mean, axis=energy_axis)
+      std_dev = flip_axis(std_dev, axis=energy_axis)
+
+    return mean, std_dev
+
+
+  def getAllTallyData(self):
 
     if self._tallies is None:
       msg = 'Unable to get tally data without any Tallies'
@@ -267,30 +297,7 @@ class MultiGroupXS(object):
 
     for key, tally in self._tallies.items():
 
-      # Get the Tally batch mean and std. dev.
-      mean = tally._mean
-      std_dev = tally._std_dev
-
-      # Determine shape of the Tally data from its Filters, Nuclides
-      new_shape = tuple()
-      energy_axes = list()
-
-      for i, filter in enumerate(tally._filters):
-        new_shape += (filter.get_num_bins(), )
-
-        if 'energy' in filter._type:
-          energy_axes.append(i)
-
-      new_shape += (tally.get_num_nuclides(), )
-
-      # Reshape the array
-      mean = np.reshape(mean, new_shape)
-      std_dev = np.reshape(std_dev, new_shape)
-
-      # Reverse arrays so they are ordered from high to low energy
-      for energy_axis in energy_axes:
-        mean = flip_axis(mean, axis=energy_axis)
-        std_dev = flip_axis(std_dev, axis=energy_axis)
+      mean, std_dev = self.getTallyData(tally)
 
       # Get the array of indices of zero elements
       zero_indices[key] = mean[...] == 0.
@@ -625,9 +632,6 @@ class MultiGroupXS(object):
     average = self._xs[metrics['mean'], offsets, ...]
     std_dev = self._xs[metrics['std_dev'], offsets, ...]
 
-
-    print average.shape
-
     zero_indices = average == 0
     std_dev[zero_indices] = 0.
     average[zero_indices] = 1.
@@ -858,7 +862,7 @@ class TotalXS(MultiGroupXS):
   def computeXS(self, corr=False):
 
     # Extract and clean the Tally data
-    tally_data, zero_indices = super(TotalXS, self).getTallyData(corr)
+    tally_data, zero_indices = super(TotalXS, self).getAllTallyData()
     total = tally_data['total']
     flux = tally_data['flux']
 
@@ -905,7 +909,7 @@ class TransportXS(MultiGroupXS):
   def computeXS(self, corr=False):
 
     # Extract and clean the Tally data
-    tally_data, zero_indices = super(TransportXS, self).getTallyData(corr)
+    tally_data, zero_indices = super(TransportXS, self).getAllTallyData()
     total = tally_data['total']
     scatter1 = tally_data['scatter-1']
     flux = tally_data['flux']
@@ -957,7 +961,7 @@ class AbsorptionXS(MultiGroupXS):
   def computeXS(self, corr=False):
 
     # Extract and clean the Tally data
-    tally_data, zero_indices = super(AbsorptionXS, self).getTallyData(corr)
+    tally_data, zero_indices = super(AbsorptionXS, self).getAllTallyData()
     absorption = tally_data['absorption']
     flux = tally_data['flux']
 
@@ -1004,7 +1008,7 @@ class CaptureXS(MultiGroupXS):
   def computeXS(self, corr=False):
 
     # Extract and clean the Tally data
-    tally_data, zero_indices = super(CaptureXS, self).getTallyData(corr)
+    tally_data, zero_indices = super(CaptureXS, self).getAllTallyData()
     absorption = tally_data['absorption']
     fission = tally_data['fission']
     flux = tally_data['flux']
@@ -1056,7 +1060,7 @@ class FissionXS(MultiGroupXS):
   def computeXS(self, corr=False):
 
     # Extract and clean the Tally data
-    tally_data, zero_indices = super(FissionXS, self).getTallyData(corr)
+    tally_data, zero_indices = super(FissionXS, self).getAllTallyData()
     fission = tally_data['fission']
     flux = tally_data['flux']
 
@@ -1102,7 +1106,7 @@ class NuFissionXS(MultiGroupXS):
   def computeXS(self, corr=False):
 
     # Extract and clean the Tally data
-    tally_data, zero_indices = super(NuFissionXS, self).getTallyData(corr)
+    tally_data, zero_indices = super(NuFissionXS, self).getAllTallyData()
     nu_fission = tally_data['nu-fission']
     flux = tally_data['flux']
 
@@ -1148,7 +1152,7 @@ class ScatterXS(MultiGroupXS):
   def computeXS(self, corr=False):
 
     # Extract and clean the Tally data
-    tally_data, zero_indices = super(ScatterXS, self).getTallyData(corr)
+    tally_data, zero_indices = super(ScatterXS, self).getAllTallyData()
     scatter = tally_data['scatter']
     flux = tally_data['flux']
 
@@ -1194,7 +1198,7 @@ class NuScatterXS(MultiGroupXS):
   def computeXS(self, corr=False):
 
     # Extract and clean the Tally data
-    tally_data, zero_indices = super(NuScatterXS, self).getTallyData(corr)
+    tally_data, zero_indices = super(NuScatterXS, self).getAllTallyData()
     nu_scatter = tally_data['nu-scatter']
     flux = tally_data['flux']
 
@@ -1242,7 +1246,7 @@ class ScatterMatrixXS(MultiGroupXS):
   def computeXS(self, corr=False):
 
     # Extract and clean the Tally data
-    tally_data, zero_indices = super(ScatterMatrixXS, self).getTallyData(corr)
+    tally_data, zero_indices = super(ScatterMatrixXS, self).getAllTallyData()
     nu_scatter = tally_data['nu-scatter']
     nu_scatter1 = tally_data['nu-scatter-1']
     flux = tally_data['flux']
@@ -1469,7 +1473,7 @@ class Chi(MultiGroupXS):
   def computeXS(self, corr=False):
 
     # Extract and clean the Tally data
-    tally_data, zero_indices = super(Chi, self).getTallyData(corr)
+    tally_data, zero_indices = super(Chi, self).getAllTallyData()
     nu_fission_in = tally_data['nu-fission-in']
     nu_fission_out = tally_data['nu-fission-out']
 
