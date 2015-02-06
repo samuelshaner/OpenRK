@@ -19,7 +19,7 @@ import numpy, h5py
 batches = 100
 inactive = 5
 particles = 10000
-structures = [2,4,8,12,16,25] #,40,70]
+structures = [2] #,4,8,12,16,25] #,40,70]
 
 # Initialize array to contain all data
 kinf = numpy.zeros((len(structures), batches-inactive-4), dtype=numpy.float64)
@@ -188,7 +188,7 @@ for i, num_groups in enumerate(structures):
       macro_xs = dict()
       macro_xs['total'] = numpy.zeros(num_groups)
       macro_xs['transport'] = numpy.zeros(num_groups)
-      macro_xs['scatter matrix'] = numpy.zeros((num_groups, num_groups))
+      macro_xs['nu-scatter matrix'] = numpy.zeros((num_groups, num_groups))
       macro_xs['absorption'] = numpy.zeros(num_groups)
       macro_xs['fission'] = numpy.zeros(num_groups)
       macro_xs['nu-fission'] = numpy.zeros(num_groups)
@@ -214,7 +214,7 @@ for i, num_groups in enumerate(structures):
       openmoc_material.setSigmaA(macro_xs['absorption'])
       openmoc_material.setSigmaF(macro_xs['fission'])
       openmoc_material.setNuSigmaF(macro_xs['nu-fission'])
-      openmoc_material.setSigmaS(macro_xs['scatter matrix'].ravel())
+      openmoc_material.setSigmaS(macro_xs['nu-scatter matrix'].ravel())
       openmoc_material.setChi(macro_xs['chi'])
 
       ######################  Set Materials for OpenMOC Cells  ###################
@@ -288,4 +288,4 @@ plt.title('1.6% Enr. k-inf Error')
 plt.xlim((20,100))
 plt.legend(legend)
 plt.grid()
-plt.savefig('k-inf-err.png')
+plt.savefig('k-inf-err-nu-scatt-2.png')
