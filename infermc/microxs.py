@@ -12,6 +12,7 @@ greek['capture'] = '$\\sigma_{c}$'
 greek['scatter'] = '$\\sigma_{s}$'
 greek['nu-scatter'] = '$\\nu\\sigma_{s}$'
 greek['scatter matrix'] = '$\\sigma_{s}$'
+greek['nu-scatter matrix'] = '$\\nu\\Sigma_{s}$'
 greek['fission'] = '$\\sigma_{f}$'
 greek['nu-fission'] = '$\\nu\\sigma_{f}$'
 greek['chi'] = '$\\chi$'
@@ -402,7 +403,7 @@ class MicroXS(infermc.MultiGroupXS):
           # Add MultiGroupXS results data to the table list
           table = list()
 
-          if self._xs_type != 'scatter matrix':
+          if not self._xs_type in ['scatter matrix', 'nu-scatter matrix']:
             headers = list()
             headers.append('Group')
             headers.append('Average XS')
@@ -632,6 +633,12 @@ class MicroScatterMatrixXS(MicroXS, infermc.ScatterMatrixXS):
       string += '\n'
 
     print(string)
+
+
+class MicroNuScatterMatrixXS(MicroScatterMatrixXS, infermc.NuScatterMatrixXS):
+
+  def createTallies(self):
+    super(MicroNuScatterMatrixXS, self).createTallies()
 
 
 class MicroDiffusionCoeff(MicroXS, infermc.DiffusionCoeff):

@@ -140,7 +140,7 @@ def scatter_multigroup_xs(extractor, filename, xs_types='all',
 
   for i, xs_type in enumerate(xs_types):
 
-    if xs_type == 'scatter matrix':
+    if xs_type in ['scatter matrix', 'nu-scatter matrix']:
       continue
 
     # Create a new Matplotlib figure
@@ -245,7 +245,7 @@ def scatter_micro_xs(extractor, filename, nuclides='all', xs_types='all',
   for nuclide in nuclides:
     for i, xs_type in enumerate(xs_types):
 
-      if xs_type == 'scatter matrix':
+      if xs_type in ['scatter matrix', 'nu-scatter matrix']:
         continue
 
       # Create a new Matplotlib figure for this Nuclide cross-section
@@ -317,7 +317,7 @@ def scatter_neighbor_xs(multigroup_xs, opencg_geometry, filename, nuclide,
                         first_level=0, energy_groups=(1,2),
                         extension='png', xlim=None, ylim=None):
 
-  if multigroup_xs._xs_type == 'scatter matrix':
+  if multigroup_xs._xs_type in ['scatter matrix', 'nu-scatter matrix']:
     msg = 'Unable to make scatter plot for scattering matrices'
     raise ValueError(msg)
 
@@ -419,7 +419,7 @@ def scatter_all_neighbors(micro_extractor, filename, first_level=0,
   for domain_id in distribcell_xs:
     for xs_type in distribcell_xs[domain_id]:
 
-      if xs_type == 'scatter matrix':
+      if xs_type in ['scatter matrix', 'nu-scatter matrix']:
         continue
 
       multigroup_xs = distribcell_xs[domain_id][xs_type]
@@ -434,7 +434,7 @@ def scatter_rxn_rate_flux(multigroup_xs, filename, nuclide,
                           energy_group, uncertainties=False,
                           extension='png', xlim=None, ylim=None):
 
-  if multigroup_xs._xs_type == 'scatter matrix':
+  if multigroup_xs._xs_type in ['scatter matrix', 'nu-scatter matrix']:
     msg = 'Unable to make scatter plot for scattering matrices'
     raise ValueError(msg)
 

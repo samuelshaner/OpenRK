@@ -24,6 +24,7 @@ xs_types = ['total',
             'scatter',
             'nu-scatter',
             'scatter matrix',
+            'nu-scatter matrix',
             'fission',
             'nu-fission',
             'chi']
@@ -50,6 +51,7 @@ greek['capture'] = '$\\Sigma_{c}$'
 greek['scatter'] = '$\\Sigma_{s}$'
 greek['nu-scatter'] = '$\\nu\\Sigma_{s}$'
 greek['scatter matrix'] = '$\\Sigma_{s}$'
+greek['nu-scatter matrix'] = '$\\nu\\Sigma_{s}$'
 greek['fission'] = '$\\Sigma_{f}$'
 greek['nu-fission'] = '$\\nu\\Sigma_{f}$'
 greek['chi'] = '$\\chi$'
@@ -759,7 +761,7 @@ class MultiGroupXS(object):
         # Add MultiGroupXS results data to the table list
         table = list()
 
-        if self._xs_type != 'scatter matrix':
+        if not self._xs_type in ['scatter matrix', 'nu-scatter matrix']:
           headers = list()
           headers.append('Group')
           headers.append('Average XS')
@@ -1229,7 +1231,7 @@ class ScatterMatrixXS(MultiGroupXS):
   def createTallies(self):
 
     # Create a list of scores for each Tally to be created
-    scores = ['flux', 'nu-scatter', 'nu-scatter-1']
+    scores = ['flux', 'scatter', 'scatter-1']
     estimator = 'analog'
     keys = scores
 
@@ -1247,31 +1249,31 @@ class ScatterMatrixXS(MultiGroupXS):
 
     # Extract and clean the Tally data
     tally_data, zero_indices = super(ScatterMatrixXS, self).getAllTallyData()
-    nu_scatter = tally_data['nu-scatter']
-    nu_scatter1 = tally_data['nu-scatter-1']
+    scatter = tally_data['scatter']
+    scatter1 = tally_data['scatter-1']
     flux = tally_data['flux']
 
     # Set any subdomain's zero fluxes and reaction rates to a negative value
     flux[:, zero_indices['flux']] = -1.
-    nu_scatter[:, zero_indices['nu-scatter']] = -1.
-    nu_scatter1[:, zero_indices['nu-scatter-1']] = -1
+    scatter[:, zero_indices['scatter']] = -1.
+    scatter1[:, zero_indices['scatter-1']] = -1
 
     # FIXME
     # Tile the flux to correspond to the nu-scatter array
     flux = np.repeat(flux[:,:,np.newaxis,:,:], self._num_groups, axis=3)
-    flux = np.reshape(flux, nu_scatter.shape[0:-1] + (1,))
+    flux = np.reshape(flux, scatter.shape[0:-1] + (1,))
 
     # FIXME
-    shape = nu_scatter.shape
-    nu_scatter[:,:,range(shape[2]), range(shape[3]),:] -= nu_scatter1
+    shape = scatter.shape
+    scatter[:,:,range(shape[2]), range(shape[3]),:] -= scatter1
 
     # Compute the xs with uncertainty propagation
-    self._xs = infermc.error_prop.arithmetic.divide_by_array(nu_scatter, flux,
+    self._xs = infermc.error_prop.arithmetic.divide_by_array(scatter, flux,
                                                              corr, False)
 
     # For any region without flux or reaction rate, convert xs to zero
     all_zero_indices = np.logical_or(zero_indices['flux'][...,np.newaxis],
-                                     zero_indices['nu-scatter'])
+                                     zero_indices['scatter'])
     self._xs[:, all_zero_indices] = 0.
 
     # Correct -0.0 to +0.0
@@ -1318,7 +1320,7 @@ class ScatterMatrixXS(MultiGroupXS):
       # We must treat the group-to-group scattering reaction rate matrix
       # in a different way than the flux since it has an extra dimension
       # for the outgoing energy group
-      elif 'nu-scatter' in tally._scores:
+      elif 'scatter' in tally._scores:
 
         coarse_shape = (num_coarse_groups, num_coarse_groups) + sum.shape[1:]
         coarse_sum = np.zeros(coarse_shape)
@@ -1427,6 +1429,144 @@ class ScatterMatrixXS(MultiGroupXS):
       string += '\n'
 
     print(string)
+
+
+class NuScatterMatrixXS(ScatterMatrixXS):
+
+  def __init__(self, domain=None, domain_type=None, energy_groups=None):
+    super(NuScatterMatrixXS, self).__init__(domain, domain_type, energy_groups)
+    self._xs_type = 'nu-scatter matrix'
+
+
+  def createTallies(self):
+
+    # Create a list of scores for each Tally to be created
+    scores = ['flux', 'nu-scatter', 'nu-scatter-1']
+    estimator = 'analog'
+    keys = scores
+
+    # Create the non-domain specific Filters for the Tallies
+    group_edges = self._energy_groups._group_edges
+    energy_filter = openmc.Filter('energy', group_edges)
+    energyout_filter = openmc.Filter('energyout', group_edges)
+    filters = [[energy_filter], [energy_filter, energyout_filter], [energy_filter]]
+
+    # Intialize the Tallies
+    super(ScatterMatrixXS, self).createTallies(scores, filters, keys, estimator)
+
+
+  def computeXS(self, corr=False):
+
+    # Extract and clean the Tally data
+    tally_data, zero_indices = super(NuScatterMatrixXS, self).getAllTallyData()
+    nu_scatter = tally_data['nu-scatter']
+    nu_scatter1 = tally_data['nu-scatter-1']
+    flux = tally_data['flux']
+
+    # Set any subdomain's zero fluxes and reaction rates to a negative value
+    flux[:, zero_indices['flux']] = -1.
+    nu_scatter[:, zero_indices['nu-scatter']] = -1.
+    nu_scatter1[:, zero_indices['nu-scatter-1']] = -1
+
+    # FIXME
+    # Tile the flux to correspond to the nu-scatter array
+    flux = np.repeat(flux[:,:,np.newaxis,:,:], self._num_groups, axis=3)
+    flux = np.reshape(flux, nu_scatter.shape[0:-1] + (1,))
+
+    # FIXME
+    shape = nu_scatter.shape
+    nu_scatter[:,:,range(shape[2]), range(shape[3]),:] -= nu_scatter1
+
+    # Compute the xs with uncertainty propagation
+    self._xs = infermc.error_prop.arithmetic.divide_by_array(nu_scatter, flux,
+                                                             corr, False)
+
+    # For any region without flux or reaction rate, convert xs to zero
+    all_zero_indices = np.logical_or(zero_indices['flux'][...,np.newaxis],
+                                     zero_indices['nu-scatter'])
+    self._xs[:, all_zero_indices] = 0.
+
+    # Correct -0.0 to +0.0
+    self._xs += 0.
+
+
+  def getCondensedXS(self, coarse_groups):
+    '''This routine takes in a collection of 2-tuples of energy groups'''
+
+    # FIXME: this under-estimates the uncertainty due to inter-group correlation
+
+    # Error checking for the group bounds is done here
+    new_groups = self._energy_groups.getCondensedGroups(coarse_groups)
+    num_coarse_groups = new_groups._num_groups
+
+    # Clone the MultiGroupXS
+    condensed_xs = copy.deepcopy(self)
+    condensed_xs.energy_groups = new_groups
+
+    # Convert the group bounds to array indices
+    group_indices = np.asarray(coarse_groups)
+    group_indices[0][0] -= 1
+
+    for tally_type, tally in condensed_xs._tallies.items():
+
+      for filter in tally._filters:
+        if 'energy' in filter._type:
+          filter.set_bin_edges(new_groups.group_edges)
+          filter.set_num_bins(num_coarse_groups)
+
+      sum = tally._sum
+      sum_sq = tally._sum_sq
+
+      if 'flux' in tally._scores:
+        coarse_shape = (num_coarse_groups,) + sum.shape[1:]
+        coarse_sum = np.zeros(coarse_shape)
+        coarse_sum_sq = np.zeros(coarse_shape)
+
+        for i, group in enumerate(group_indices):
+          coarse_sum[i, ...] = sum[group[0]:group[1], ...].sum(axis=0)
+          intermed = np.sqrt(sum_sq[group[0]:group[1], ...]).sum(axis=0)
+          coarse_sum_sq[i, ...] = np.power(intermed, 2.)
+
+      # We must treat the group-to-group scattering reaction rate matrix
+      # in a different way than the flux since it has an extra dimension
+      # for the outgoing energy group
+      elif 'nu-scatter' in tally._scores:
+
+        coarse_shape = (num_coarse_groups, num_coarse_groups) + sum.shape[1:]
+        coarse_sum = np.zeros(coarse_shape)
+        coarse_sum_sq = np.zeros(coarse_shape)
+
+        # "Unroll" the group-to-group structure into a 2D matrix
+        fine_shape = (self._num_groups, self._num_groups) + sum.shape[1:]
+        sum = np.reshape(sum, fine_shape)
+        sum_sq = np.reshape(sum_sq, fine_shape)
+
+        for i, in_group in enumerate(group_indices):
+          for j, out_group in enumerate(group_indices):
+
+            # Extract the "block" of the group-to-group reaction rate tallies
+            sum_block = sum[in_group[0]:in_group[1], ...]
+            sum_block = sum_block[:, out_group[0]:out_group[1], ...]
+            sum_sq_block = sum_sq[in_group[0]:in_group[1], ...]
+            sum_sq_block = sum_sq_block[:, out_group[0]:out_group[1], ...]
+
+            coarse_sum[i,j, ...] = sum_block.sum(axis=(0,1))
+            intermed = np.sqrt(sum_sq_block.sum(axis=(0,1)))
+            coarse_sum_sq[i,j, ...] = np.power(intermed, 2.)
+
+        # Reshape the 2D matrix back into the form expected by the Tally
+        coarse_shape = (num_coarse_groups**2,) + sum.shape[2:]
+        coarse_sum = np.reshape(coarse_sum, coarse_shape)
+        coarse_sum_sq = np.reshape(coarse_sum_sq, coarse_shape)
+
+      tally.set_results(coarse_sum, coarse_sum_sq)
+      tally.compute_std_dev()
+      condensed_xs._tallies[tally_type] = tally
+
+    # Tell the cloned xs to compute xs
+    condensed_xs.computeXS()
+
+    return condensed_xs
 
 
 class DiffusionCoeff(MultiGroupXS):
