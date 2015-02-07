@@ -162,14 +162,15 @@ for cell_id in xrange(1, 5):
     mesh.set_material(fuel1bin, cell_id)
 
 # refine mesh and uniquify materials
-mesh = mesh.uniform_refine(9)
+mesh = mesh.uniform_refine(5)
 mesh.uniquify_materials()
 
 # Create and initialize the amplitude mesh
-amp_mesh = rk.mesh.AmpMesh(name='amp mesh', width=165.0, height=165.0, num_x=33, num_y=33)
+amp_mesh = rk.mesh.AmpMesh(name='amp mesh', width=165.0, height=165.0, num_x=1, num_y=1)
 amp_mesh.set_num_amp_energy_groups(2)
 amp_mesh.set_num_shape_energy_groups(2)
 amp_mesh.set_num_delayed_groups(2)
+amp_mesh.set_optically_thick(True)
 amp_mesh.set_boundary(2, 1)
 amp_mesh.set_boundary(3, 1)
 amp_mesh.set_buckling([1.e-4, 1.e-4])

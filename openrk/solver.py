@@ -90,51 +90,6 @@ class CmfdSolver(Solver):
 
         return self._b_amp
 
-    def compute_surface_dif_coefs_shape(self, time='CURRENT'):
-
-        nx = self._shape_mesh.get_num_x()
-        ny = self._shape_mesh.get_num_y()
-        ng = self._shape_mesh.get_num_shape_energy_groups()
-        width = self._shape_mesh.get_cell_width()
-        height = self._shape_mesh.get_cell_height()
-        temps = self._shape_mesh.get_temperature(time)
-
-        for y in xrange(ny):
-            for x in xrange(nx):
-
-                mat = self._shape_mesh.get_material(y*nx+x)
-
-                for side in xrange(4):
-
-                    cell_next = self._shape_mesh.get_neighbor_cell(x, y, side)
-                    mat_next = self._shape_mesh.get_neighbor_material(x, y, side)
-
-                    for e in xrange(ng):
-
-                        d = mat.get_dif_coef_by_group(e, time, temps[y*nx+x])
-
-                        # set the length of the surface parallel to and perpendicular from surface
-                        if side == 0 or side == 2:
-                            length_perpen = width
-                        elif side == 1 or side == 3:
-                            length_perpen = height
-
-                        if mat_next is None:
-                            dif_linear = 2 * d / length_perpen / (1 + 4 * d / length_perpen)
-                            dif_linear *= self._shape_mesh.get_boundary(side)
-
-                        else:
-
-                            if side == 0 or side == 2:
-                                next_length_perpen = width
-                            else:
-                                next_length_perpen = height
-
-                            d_next = mat_next.get_dif_coef_by_group(e, time, temps[cell_next])
-                            dif_linear = 2 * d * d_next / (length_perpen * d + next_length_perpen * d_next)
-
-                        self._shape_mesh.set_dif_linear_by_value(dif_linear, y*nx+x, e, side, time)
-
     def make_am_shape_initial(self, time='CURRENT'):
 
         nx = self._shape_mesh.get_num_x()
@@ -226,7 +181,7 @@ class CmfdSolver(Solver):
     def compute_initial_shape(self, tol):
 
         # Compute the surface diffusion coefficients
-        self.compute_surface_dif_coefs_shape('CURRENT')
+        self._shape_mesh.compute_dif_coefs('CURRENT')
 
         # Create the production and loss matrices
         self.make_am_shape_initial('CURRENT')
@@ -241,121 +196,6 @@ class CmfdSolver(Solver):
         # solve the eigenvalue problem
         self._k_eff = openrk.eigenvalueSolve(self._A_shape, self._M_shape, self._shape_mesh.get_flux('CURRENT'),
                                              self._b_shape, old_source, flux_temp, ng, nx, ny, tol)
-
-    def compute_dif_linear_amp(self, time='CURRENT'):
-
-        nx = self._amp_mesh.get_num_x()
-        ny = self._amp_mesh.get_num_y()
-        ng = self._amp_mesh.get_num_amp_energy_groups()
-        width = self._amp_mesh.get_cell_width()
-        height = self._amp_mesh.get_cell_height()
-        temps = self._amp_mesh.get_temperature(time)
-
-        for y in xrange(ny):
-
-            for x in xrange(nx):
-
-                cell = y*nx+x
-                temp = temps[cell]
-
-                for s in xrange(4):
-
-                    cell_next = self._amp_mesh.get_neighbor_cell(x, y, s)
-
-                    if s == 0 or s == 2:
-                        length_perpen = width
-                    else:
-                        length_perpen = height
-
-                    for g in xrange(ng):
-
-                        dif_coef = self._amp_mesh.get_material(cell).get_dif_coef_by_group(g, time, temp)
-
-                        if cell_next is None:
-
-                            dif_linear = 2 * dif_coef / length_perpen / (1.0 + 4.0 * dif_coef / length_perpen)
-                            dif_linear *= self._amp_mesh.get_boundary(s)
-                        else:
-
-                            dif_coef_next = self._amp_mesh.get_material(cell_next).\
-                                get_dif_coef_by_group(g, time, temps[cell_next])
-                            dif_linear = 2.0 * dif_coef * dif_coef_next / \
-                                (length_perpen * dif_coef + length_perpen * dif_coef_next)
-
-                        self._amp_mesh.set_dif_linear_by_value(dif_linear, cell, g, s, time)
-
-    def compute_dif_coefs_amp(self, time='CURRENT'):
-
-        nx = self._amp_mesh.get_num_x()
-        ny = self._amp_mesh.get_num_y()
-        ng = self._amp_mesh.get_num_amp_energy_groups()
-        width = self._amp_mesh.get_cell_width()
-        height = self._amp_mesh.get_cell_height()
-        temps = self._amp_mesh.get_temperature(time)
-
-        for y in xrange(ny):
-
-            for x in xrange(nx):
-
-                cell = y*nx+x
-                temp = temps[cell]
-
-                for s in xrange(4):
-
-                    cell_next = self._amp_mesh.get_neighbor_cell(x, y, s)
-
-                    if s == 0 or s == 1:
-                        sense = -1.0
-                    else:
-                        sense = 1.0
-
-                    if s == 0 or s == 2:
-                        length = height
-                        length_perpen = width
-                    else:
-                        length = width
-                        length_perpen = height
-
-                    for g in xrange(ng):
-
-                        dif_coef = self._amp_mesh.get_material(cell).get_dif_coef_by_group(g, time, temp)
-                        current = self._amp_mesh.get_current_by_value(cell, g, s, time)
-                        flux = self._amp_mesh.get_flux_by_value(cell, g, time)
-
-                        if cell_next is None:
-
-                            dif_linear = 2 * dif_coef / length_perpen / (1.0 + 4.0 * dif_coef / length_perpen)
-                            dif_nonlinear = (sense * dif_linear * flux - current / length) / flux
-                            dif_linear *= self._amp_mesh.get_boundary(s)
-                            dif_nonlinear *= self._amp_mesh.get_boundary(s)
-                        else:
-
-                            flux_next = self._amp_mesh.get_flux_by_value(cell_next, g, time)
-                            dif_coef_next = self._amp_mesh.get_material(cell_next).\
-                                get_dif_coef_by_group(g, time, temps[cell_next])
-                            dif_linear = 2.0 * dif_coef * dif_coef_next / \
-                                (length_perpen * dif_coef + length_perpen * dif_coef_next)
-                            dif_nonlinear = - (sense * dif_linear * (flux_next - flux) +
-                                               current / length) / (flux_next + flux)
-
-                        if dif_nonlinear > dif_linear:
-                            if sense == -1.0:
-                                if dif_nonlinear > 0.0:
-                                    dif_linear = - current / (2 * flux)
-                                    dif_nonlinear = - current / (2 * flux)
-                                else:
-                                    dif_linear = current / (2 * flux_next)
-                                    dif_nonlinear = - current / (2 * flux_next)
-                            else:
-                                if dif_nonlinear > 0.0:
-                                    dif_linear = - current / (2 * flux_next)
-                                    dif_nonlinear = - current / (2 * flux_next)
-                                else:
-                                    dif_linear = current / (2 * flux)
-                                    dif_nonlinear = - current / (2 * flux)
-
-                        self._amp_mesh.set_dif_linear_by_value(dif_linear, cell, g, s, time)
-                        self._amp_mesh.set_dif_nonlinear_by_value(dif_nonlinear, cell, g, s, time)
 
     def make_am_amp(self, wt=0.5):
 

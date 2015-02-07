@@ -5,7 +5,7 @@ __email__ = 'shaner@mit.edu'
 import numpy as np
 import checkvalue as cv
 from clock import Clock
-from math import floor, exp
+from math import floor, exp, cos, pi, asin
 from material import TransientMaterial, FunctionalMaterial
 
 # A static variable for auto-generated Mesh UIDs
@@ -777,11 +777,16 @@ class AmpMesh(StructuredMesh):
         self._shape_map = None
         self._shape_mesh = None
         self._shape_groups = None
+        self._optically_thick = False
 
         # Initialize flux and current arrays
         clock = Clock()
         for position in clock.get_positions():
             self._current[position] = np.empty
+
+    def set_optically_thick(self, optically_thick):
+
+        self._optically_thick = optically_thick
 
     def set_buckling(self, buckling):
 
@@ -1166,6 +1171,95 @@ class AmpMesh(StructuredMesh):
                     # set the current for this surface
                     self._current[time][(i*4 + s) * self._num_amp_energy_groups + g] = current
 
+    def compute_dif_correct(self, dif_coef, length):
+
+        if self._optically_thick:
+
+            mu = cos(asin(0.798184))
+            expon = exp(- length / (3 * dif_coef * mu))
+            alpha = (1 + expon) / (1 - expon) - 2 * 3 * dif_coef * mu / length
+            rho = mu * alpha
+            f = 1 + length * rho / (2 * dif_coef)
+
+        else:
+            f = 1.0
+
+        return f
+
+    def compute_dif_coefs(self, time='CURRENT'):
+
+        nx = self.get_num_x()
+        ny = self.get_num_y()
+        ng = self.get_num_amp_energy_groups()
+        width = self.get_cell_width()
+        height = self.get_cell_height()
+        temps = self.get_temperature(time)
+
+        for y in xrange(ny):
+            for x in xrange(nx):
+
+                cell = y*nx+x
+                temp = temps[cell]
+
+                for s in xrange(4):
+
+                    cell_next = self.get_neighbor_cell(x, y, s)
+
+                    if s == 0 or s == 1:
+                        sense = -1.0
+                    else:
+                        sense = 1.0
+
+                    if s == 0 or s == 2:
+                        length = height
+                        length_perpen = width
+                    else:
+                        length = width
+                        length_perpen = height
+
+                    for g in xrange(ng):
+
+                        dif_coef = self.get_material(cell).get_dif_coef_by_group(g, time, temp)
+                        current = self.get_current_by_value(cell, g, s, time)
+                        flux = self.get_flux_by_value(cell, g, time)
+                        f = self.compute_dif_correct(dif_coef, length_perpen)
+
+                        if cell_next is None:
+
+                            dif_linear = 2 * dif_coef * f / length_perpen / (1.0 + 4.0 * dif_coef * f / length_perpen)
+                            dif_nonlinear = (sense * dif_linear * flux - current / length) / flux
+                            dif_linear *= self.get_boundary(s)
+                            dif_nonlinear *= self.get_boundary(s)
+                        else:
+
+                            flux_next = self.get_flux_by_value(cell_next, g, time)
+                            dif_coef_next = self.get_material(cell_next).\
+                                get_dif_coef_by_group(g, time, temps[cell_next])
+                            f_next = self.compute_dif_correct(dif_coef_next, length_perpen)
+                            dif_linear = 2.0 * dif_coef * f * dif_coef_next * f_next / \
+                                (length_perpen * dif_coef * f + length_perpen * dif_coef_next * f_next)
+                            dif_nonlinear = - (sense * dif_linear * (flux_next - flux) +
+                                               current / length) / (flux_next + flux)
+
+                        if dif_nonlinear > dif_linear:
+                            if sense == -1.0:
+                                if dif_nonlinear > 0.0:
+                                    dif_linear = - current / (2 * flux)
+                                    dif_nonlinear = - current / (2 * flux)
+                                else:
+                                    dif_linear = current / (2 * flux_next)
+                                    dif_nonlinear = - current / (2 * flux_next)
+                            else:
+                                if dif_nonlinear > 0.0:
+                                    dif_linear = - current / (2 * flux_next)
+                                    dif_nonlinear = - current / (2 * flux_next)
+                                else:
+                                    dif_linear = current / (2 * flux)
+                                    dif_nonlinear = - current / (2 * flux)
+
+                        self.set_dif_linear_by_value(dif_linear, cell, g, s, time)
+                        self.set_dif_nonlinear_by_value(dif_nonlinear, cell, g, s, time)
+
     def __repr__(self):
 
         string = 'OpenRK AmpMesh\n'
@@ -1517,10 +1611,50 @@ class StructuredShapeMesh(StructuredMesh):
                     self._temperature[time_to][cell_id] = self._temperature[time_from][cell_id] + dt * 0.5 * \
                         (fission_rate_from + fission_rate_to) * material.get_temperature_conversion_factor()
 
-                    #print 'cell ' + str(cell_id) + ' old T ' + str(self._temperature[time_from][cell_id]) \
-                    #    + ' new T ' + str(self._temperature[time_to][cell_id])
-                    #print 'fis rate from ' + str(fission_rate_from) + ' fis rate to ' + str(fission_rate_to)
+    def compute_dif_coefs(self, time='CURRENT'):
 
+        nx = self.get_num_x()
+        ny = self.get_num_y()
+        ng = self.get_num_shape_energy_groups()
+        width = self.get_cell_width()
+        height = self.get_cell_height()
+        temps = self.get_temperature(time)
+
+        for y in xrange(ny):
+            for x in xrange(nx):
+
+                mat = self.get_material(y*nx+x)
+
+                for side in xrange(4):
+
+                    cell_next = self.get_neighbor_cell(x, y, side)
+                    mat_next = self.get_neighbor_material(x, y, side)
+
+                    for e in xrange(ng):
+
+                        d = mat.get_dif_coef_by_group(e, time, temps[y*nx+x])
+
+                        # set the length of the surface parallel to and perpendicular from surface
+                        if side == 0 or side == 2:
+                            length_perpen = width
+                        elif side == 1 or side == 3:
+                            length_perpen = height
+
+                        if mat_next is None:
+                            dif_linear = 2 * d / length_perpen / (1 + 4 * d / length_perpen)
+                            dif_linear *= self.get_boundary(side)
+
+                        else:
+
+                            if side == 0 or side == 2:
+                                next_length_perpen = width
+                            else:
+                                next_length_perpen = height
+
+                            d_next = mat_next.get_dif_coef_by_group(e, time, temps[cell_next])
+                            dif_linear = 2 * d * d_next / (length_perpen * d + next_length_perpen * d_next)
+
+                        self.set_dif_linear_by_value(dif_linear, y*nx+x, e, side, time)
 
     def __repr__(self):
 

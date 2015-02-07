@@ -58,6 +58,66 @@ class Transient(object):
         self._solver = None
         self._shape_mesh = None
         self._amp_mesh = None
+        self._inner_method = 'CRANK_NICOLSON'
+        self._outer_method = 'CRANK_NICOLSON'
+        self._inner_wt = 0.5
+        self._outer_wt = 0.5
+
+        self._supported_methods = ['FORWARD_EULER', 'BACKWARD_EULER', 'CRANK_NICOLSON', 'CUSTOM']
+
+    def set_inner_method(self, method, wt=0.0):
+
+        if method not in self._supported_methods:
+            msg = 'Cannot set inner method to {0}. Supported methods are: '\
+                '{1}'.format(method, self._supported_methods)
+            raise ValueError(msg)
+
+        else:
+
+            if method == 'CUSTOM':
+                if wt < 0.0 or wt > 1.0:
+                    msg = 'Unable to use inner weight of {0} for CUSTOM method. wt must'\
+                        ' be between 0 and 1'.format(wt)
+                    raise ValueError(msg)
+                else:
+                    self._inner_method = 'CUSTOM'
+                    self._inner_wt = wt
+            else:
+
+                self._inner_method = method
+                if method == 'FORWARD_EULER':
+                    self._inner_wt = 0.0
+                elif method == 'BACKWARD_EULER':
+                    self._inner_wt = 1.0
+                else:
+                    self._inner_wt = 0.5
+
+    def set_outer_method(self, method, wt=0.0):
+
+        if method not in self._supported_methods:
+            msg = 'Cannot set outer method to {0}. Supported methods are: '\
+                '{1}'.format(method, self._supported_methods)
+            raise ValueError(msg)
+
+        else:
+
+            if method == 'CUSTOM':
+                if wt < 0.0 or wt > 1.0:
+                    msg = 'Unable to use outer weight of {0} for CUSTOM method. wt must'\
+                        ' be between 0 and 1'.format(wt)
+                    raise ValueError(msg)
+                else:
+                    self._outer_method = 'CUSTOM'
+                    self._outer_wt = wt
+            else:
+
+                self._outer_method = method
+                if method == 'FORWARD_EULER':
+                    self._outer_wt = 0.0
+                elif method == 'BACKWARD_EULER':
+                    self._outer_wt = 1.0
+                else:
+                    self._outer_wt = 0.5
 
     def set_initial_power(self, initial_power):
 
@@ -112,11 +172,13 @@ class Transient(object):
         self._shape_mesh.set_clock(self._clock)
 
         # Compute the initial shape
-        self._solver.compute_initial_shape(1.e-12)
+        self._solver.compute_initial_shape(1.e-8)
 
-        # Normalize the flux by the user-set initial power
+        # Set the initial keff for the shape and amp meshes
         self._shape_mesh.set_k_eff_0(self._solver._k_eff)
         self._amp_mesh.set_k_eff_0(self._solver._k_eff)
+
+        # Normalize the flux by the user-set initial power
         initial_power = self._shape_mesh.get_average_power()
         self._shape_mesh.scale_flux(self._initial_power / initial_power)
 
@@ -126,7 +188,7 @@ class Transient(object):
         # Condense the materials and compute the dif coefs for the amp mesh
         self._amp_mesh.condense_materials(time='CURRENT', save_flux=True)
         self._amp_mesh.compute_current()
-        self._solver.compute_dif_coefs_amp()
+        self._amp_mesh.compute_dif_coefs()
 
         # broadcast current properties to all other times
         self.broadcast_to_all()
@@ -164,7 +226,7 @@ class Transient(object):
             self._amp_mesh.copy_flux(time_from='CURRENT', time_to='FORWARD_IN_OLD')
 
             # Update the amplitude at CURRENT time
-            self._solver.make_am_amp(wt=0.5)
+            self._solver.make_am_amp(self._inner_wt)
             openrk.linearSolve(self._solver.get_am_amp(), self._amp_mesh.get_flux('CURRENT'),
                                self._solver.get_b_amp(), flux_temp, nx, ny, ng, 1.e-8)
 
@@ -180,6 +242,7 @@ class Transient(object):
             # Condense precursor conc and xs to amp mesh
             self._amp_mesh.condense_materials(time='CURRENT')
 
+            # Compute the flux residual
             residual = self._amp_mesh.compute_flux_l2_norm(time_1='CURRENT', time_2='FORWARD_IN_OLD')
 
             power = self._shape_mesh.get_average_power()
@@ -220,10 +283,10 @@ class Transient(object):
             self._shape_mesh.copy_flux(time_from='FORWARD_OUT', time_to='FORWARD_OUT_OLD')
 
             # Update the dif coefs at the FORWARD_OUT time
-            self._solver.compute_surface_dif_coefs_shape(time='FORWARD_OUT')
+            self._shape_mesh.compute_dif_coefs(time='FORWARD_OUT')
 
             # Recreate the shape matrices
-            self._solver.make_am_shape(0.5)
+            self._solver.make_am_shape(self._outer_wt)
 
             # Solve for the updated flux at FORWARD_OUT
             openrk.linearSolve(self._solver.get_am_shape(), self._shape_mesh.get_flux('FORWARD_OUT'),
@@ -232,7 +295,7 @@ class Transient(object):
             # Update the amp mesh dif coefs at FORWARD_OUT
             self._amp_mesh.compute_current(time='FORWARD_OUT')
             self._amp_mesh.condense_materials(time='FORWARD_OUT', save_flux=True)
-            self._solver.compute_dif_coefs_amp(time='FORWARD_OUT')
+            self._amp_mesh.compute_dif_coefs(time='FORWARD_OUT')
 
             # Reset CURRENT time
             self._clock.reset_to_previous_outer_step()
@@ -241,13 +304,14 @@ class Transient(object):
             while self._clock.get_time('CURRENT') - self._clock.get_time('FORWARD_OUT') < -1.e-6:
                 self.take_inner_step()
 
-            # Copy CURRENT amp to FORWARD_OUT
+            # Reconstruct CURRENT flux and copy all field variables to FORWARD_OUT
             self._shape_mesh.reconstruct_flux(time='CURRENT', time_shape='FORWARD_OUT', time_amp='CURRENT')
             self.broadcast_to_one(time_from='CURRENT', time_to='FORWARD_OUT')
 
             # Check for convergence
             residual = self._shape_mesh.compute_flux_l2_norm(time_1='FORWARD_OUT', time_2='FORWARD_OUT_OLD')
-            print 'outer residual ' + str(residual)
+
+            print 'OUTER RESIDUAL = {:.6e}'.format(residual)
 
             if residual < tol:
                 break
@@ -282,10 +346,10 @@ class Transient(object):
             self._shape_mesh.copy_flux(time_from='FORWARD_OUT', time_to='FORWARD_OUT_OLD')
 
             # Update the dif coefs at the FORWARD_OUT time
-            self._solver.compute_surface_dif_coefs_shape(time='FORWARD_OUT')
+            self._shape_mesh.compute_dif_coefs(time='FORWARD_OUT')
 
             # Recreate the shape matrices
-            self._solver.make_am_shape(1.0)
+            self._solver.make_am_shape(self._outer_wt)
 
             # Solve for the updated flux at FORWARD_OUT
             openrk.linearSolve(self._solver.get_am_shape(), self._shape_mesh.get_flux('FORWARD_OUT'),
@@ -294,7 +358,7 @@ class Transient(object):
             # Check for convergence
             residual = self._shape_mesh.compute_flux_l2_norm(time_1='FORWARD_OUT', time_2='FORWARD_OUT_OLD')
             power = self._shape_mesh.get_average_power('FORWARD_OUT')
-            print 'TIME = ' + str(self._clock.get_time('FORWARD_OUT')) + ' POWER = ' + str(power) + ' RESIDUAL = ' + str(residual)
+            print 'TIME = {:1.4f}, POWER = {:.6e}, RESIDUAL = {:.6e}'.format(self._clock.get_time('FORWARD_OUT'), power, residual)
 
             if residual < tol:
                 converged = True
