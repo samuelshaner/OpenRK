@@ -3,6 +3,7 @@ __email__ = 'shaner@mit.edu'
 
 # Import modules
 import numpy as np
+import clock as ck
 
 
 def is_integer(val):
@@ -91,7 +92,8 @@ def check_is_float_or_int(val, name, param):
 
 
 def check_clock_position(position, name):
-    if position not in ['START', 'PREVIOUS_OUT', 'PREVIOUS_IN', 'CURRENT', 'FORWARD_OUT', 'END']:
+    clock = ck.Clock()
+    if position not in clock.get_positions():
         msg = 'Unable to get/set {0} with a non valid clock position {1}' \
             .format(name, position)
         raise ValueError(msg)

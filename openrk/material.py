@@ -553,7 +553,7 @@ class Material(object):
             msg = 'Unable to set Material ID to non-integer {0}'.format(material_id)
             raise ValueError(msg)
 
-    def get_velocity_by_group(self, group):
+    def get_velocity_by_group(self, group, time=None, temp=None):
 
         # Check if necessary variables have been set
         cv.check_set(self._num_energy_groups, 'Material ID={0} velocity by group'.format(self._id), 'Num Energy Groups')
@@ -632,6 +632,7 @@ class Material(object):
         string += ' Dif Coef \t= {0} \n'.format(self._dif_coef)
         string += ' Chi \t\t= {0} \n'.format(self._chi)
         string += ' Sigma s \t= {0} \n'.format(self._sigma_s)
+        string += ' Velocity \t= {0} \n'.format(self._velocity)
         string += ' Energy Per Fission \t= {0} \n'.format(self._energy_per_fission)
 
         return string
@@ -654,8 +655,6 @@ class TransientMaterial(Material):
       _num_energy_groups
       _name
       _id
-      _decay_constants
-      _delayed_fractions
       _precursor_conc
       _clock
       _num_delayed_groups
@@ -670,7 +669,6 @@ class TransientMaterial(Material):
       set_nu_sigma_f(list/np.array nu_sigma_f, time='CURRENT')
       set_chi(list/np.array chi, time='CURRENT')
       set_dif_coef(list/np.array dif_coef, time='CURRENT')
-      set_velocity(list/np.array velocity, time='CURRENT')
       set_sigma_a_by_group(float sigma_a, int group, time='CURRENT')
       set_sigma_t_by_group(float sigma_t, int group, time='CURRENT')
       set_sigma_f_by_group(float sigma_f, int group, time='CURRENT')
@@ -678,14 +676,9 @@ class TransientMaterial(Material):
       set_nu_sigma_f_by_group(float nu_sigma_f, int group, time='CURRENT')
       set_chi_by_group(float chi, int group, time='CURRENT')
       set_dif_coef_by_group(float dif_coef, int group, time='CURRENT')
-      set_velocity_by_group(float velocity, int group, time='CURRENT')
       set_num_energy_groups(int num_energy_groups)
       set_id(int id)
-      set_decay_contants(list/np.array decay_constants, time='CURRENT')
-      set_delayed_fractions(list/np.array delayed_fractions, time='CURRENT')
       set_precursor_conc(list/np.array precursor_conc, time='CURRENT')
-      set_decay_contant_by_group(float decay_constant, int group, time='CURRENT')
-      set_delayed_fraction_by_group(float delayed_fraction, int group, time='CURRENT')
       set_precursor_conc_by_group(float precursor_conc, int group, time='CURRENT')
       set_clock(Clock clock)
       set_num_delayed_groups(int num_groups)
@@ -699,12 +692,9 @@ class TransientMaterial(Material):
       get_nu_sigma_f_by_group(int group, time='CURRENT')
       get_chi_by_group(int group, time='CURRENT')
       get_dif_coef_by_group(int group, time='CURRENT')
-      get_velocity_by_group(int group, time='CURRENT')
       get_num_delayed_groups()
       get_id()
       get_name()
-      get_decay_contant_by_group(int group, time='CURRENT')
-      get_delayed_fraction_by_group(int group, time='CURRENT')
       get_precursor_conc_by_group(int group, time='CURRENT')
 
     Other Methods:
@@ -715,8 +705,6 @@ class TransientMaterial(Material):
         super(TransientMaterial, self).__init__(material_id, name)
 
         # Initialize class attributes
-        self._decay_constants = None
-        self._delayed_fractions = None
         self._precursor_conc = None
         self._clock = None
         self._num_delayed_groups = None
@@ -744,7 +732,7 @@ class TransientMaterial(Material):
 
         return self._num_delayed_groups
 
-    def set_sigma_a(self, sigma_a, time='CURRENT'):
+    def set_sigma_a(self, sigma_a):
 
         # check if sigma_a is a list
         if not cv.is_list(sigma_a):
@@ -763,9 +751,10 @@ class TransientMaterial(Material):
             if isinstance(sigma_a, list):
                 sigma_a = np.asarray(sigma_a)
 
-            np.copyto(self._sigma_a[time], sigma_a)
+            for position in self._clock.get_positions():
+                np.copyto(self._sigma_a[position], sigma_a)
 
-    def set_sigma_t(self, sigma_t, time='CURRENT'):
+    def set_sigma_t(self, sigma_t):
 
         # check if sigma_t is a list
         if not cv.is_list(sigma_t):
@@ -784,9 +773,10 @@ class TransientMaterial(Material):
             if isinstance(sigma_t, list):
                 sigma_t = np.asarray(sigma_t)
 
-            np.copyto(self._sigma_t[time], sigma_t)
+            for position in self._clock.get_positions():
+                np.copyto(self._sigma_t[position], sigma_t)
 
-    def set_sigma_f(self, sigma_f, time='CURRENT'):
+    def set_sigma_f(self, sigma_f):
 
         # check if sigma_f is a list
         if not cv.is_list(sigma_f):
@@ -805,9 +795,10 @@ class TransientMaterial(Material):
             if isinstance(sigma_f, list):
                 sigma_f = np.asarray(sigma_f)
 
-            np.copyto(self._sigma_f[time], sigma_f)
+            for position in self._clock.get_positions():
+                np.copyto(self._sigma_f[position], sigma_f)
 
-    def set_nu_sigma_f(self, nu_sigma_f, time='CURRENT'):
+    def set_nu_sigma_f(self, nu_sigma_f):
 
         # check if nu_sigma_f is a list
         if not cv.is_list(nu_sigma_f):
@@ -826,12 +817,13 @@ class TransientMaterial(Material):
             if isinstance(nu_sigma_f, list):
                 nu_sigma_f = np.asarray(nu_sigma_f)
 
-            np.copyto(self._nu_sigma_f[time], nu_sigma_f)
+            for position in self._clock.get_positions():
+                np.copyto(self._nu_sigma_f[position], nu_sigma_f)
 
-            if np.count_nonzero(self._nu_sigma_f[time]):
+            if np.count_nonzero(nu_sigma_f):
                 self.set_is_fissionable(True)
 
-    def set_sigma_s(self, sigma_s, time='CURRENT'):
+    def set_sigma_s(self, sigma_s):
 
         # check if sigma_s is a list
         if not cv.is_list(sigma_s):
@@ -850,9 +842,10 @@ class TransientMaterial(Material):
             if isinstance(sigma_s, list):
                 sigma_s = np.asarray(sigma_s)
 
-            np.copyto(self._sigma_s[time], sigma_s)
+            for position in self._clock.get_positions():
+                np.copyto(self._sigma_s[position], sigma_s)
 
-    def set_dif_coef(self, dif_coef, time='CURRENT'):
+    def set_dif_coef(self, dif_coef):
 
         # check if dif_coef is a list
         if not cv.is_list(dif_coef):
@@ -871,9 +864,10 @@ class TransientMaterial(Material):
             if isinstance(dif_coef, list):
                 dif_coef = np.asarray(dif_coef)
 
-            np.copyto(self._dif_coef[time], dif_coef)
+            for position in self._clock.get_positions():
+                np.copyto(self._dif_coef[position], dif_coef)
 
-    def set_chi(self, chi, time='CURRENT'):
+    def set_chi(self, chi):
 
         # check if chi is a list
         if not cv.is_list(chi):
@@ -892,7 +886,30 @@ class TransientMaterial(Material):
             if isinstance(chi, list):
                 chi = np.asarray(chi)
 
-            np.copyto(self._chi[time], chi)
+            for position in self._clock.get_positions():
+                np.copyto(self._chi[position], chi)
+
+    def set_velocity(self, velocity):
+
+        # check if velocity is a list
+        if not cv.is_list(velocity):
+            msg = 'Unable to set the velocity for Material ID={0} ' \
+                  'with a non-list value {1}'.format(self._id, velocity)
+            raise ValueError(msg)
+
+        # check if velocity is of length num_energy_groups
+        elif len(velocity) != self._num_energy_groups:
+            msg = 'Unable to set the velocity for Material ID={0} with' \
+                  ' {1} groups as num energy groups is set to {2}' \
+                .format(self._id, len(velocity), self._num_energy_groups)
+            raise ValueError(msg)
+
+        else:
+            if isinstance(velocity, list):
+                velocity = np.asarray(velocity)
+
+            for position in self._clock.get_positions():
+                np.copyto(self._velocity[position], velocity)
 
     def set_sigma_a_by_group(self, sigma_a, group, time='CURRENT'):
 
@@ -1024,6 +1041,24 @@ class TransientMaterial(Material):
         else:
             self._chi[time][group] = chi
 
+    def set_velocity_by_group(self, velocity, group, time='CURRENT'):
+
+        # check if velocity is a float
+        if not cv.is_float(velocity):
+            msg = 'Unable to set velocity for Material ID={0} with a ' \
+                  'non-float value {1}'.format(self._id, velocity)
+            raise ValueError(msg)
+
+        # check if group is valid
+        elif group < 0 or group > self._num_energy_groups:
+            msg = 'Unable to set velocity for Material ID={0} for group {1} ' \
+                  'as num energy groups is set to {2}' \
+                .format(self._id, group, self._num_energy_groups)
+            raise ValueError(msg)
+
+        else:
+            self._velocity[time][group] = velocity
+
     def get_sigma_a_by_group(self, group, time='CURRENT', temp=None):
 
         # check if group is valid
@@ -1109,6 +1144,18 @@ class TransientMaterial(Material):
         else:
             return self._chi[time][group]
 
+    def get_velocity_by_group(self, group, time='CURRENT', temp=None):
+
+        # check if group is valid
+        if group < 0 or group > self._num_energy_groups - 1:
+            msg = 'Unable to get velocity for Material ID={0} for group {1} ' \
+                  'as num energy groups is set to {2}' \
+                .format(self._id, group, self._num_energy_groups)
+            raise ValueError(msg)
+
+        else:
+            return self._velocity[time][group]
+
     def set_num_energy_groups(self, num_energy_groups):
 
         if cv.is_integer(num_energy_groups):
@@ -1143,88 +1190,6 @@ class TransientMaterial(Material):
                 .format(num_energy_groups)
             raise ValueError(msg)
 
-    def get_velocity_by_group(self, group, time='CURRENT'):
-
-        # Check if necessary variables have been set
-        cv.check_set(self._num_energy_groups, 'Material ID={0} velocity by group'.format(self._id), 'Num Energy Groups')
-        cv.check_is_int(group, 'Material ID={0} velocity by group'.format(self._id), 'group')
-
-        # check if group is valid
-        if group < 0 or group > self._num_energy_groups - 1:
-            msg = 'Unable to get velocity for Material ID={0} for group {1} ' \
-                  'as num energy groups is set to {2}' \
-                .format(self._id, group, self._num_energy_groups)
-            raise ValueError(msg)
-
-        else:
-
-            return self._velocity[time][group]
-
-    def set_velocity(self, velocity, time='CURRENT'):
-
-        # Check if necessary variables have been set
-        cv.check_set(self._num_energy_groups, 'Material ID={0} velocity'.format(self._id), 'Num Energy Groups')
-        cv.check_list_of_floats_or_ints(velocity, 'Material ID={0} velocity'.format(self._id))
-
-        if isinstance(velocity, list):
-            velocity = np.asarray(velocity)
-
-        np.copyto(self._velocity[time], velocity)
-
-    def set_velocity_by_group(self, velocity, group, time='CURRENT'):
-
-        # check if velocity is a float
-        if not cv.is_float(velocity):
-            msg = 'Unable to set velocity for Material ID={0} with a ' \
-                  'non-float value {1}'.format(self._id, velocity)
-            raise ValueError(msg)
-
-        # check if group is valid
-        elif group < 0 or group > self._num_energy_groups:
-            msg = 'Unable to set velocity for Material ID={0} for group {1} ' \
-                  'as num energy groups is set to {2}' \
-                .format(self._id, group, self._num_energy_groups)
-            raise ValueError(msg)
-
-        else:
-            self._velocity[time][group] = velocity
-
-    def get_delayed_fraction_by_group(self, group, time='CURRENT'):
-
-        # Check if necessary variables have been set
-        cv.check_set(self._num_delayed_groups, 'Delayed Fraction', 'Num Delayed Groups')
-        cv.check_is_int(group, 'Material ID={0} delayed fraction by group'.format(self._id), 'group')
-        cv.check_clock_position(time, 'Material ID={0} delayed fraction by group'.format(self._id))
-
-        # check if group is valid
-        if group < 0 or group > self._num_delayed_groups - 1:
-            msg = 'Unable to get delayed fraction for Material ID={0} for group {1} ' \
-                  'as num delayed groups is set to {2}' \
-                .format(self._id, group, self._num_delayed_groups)
-            raise ValueError(msg)
-
-        else:
-
-            return self._delayed_fractions[time][group]
-
-    def get_decay_constant_by_group(self, group, time='CURRENT'):
-
-        # Check if necessary variables have been set
-        cv.check_set(self._num_delayed_groups, 'Decay constant', 'Num Energy Groups')
-        cv.check_is_int(group, 'Material ID={0} decay constant by group'.format(self._id), 'group')
-        cv.check_clock_position(time, 'Material ID={0} decay constant by group'.format(self._id))
-
-        # check if group is valid
-        if group < 0 or group > self._num_delayed_groups - 1:
-            msg = 'Unable to get decay constant for Material ID={0} for group {1} ' \
-                  'as num delayed groups is set to {2}' \
-                .format(self._id, group, self._num_delayed_groups)
-            raise ValueError(msg)
-
-        else:
-
-            return self._decay_constants[time][group]
-
     def get_precursor_conc_by_group(self, group, time='CURRENT'):
 
         # Check if necessary variables have been set
@@ -1255,38 +1220,9 @@ class TransientMaterial(Material):
 
         else:
             self._num_delayed_groups = num_delayed_groups
-            self._decay_constants = {}
-            self._delayed_fractions = {}
             self._precursor_conc = {}
             for i in self._clock.get_positions():
-                self._decay_constants[i] = np.zeros(num_delayed_groups)
-                self._delayed_fractions[i] = np.zeros(num_delayed_groups)
                 self._precursor_conc[i] = np.zeros(num_delayed_groups)
-
-    def set_decay_constants(self, decay_constants, time='CURRENT'):
-
-        # Check if necessary variables have been set
-        cv.check_set(self._num_delayed_groups, 'Material ID={0} decay_constants'.format(self._id), 'Num Delayed Groups')
-        cv.check_list_of_floats_or_ints(decay_constants, 'Material ID={0} decay_constants'.format(self._id))
-        cv.check_clock_position(time, 'Material ID={0} decay constants'.format(self._id))
-
-        if isinstance(decay_constants, list):
-            decay_constants = np.asarray(decay_constants)
-
-        np.copyto(self._decay_constants[time], decay_constants)
-
-    def set_delayed_fractions(self, delayed_fractions, time='CURRENT'):
-
-        # Check if necessary variables have been set
-        cv.check_set(self._num_delayed_groups, 'Material ID={0} delayed_fractions'.format(self._id),
-                     'Num Delayed Groups')
-        cv.check_list_of_floats_or_ints(delayed_fractions, 'Material ID={0} delayed_fractions'.format(self._id))
-        cv.check_clock_position(time, 'Material ID={0} delayed fractions'.format(self._id))
-
-        if isinstance(delayed_fractions, list):
-            delayed_fractions = np.asarray(delayed_fractions)
-
-        np.copyto(self._delayed_fractions[time], delayed_fractions)
 
     def set_precursor_conc(self, precursor_conc, time='CURRENT'):
 
@@ -1301,45 +1237,9 @@ class TransientMaterial(Material):
 
         np.copyto(self._precursor_conc[time], precursor_conc)
 
-    def set_decay_constant_by_group(self, decay_constant, group, time='CURRENT'):
-
-        # check if decay_constant is a float
-        if not cv.is_float(decay_constant):
-            msg = 'Unable to set decay constant for Material ID={0} with a ' \
-                  'non-float value {1}'.format(self._id, decay_constant)
-            raise ValueError(msg)
-
-        # check if group is valid
-        elif group < 0 or group > self._num_energy_groups:
-            msg = 'Unable to set decay constant for Material ID={0} for group {1} ' \
-                  'as num energy groups is set to {2}' \
-                .format(self._id, group, self._num_energy_groups)
-            raise ValueError(msg)
-
-        else:
-            self._decay_constants[time][group] = decay_constant
-
-    def set_delayed_fraction_by_group(self, delayed_fraction, group, time='CURRENT'):
-
-        # check if decay_constant is a float
-        if not cv.is_float(delayed_fraction):
-            msg = 'Unable to set delayed fraction for Material ID={0} with a ' \
-                  'non-float value {1}'.format(self._id, delayed_fraction)
-            raise ValueError(msg)
-
-        # check if group is valid
-        elif group < 0 or group > self._num_energy_groups:
-            msg = 'Unable to set delayed fraction for Material ID={0} for group {1} ' \
-                  'as num energy groups is set to {2}' \
-                .format(self._id, group, self._num_energy_groups)
-            raise ValueError(msg)
-
-        else:
-            self._delayed_fractions[time][group] = delayed_fraction
-
     def set_precursor_conc_by_group(self, precursor_conc, group, time='CURRENT'):
 
-        # check if decay_constant is a float
+        # check if precursor_conc is a float
         if not cv.is_float(precursor_conc):
             msg = 'Unable to set precursor concfor Material ID={0} with a ' \
                   'non-float value {1}'.format(self._id, precursor_conc)
@@ -1361,20 +1261,30 @@ class TransientMaterial(Material):
         new_material.set_num_energy_groups(self._num_energy_groups)
         new_material.set_num_delayed_groups(self._num_delayed_groups)
         new_material.set_energy_per_fission(self._energy_per_fission)
-        for i in self._clock.get_positions():
-            new_material.set_sigma_a(self._sigma_a[i], i)
-            new_material.set_sigma_t(self._sigma_t[i], i)
-            new_material.set_sigma_f(self._sigma_f[i], i)
-            new_material.set_nu_sigma_f(self._nu_sigma_f[i], i)
-            new_material.set_sigma_s(self._sigma_s[i], i)
-            new_material.set_dif_coef(self._dif_coef[i], i)
-            new_material.set_chi(self._chi[i], i)
-            new_material.set_velocity(self._velocity[i], i)
-            new_material.set_decay_constants(self._decay_constants[i], i)
-            new_material.set_delayed_fractions(self._delayed_fractions[i], i)
-            new_material.set_precursor_conc(self._precursor_conc[i], i)
+        for position in self._clock.get_positions():
+            new_material.set_velocity(self._velocity[position], position)
+            new_material.set_sigma_a(self._sigma_a[position], position)
+            new_material.set_sigma_t(self._sigma_t[position], position)
+            new_material.set_sigma_f(self._sigma_f[position], position)
+            new_material.set_nu_sigma_f(self._nu_sigma_f[position], position)
+            new_material.set_sigma_s(self._sigma_s[position], position)
+            new_material.set_dif_coef(self._dif_coef[position], position)
+            new_material.set_chi(self._chi[position], position)
+            new_material.set_precursor_conc(self._precursor_conc[position], position)
 
         return new_material
+
+    def broadcast(self, time_from, time_to):
+
+        np.copyto(self._velocity[time_to], self._velocity[time_from])
+        np.copyto(self._sigma_a[time_to], self._sigma_a[time_from])
+        np.copyto(self._sigma_t[time_to], self._sigma_t[time_from])
+        np.copyto(self._sigma_f[time_to], self._sigma_f[time_from])
+        np.copyto(self._nu_sigma_f[time_to], self._nu_sigma_f[time_from])
+        np.copyto(self._sigma_s[time_to], self._sigma_s[time_from])
+        np.copyto(self._dif_coef[time_to], self._dif_coef[time_from])
+        np.copyto(self._chi[time_to], self._chi[time_from])
+        np.copyto(self._precursor_conc[time_to], self._precursor_conc[time_from])
 
     def __repr__(self):
 
@@ -1383,20 +1293,18 @@ class TransientMaterial(Material):
         string += ' ID \t\t\t= {0} \n'.format(self._id)
         string += ' Num Energy Groups \t= {0} \n'.format(self._num_energy_groups)
         string += ' Num Delayed Groups \t= {0} \n'.format(self._num_delayed_groups)
-        string += ' Sigma T \t= {0} \n'.format(self._sigma_t)
-        string += ' Sigma A \t= {0} \n'.format(self._sigma_a)
-        string += ' Sigma F \t= {0} \n'.format(self._sigma_f)
-        string += ' Nu Sigma F \t= {0} \n'.format(self._nu_sigma_f)
-        string += ' Dif Coef \t= {0} \n'.format(self._dif_coef)
-        string += ' Chi \t\t= {0} \n'.format(self._chi)
-        string += ' Sigma s \t= {0} \n'.format(self._sigma_s)
         string += ' Energy Per Fission \t= {0} \n'.format(self._energy_per_fission)
-        string += ' Velocity \t\t= {0} \n'.format(self._velocity)
         for i in self._clock.get_positions():
             string += ' Time ({:^12s}) \t'.format(i)
+            string += ' Sigma T \t= {0} \n'.format(self._sigma_t[i])
+            string += ' Sigma A \t= {0} \n'.format(self._sigma_a[i])
+            string += ' Sigma F \t= {0} \n'.format(self._sigma_f[i])
+            string += ' Nu Sigma F \t= {0} \n'.format(self._nu_sigma_f[i])
+            string += ' Dif Coef \t= {0} \n'.format(self._dif_coef[i])
+            string += ' Chi \t\t= {0} \n'.format(self._chi[i])
+            string += ' Sigma s \t= {0} \n'.format(self._sigma_s[i])
+            string += ' Velocity \t\t= {0} \n'.format(self._velocity[i])
             string += ' Precusur Conc = {0} \n'.format(self._precursor_conc[i])
-            string += ' Delayed Fractions = {0} \n'.format(self._delayed_fractions[i])
-            string += ' Decay Constants = {0} \n'.format(self._decay_constants[i])
 
         return string
 
@@ -1410,6 +1318,20 @@ class FunctionalMaterial(TransientMaterial):
         self._num_time_steps = None
         self._time_steps = None
         self._doppler_coefficients = None
+        self._temperature_conversion_factor = None
+
+    def set_temperature_conversion_factor(self, temperature_conversion_factor):
+
+        # Check if necessary variables have been set
+        self._temperature_conversion_factor = temperature_conversion_factor
+
+    def get_temperature_conversion_factor(self):
+
+        # Check if necessary variables have been set
+        cv.check_set(self._temperature_conversion_factor, 'Temperature conversion factor',
+                     'temperature conversion factor')
+
+        return self._temperature_conversion_factor
 
     def set_doppler_coefficients(self, doppler_coefs):
 
@@ -1517,6 +1439,9 @@ class FunctionalMaterial(TransientMaterial):
             else:
                 self._nu_sigma_f = np.copy(nu_sigma_f)
 
+            if np.count_nonzero(self._nu_sigma_f):
+                self.set_is_fissionable(True)
+
     def set_sigma_s(self, sigma_s):
 
         # Check if necessary variables have been set
@@ -1583,7 +1508,29 @@ class FunctionalMaterial(TransientMaterial):
             else:
                 self._chi = np.copy(chi)
 
-    def get_sigma_a_by_group(self, group, time=None, temp=None):
+    def set_velocity(self, velocity):
+
+        # Check if necessary variables have been set
+        cv.check_set(self._num_energy_groups, 'Velocity', 'Num Energy Groups')
+        cv.check_set(self._num_time_steps, 'Velocity', 'Num Time Steps')
+        for i in velocity:
+            cv.check_list_of_floats_or_ints(i, 'Material ID={0} velocity'.format(self._id))
+
+        # check if velocity is of length num_time_steps x num_energy_groups
+        if np.shape(velocity) != (self._num_time_steps, self._num_energy_groups):
+            msg = 'Unable to set velocity for Material ID={0} with {1} groups ' \
+                  'and {2} time steps. Num groups is {3} and num time steps is {4}.' \
+                .format(self._id, np.shape(velocity)[0], np.shape(velocity)[1],
+                        self._num_energy_groups, self._num_time_steps)
+            raise ValueError(msg)
+
+        else:
+            if isinstance(velocity, list):
+                self._velocity = np.asarray(velocity)
+            else:
+                self._velocity = np.copy(velocity)
+
+    def get_sigma_a_by_group(self, group, time='CURRENT', temp=300.0):
 
         # Check if necessary variables have been set
         cv.check_set(time, 'FunctionalMaterial ID={0} sigma_a by group'.format(self._id), 'time')
@@ -1592,7 +1539,7 @@ class FunctionalMaterial(TransientMaterial):
         cv.check_set(self._doppler_coefficients, 'Material ID={0} sigma_a by group'.format(self._id),
                      'Doppler Coefficients')
         cv.check_is_int(group, 'Material ID={0} sigma_a by group'.format(self._id), 'group')
-        cv.check_is_float_or_int(time, 'Material ID={0} sigma_a by group'.format(self._id), 'time')
+        cv.check_clock_position(time, 'Material ID={0} sigma_a by group'.format(self._id))
         cv.check_is_float_or_int(group, 'Material ID={0} sigma_a by group'.format(self._id), 'temp')
 
         # check if group is valid
@@ -1603,7 +1550,7 @@ class FunctionalMaterial(TransientMaterial):
             raise ValueError(msg)
 
         # check if time_step is valid
-        elif time < self._time_steps[0] or time > self._time_steps[-1]:
+        elif self._clock.get_time(time) < self._time_steps[0] or self._clock.get_time(time) > self._time_steps[-1]:
             msg = 'Unable to get absorption xs for Material ID={0} for group {1} and' \
                   ' time {2} outside time window [{3}, {4}]' \
                 .format(self._id, group, time, self._time_steps[0], self._time_steps[-1])
@@ -1612,28 +1559,28 @@ class FunctionalMaterial(TransientMaterial):
         else:
 
             # find time step window
-            (i_left, i_right) = self.get_bounding_time_steps(time)
+            (i_left, i_right) = self.get_bounding_time_steps(self._clock.get_time(time))
 
-            sigma_a_left = self._sigma_a[i_left][group] * self._doppler_coefficients[group] * \
-                (math.sqrt(temp) - math.sqrt(300.0))
-            sigma_a_right = self._sigma_a[i_right][group] * self._doppler_coefficients[group] * \
-                (math.sqrt(temp) - math.sqrt(300.0))
+            sigma_a_left = self._sigma_a[i_left][group] * (1 + self._doppler_coefficients[group] *
+                                                           (math.sqrt(temp) - math.sqrt(300.0)))
+            sigma_a_right = self._sigma_a[i_right][group] * (1 + self._doppler_coefficients[group] *
+                                                             (math.sqrt(temp) - math.sqrt(300.0)))
 
             # compute sigma_a
-            sigma_a = sigma_a_left + (time - self._time_steps[i_left]) * \
+            sigma_a = sigma_a_left + (self._clock.get_time(time) - self._time_steps[i_left]) * \
                                      (sigma_a_right - sigma_a_left) / \
                                      (self._time_steps[i_right] - self._time_steps[i_left])
 
             return sigma_a
 
-    def get_sigma_t_by_group(self, group, time=None, temp=None):
+    def get_sigma_t_by_group(self, group, time='CURRENT', temp=300.0):
 
         # Check if necessary variables have been set
         cv.check_set(time, 'FunctionalMaterial ID={0} sigma_t by group'.format(self._id), 'time')
         cv.check_set(temp, 'FunctionalMaterial ID={0} sigma_t by group'.format(self._id), 'temp')
         cv.check_set(self._num_energy_groups, 'Material ID={0} sigma_t by group'.format(self._id), 'Num Energy Groups')
         cv.check_is_int(group, 'Material ID={0} sigma_t by group'.format(self._id), 'group')
-        cv.check_is_float_or_int(time, 'Material ID={0} sigma_t by group'.format(self._id), 'time')
+        cv.check_clock_position(time, 'Material ID={0} sigma_t by group'.format(self._id))
         cv.check_is_float_or_int(group, 'Material ID={0} sigma_t by group'.format(self._id), 'temp')
 
         # check if group is valid
@@ -1644,7 +1591,7 @@ class FunctionalMaterial(TransientMaterial):
             raise ValueError(msg)
 
         # check if time_step is valid
-        elif time < self._time_steps[0] or time > self._time_steps[-1]:
+        elif self._clock.get_time(time) < self._time_steps[0] or self._clock.get_time(time) > self._time_steps[-1]:
             msg = 'Unable to get total xs for Material ID={0} for group {1} and ' \
                   'time {2} outside time window [{3}, {4}]' \
                 .format(self._id, group, time, self._time_steps[0], self._time_steps[-1])
@@ -1652,21 +1599,27 @@ class FunctionalMaterial(TransientMaterial):
 
         else:
 
-            sigma_t = self.get_sigma_a_by_group(group, time, temp)
+            # find time step window
+            (i_left, i_right) = self.get_bounding_time_steps(self._clock.get_time(time))
 
-            for g in xrange(self._num_energy_groups):
-                sigma_t += self.get_sigma_s_by_group(group, g, time, temp)
+            sigma_t_left = self._sigma_t[i_left][group]
+            sigma_t_right = self._sigma_t[i_right][group]
+
+            # compute sigma_a
+            sigma_t = sigma_t_left + (self._clock.get_time(time) - self._time_steps[i_left]) * \
+                                     (sigma_t_right - sigma_t_left) / \
+                                     (self._time_steps[i_right] - self._time_steps[i_left])
 
             return sigma_t
 
-    def get_sigma_f_by_group(self, group, time=None, temp=None):
+    def get_sigma_f_by_group(self, group, time='CURRENT', temp=300.0):
 
         # Check if necessary variables have been set
         cv.check_set(time, 'FunctionalMaterial ID={0} sigma_f by group'.format(self._id), 'time')
         cv.check_set(temp, 'FunctionalMaterial ID={0} sigma_f by group'.format(self._id), 'temp')
         cv.check_set(self._num_energy_groups, 'Material ID={0} sigma_f by group'.format(self._id), 'Num Energy Groups')
         cv.check_is_int(group, 'Material ID={0} sigma_f by group'.format(self._id), 'group')
-        cv.check_is_float_or_int(time, 'Material ID={0} sigma_f by group'.format(self._id), 'time')
+        cv.check_clock_position(time, 'Material ID={0} sigma_f by group'.format(self._id))
         cv.check_is_float_or_int(group, 'Material ID={0} sigma_f by group'.format(self._id), 'temp')
 
         # check if group is valid
@@ -1677,7 +1630,7 @@ class FunctionalMaterial(TransientMaterial):
             raise ValueError(msg)
 
         # check if time_step is valid
-        elif time < self._time_steps[0] or time > self._time_steps[-1]:
+        elif self._clock.get_time(time) < self._time_steps[0] or self._clock.get_time(time) > self._time_steps[-1]:
             msg = 'Unable to get fission xs for Material ID={0} for group {1} and ' \
                   'time {2} outside time window [{3}, {4}]' \
                 .format(self._id, group, time, self._time_steps[0], self._time_steps[-1])
@@ -1686,16 +1639,16 @@ class FunctionalMaterial(TransientMaterial):
         else:
 
             # find time step window
-            (i_left, i_right) = self.get_bounding_time_steps(time)
+            (i_left, i_right) = self.get_bounding_time_steps(self._clock.get_time(time))
 
             # compute sigma_f
-            sigma_f = self._sigma_f[i_left][group] + (time - self._time_steps[i_left]) * \
+            sigma_f = self._sigma_f[i_left][group] + (self._clock.get_time(time) - self._time_steps[i_left]) * \
                                                      (self._sigma_f[i_left][group] - self._sigma_f[i_right][group]) / \
                                                      (self._time_steps[i_right] - self._time_steps[i_left])
 
             return sigma_f
 
-    def get_nu_sigma_f_by_group(self, group, time=None, temp=None):
+    def get_nu_sigma_f_by_group(self, group, time='CURRENT', temp=300.0):
 
         # Check if necessary variables have been set
         cv.check_set(time, 'FunctionalMaterial ID={0} nu_sigma_f by group'.format(self._id), 'time')
@@ -1703,7 +1656,7 @@ class FunctionalMaterial(TransientMaterial):
         cv.check_set(self._num_energy_groups, 'Material ID={0} nu_sigma_f by group'.format(self._id),
                      'Num Energy Groups')
         cv.check_is_int(group, 'Material ID={0} nu_sigma_f by group'.format(self._id), 'group')
-        cv.check_is_float_or_int(time, 'Material ID={0} nu_sigma_f by group'.format(self._id), 'time')
+        cv.check_clock_position(time, 'Material ID={0} nu_sigma_f by group'.format(self._id))
         cv.check_is_float_or_int(group, 'Material ID={0} nu_sigma_f by group'.format(self._id), 'temp')
 
         # check if group is valid
@@ -1714,7 +1667,7 @@ class FunctionalMaterial(TransientMaterial):
             raise ValueError(msg)
 
         # check if time_step is valid
-        elif time < self._time_steps[0] or time > self._time_steps[-1]:
+        elif self._clock.get_time(time) < self._time_steps[0] or self._clock.get_time(time) > self._time_steps[-1]:
             msg = 'Unable to get nu fission xs for Material ID={0} for group {1} and ' \
                   'time {2} outside time window [{3}, {4}]' \
                 .format(self._id, group, time, self._time_steps[0], self._time_steps[-1])
@@ -1723,17 +1676,17 @@ class FunctionalMaterial(TransientMaterial):
         else:
 
             # find time step window
-            (i_left, i_right) = self.get_bounding_time_steps(time)
+            (i_left, i_right) = self.get_bounding_time_steps(self._clock.get_time(time))
 
             # compute nu_sigma_f
-            nu_sigma_f = self._nu_sigma_f[i_left][group] + (time - self._time_steps[i_left]) * \
+            nu_sigma_f = self._nu_sigma_f[i_left][group] + (self._clock.get_time(time) - self._time_steps[i_left]) * \
                                                            (self._nu_sigma_f[i_left][group] - self._nu_sigma_f[i_right][
                                                                group]) / \
                                                            (self._time_steps[i_right] - self._time_steps[i_left])
 
             return nu_sigma_f
 
-    def get_sigma_s_by_group(self, group_from, group_to, time=None, temp=None):
+    def get_sigma_s_by_group(self, group_from, group_to, time='CURRENT', temp=300.0):
 
         # Check if necessary variables have been set
         cv.check_set(time, 'FunctionalMaterial ID={0} sigma_s by group'.format(self._id), 'time')
@@ -1741,7 +1694,7 @@ class FunctionalMaterial(TransientMaterial):
         cv.check_set(self._num_energy_groups, 'Material ID={0} sigma_s by group'.format(self._id), 'Num Energy Groups')
         cv.check_is_int(group_from, 'Material ID={0} sigma_s by group'.format(self._id), 'group_from')
         cv.check_is_int(group_to, 'Material ID={0} sigma_s by group'.format(self._id), 'group_to')
-        cv.check_is_float_or_int(time, 'Material ID={0} sigma_s by group'.format(self._id), 'time')
+        cv.check_clock_position(time, 'Material ID={0} sigma_s by group'.format(self._id))
         cv.check_is_float_or_int(temp, 'Material ID={0} sigma_s by group'.format(self._id), 'temp')
 
         # check if group is valid
@@ -1753,7 +1706,7 @@ class FunctionalMaterial(TransientMaterial):
             raise ValueError(msg)
 
         # check if time_step is valid
-        elif time < self._time_steps[0] or time > self._time_steps[-1]:
+        elif self._clock.get_time(time) < self._time_steps[0] or self._clock.get_time(time) > self._time_steps[-1]:
             msg = 'Unable to get scattering xs for Material ID={0} for group {1} to {2} and ' \
                   'time {3} outside time window [{4}, {5}]' \
                 .format(self._id, group_from, group_to, time, self._time_steps[0], self._time_steps[-1])
@@ -1764,10 +1717,10 @@ class FunctionalMaterial(TransientMaterial):
             ng = self._num_energy_groups
 
             # find time step window
-            (i_left, i_right) = self.get_bounding_time_steps(time)
+            (i_left, i_right) = self.get_bounding_time_steps(self._clock.get_time(time))
 
             # compute sigma_s
-            sigma_s = self._sigma_s[i_left][group_from * ng + group_to] + (time - self._time_steps[i_left]) * \
+            sigma_s = self._sigma_s[i_left][group_from * ng + group_to] + (self._clock.get_time(time) - self._time_steps[i_left]) * \
                                                                           (self._sigma_s[i_left][
                                                                            group_from * ng + group_to] -
                                                                            self._sigma_s[i_right][
@@ -1777,14 +1730,14 @@ class FunctionalMaterial(TransientMaterial):
 
             return sigma_s
 
-    def get_dif_coef_by_group(self, group, time=None, temp=None):
+    def get_dif_coef_by_group(self, group, time='CURRENT', temp=300.0):
 
         # Check if necessary variables have been set
         cv.check_set(time, 'FunctionalMaterial ID={0} dif_coef by group'.format(self._id), 'time')
         cv.check_set(temp, 'FunctionalMaterial ID={0} dif_coef by group'.format(self._id), 'temp')
         cv.check_set(self._num_energy_groups, 'Material ID={0} dif_coef by group'.format(self._id), 'Num Energy Groups')
         cv.check_is_int(group, 'Material ID={0} dif_coef by group'.format(self._id), 'group')
-        cv.check_is_float_or_int(time, 'Material ID={0} dif_coef by group'.format(self._id), 'time')
+        cv.check_clock_position(time, 'Material ID={0} dif_coef by group'.format(self._id))
         cv.check_is_float_or_int(group, 'Material ID={0} dif_coef by group'.format(self._id), 'temp')
 
         # check if group is valid
@@ -1795,7 +1748,7 @@ class FunctionalMaterial(TransientMaterial):
             raise ValueError(msg)
 
         # check if time_step is valid
-        elif time < self._time_steps[0] or time > self._time_steps[-1]:
+        elif self._clock.get_time(time) < self._time_steps[0] or self._clock.get_time(time) > self._time_steps[-1]:
             msg = 'Unable to get dif coef for Material ID={0} for group {1} and' \
                   ' time {2} outside time window [{3}, {4}]' \
                 .format(self._id, group, time, self._time_steps[0], self._time_steps[-1])
@@ -1804,23 +1757,23 @@ class FunctionalMaterial(TransientMaterial):
         else:
 
             # find time step window
-            (i_left, i_right) = self.get_bounding_time_steps(time)
+            (i_left, i_right) = self.get_bounding_time_steps(self._clock.get_time(time))
 
             # compute dif_coef
-            dif_coef = self._dif_coef[i_left][group] + (time - self._time_steps[i_left]) * \
+            dif_coef = self._dif_coef[i_left][group] + (self._clock.get_time(time) - self._time_steps[i_left]) * \
                                                        (self._dif_coef[i_left][group] - self._dif_coef[i_right][group]) / \
                                                        (self._time_steps[i_right] - self._time_steps[i_left])
 
             return dif_coef
 
-    def get_chi_by_group(self, group, time=None, temp=None):
+    def get_chi_by_group(self, group, time='CURRENT', temp=300.0):
 
         # Check if necessary variables have been set
         cv.check_set(time, 'FunctionalMaterial ID={0} chi by group'.format(self._id), 'time')
         cv.check_set(temp, 'FunctionalMaterial ID={0} chi by group'.format(self._id), 'temp')
         cv.check_set(self._num_energy_groups, 'Material ID={0} chi by group'.format(self._id), 'Num Energy Groups')
         cv.check_is_int(group, 'Material ID={0} chi by group'.format(self._id), 'group')
-        cv.check_is_float_or_int(time, 'Material ID={0} chi by group'.format(self._id), 'time')
+        cv.check_clock_position(time, 'Material ID={0} chi by group'.format(self._id))
         cv.check_is_float_or_int(group, 'Material ID={0} chi by group'.format(self._id), 'temp')
 
         # check if group is valid
@@ -1831,7 +1784,7 @@ class FunctionalMaterial(TransientMaterial):
             raise ValueError(msg)
 
         # check if time_step is valid
-        elif time < self._time_steps[0] or time > self._time_steps[-1]:
+        elif self._clock.get_time(time) < self._time_steps[0] or self._clock.get_time(time) > self._time_steps[-1]:
             msg = 'Unable to get chi for Material ID={0} for group {1} and' \
                   ' time {2} outside time window [{3}, {4}]' \
                 .format(self._id, group, time, self._time_steps[0], self._time_steps[-1])
@@ -1840,14 +1793,50 @@ class FunctionalMaterial(TransientMaterial):
         else:
 
             # find time step window
-            (i_left, i_right) = self.get_bounding_time_steps(time)
+            (i_left, i_right) = self.get_bounding_time_steps(self._clock.get_time(time))
 
             # compute chi
-            chi = self._chi[i_left][group] + (time - self._time_steps[i_left]) * \
+            chi = self._chi[i_left][group] + (self._clock.get_time(time) - self._time_steps[i_left]) * \
                                              (self._chi[i_left][group] - self._chi[i_right][group]) / \
                                              (self._time_steps[i_right] - self._time_steps[i_left])
 
             return chi
+
+    def get_velocity_by_group(self, group, time='CURRENT', temp=300.0):
+
+        # Check if necessary variables have been set
+        cv.check_set(time, 'FunctionalMaterial ID={0} velocity by group'.format(self._id), 'time')
+        cv.check_set(temp, 'FunctionalMaterial ID={0} velocity by group'.format(self._id), 'temp')
+        cv.check_set(self._num_energy_groups, 'Material ID={0} velocity by group'.format(self._id), 'Num Energy Groups')
+        cv.check_is_int(group, 'Material ID={0} velocity by group'.format(self._id), 'group')
+        cv.check_clock_position(time, 'Material ID={0} velocity by group'.format(self._id))
+        cv.check_is_float_or_int(group, 'Material ID={0} velocity by group'.format(self._id), 'temp')
+
+        # check if group is valid
+        if group < 0 or group > self._num_energy_groups - 1:
+            msg = 'Unable to get velocity for Material ID={0} for group {1} ' \
+                  'as num energy groups is set to {2}' \
+                .format(self._id, group, self._num_energy_groups)
+            raise ValueError(msg)
+
+        # check if time_step is valid
+        elif self._clock.get_time(time) < self._time_steps[0] or self._clock.get_time(time) > self._time_steps[-1]:
+            msg = 'Unable to get velocity for Material ID={0} for group {1} and' \
+                  ' time {2} outside time window [{3}, {4}]' \
+                .format(self._id, group, time, self._time_steps[0], self._time_steps[-1])
+            raise ValueError(msg)
+
+        else:
+
+            # find time step window
+            (i_left, i_right) = self.get_bounding_time_steps(self._clock.get_time(time))
+
+            # compute chi
+            velocity = self._velocity[i_left][group] + (self._clock.get_time(time) - self._time_steps[i_left]) * \
+                (self._velocity[i_left][group] - self._velocity[i_right][group]) / \
+                (self._time_steps[i_right] - self._time_steps[i_left])
+
+            return velocity
 
     def get_doppler_coefficient_by_group(self, group):
 
@@ -1900,9 +1889,9 @@ class FunctionalMaterial(TransientMaterial):
                 self._nu_sigma_f = np.zeros((self._num_time_steps, num_energy_groups))
                 self._sigma_s = np.zeros((self._num_time_steps, num_energy_groups * num_energy_groups))
                 self._dif_coef = np.zeros((self._num_time_steps, num_energy_groups))
+                self._velocity = np.zeros((self._num_time_steps, num_energy_groups))
                 self._chi = np.zeros((self._num_time_steps, num_energy_groups))
                 self._doppler_coefficients = np.zeros(num_energy_groups)
-                self._velocity = np.zeros(num_energy_groups)
 
         else:
             msg = 'Unable to set num energy groups to non-integer {0}' \
@@ -1938,6 +1927,33 @@ class FunctionalMaterial(TransientMaterial):
             i_right = i_left + 1
             return i_left, i_right
 
+    def clone(self):
+
+        new_material = FunctionalMaterial(name=self._name, clock=self._clock)
+        new_material.set_num_time_steps(self._num_time_steps)
+        new_material.set_num_energy_groups(self._num_energy_groups)
+        new_material.set_num_delayed_groups(self._num_delayed_groups)
+        new_material.set_time_steps(self._time_steps)
+        new_material.set_energy_per_fission(self._energy_per_fission)
+        new_material.set_doppler_coefficients(self._doppler_coefficients)
+        new_material.set_temperature_conversion_factor(self._temperature_conversion_factor)
+        new_material.set_velocity(self._velocity)
+        new_material.set_sigma_a(self._sigma_a)
+        new_material.set_sigma_t(self._sigma_t)
+        new_material.set_sigma_f(self._sigma_f)
+        new_material.set_nu_sigma_f(self._nu_sigma_f)
+        new_material.set_sigma_s(self._sigma_s)
+        new_material.set_dif_coef(self._dif_coef)
+        new_material.set_chi(self._chi)
+        for position in self._clock.get_positions():
+            new_material.set_precursor_conc(self._precursor_conc[position], position)
+
+        return new_material
+
+    def broadcast(self, time_from, time_to):
+
+        np.copyto(self._precursor_conc[time_to], self._precursor_conc[time_from])
+
     def __repr__(self):
 
         string = 'OpenRK FunctionalMaterial\n'
@@ -1949,9 +1965,6 @@ class FunctionalMaterial(TransientMaterial):
         string += ' Time Steps \t\t= {0} \n'.format(self._time_steps)
         string += ' Energy Per Fission \t= {0} \n'.format(self._energy_per_fission)
         string += ' Doppler Coefficients \t= {0} \n'.format(self._doppler_coefficients)
-        string += ' Velocity \t\t= {0} \n'.format(self._velocity)
-        string += ' Decay Constants \t= {0} \n'.format(self._decay_constants)
-        string += ' Delayed Fractions \t= {0} \n'.format(self._delayed_fractions)
         for i in range(self._num_time_steps):
             string += ' Time Step \t\t= {0} \n'.format(i)
             string += ' Sigma T \t\t= {0} \n'.format(self._sigma_t[i])
@@ -1961,6 +1974,7 @@ class FunctionalMaterial(TransientMaterial):
             string += ' Dif Coef \t\t= {0} \n'.format(self._dif_coef[i])
             string += ' Chi \t\t\t= {0} \n'.format(self._chi[i])
             string += ' Sigma S \t\t= {0} \n'.format(self._sigma_s[i])
+            string += ' Velocity \t\t= {0} \n'.format(self._velocity[i])
         for i in self._clock.get_positions():
             string += ' Precursor Conc ({:^12s}) \t'.format(i)
             string += '= {0} \n'.format(self._precursor_conc[i])

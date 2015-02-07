@@ -6,9 +6,10 @@ import checkvalue as cv
 
 
 class Clock(object):
-    def __init__(self, start_time=0.0, end_time=3.0, dt_outer=1e-2, dt_inner=1e-3):
+    def __init__(self, start_time=0.0, end_time=3.0, dt_outer=1.e-1, dt_inner=1.e-2):
 
-        self._positions = ['START', 'PREVIOUS_OUT', 'PREVIOUS_IN', 'CURRENT', 'FORWARD_OUT', 'END']
+        self._positions = ['START', 'PREVIOUS_OUT', 'PREVIOUS_IN', 'CURRENT', 'FORWARD_IN_OLD', 'FORWARD_OUT',
+                           'FORWARD_OUT_OLD', 'END']
 
         # Initialize class attributes
         self._times = dict()
@@ -16,7 +17,9 @@ class Clock(object):
         self._times['PREVIOUS_OUT'] = 0.0
         self._times['PREVIOUS_IN'] = 0.0
         self._times['CURRENT'] = 0.0
+        self._times['FORWARD_IN_OLD'] = 0.0
         self._times['FORWARD_OUT'] = 0.0
+        self._times['FORWARD_OUT_OLD'] = 0.0
         self._times['END'] = end_time
         self._dt_outer = None
         self._dt_inner = None
@@ -24,9 +27,25 @@ class Clock(object):
         self.set_dt_outer(dt_outer)
         self.set_dt_inner(dt_inner)
 
+    def get_time(self, position):
+
+        return self._times[position]
+
+    def set_time(self, position_from, position_to):
+
+        self._times[position_to] = self._times[position_from]
+
     def get_positions(self):
 
         return self._positions
+
+    def get_dt_inner(self):
+
+        return self._dt_inner
+
+    def get_dt_outer(self):
+
+        return self._dt_outer
 
     def set_dt_outer(self, dt_outer):
 
@@ -39,7 +58,7 @@ class Clock(object):
             msg = 'Unable to set DT outer for non positive value {1}' \
                 .format(dt_outer)
 
-            print msg
+            raise ValueError(msg)
 
         else:
             self._dt_outer = dt_outer
@@ -62,18 +81,18 @@ class Clock(object):
     def take_inner_step(self):
 
         # Check to make sure inner step is multiple of outer time step size
-        if self._dt_outer % self._dt_inner > 1e-8:
+        if abs(self._dt_outer - round(self._dt_outer / self._dt_inner) * self._dt_inner) > 1e-8:
             msg = 'Unable to take inner step since DT outer is not an integer ' \
                   'multiple of DT inner. DT inner: {0}, DT outer: {1}' \
                 .format(self._dt_inner, self._dt_outer)
-            print msg
+            raise ValueError(msg)
 
             # Check to make sure that CURRENT is less than FORWARD_OUT
         elif self._times['CURRENT'] >= self._times['FORWARD_OUT']:
             msg = 'Unable to take inner step since CURRENT time is not ' \
                   'less than the FORWARD_OUT time. CURRENT: {0}, FORWARD_OUT: {1}' \
                 .format(self._times['CURRENT'], self._times['FORWARD_OUT'])
-            print msg
+            raise ValueError(msg)
 
         else:
 
@@ -83,18 +102,18 @@ class Clock(object):
     def take_outer_step(self):
 
         # Check to make sure inner step is multiple of outer time step size
-        if self._dt_outer % self._dt_inner > 1e-8:
+        if abs(self._dt_outer - round(self._dt_outer / self._dt_inner) * self._dt_inner) > 1e-8:
             msg = 'Unable to take outer step since DT outer is not an integer ' \
                   'multiple of DT inner. DT inner: {0}, DT outer: {1}' \
                 .format(self._dt_inner, self._dt_outer)
-            print msg
+            raise ValueError(msg)
 
             # Check to make sure that CURRENT time equals FORWARD_OUT
-        elif self._times['CURRENT'] != self._times['FORWARD_OUT']:
+        elif abs(self._times['CURRENT'] - self._times['FORWARD_OUT']) > 1.e-6:
             msg = 'Unable to take outer step since CURRENT time is not equal to ' \
                   'FORWARD_OUT time. CURRENT: {0}, FORWARD_OUT: {1}' \
                 .format(self._times['CURRENT'], self._times['FORWARD_OUT'])
-            print msg
+            raise ValueError(msg)
 
         else:
 
@@ -111,11 +130,11 @@ class Clock(object):
     def reset_to_previous_outer_step(self):
 
         # Check to make sure that CURRENT time equals FORWARD_OUT
-        if self._times['CURRENT'] != self._times['FORWARD_OUT']:
+        if abs(self._times['CURRENT'] - self._times['FORWARD_OUT']) > 1.e-6:
             msg = 'Unable to reset to previous out since CURRENT time is not equal to ' \
                   'FORWARD_OUT time. CURRENT: {0}, FORWARD_OUT: {1}' \
                 .format(self._times['CURRENT'], self._times['FORWARD_OUT'])
-            print msg
+            raise ValueError(msg)
 
         else:
 
@@ -129,7 +148,9 @@ class Clock(object):
         string += ' PREVIOUS_OUT time \t\t = {:6.5f} \n'.format(self._times['PREVIOUS_OUT'])
         string += ' PREVIOUS_IN time \t\t = {:6.5f} \n'.format(self._times['PREVIOUS_IN'])
         string += ' CURRENT time \t\t\t = {:6.5f} \n'.format(self._times['CURRENT'])
+        string += ' FORWARD_IN_OLD time \t\t = {:6.5f} \n'.format(self._times['FORWARD_IN_OLD'])
         string += ' FORWARD_OUT time \t\t = {:6.5f} \n'.format(self._times['FORWARD_OUT'])
+        string += ' FORWARD_OUT_0LD time \t\t = {:6.5f} \n'.format(self._times['FORWARD_OUT_OLD'])
         string += ' END time \t\t\t = {:6.5f} \n'.format(self._times['END'])
         string += ' DT outer \t\t\t = {:6.5f} \n'.format(self._dt_outer)
         string += ' DT inner \t\t\t = {:6.5f} \n'.format(self._dt_inner)

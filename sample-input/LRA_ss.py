@@ -26,7 +26,7 @@ fuel1bin.set_nu_sigma_f([[0.004602, 0.1091], [0.004602, 0.1091], [0.004602, 0.10
 fuel1bin.set_sigma_f([[0.004602/2.43, 0.1091/2.43], [0.004602/2.43, 0.1091/2.43], [0.004602/2.43, 0.1091/2.43]])
 fuel1bin.set_chi([[1.0, 0.0], [1.0, 0.0], [1.0, 0.0]])
 fuel1bin.set_sigma_s([[0.0, 0.02533, 0.0, 0.0], [0.0, 0.02533, 0.0, 0.0], [0.0, 0.02533, 0.0, 0.0]])
-fuel1bin.set_doppler_coefficients([3.034e-3, 0.0])
+fuel1bin.set_doppler_coefficients([0.0, 0.0])
 fuel1bin.set_energy_per_fission(3.204e-11)
 fuel1bin.set_velocity([[3.e7, 3.e5], [3.e7, 3.e5], [3.e7, 3.e5]])
 fuel1bin.set_temperature_conversion_factor(3.83e-11)
@@ -44,7 +44,7 @@ fuel1bo.set_nu_sigma_f([[0.004609, 0.08675], [0.004609, 0.08675], [0.004609, 0.0
 fuel1bo.set_sigma_f([[0.004609/2.43, 0.08675/2.43], [0.004609/2.43, 0.08675/2.43], [0.004609/2.43, 0.08675/2.43]])
 fuel1bo.set_chi([[1.0, 0.0], [1.0, 0.0], [1.0, 0.0]])
 fuel1bo.set_sigma_s([[0.0, 0.02767, 0.0, 0.0], [0.0, 0.02767, 0.0, 0.0], [0.0, 0.02767, 0.0, 0.0]])
-fuel1bo.set_doppler_coefficients([3.034e-3, 0.0])
+fuel1bo.set_doppler_coefficients([0.0, 0.0])
 fuel1bo.set_energy_per_fission(3.204e-11)
 fuel1bo.set_velocity([[3.e7, 3.e5], [3.e7, 3.e5], [3.e7, 3.e5]])
 fuel1bo.set_temperature_conversion_factor(3.83e-11)
@@ -62,7 +62,7 @@ fuel2bin.set_nu_sigma_f([[0.004663, 0.1021], [0.004663, 0.1021], [0.004663, 0.10
 fuel2bin.set_sigma_f([[0.004663/2.43, 0.1021/2.43], [0.004663/2.43, 0.1021/2.43], [0.004663/2.43, 0.1021/2.43]])
 fuel2bin.set_chi([[1.0, 0.0], [1.0, 0.0], [1.0, 0.0]])
 fuel2bin.set_sigma_s([[0.0, 0.02617, 0.0, 0.0], [0.0, 0.02617, 0.0, 0.0], [0.0, 0.02617, 0.0, 0.0]])
-fuel2bin.set_doppler_coefficients([3.034e-3, 0.0])
+fuel2bin.set_doppler_coefficients([0.0, 0.0])
 fuel2bin.set_energy_per_fission(3.204e-11)
 fuel2bin.set_velocity([[3.e7, 3.e5], [3.e7, 3.e5], [3.e7, 3.e5]])
 fuel2bin.set_temperature_conversion_factor(3.83e-11)
@@ -80,7 +80,7 @@ fuel2bo.set_nu_sigma_f([[0.004663, 0.1021], [0.004663, 0.1021], [0.004663, 0.102
 fuel2bo.set_sigma_f([[0.004663/2.43, 0.1021/2.43], [0.004663/2.43, 0.1021/2.43], [0.004663/2.43, 0.1021/2.43]])
 fuel2bo.set_chi([[1.0, 0.0], [1.0, 0.0], [1.0, 0.0]])
 fuel2bo.set_sigma_s([[0.0, 0.02617, 0.0, 0.0], [0.0, 0.02617, 0.0, 0.0], [0.0, 0.02617, 0.0, 0.0]])
-fuel2bo.set_doppler_coefficients([3.034e-3, 0.0])
+fuel2bo.set_doppler_coefficients([0.0, 0.0])
 fuel2bo.set_energy_per_fission(3.204e-11)
 fuel2bo.set_velocity([[3.e7, 3.e5], [3.e7, 3.e5], [3.e7, 3.e5]])
 fuel2bo.set_temperature_conversion_factor(3.83e-11)
@@ -98,7 +98,7 @@ fuel2bino.set_nu_sigma_f([[0.004663, 0.1021], [0.004663, 0.1021], [0.004663, 0.1
 fuel2bino.set_sigma_f([[0.004663/2.43, 0.1021/2.43], [0.004663/2.43, 0.1021/2.43], [0.004663/2.43, 0.1021/2.43]])
 fuel2bino.set_chi([[1.0, 0.0], [1.0, 0.0], [1.0, 0.0]])
 fuel2bino.set_sigma_s([[0.0, 0.02617, 0.0, 0.0], [0.0, 0.02617, 0.0, 0.0], [0.0, 0.02617, 0.0, 0.0]])
-fuel2bino.set_doppler_coefficients([3.034e-3, 0.0])
+fuel2bino.set_doppler_coefficients([0.0, 0.0])
 fuel2bino.set_energy_per_fission(3.204e-11)
 fuel2bino.set_velocity([[3.e7, 3.e5], [3.e7, 3.e5], [3.e7, 3.e5]])
 fuel2bino.set_temperature_conversion_factor(3.83e-11)
@@ -131,7 +131,7 @@ for i in xrange(7, 9):
 
 for i in xrange(5, 7):
     for cell_id in xrange(i*nx+7, i*nx+9):
-        mesh.set_material(fuel2bino, cell_id)
+        mesh.set_material(fuel2bin, cell_id)
 
 for i in xrange(5):
     for cell_id in xrange(i*nx+7, i*nx+9):
@@ -162,11 +162,11 @@ for cell_id in xrange(1, 5):
     mesh.set_material(fuel1bin, cell_id)
 
 # refine mesh and uniquify materials
-mesh = mesh.uniform_refine(9)
+mesh = mesh.uniform_refine(2)
 mesh.uniquify_materials()
 
 # Create and initialize the amplitude mesh
-amp_mesh = rk.mesh.AmpMesh(name='amp mesh', width=165.0, height=165.0, num_x=33, num_y=33)
+amp_mesh = rk.mesh.AmpMesh(name='amp mesh', width=165.0, height=165.0, num_x=11, num_y=11)
 amp_mesh.set_num_amp_energy_groups(2)
 amp_mesh.set_num_shape_energy_groups(2)
 amp_mesh.set_num_delayed_groups(2)
@@ -186,14 +186,14 @@ solver = rk.solver.CmfdSolver(mesh, amp_mesh)
 solver.set_num_threads(1)
 
 transient = rk.transient.Transient()
-transient.set_clock(rk.clock.Clock(dt_inner=2.5e-2, dt_outer=1.e-1))
+transient.set_clock(rk.clock.Clock())
 transient.set_shape_mesh(mesh)
 transient.set_amp_mesh(amp_mesh)
 transient.set_solver(solver)
 transient.set_initial_power(1.e-6)
 transient.compute_initial_shape()
 
-for i in xrange(300):
+for i in xrange(50):
     transient.take_outer_step()
 
 #rk.plotter.plot_precursor_conc(amp_mesh, name='amp-precursor-conc')
