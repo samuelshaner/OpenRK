@@ -120,7 +120,7 @@ tally_factory.createTalliesFile()
 print('running openmc...')
 
 executor = openmc.Executor()
-executor.run_simulation(output=True, mpi_procs=3)
+#executor.run_simulation(output=True, mpi_procs=3)
 
 
 #####################   Parametric Sweep Over Energy Groups ####################
@@ -149,6 +149,10 @@ for i, num_groups in enumerate(structures):
 
     micro_extractor = MicroXSTallyExtractor(statepoint, summary)
     micro_extractor.extractAllMultiGroupXS(groups, 'material')
+
+    print('rebalancing...')
+    micro_extractor.rebalanceAllScatterMatrices()
+    print('rebalanced...')
 
     materials = summary.openmc_geometry.get_all_materials()
 
@@ -188,7 +192,7 @@ for i, num_groups in enumerate(structures):
       macro_xs = dict()
       macro_xs['total'] = numpy.zeros(num_groups)
       macro_xs['transport'] = numpy.zeros(num_groups)
-      macro_xs['nu-scatter matrix'] = numpy.zeros((num_groups, num_groups))
+      macro_xs['scatter matrix'] = numpy.zeros((num_groups, num_groups))
       macro_xs['absorption'] = numpy.zeros(num_groups)
       macro_xs['fission'] = numpy.zeros(num_groups)
       macro_xs['nu-fission'] = numpy.zeros(num_groups)
@@ -214,7 +218,7 @@ for i, num_groups in enumerate(structures):
       openmoc_material.setSigmaA(macro_xs['absorption'])
       openmoc_material.setSigmaF(macro_xs['fission'])
       openmoc_material.setNuSigmaF(macro_xs['nu-fission'])
-      openmoc_material.setSigmaS(macro_xs['nu-scatter matrix'].ravel())
+      openmoc_material.setSigmaS(macro_xs['scatter matrix'].ravel())
       openmoc_material.setChi(macro_xs['chi'])
 
       ######################  Set Materials for OpenMOC Cells  ###################

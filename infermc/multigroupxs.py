@@ -1372,7 +1372,9 @@ class ScatterMatrixXS(MultiGroupXS):
     offsets = self.getSubDomainOffsets(subdomains)
 
     xs = self._xs[metrics[metric], offsets, ...]
-    xs = xs[..., in_groups, out_groups, :]
+    xs = xs[..., in_groups, :, ...]
+    xs = xs[..., :, out_groups, ...]
+#    xs = xs[..., in_groups, out_groups, :]
     return xs
 
 

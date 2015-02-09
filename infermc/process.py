@@ -672,10 +672,13 @@ class XSTallyExtractor(object):
 class MicroXSTallyExtractor(XSTallyExtractor):
 
 
-  '''
-#  def rebalanceScatterMatrices(self,):
+  def rebalanceAllScatterMatrices(self, domain_types='all'):
 
-  def rebalanceAllScatterMatrices(self, domain_types='all', nuclides='all'):
+    #FIXME: This assumes that MultiGroupXS are MicroXS w/ nuclides
+    #TODO: Can we solve equations for all nuclides, groups simultaneously?
+    #TODO: If so, use "spy" on the matrix to detect structure
+    #TODO: If this works, then it should work for both Macro an Micro??
+    #FIXME: This does not do error propagation for the uncertainties
 
     if domain_types == 'all':
       domain_types = self._multigroup_xs.keys()
@@ -686,16 +689,91 @@ class MicroXSTallyExtractor(XSTallyExtractor):
 
         for domain_id in self._multigroup_xs[domain_type].keys():
 
+          # Get dictionary of all MultiGroupXS for this
+          all_domain_xs = self._multigroup_xs[domain_type][domain_id]
 
-          for xs_type in self._multigroup_xs[domain_type][domain_id].keys():
-            xs = self._multigroup_xs[domain_type][domain_id][xs_type]
-            xs.checkXS()
+          # FIXME: Assume that total and absorption are both *always* included
+          if 'scatter matrix' in all_domain_xs.keys():
 
-    if
-    for xs_type in infermc.xs_types:
-      self.extractMultiGroupXS(xs_type, energy_groups, domain_type,
-                               nuclides, ignore_missing, corr)
-  '''
+            print domain_type, domain_id
+
+            transport_xs = all_domain_xs['transport']
+            absorption_xs = all_domain_xs['absorption']
+            scatter_matrix_xs = all_domain_xs['scatter matrix']
+            nu_scatter_matrix_xs = all_domain_xs['nu-scatter matrix']
+
+            # Get the number of energy groups
+            num_groups = transport_xs._num_groups
+
+            print num_groups
+
+            # Get tracklength flux tally data
+            flux_tally = absorption_xs._tallies['flux']
+            flux_data, zero_indices = absorption_xs.getTallyData(flux_tally)
+            flux_data = flux_data[0, ...]   # Get mean data
+            flux_data = flux_data.squeeze()  # remove single-valued dimensions
+
+            transport = transport_xs.getXS()
+            absorption = absorption_xs.getXS()
+            scatter_matrix = scatter_matrix_xs.getXS()
+            nu_scatter_matrix = nu_scatter_matrix_xs.getXS()
+
+            # Need to multiple xs by flux to get rates
+
+            # Swap nuclide axis
+            if isinstance(transport_xs, infermc.MicroXS):
+                transport = transport.swapaxes(1,-1)
+            if isinstance(absorption_xs, infermc.MicroXS):
+                absorption = absorption.swapaxes(1,-1)
+            if isinstance(scatter_matrix_xs, infermc.MicroScatterMatrixXS):
+                scatter_matrix = scatter_matrix.swapaxes(1,-1)
+                scatter_matrix = scatter_matrix.swapaxes(2,3)
+            if isinstance(nu_scatter_matrix_xs, infermc.MicroNuScatterMatrixXS):
+                nu_scatter_matrix = nu_scatter_matrix.swapaxes(1,-1)
+                nu_scatter_matrix = nu_scatter_matrix.swapaxes(2,3)
+
+            # Remove subdomain index for single subdomain MultiGroupXS
+            transport = transport.squeeze()
+            absorption = absorption.squeeze()
+            scatter_matrix = scatter_matrix.squeeze()
+            nu_scatter_matrix = nu_scatter_matrix.squeeze()
+
+            # Compute reaction rates
+            transport_rate = np.multiply(transport, flux_data)
+            absorption_rate = np.multiply(absorption, flux_data)
+            scatter_rate = np.multiply(scatter_matrix, flux_data)
+            tot_scatter_rate = transport_rate - absorption_rate
+
+            num_nuclides = transport.shape[0]
+
+            for nuclide in range(num_nuclides):
+
+              # Calculate rebalance factors
+              f = np.linalg.solve(scatter_rate[nuclide, ...],
+                                  tot_scatter_rate[nuclide, ...])
+
+              # Multiply scattering matrics by the factor
+              scatter_matrix[nuclide, ...] = np.multiply(scatter_matrix[nuclide, ...], f)
+              nu_scatter_matrix[nuclide, ...] = np.multiply(nu_scatter_matrix[nuclide, ...], f)
+
+
+            scatter_matrix = scatter_matrix.swapaxes(1,2)
+            scatter_matrix = scatter_matrix.swapaxes(0,-1)
+#            scatter_matrix = scatter_matrix.swapaxes(0,1)
+            nu_scatter_matrix = nu_scatter_matrix.swapaxes(1,2)
+            nu_scatter_matrix = nu_scatter_matrix.swapaxes(0,-1)
+#            nu_scatter_matrix = scatter_matrix.swapaxes(0,1)
+
+            scatter_matrix_xs._xs[0,...] = scatter_matrix
+            nu_scatter_matrix_xs._xs[0,...] = nu_scatter_matrix
+
+
+            # 1) Retrieve all rates
+            # 2) Reshape arrays for Ax=b system
+            # 3) Solve for f
+            # 4) Inspect f
+            # 5) Multiply nu-scatter, scatter matrices by f
+
 
   def extractAllMultiGroupXS(self, energy_groups, domain_type='distribcell',
                              nuclides='all', ignore_missing=True, corr=False):
