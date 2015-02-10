@@ -145,6 +145,22 @@ class MicroXS(infermc.MultiGroupXS):
     return xs[..., nuclides]
 
 
+  def getMacroXS(self, groups='all', nuclides='all',
+                 subdomains='all', metric='mean'):
+
+    # Get the micro cross-sections
+    micro_xs = self.getXS(groups, nuclides, subdomains, metric)
+
+    # Get array of nuclide densities (except for 'total')
+    nuclides = self.getNuclideIndices(nuclides)
+    densities = self._densities[nuclides][:-1]
+
+    macro_xs = np.sum(densities * micro_xs[...,:-1], axis=-1)
+    macro_xs = macro_xs.squeeze()
+
+    return macro_xs
+
+
   def getRelErr(self, groups='all', nuclides='all', subdomains='all'):
 
     # Get the cross-section average and std deviation
@@ -571,6 +587,22 @@ class MicroScatterMatrixXS(MicroXS, infermc.ScatterMatrixXS):
     xs = super(MicroXS, self).getXS(in_groups, out_groups, subdomains, metric)
     nuclides = self.getNuclideIndices(nuclides)
     return xs[..., nuclides]
+
+
+  def getMacroXS(self, in_groups='all', out_groups='all', nuclides='all',
+                 subdomains='all', metric='mean'):
+
+    # Get the micro cross-sections
+    micro_xs = self.getXS(in_groups, out_groups, nuclides, subdomains, metric)
+
+    # Get array of nuclide densities (except for 'total')
+    nuclides = self.getNuclideIndices(nuclides)
+    densities = self._densities[nuclides][:-1]
+
+    macro_xs = np.sum(densities * micro_xs[...,:-1], axis=-1)
+    macro_xs = macro_xs.squeeze()
+
+    return macro_xs
 
 
   def getRelErr(self, in_groups='all', out_groups='all',
