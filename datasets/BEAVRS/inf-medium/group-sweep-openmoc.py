@@ -18,8 +18,8 @@ import numpy, h5py
 # OpenMC simulation parameters
 batches = 100
 inactive = 5
-particles = 10000
-structures = [2] #,4,8,12,16,25] #,40,70]
+particles = 50000
+structures = [2,4,8,12,16,25] #,4,8,12] #2,4,8,12] #,4,8,12] #,4,8,12,16,25] #,40,70]
 
 # Initialize array to contain all data
 kinf = numpy.zeros((len(structures), batches-inactive-4), dtype=numpy.float64)
@@ -120,7 +120,7 @@ tally_factory.createTalliesFile()
 print('running openmc...')
 
 executor = openmc.Executor()
-#executor.run_simulation(output=True, mpi_procs=3)
+executor.run_simulation(output=True, mpi_procs=4)
 
 
 #####################   Parametric Sweep Over Energy Groups ####################
@@ -150,9 +150,7 @@ for i, num_groups in enumerate(structures):
     micro_extractor = MicroXSTallyExtractor(statepoint, summary)
     micro_extractor.extractAllMultiGroupXS(groups, 'material')
 
-    print('rebalancing...')
     micro_extractor.rebalanceAllScatterMatrices()
-    print('rebalanced...')
 
     materials = summary.openmc_geometry.get_all_materials()
 
@@ -193,6 +191,7 @@ for i, num_groups in enumerate(structures):
       macro_xs['total'] = numpy.zeros(num_groups)
       macro_xs['transport'] = numpy.zeros(num_groups)
       macro_xs['scatter matrix'] = numpy.zeros((num_groups, num_groups))
+      macro_xs['nu-scatter matrix'] = numpy.zeros((num_groups, num_groups))
       macro_xs['absorption'] = numpy.zeros(num_groups)
       macro_xs['fission'] = numpy.zeros(num_groups)
       macro_xs['nu-fission'] = numpy.zeros(num_groups)
@@ -218,7 +217,7 @@ for i, num_groups in enumerate(structures):
       openmoc_material.setSigmaA(macro_xs['absorption'])
       openmoc_material.setSigmaF(macro_xs['fission'])
       openmoc_material.setNuSigmaF(macro_xs['nu-fission'])
-      openmoc_material.setSigmaS(macro_xs['scatter matrix'].ravel())
+      openmoc_material.setSigmaS(macro_xs['nu-scatter matrix'].ravel())
       openmoc_material.setChi(macro_xs['chi'])
 
       ######################  Set Materials for OpenMOC Cells  ###################
@@ -238,9 +237,9 @@ for i, num_groups in enumerate(structures):
     track_generator.generateTracks()
 
     solver = openmoc.CPUSolver(openmoc_geometry, track_generator)
-    solver.setSourceConvergenceThreshold(1E-6)
+    solver.setSourceConvergenceThreshold(1E-7)
+    solver.setNumThreads(4)
     solver.convergeSource(1000)
-    solver.setNumThreads(3)
     solver.printTimerReport()
 
     store_simulation_state(solver, use_hdf5=True,
@@ -292,4 +291,5 @@ plt.title('1.6% Enr. k-inf Error')
 plt.xlim((20,100))
 plt.legend(legend)
 plt.grid()
+plt.ylim(-400, 400)
 plt.savefig('k-inf-err-nu-scatt-2.png')

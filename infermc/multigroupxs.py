@@ -1259,7 +1259,7 @@ class ScatterMatrixXS(MultiGroupXS):
     scatter1[:, zero_indices['scatter-1']] = -1
 
     # FIXME
-    # Tile the flux to correspond to the nu-scatter array
+    # Tile the flux to correspond to the scatter array
     flux = np.repeat(flux[:,:,np.newaxis,:,:], self._num_groups, axis=3)
     flux = np.reshape(flux, scatter.shape[0:-1] + (1,))
 
@@ -1374,7 +1374,6 @@ class ScatterMatrixXS(MultiGroupXS):
     xs = self._xs[metrics[metric], offsets, ...]
     xs = xs[..., in_groups, :, ...]
     xs = xs[..., :, out_groups, ...]
-#    xs = xs[..., in_groups, out_groups, :]
     return xs
 
 
