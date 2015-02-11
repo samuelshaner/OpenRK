@@ -1,14 +1,14 @@
-import opencg, openmc, openmoc
+import openmc, openmoc
 from openmoc.process import store_simulation_state
 from openmc.statepoint import StatePoint
 from openmc.summary import Summary
 from datasets.energy_groups import group_structures
 from infermc.build import MicroXSTallyFactory, xs_types
 from infermc.process import MicroXSTallyExtractor
-from openmc.opencg_compatible import get_openmc_geometry, get_opencg_geometry
+from openmc.opencg_compatible import get_opencg_geometry
 from openmoc.compatible.opencg_compatible import get_openmoc_geometry
 import matplotlib.pyplot as plt
-import numpy, h5py
+import numpy
 
 
 ################################################################################
@@ -18,8 +18,8 @@ import numpy, h5py
 # OpenMC simulation parameters
 batches = 100
 inactive = 5
-particles = 100000
-structures = [2,4,8,12,16,25] #,40,70]
+particles = 250000
+structures = [1,2,4,8,12,16,25,40,70]
 
 # Initialize array to contain all data
 kinf = numpy.zeros((len(structures), batches-inactive-4), dtype=numpy.float64)
@@ -106,7 +106,6 @@ source_bounds = [-0.63, -0.63, -0.63, +0.63, +0.63, +0.63]
 settings_file.set_source_space('box', source_bounds)
 settings_file.export_to_xml()
 
-
 tally_factory = MicroXSTallyFactory(openmc_geometry)
 
 for i, num_groups in enumerate(structures):
@@ -120,7 +119,7 @@ tally_factory.createTalliesFile()
 print('running openmc...')
 
 executor = openmc.Executor()
-#executor.run_simulation(output=True, mpi_procs=16)
+executor.run_simulation(output=True, mpi_procs=8)
 
 
 #####################   Parametric Sweep Over Energy Groups ####################
@@ -143,6 +142,9 @@ for i, num_groups in enumerate(structures):
 
     openmc.reset_auto_ids()
 
+    openmoc_geometry = get_openmoc_geometry(opencg_geometry)
+    cells = openmoc_geometry.getRootUniverse().getAllCells()
+
     # Initialize handle on the OpenMC statepoint file
     filename = 'statepoint.{0:03}.h5'.format(batch)
     statepoint = StatePoint(filename)
@@ -150,73 +152,31 @@ for i, num_groups in enumerate(structures):
     micro_extractor = MicroXSTallyExtractor(statepoint, summary)
     micro_extractor.extractAllMultiGroupXS(groups, 'material')
 
-    materials = summary.openmc_geometry.get_all_materials()
+    micro_extractor.rebalanceAllScatterMatrices()
 
-    # DUMP-TO-FILE and PRINT XS
-    filename = 'mgxs-batch-{0}-groups-{1}'.format(batch, num_groups)
-    
-    for material in materials:
+    all_materials_xs = micro_extractor._multigroup_xs['material']
+
+    for material_id in all_materials_xs.keys():
+
+      print('initializing material {0} ...'.format(material_id))
+
+      material_xs = all_materials_xs[material_id]
+      macro_xs = dict()
+
       for xs_type in xs_types:
-        xs = micro_extractor._multigroup_xs['material'][material._id][xs_type]
-        xs.exportResults(filename=filename)
+        multigroup_xs = material_xs[xs_type]
+        macro_xs[xs_type] = multigroup_xs.getMacroXS()
 
-    statepoint.close()
-    del statepoint
-
-    ###################   Injecting Cross-Sections into OpenMOC  #################
-
-    openmoc_geometry = get_openmoc_geometry(opencg_geometry)
-    cells = openmoc_geometry.getRootUniverse().getAllCells()
-
-    print('opening {0} ...'.format(filename))
-
-    f = h5py.File('multigroupxs/{0}.h5'.format(filename), 'r')
-
-    mats = f['material']
-
-    for mat_key in mats.keys():
-
-      print('initializing material {0} ...'.format(mat_key))
-
-      material_id = int(mat_key.split(' ')[1])
-      material_group = mats[mat_key]
-
+      #########################  Create OpenMOC Materials  #######################
       openmoc_material = openmoc.Material(material_id)
       openmoc_material.setNumEnergyGroups(num_groups)
       openmoc_material.thisown = 0   # FIXME: Can SWIG do this on its own??
-
-      macro_xs = dict()
-      macro_xs['total'] = numpy.zeros(num_groups)
-      macro_xs['transport'] = numpy.zeros(num_groups)
-      macro_xs['scatter matrix'] = numpy.zeros((num_groups, num_groups))
-      macro_xs['absorption'] = numpy.zeros(num_groups)
-      macro_xs['fission'] = numpy.zeros(num_groups)
-      macro_xs['nu-fission'] = numpy.zeros(num_groups)
-      macro_xs['chi'] = numpy.zeros(num_groups)
-
-      #####################  Calculate Macro Cross-Sections  #####################
-
-      for nuclide in material_group.keys():
-        nuclide_group = material_group[nuclide]
-        density = nuclide_group['density'][0]
-
-        if nuclide == 'total':
-          continue
-
-        for rxn_type in nuclide_group.keys():
-          if rxn_type in macro_xs.keys():
-            micro_xs = nuclide_group[rxn_type]['average'][...]
-            print type(micro_xs), type(density)
-            print len(micro_xs), len(micro_xs)
-            macro_xs[rxn_type] += micro_xs * density
-
-      #########################  Create OpenMOC Materials  #######################
 
       openmoc_material.setSigmaT(macro_xs['transport'])
       openmoc_material.setSigmaA(macro_xs['absorption'])
       openmoc_material.setSigmaF(macro_xs['fission'])
       openmoc_material.setNuSigmaF(macro_xs['nu-fission'])
-      openmoc_material.setSigmaS(macro_xs['scatter matrix'].ravel())
+      openmoc_material.setSigmaS(macro_xs['nu-scatter matrix'].ravel())
       openmoc_material.setChi(macro_xs['chi'])
 
       ######################  Set Materials for OpenMOC Cells  ###################
@@ -236,9 +196,9 @@ for i, num_groups in enumerate(structures):
     track_generator.generateTracks()
 
     solver = openmoc.CPUSolver(openmoc_geometry, track_generator)
-    solver.setSourceConvergenceThreshold(1E-6)
+    solver.setSourceConvergenceThreshold(1E-7)
+    solver.setNumThreads(4)
     solver.convergeSource(1000)
-    solver.setNumThreads(3)
     solver.printTimerReport()
 
     store_simulation_state(solver, use_hdf5=True,
@@ -246,7 +206,6 @@ for i, num_groups in enumerate(structures):
                            note='batch-{0}'.format(batch))
 
     print('stored simulation state...')
-    f.close()
 
     kinf[i,j] = solver.getKeff()
 
@@ -290,4 +249,5 @@ plt.title('1.6% Enr. k-inf Error')
 plt.xlim((20,100))
 plt.legend(legend)
 plt.grid()
-plt.savefig('k-inf-err.png')
+plt.ylim(-400, 400)
+plt.savefig('k-inf-err-nu-scatt.png')

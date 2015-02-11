@@ -47,6 +47,8 @@ class XSTallyFactory(object):
       xs = NuScatterXS(domain, domain_type, energy_groups)
     elif xs_type == 'scatter matrix':
       xs = ScatterMatrixXS(domain, domain_type, energy_groups)
+    elif xs_type == 'nu-scatter matrix':
+      xs = NuScatterMatrixXS(domain, domain_type, energy_groups)
     elif xs_type == 'diffusion':
       xs = DiffusionCoeff(domain, domain_type, energy_groups)
     elif xs_type == 'chi':
@@ -124,6 +126,8 @@ class MicroXSTallyFactory(XSTallyFactory):
       xs = MicroNuScatterXS(domain, domain_type, energy_groups, nuclides)
     elif xs_type == 'scatter matrix':
       xs = MicroScatterMatrixXS(domain, domain_type, energy_groups, nuclides)
+    elif xs_type == 'nu-scatter matrix':
+      xs = MicroNuScatterMatrixXS(domain, domain_type, energy_groups, nuclides)
     elif xs_type == 'diffusion':
       xs = MicroDiffusionCoeff(domain, domain_type, energy_groups, nuclides)
     elif xs_type == 'chi':

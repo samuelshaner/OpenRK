@@ -12,6 +12,7 @@ greek['capture'] = '$\\sigma_{c}$'
 greek['scatter'] = '$\\sigma_{s}$'
 greek['nu-scatter'] = '$\\nu\\sigma_{s}$'
 greek['scatter matrix'] = '$\\sigma_{s}$'
+greek['nu-scatter matrix'] = '$\\nu\\Sigma_{s}$'
 greek['fission'] = '$\\sigma_{f}$'
 greek['nu-fission'] = '$\\nu\\sigma_{f}$'
 greek['chi'] = '$\\chi$'
@@ -142,6 +143,22 @@ class MicroXS(infermc.MultiGroupXS):
     xs = super(MicroXS, self).getXS(groups, subdomains, metric)
     nuclides = self.getNuclideIndices(nuclides)
     return xs[..., nuclides]
+
+
+  def getMacroXS(self, groups='all', nuclides='all',
+                 subdomains='all', metric='mean'):
+
+    # Get the micro cross-sections
+    micro_xs = self.getXS(groups, nuclides, subdomains, metric)
+
+    # Get array of nuclide densities (except for 'total')
+    nuclides = self.getNuclideIndices(nuclides)
+    densities = self._densities[nuclides][:-1]
+
+    macro_xs = np.sum(densities * micro_xs[...,:-1], axis=-1)
+    macro_xs = macro_xs.squeeze()
+
+    return macro_xs
 
 
   def getRelErr(self, groups='all', nuclides='all', subdomains='all'):
@@ -402,7 +419,7 @@ class MicroXS(infermc.MultiGroupXS):
           # Add MultiGroupXS results data to the table list
           table = list()
 
-          if self._xs_type != 'scatter matrix':
+          if not self._xs_type in ['scatter matrix', 'nu-scatter matrix']:
             headers = list()
             headers.append('Group')
             headers.append('Average XS')
@@ -572,6 +589,22 @@ class MicroScatterMatrixXS(MicroXS, infermc.ScatterMatrixXS):
     return xs[..., nuclides]
 
 
+  def getMacroXS(self, in_groups='all', out_groups='all', nuclides='all',
+                 subdomains='all', metric='mean'):
+
+    # Get the micro cross-sections
+    micro_xs = self.getXS(in_groups, out_groups, nuclides, subdomains, metric)
+
+    # Get array of nuclide densities (except for 'total')
+    nuclides = self.getNuclideIndices(nuclides)
+    densities = self._densities[nuclides][:-1]
+
+    macro_xs = np.sum(densities * micro_xs[...,:-1], axis=-1)
+    macro_xs = macro_xs.squeeze()
+
+    return macro_xs
+
+
   def getRelErr(self, in_groups='all', out_groups='all',
                 nuclides='all', subdomains='all'):
 
@@ -634,6 +667,12 @@ class MicroScatterMatrixXS(MicroXS, infermc.ScatterMatrixXS):
     print(string)
 
 
+class MicroNuScatterMatrixXS(MicroScatterMatrixXS, infermc.NuScatterMatrixXS):
+
+  def createTallies(self):
+    super(MicroNuScatterMatrixXS, self).createTallies()
+
+
 class MicroDiffusionCoeff(MicroXS, infermc.DiffusionCoeff):
 
   def createTallies(self):
@@ -646,3 +685,36 @@ class MicroChi(MicroXS, infermc.Chi):
   def createTallies(self):
     super(MicroChi, self).createTallies()
     self.addNuclidesToTallies()
+
+
+  def getMacroXS(self, in_groups='all', out_groups='all', nuclides='all',
+                 subdomains='all', metric='mean'):
+
+    # Extract and clean the Tally data
+    tally_data, zero_indices = super(MicroChi, self).getAllTallyData()
+
+    # Get the mean of the nu-fission in-group tallied reaction rates
+    nu_fission_in = tally_data['nu-fission-in'][0,...]
+
+    # Sum up total nu-fission source across energy groups, nuclides
+    tot_fiss_src = np.sum(nu_fission_in, axis=(1,2))
+
+    chi = self.getXS()
+    num_subdomains = self._xs.shape[1]
+    num_groups = self._xs.shape[2]
+    macro_chi = np.zeros((num_subdomains, num_groups), dtype=np.float)
+
+    if tot_fiss_src > 0.:
+
+      for group in range(self._num_groups):
+
+        # Sum up nuclide nu-fission source across energy groups, nuclides
+        nuclide_fiss_src = np.sum(nu_fission_in * chi[:,group,:], axis=(1,2))
+
+        # Set the macroscopic chi for all subdomains
+        macro_chi[:,group] = nuclide_fiss_src / tot_fiss_src
+
+    macro_chi = macro_chi.squeeze()
+
+    return macro_chi
+

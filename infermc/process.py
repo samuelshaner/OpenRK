@@ -1,5 +1,4 @@
 import openmc
-import opencg
 import infermc
 import numpy as np
 
@@ -522,13 +521,28 @@ class XSTallyExtractor(object):
 
       # Get the Tally objects needed to compute the scatter matrix
       flux = self.getTally('flux', filters, estimator='analog')
+      scatter1 = self.getTally('scatter-1', filters, estimator='analog')
+
+      filters.append(openmc.Filter(type='energyout', bins=group_edges))
+      scatter = self.getTally('scatter', filters, estimator='analog')
+
+      # Initialize a MultiGroupXS object
+      multigroup_xs = infermc.ScatterMatrixXS(domain, domain_type, energy_groups)
+      multigroup_xs._tallies['flux'] = flux
+      multigroup_xs._tallies['scatter-1'] = scatter1
+      multigroup_xs._tallies['scatter'] = scatter
+
+    elif xs_type == 'nu-scatter matrix':
+
+      # Get the Tally objects needed to compute the scatter matrix
+      flux = self.getTally('flux', filters, estimator='analog')
       nu_scatter1 = self.getTally('nu-scatter-1', filters, estimator='analog')
 
       filters.append(openmc.Filter(type='energyout', bins=group_edges))
       nu_scatter = self.getTally('nu-scatter', filters, estimator='analog')
 
       # Initialize a MultiGroupXS object
-      multigroup_xs = infermc.ScatterMatrixXS(domain, domain_type, energy_groups)
+      multigroup_xs = infermc.NuScatterMatrixXS(domain, domain_type, energy_groups)
       multigroup_xs._tallies['flux'] = flux
       multigroup_xs._tallies['nu-scatter-1'] = nu_scatter1
       multigroup_xs._tallies['nu-scatter'] = nu_scatter
@@ -621,6 +635,56 @@ class XSTallyExtractor(object):
                                               self._domain._id))
 
 
+  def rebalanceAllScatterMatrices(self, domain_types='all'):
+
+    #FIXME: This does not do error propagation for the uncertainties
+
+    if domain_types == 'all':
+      domain_types = self._multigroup_xs.keys()
+
+    for domain_type in self._multigroup_xs.keys():
+
+      if domain_type in domain_types:
+
+        for domain_id in self._multigroup_xs[domain_type].keys():
+
+          # Get dictionary of all MultiGroupXS for this
+          all_domain_xs = self._multigroup_xs[domain_type][domain_id]
+
+          if 'scatter matrix' in all_domain_xs.keys():
+
+            # Get MultiGroupXS objects
+            transport_xs = all_domain_xs['transport']
+            absorption_xs = all_domain_xs['absorption']
+            scatter_xs = all_domain_xs['scatter']
+            scatter_matrix_xs = all_domain_xs['scatter matrix']
+            nu_scatter_matrix_xs = all_domain_xs['nu-scatter matrix']
+
+            # Get cross-section NumPy arrays
+            transport = transport_xs.getXS()
+            absorption = absorption_xs.getXS()
+            scatter_matrix = scatter_matrix_xs.getXS()
+            nu_scatter_matrix = nu_scatter_matrix_xs.getXS()
+
+            # Compute scatter cross-section in each subdomain, group, nuclide
+            scatter = transport - absorption
+
+            # Compute rebalance factors for each subdomain, group, nuclide
+            f = scatter / np.sum(scatter_matrix, axis=2)
+
+            # Update scattering matrices with f factor
+            scatter_matrix *= f
+            nu_scatter_matrix *= f
+
+            # Convert NaNs to zero
+            scatter_matrix = np.nan_to_num(scatter_matrix)
+            nu_scatter_matrix = np.nan_to_num(nu_scatter_matrix)
+
+            # Assign rebalanced scattering matrixs to the MultiGroupXS
+            scatter_matrix_xs._xs[0,...] = scatter_matrix
+            nu_scatter_matrix_xs._xs[0,...] = nu_scatter_matrix
+
+
   def getMaxXS(self, xs_type, domain_type, group):
 
     max_xs = 1e10
@@ -628,7 +692,7 @@ class XSTallyExtractor(object):
     for domain in self._multigroup_xs[domain_type].keys():
       xs = self.getMultiGroupXS(xs_type, domain, domain_type)
 
-      if xs_type != 'scatter matrix':
+      if not xs_type in ['scatter matrix', 'nu-scatter matrix']:
         data = xs.getXS(groups=[group])
       else:
         data = xs.getXS(in_groups=[group], out_groups=[group])
@@ -645,7 +709,7 @@ class XSTallyExtractor(object):
     for domain in self._multigroup_xs[domain_type].keys():
       xs = self.getMultiGroupXS(xs_type, domain, domain_type)
 
-      if xs_type != 'scatter matrix':
+      if not xs_type in ['scatter matrix', 'nu-scatter matrix']:
         data = xs.getXS(groups=[group])
       else:
         data = xs.getXS(in_groups=[group], out_groups=[group])
@@ -855,16 +919,31 @@ class MicroXSTallyExtractor(XSTallyExtractor):
 
       # Get the Tally objects needed to compute the scatter matrix
       flux = self.getTally('flux', filters, estimator='analog')
-      nu_scatter1 = self.getTally('nu-scatter-1', filters, nuclides, estimator='analog')
+      scatter1 = self.getTally('scatter-1', filters, estimator='analog')
 
       filters.append(openmc.Filter(type='energyout', bins=group_edges))
-      nu_scatter = self.getTally('nu-scatter', filters, nuclides, estimator='analog')
+      scatter = self.getTally('scatter', filters, estimator='analog')
 
       # Initialize a MultiGroupXS object
       multigroup_xs = infermc.MicroScatterMatrixXS(domain, domain_type, energy_groups)
       multigroup_xs._tallies['flux'] = flux
-      multigroup_xs._tallies['nu-scatter'] = nu_scatter
+      multigroup_xs._tallies['scatter-1'] = scatter1
+      multigroup_xs._tallies['scatter'] = scatter
+
+    elif xs_type == 'nu-scatter matrix':
+
+      # Get the Tally objects needed to compute the scatter matrix
+      flux = self.getTally('flux', filters, estimator='analog')
+      nu_scatter1 = self.getTally('nu-scatter-1', filters, estimator='analog')
+
+      filters.append(openmc.Filter(type='energyout', bins=group_edges))
+      nu_scatter = self.getTally('nu-scatter', filters, estimator='analog')
+
+      # Initialize a MultiGroupXS object
+      multigroup_xs = infermc.MicroNuScatterMatrixXS(domain, domain_type, energy_groups)
+      multigroup_xs._tallies['flux'] = flux
       multigroup_xs._tallies['nu-scatter-1'] = nu_scatter1
+      multigroup_xs._tallies['nu-scatter'] = nu_scatter
 
     elif xs_type == 'chi':
 
@@ -938,7 +1017,7 @@ class MicroXSTallyExtractor(XSTallyExtractor):
       if not xs.containsNuclide(nuclide):
         continue
 
-      if xs_type != 'scatter matrix':
+      if not xs_type in ['scatter matrix', 'nu-scatter matrix']:
         data = xs.getXS(groups=[group], nuclides=[nuclide])
       else:
         data = xs.getXS(in_groups=[group], out_groups=[group], nuclides=[nuclide])
@@ -958,7 +1037,7 @@ class MicroXSTallyExtractor(XSTallyExtractor):
       if not xs.containsNuclide(nuclide):
         continue
 
-      if xs_type != 'scatter matrix':
+      if not xs_type in ['scatter matrix', 'nu-scatter matrix']:
         data = xs.getXS(groups=[group], nuclides=[nuclide])
       else:
         data = xs.getXS(in_groups=[group], out_groups=[group], nuclides=[nuclide])
@@ -978,7 +1057,7 @@ class MicroXSTallyExtractor(XSTallyExtractor):
       if not xs.containsNuclide(nuclide):
         continue
 
-      if xs_type != 'scatter matrix':
+      if not xs_type in ['scatter matrix', 'nu-scatter matrix']:
         data = xs.getRelErr(groups=[group], nuclides=[nuclide])
       else:
         data = xs.getRelErr(in_groups=[group], out_groups=[group], nuclides=[nuclide])
@@ -998,7 +1077,7 @@ class MicroXSTallyExtractor(XSTallyExtractor):
       if not xs.containsNuclide(nuclide):
         continue
 
-      if xs_type != 'scatter matrix':
+      if not xs_type in ['scatter matrix', 'nu-scatter matrix']:
         data = xs.getRelErr(groups=[group], nuclides=[nuclide])
       else:
         data = xs.getRelErr(in_groups=[group], out_groups=[group], nuclides=[nuclide])

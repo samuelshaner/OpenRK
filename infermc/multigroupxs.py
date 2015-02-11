@@ -24,6 +24,7 @@ xs_types = ['total',
             'scatter',
             'nu-scatter',
             'scatter matrix',
+            'nu-scatter matrix',
             'fission',
             'nu-fission',
             'chi']
@@ -50,6 +51,7 @@ greek['capture'] = '$\\Sigma_{c}$'
 greek['scatter'] = '$\\Sigma_{s}$'
 greek['nu-scatter'] = '$\\nu\\Sigma_{s}$'
 greek['scatter matrix'] = '$\\Sigma_{s}$'
+greek['nu-scatter matrix'] = '$\\nu\\Sigma_{s}$'
 greek['fission'] = '$\\Sigma_{f}$'
 greek['nu-fission'] = '$\\nu\\Sigma_{f}$'
 greek['chi'] = '$\\chi$'
@@ -75,7 +77,7 @@ def flip_axis(arr, axis=0):
 class MultiGroupXS(object):
 
   # This is an abstract class which cannot be instantiated
-  __metaclass__ = abc.ABCMeta
+  metaclass__ = abc.ABCMeta
 
   def __init__(self, domain=None, domain_type=None, energy_groups=None):
 
@@ -99,7 +101,6 @@ class MultiGroupXS(object):
     # Values - (Unique) neighbor ID
     self._subdomain_neighbors = dict()
     self._unique_neighbors = False
-
 
     if not domain_type is None:
       self.domain_type = domain_type
@@ -256,7 +257,38 @@ class MultiGroupXS(object):
         self._tallies[key].add_filter(filter)
 
 
-  def getTallyData(self, corr=False):
+  def getTallyData(self, tally):
+    '''Shape the tally data appropriately and return it'''
+
+    # Get the Tally batch mean and std. dev.
+    mean = tally._mean
+    std_dev = tally._std_dev
+
+    # Determine shape of the Tally data from its Filters, Nuclides
+    new_shape = tuple()
+    energy_axes = list()
+
+    for i, filter in enumerate(tally._filters):
+      new_shape += (filter.get_num_bins(), )
+
+      if 'energy' in filter._type:
+        energy_axes.append(i)
+
+    new_shape += (tally.get_num_nuclides(), )
+
+    # Reshape the array
+    mean = np.reshape(mean, new_shape)
+    std_dev = np.reshape(std_dev, new_shape)
+
+    # Reverse arrays so they are ordered from high to low energy
+    for energy_axis in energy_axes:
+      mean = flip_axis(mean, axis=energy_axis)
+      std_dev = flip_axis(std_dev, axis=energy_axis)
+
+    return mean, std_dev
+
+
+  def getAllTallyData(self):
 
     if self._tallies is None:
       msg = 'Unable to get tally data without any Tallies'
@@ -267,30 +299,7 @@ class MultiGroupXS(object):
 
     for key, tally in self._tallies.items():
 
-      # Get the Tally batch mean and std. dev.
-      mean = tally._mean
-      std_dev = tally._std_dev
-
-      # Determine shape of the Tally data from its Filters, Nuclides
-      new_shape = tuple()
-      energy_axes = list()
-
-      for i, filter in enumerate(tally._filters):
-        new_shape += (filter.get_num_bins(), )
-
-        if 'energy' in filter._type:
-          energy_axes.append(i)
-
-      new_shape += (tally.get_num_nuclides(), )
-
-      # Reshape the array
-      mean = np.reshape(mean, new_shape)
-      std_dev = np.reshape(std_dev, new_shape)
-
-      # Reverse arrays so they are ordered from high to low energy
-      for energy_axis in energy_axes:
-        mean = flip_axis(mean, axis=energy_axis)
-        std_dev = flip_axis(std_dev, axis=energy_axis)
+      mean, std_dev = self.getTallyData(tally)
 
       # Get the array of indices of zero elements
       zero_indices[key] = mean[...] == 0.
@@ -625,9 +634,6 @@ class MultiGroupXS(object):
     average = self._xs[metrics['mean'], offsets, ...]
     std_dev = self._xs[metrics['std_dev'], offsets, ...]
 
-
-    print average.shape
-
     zero_indices = average == 0
     std_dev[zero_indices] = 0.
     average[zero_indices] = 1.
@@ -755,7 +761,7 @@ class MultiGroupXS(object):
         # Add MultiGroupXS results data to the table list
         table = list()
 
-        if self._xs_type != 'scatter matrix':
+        if not self._xs_type in ['scatter matrix', 'nu-scatter matrix']:
           headers = list()
           headers.append('Group')
           headers.append('Average XS')
@@ -858,7 +864,7 @@ class TotalXS(MultiGroupXS):
   def computeXS(self, corr=False):
 
     # Extract and clean the Tally data
-    tally_data, zero_indices = super(TotalXS, self).getTallyData(corr)
+    tally_data, zero_indices = super(TotalXS, self).getAllTallyData()
     total = tally_data['total']
     flux = tally_data['flux']
 
@@ -905,7 +911,7 @@ class TransportXS(MultiGroupXS):
   def computeXS(self, corr=False):
 
     # Extract and clean the Tally data
-    tally_data, zero_indices = super(TransportXS, self).getTallyData(corr)
+    tally_data, zero_indices = super(TransportXS, self).getAllTallyData()
     total = tally_data['total']
     scatter1 = tally_data['scatter-1']
     flux = tally_data['flux']
@@ -957,7 +963,7 @@ class AbsorptionXS(MultiGroupXS):
   def computeXS(self, corr=False):
 
     # Extract and clean the Tally data
-    tally_data, zero_indices = super(AbsorptionXS, self).getTallyData(corr)
+    tally_data, zero_indices = super(AbsorptionXS, self).getAllTallyData()
     absorption = tally_data['absorption']
     flux = tally_data['flux']
 
@@ -1004,7 +1010,7 @@ class CaptureXS(MultiGroupXS):
   def computeXS(self, corr=False):
 
     # Extract and clean the Tally data
-    tally_data, zero_indices = super(CaptureXS, self).getTallyData(corr)
+    tally_data, zero_indices = super(CaptureXS, self).getAllTallyData()
     absorption = tally_data['absorption']
     fission = tally_data['fission']
     flux = tally_data['flux']
@@ -1056,7 +1062,7 @@ class FissionXS(MultiGroupXS):
   def computeXS(self, corr=False):
 
     # Extract and clean the Tally data
-    tally_data, zero_indices = super(FissionXS, self).getTallyData(corr)
+    tally_data, zero_indices = super(FissionXS, self).getAllTallyData()
     fission = tally_data['fission']
     flux = tally_data['flux']
 
@@ -1102,7 +1108,7 @@ class NuFissionXS(MultiGroupXS):
   def computeXS(self, corr=False):
 
     # Extract and clean the Tally data
-    tally_data, zero_indices = super(NuFissionXS, self).getTallyData(corr)
+    tally_data, zero_indices = super(NuFissionXS, self).getAllTallyData()
     nu_fission = tally_data['nu-fission']
     flux = tally_data['flux']
 
@@ -1148,7 +1154,7 @@ class ScatterXS(MultiGroupXS):
   def computeXS(self, corr=False):
 
     # Extract and clean the Tally data
-    tally_data, zero_indices = super(ScatterXS, self).getTallyData(corr)
+    tally_data, zero_indices = super(ScatterXS, self).getAllTallyData()
     scatter = tally_data['scatter']
     flux = tally_data['flux']
 
@@ -1194,7 +1200,7 @@ class NuScatterXS(MultiGroupXS):
   def computeXS(self, corr=False):
 
     # Extract and clean the Tally data
-    tally_data, zero_indices = super(NuScatterXS, self).getTallyData(corr)
+    tally_data, zero_indices = super(NuScatterXS, self).getAllTallyData()
     nu_scatter = tally_data['nu-scatter']
     flux = tally_data['flux']
 
@@ -1225,6 +1231,217 @@ class ScatterMatrixXS(MultiGroupXS):
   def createTallies(self):
 
     # Create a list of scores for each Tally to be created
+    scores = ['flux', 'scatter', 'scatter-1']
+    estimator = 'analog'
+    keys = scores
+
+    # Create the non-domain specific Filters for the Tallies
+    group_edges = self._energy_groups._group_edges
+    energy_filter = openmc.Filter('energy', group_edges)
+    energyout_filter = openmc.Filter('energyout', group_edges)
+    filters = [[energy_filter], [energy_filter, energyout_filter], [energy_filter]]
+
+    # Intialize the Tallies
+    super(ScatterMatrixXS, self).createTallies(scores, filters, keys, estimator)
+
+
+  def computeXS(self, corr=False):
+
+    # Extract and clean the Tally data
+    tally_data, zero_indices = super(ScatterMatrixXS, self).getAllTallyData()
+    scatter = tally_data['scatter']
+    scatter1 = tally_data['scatter-1']
+    flux = tally_data['flux']
+
+    # Set any subdomain's zero fluxes and reaction rates to a negative value
+    flux[:, zero_indices['flux']] = -1.
+    scatter[:, zero_indices['scatter']] = -1.
+    scatter1[:, zero_indices['scatter-1']] = -1
+
+    # FIXME
+    # Tile the flux to correspond to the scatter array
+    flux = np.repeat(flux[:,:,np.newaxis,:,:], self._num_groups, axis=3)
+    flux = np.reshape(flux, scatter.shape[0:-1] + (1,))
+
+    # FIXME
+    shape = scatter.shape
+    scatter[:,:,range(shape[2]), range(shape[3]),:] -= scatter1
+
+    # Compute the xs with uncertainty propagation
+    self._xs = infermc.error_prop.arithmetic.divide_by_array(scatter, flux,
+                                                             corr, False)
+
+    # For any region without flux or reaction rate, convert xs to zero
+    all_zero_indices = np.logical_or(zero_indices['flux'][...,np.newaxis],
+                                     zero_indices['scatter'])
+    self._xs[:, all_zero_indices] = 0.
+
+    # Correct -0.0 to +0.0
+    self._xs += 0.
+
+
+  def getCondensedXS(self, coarse_groups):
+    '''This routine takes in a collection of 2-tuples of energy groups'''
+
+    # FIXME: this under-estimates the uncertainty due to inter-group correlation
+
+    # Error checking for the group bounds is done here
+    new_groups = self._energy_groups.getCondensedGroups(coarse_groups)
+    num_coarse_groups = new_groups._num_groups
+
+    # Clone the MultiGroupXS
+    condensed_xs = copy.deepcopy(self)
+    condensed_xs.energy_groups = new_groups
+
+    # Convert the group bounds to array indices
+    group_indices = np.asarray(coarse_groups)
+    group_indices[0][0] -= 1
+
+    for tally_type, tally in condensed_xs._tallies.items():
+
+      for filter in tally._filters:
+        if 'energy' in filter._type:
+          filter.set_bin_edges(new_groups.group_edges)
+          filter.set_num_bins(num_coarse_groups)
+
+      sum = tally._sum
+      sum_sq = tally._sum_sq
+
+      if 'flux' in tally._scores:
+        coarse_shape = (num_coarse_groups,) + sum.shape[1:]
+        coarse_sum = np.zeros(coarse_shape)
+        coarse_sum_sq = np.zeros(coarse_shape)
+
+        for i, group in enumerate(group_indices):
+          coarse_sum[i, ...] = sum[group[0]:group[1], ...].sum(axis=0)
+          intermed = np.sqrt(sum_sq[group[0]:group[1], ...]).sum(axis=0)
+          coarse_sum_sq[i, ...] = np.power(intermed, 2.)
+
+      # We must treat the group-to-group scattering reaction rate matrix
+      # in a different way than the flux since it has an extra dimension
+      # for the outgoing energy group
+      elif 'scatter' in tally._scores:
+
+        coarse_shape = (num_coarse_groups, num_coarse_groups) + sum.shape[1:]
+        coarse_sum = np.zeros(coarse_shape)
+        coarse_sum_sq = np.zeros(coarse_shape)
+
+        # "Unroll" the group-to-group structure into a 2D matrix
+        fine_shape = (self._num_groups, self._num_groups) + sum.shape[1:]
+        sum = np.reshape(sum, fine_shape)
+        sum_sq = np.reshape(sum_sq, fine_shape)
+
+        for i, in_group in enumerate(group_indices):
+          for j, out_group in enumerate(group_indices):
+
+            # Extract the "block" of the group-to-group reaction rate tallies
+            sum_block = sum[in_group[0]:in_group[1], ...]
+            sum_block = sum_block[:, out_group[0]:out_group[1], ...]
+            sum_sq_block = sum_sq[in_group[0]:in_group[1], ...]
+            sum_sq_block = sum_sq_block[:, out_group[0]:out_group[1], ...]
+
+            coarse_sum[i,j, ...] = sum_block.sum(axis=(0,1))
+            intermed = np.sqrt(sum_sq_block.sum(axis=(0,1)))
+            coarse_sum_sq[i,j, ...] = np.power(intermed, 2.)
+
+        # Reshape the 2D matrix back into the form expected by the Tally
+        coarse_shape = (num_coarse_groups**2,) + sum.shape[2:]
+        coarse_sum = np.reshape(coarse_sum, coarse_shape)
+        coarse_sum_sq = np.reshape(coarse_sum_sq, coarse_shape)
+
+      tally.set_results(coarse_sum, coarse_sum_sq)
+      tally.compute_std_dev()
+      condensed_xs._tallies[tally_type] = tally
+
+    # Tell the cloned xs to compute xs
+    condensed_xs.computeXS()
+
+    return condensed_xs
+
+
+  def getXS(self, in_groups='all', out_groups='all',
+            subdomains='all', metric='mean'):
+
+    if self._xs is None:
+      msg = 'Unable to get cross-section since it has not been computed'
+      raise ValueError(msg)
+
+    global metrics
+    in_groups = self._energy_groups.getGroupIndices(in_groups)
+    out_groups = self._energy_groups.getGroupIndices(out_groups)
+    offsets = self.getSubDomainOffsets(subdomains)
+
+    xs = self._xs[metrics[metric], offsets, ...]
+    xs = xs[..., in_groups, :, ...]
+    xs = xs[..., :, out_groups, ...]
+    return xs
+
+
+  def getRelErr(self, in_groups='all', out_groups='all', subdomains='all'):
+
+    # Get the cross-section average and std deviation
+    average = self.getXS(in_groups, out_groups, subdomains, 'mean')
+    std_dev = self.getXS(in_groups, out_groups, subdomains, 'std_dev')
+
+    # Compute the relative error while accounting for zeros
+    zero_indices = average == 0
+    std_dev[zero_indices] = 0.
+    average[zero_indices] = 1.
+    rel_err = (std_dev / average) * 100.
+    average[zero_indices] = 0.
+
+    return rel_err
+
+
+  def printXS(self, subdomains='all'):
+
+    string = 'Multi-Group XS\n'
+    string += '{0: <16}{1}{2}\n'.format('\tType', '=\t', self._xs_type)
+    string += '{0: <16}{1}{2}\n'.format('\tDomain Type', '=\t', self._domain_type)
+    string += '{0: <16}{1}{2}\n'.format('\tDomain ID', '=\t', self._domain._id)
+
+    string += '{0: <16}\n'.format('\tEnergy Groups:')
+
+    # Loop over energy groups ranges
+    for group in range(1,self._num_groups+1):
+      bounds = self._energy_groups.getGroupBounds(group)
+      string += '{0: <12}Group {1} [{2: <10} - ' \
+                '{3: <10}MeV]\n'.format('', group, bounds[0], bounds[1])
+
+    if subdomains == 'all':
+      subdomains = self._subdomain_offsets.keys()
+
+    for subdomain in subdomains:
+
+      if self._domain_type == 'distribcell':
+        string += '{0: <16}{1}{2}\n'.format('\tSubDomain', '=\t', subdomain)
+
+      string += '{0: <16}\n'.format('\tCross-Sections [cm^-1]:')
+
+      # Loop over energy groups ranges
+      for in_group in range(1,self._num_groups+1):
+        for out_group in range(1,self._num_groups+1):
+          string += '{0: <12}Group {1} -> Group {2}:\t\t'.format('', in_group, out_group)
+          average = self.getXS([in_group], [out_group], [subdomain], 'mean')
+          rel_err = self.getRelErr([in_group], [out_group], [subdomain])
+          string += '{:.2e}+/-{:1.2e}%'.format(average[0,0,0], rel_err[0,0,0])
+          string += '\n'
+
+      string += '\n'
+
+    print(string)
+
+
+class NuScatterMatrixXS(ScatterMatrixXS):
+
+  def __init__(self, domain=None, domain_type=None, energy_groups=None):
+    super(NuScatterMatrixXS, self).__init__(domain, domain_type, energy_groups)
+    self._xs_type = 'nu-scatter matrix'
+
+
+  def createTallies(self):
+
+    # Create a list of scores for each Tally to be created
     scores = ['flux', 'nu-scatter', 'nu-scatter-1']
     estimator = 'analog'
     keys = scores
@@ -1242,7 +1459,7 @@ class ScatterMatrixXS(MultiGroupXS):
   def computeXS(self, corr=False):
 
     # Extract and clean the Tally data
-    tally_data, zero_indices = super(ScatterMatrixXS, self).getTallyData(corr)
+    tally_data, zero_indices = super(NuScatterMatrixXS, self).getAllTallyData()
     nu_scatter = tally_data['nu-scatter']
     nu_scatter1 = tally_data['nu-scatter-1']
     flux = tally_data['flux']
@@ -1353,78 +1570,6 @@ class ScatterMatrixXS(MultiGroupXS):
     return condensed_xs
 
 
-  def getXS(self, in_groups='all', out_groups='all',
-            subdomains='all', metric='mean'):
-
-    if self._xs is None:
-      msg = 'Unable to get cross-section since it has not been computed'
-      raise ValueError(msg)
-
-    global metrics
-    in_groups = self._energy_groups.getGroupIndices(in_groups)
-    out_groups = self._energy_groups.getGroupIndices(out_groups)
-    offsets = self.getSubDomainOffsets(subdomains)
-
-    xs = self._xs[metrics[metric], offsets, ...]
-    xs = xs[..., in_groups, out_groups, :]
-    return xs
-
-
-  def getRelErr(self, in_groups='all', out_groups='all', subdomains='all'):
-
-    # Get the cross-section average and std deviation
-    average = self.getXS(in_groups, out_groups, subdomains, 'mean')
-    std_dev = self.getXS(in_groups, out_groups, subdomains, 'std_dev')
-
-    # Compute the relative error while accounting for zeros
-    zero_indices = average == 0
-    std_dev[zero_indices] = 0.
-    average[zero_indices] = 1.
-    rel_err = (std_dev / average) * 100.
-    average[zero_indices] = 0.
-
-    return rel_err
-
-
-  def printXS(self, subdomains='all'):
-
-    string = 'Multi-Group XS\n'
-    string += '{0: <16}{1}{2}\n'.format('\tType', '=\t', self._xs_type)
-    string += '{0: <16}{1}{2}\n'.format('\tDomain Type', '=\t', self._domain_type)
-    string += '{0: <16}{1}{2}\n'.format('\tDomain ID', '=\t', self._domain._id)
-
-    string += '{0: <16}\n'.format('\tEnergy Groups:')
-
-    # Loop over energy groups ranges
-    for group in range(1,self._num_groups+1):
-      bounds = self._energy_groups.getGroupBounds(group)
-      string += '{0: <12}Group {1} [{2: <10} - ' \
-                '{3: <10}MeV]\n'.format('', group, bounds[0], bounds[1])
-
-    if subdomains == 'all':
-      subdomains = self._subdomain_offsets.keys()
-
-    for subdomain in subdomains:
-
-      if self._domain_type == 'distribcell':
-        string += '{0: <16}{1}{2}\n'.format('\tSubDomain', '=\t', subdomain)
-
-      string += '{0: <16}\n'.format('\tCross-Sections [cm^-1]:')
-
-      # Loop over energy groups ranges
-      for in_group in range(1,self._num_groups+1):
-        for out_group in range(1,self._num_groups+1):
-          string += '{0: <12}Group {1} -> Group {2}:\t\t'.format('', in_group, out_group)
-          average = self.getXS([in_group], [out_group], [subdomain], 'mean')
-          rel_err = self.getRelErr([in_group], [out_group], [subdomain])
-          string += '{:.2e}+/-{:1.2e}%'.format(average[0,0,0], rel_err[0,0,0])
-          string += '\n'
-
-      string += '\n'
-
-    print(string)
-
-
 class DiffusionCoeff(MultiGroupXS):
 
   def __init__(self, domain=None, domain_type=None, energy_groups=None):
@@ -1469,7 +1614,7 @@ class Chi(MultiGroupXS):
   def computeXS(self, corr=False):
 
     # Extract and clean the Tally data
-    tally_data, zero_indices = super(Chi, self).getTallyData(corr)
+    tally_data, zero_indices = super(Chi, self).getAllTallyData()
     nu_fission_in = tally_data['nu-fission-in']
     nu_fission_out = tally_data['nu-fission-out']
 

@@ -13,7 +13,7 @@ import opencg.plotter as plotter
 # OpenMC simulation parameters
 batches = 30
 inactive = 5
-particles = 10000
+particles = 1000
 
 
 ###############################################################################
@@ -75,9 +75,9 @@ micro_tally_factory = MicroXSTallyFactory(openmc_geometry)
 
 groups = group_structures['CASMO']['2-group']
 
-#micro_tally_factory.createAllMultiGroupXS(groups, domain_type='distribcell')
+micro_tally_factory.createAllMultiGroupXS(groups, domain_type='distribcell')
 micro_tally_factory.createAllMultiGroupXS(groups, domain_type='material')
-#micro_tally_factory.createAllMultiGroupXS(groups, domain_type='cell')
+micro_tally_factory.createAllMultiGroupXS(groups, domain_type='cell')
 #micro_tally_factory.createAllMultiGroupXS(groups, domain_type='universe')
 micro_tally_factory.createTalliesFile()
 
