@@ -36,6 +36,7 @@ class custom_install(install):
   user_options = [
     ('cc=', None, "Compiler (gcc) for main openmoc module"),
     ('with-gcc', None, "Build openmoc.gnu modules using GNU compiler"),
+    ('with-ccache', None, "Build with ccache for rapid recompilation")
   ]
 
   # Include all of the default options provided by distutils for the
@@ -43,7 +44,8 @@ class custom_install(install):
   user_options += install.user_options
 
   # Set some compile options to be boolean switches
-  boolean_options = ['with-gcc']
+  boolean_options = ['with-gcc',
+                     'with-ccache']
 
 
   # Include all of the boolean options provided by distutils for the
@@ -68,11 +70,12 @@ class custom_install(install):
 
     # Default compiler and precision level for the main openmoc module
     self.cc = 'gcc'
-
+    
     # By default, do not build openmoc.gnu.single, openmoc.intel.double, etc
     # extension modules
     self.with_gcc = False
-
+    self.with_ccache = True
+    
   def finalize_options(self):
     """Extract options from the flags invoked by the user at compile time.
 
@@ -87,6 +90,8 @@ class custom_install(install):
     # Run the install command parent class' finalize_options method
     install.finalize_options(self)
 
+    config.with_ccache = self.with_ccache
+    
     # Check that the user specified a supported C++ compiler
     if self.cc not in ['gcc']:
       raise DistutilsOptionError \
@@ -123,8 +128,7 @@ def customize_compiler(self):
   # based on source extension, so we add that functionality here
   def _compile(obj, src, ext, cc_args, extra_postargs, pp_opts):
 
-    # If GNU is a defined macro and the source is C++, use gcc
-    self.set_executable('compiler_so', 'gcc')
+    self.set_executable('compiler_so', 'ccache gcc')
 
     postargs = config.compiler_flags['gcc']
 
@@ -219,7 +223,7 @@ dist = setup(name = 'openrk',
       # in config.py based on the user-defined flags at compile time
       ext_modules = config.extensions,
 
-      # Extract all of the Python packages for OpenMOC
+      # Extract all of the Python packages for OpenRK
       # (ie, openmoc.log, openmoc.materialize, etc)
       packages = config.packages,
 

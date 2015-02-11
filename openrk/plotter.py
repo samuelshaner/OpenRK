@@ -6,6 +6,7 @@ import matplotlib
 from material import Material, FunctionalMaterial
 from mesh import *
 import checkvalue as cv
+import openrk as rk
 
 # force headless backend, or set 'backend' to 'Agg'
 # in your ~/.matplotlib/matplotlibrc
@@ -225,7 +226,7 @@ def plot_materials(mesh, gridsize=250, name='mesh-materials'):
         os.makedirs(SUBDIRECTORY)
 
     # Error checking
-    if not isinstance(mesh, Mesh):
+    if not isinstance(mesh, rk.Mesh):
         msg = 'Unable to plot the cells since input was not ' \
               'a Mesh class object'
         raise ValueError(msg)
@@ -246,13 +247,12 @@ def plot_materials(mesh, gridsize=250, name='mesh-materials'):
     materials = numpy.zeros((gridsize, gridsize))
 
     tiny_move = 1.0e-8
-    bounds = mesh.get_bounds()
 
     # Retrieve the bounding box for the geometry
-    xmin = bounds[0] + tiny_move
-    xmax = bounds[1] - tiny_move
-    ymin = bounds[2] + tiny_move
-    ymax = bounds[3] - tiny_move
+    xmin = mesh.getXMin() + tiny_move
+    xmax = mesh.getXMax() - tiny_move
+    ymin = mesh.getYMin() + tiny_move
+    ymax = mesh.getYMax() - tiny_move
 
     # Initialize numpy arrays for the grid points
     xcoords = np.linspace(xmin, xmax, gridsize)
@@ -267,7 +267,7 @@ def plot_materials(mesh, gridsize=250, name='mesh-materials'):
             x = xcoords[i]
             y = ycoords[j]
 
-            mat_name = mesh.get_material(mesh.find_cell(x, y)).get_name()
+            mat_name = mesh.getMaterial(mesh.findCell(x, y)).getId()
 
             if mat_name in unique_materials:
                 materials[j][i] = unique_materials.index(mat_name)

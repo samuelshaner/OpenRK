@@ -7,6 +7,7 @@ import checkvalue as cv
 from clock import Clock
 from math import floor, exp, cos, pi, asin
 from material import TransientMaterial, FunctionalMaterial
+from numba import jit
 
 # A static variable for auto-generated Mesh UIDs
 AUTO_MESH_UID = 1
@@ -383,6 +384,12 @@ class Mesh(object):
 
         return np.linalg.norm((self._flux[time_1] - self._flux[time_2]) / self._flux[time_1])
 
+    def compute_power_l2_norm(self, time_1='CURRENT', time_2='FORWARD_IN_OLD'):
+
+        self.compute_power(time_1)
+        self.compute_power(time_2)
+        return np.linalg.norm((self._power[time_1] - self._power[time_2]) / self._power[time_1])
+
     def set_temperature(self, temperature, time='CURRENT'):
 
         if cv.is_list(temperature):
@@ -600,8 +607,33 @@ class StructuredMesh(Mesh):
             self.compute_fuel_volume()
 
         self.compute_power(time)
-
         return np.sum(self._power[time]) * self.get_cell_volume() / self._fuel_volume
+
+    def get_max_power(self, time='CURRENT'):
+
+        self.compute_power(time)
+        return np.max(self._power[time])
+
+    def get_average_temperature(self, time='CURRENT'):
+
+        if self._fuel_volume is None:
+            self.compute_fuel_volume()
+
+        is_fissionable = np.zeros(self._num_x * self._num_y)
+        for i, mat in enumerate(self._materials):
+            if mat.get_is_fissionable():
+                is_fissionable[i] = 1.0
+
+        return np.sum(self._temperature[time] * is_fissionable) * self.get_cell_volume() / self._fuel_volume
+
+    def get_max_temperature(self, time='CURRENT'):
+
+        is_fissionable = np.zeros(self._num_x * self._num_y)
+        for i, mat in enumerate(self._materials):
+            if mat.get_is_fissionable():
+                is_fissionable[i] = 1.0
+
+        return np.max(self._temperature[time] * is_fissionable)
 
     def get_neighbor_cell(self, x, y, side):
 
@@ -1425,7 +1457,7 @@ class StructuredShapeMesh(StructuredMesh):
             for i in xrange(self._num_x):
                 ii = i / num_refines
                 amp_cell = jj*self._num_x/num_refines+ii
-                shape_cell = j*self._num_y + i
+                shape_cell = j*self._num_x + i
                 self._amp_map[shape_cell] = amp_cell
 
     def get_flux_by_value(self, cell, group, time='CURRENT'):

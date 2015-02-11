@@ -162,11 +162,11 @@ for cell_id in xrange(1, 5):
     mesh.set_material(fuel1bin, cell_id)
 
 # refine mesh and uniquify materials
-mesh = mesh.uniform_refine(5)
+mesh = mesh.uniform_refine(3)
 mesh.uniquify_materials()
 
 # Create and initialize the amplitude mesh
-amp_mesh = rk.mesh.AmpMesh(name='amp mesh', width=165.0, height=165.0, num_x=1, num_y=1)
+amp_mesh = rk.mesh.AmpMesh(name='amp mesh', width=165.0, height=165.0, num_x=11, num_y=11)
 amp_mesh.set_num_amp_energy_groups(2)
 amp_mesh.set_num_shape_energy_groups(2)
 amp_mesh.set_num_delayed_groups(2)
@@ -194,8 +194,10 @@ transient.set_solver(solver)
 transient.set_initial_power(1.e-6)
 transient.compute_initial_shape()
 
-for i in xrange(300):
+for i in xrange(30):
     transient.take_outer_step()
+    rk.plotter.plot_power(mesh, name='mesh-power-{:.4f}s'.format(mesh.get_clock().get_time('CURRENT')))
+    rk.plotter.plot_temperature(mesh, name='mesh-temp-{:.4f}s'.format(mesh.get_clock().get_time('CURRENT')))
 
 #rk.plotter.plot_precursor_conc(amp_mesh, name='amp-precursor-conc')
 #rk.plotter.plot_flux(amp_mesh, name='amp-flux')

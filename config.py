@@ -57,6 +57,9 @@ class configuration:
   # Default C++ compiler for the main openmoc module is GCC
   cc = 'gcc'
 
+  # Compile using ccache (for developers needing fast recompilation)
+  with_ccache = False
+  
   # Supported C++ compilers: 'gcc'
   cpp_compilers = list()
 
@@ -78,6 +81,15 @@ class configuration:
 
   sources['gcc'] = ['openrk/openrk_wrap.cpp',
                     'src/linalg.cpp',
+                    'src/Material.cpp',
+                    'src/FunctionalMaterial.cpp',
+                    'src/Clock.cpp',
+                    'src/Mesh.cpp',
+                    'src/StructuredMesh.cpp',
+                    'src/StructuredShapeMesh.cpp',
+                    'src/AmpMesh.cpp',
+                    'src/Solver.cpp',
+                    'src/Transient.cpp',
                     'src/log.cpp' ]
 
 

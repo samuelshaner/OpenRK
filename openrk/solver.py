@@ -6,6 +6,7 @@ import numpy as np
 import checkvalue as cv
 import openrk
 from material import TransientMaterial
+from numba import jit
 
 
 class Solver(object):
@@ -178,6 +179,7 @@ class CmfdSolver(Solver):
                         self._A_shape[y * nx + x][e * (ng + 4) + ng + 3] -= mesh.get_dif_linear_by_value(cell, e, 3) \
                             * width
 
+    @jit
     def compute_initial_shape(self, tol):
 
         # Compute the surface diffusion coefficients
@@ -197,6 +199,7 @@ class CmfdSolver(Solver):
         self._k_eff = openrk.eigenvalueSolve(self._A_shape, self._M_shape, self._shape_mesh.get_flux('CURRENT'),
                                              self._b_shape, old_source, flux_temp, ng, nx, ny, tol)
 
+    @jit
     def make_am_amp(self, wt=0.5):
 
         mesh = self._amp_mesh
@@ -363,6 +366,7 @@ class CmfdSolver(Solver):
                             (mesh.get_dif_linear_by_value(cell, e, 3, 'PREVIOUS_IN') +
                              mesh.get_dif_nonlinear_by_value(cell, e, 3, 'PREVIOUS_IN')) * width * flux[(cell+nx)*ng+e]
 
+    @jit
     def make_am_shape(self, wt=0.5):
 
         mesh = self._shape_mesh

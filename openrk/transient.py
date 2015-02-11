@@ -62,6 +62,12 @@ class Transient(object):
         self._outer_method = 'CRANK_NICOLSON'
         self._inner_wt = 0.5
         self._outer_wt = 0.5
+        self._max_powers = None
+        self._avg_powers = None
+        self._max_temperatures = None
+        self._avg_temperatures = None
+        self._times = None
+        self._current_step = 0
 
         self._supported_methods = ['FORWARD_EULER', 'BACKWARD_EULER', 'CRANK_NICOLSON', 'CUSTOM']
 
@@ -131,6 +137,13 @@ class Transient(object):
         else:
             self._clock = clock
 
+            # Create arrays to save avg/max power and avg/max temperature
+            self._max_powers = np.zeros(int(round(clock.get_time('END') / clock.get_dt_inner())) + 1)
+            self._avg_powers = np.zeros(int(round(clock.get_time('END') / clock.get_dt_inner())) + 1)
+            self._max_temperatures = np.zeros(int(round(clock.get_time('END') / clock.get_dt_inner())) + 1)
+            self._avg_temperatures = np.zeros(int(round(clock.get_time('END') / clock.get_dt_inner())) + 1)
+            self._times = np.zeros(int(round(clock.get_time('END') / clock.get_dt_inner())) + 1)
+
     def set_name(self, name):
 
         if not cv.is_string(name):
@@ -193,6 +206,8 @@ class Transient(object):
         # broadcast current properties to all other times
         self.broadcast_to_all()
 
+        # Save power and temperature data
+
     def take_inner_step(self):
 
         # Increment CURRENT time by dt_inner
@@ -223,7 +238,7 @@ class Transient(object):
         while not converged:
 
             # Copy previous flux guess to FORWARD_IN_OLD
-            self._amp_mesh.copy_flux(time_from='CURRENT', time_to='FORWARD_IN_OLD')
+            self._amp_mesh.copy_flux('CURRENT', 'FORWARD_IN_OLD')
 
             # Update the amplitude at CURRENT time
             self._solver.make_am_amp(self._inner_wt)
@@ -280,7 +295,7 @@ class Transient(object):
         while True:
 
             # Copy current approx of fine mesh flux at FORWARD_OUT to FORWARD_OUT_OLD for convergence check
-            self._shape_mesh.copy_flux(time_from='FORWARD_OUT', time_to='FORWARD_OUT_OLD')
+            self._shape_mesh.copy_flux('FORWARD_OUT', 'FORWARD_OUT_OLD')
 
             # Update the dif coefs at the FORWARD_OUT time
             self._shape_mesh.compute_dif_coefs(time='FORWARD_OUT')
@@ -309,7 +324,7 @@ class Transient(object):
             self.broadcast_to_one(time_from='CURRENT', time_to='FORWARD_OUT')
 
             # Check for convergence
-            residual = self._shape_mesh.compute_flux_l2_norm(time_1='FORWARD_OUT', time_2='FORWARD_OUT_OLD')
+            residual = self._shape_mesh.compute_power_l2_norm(time_1='FORWARD_OUT', time_2='FORWARD_OUT_OLD')
 
             print 'OUTER RESIDUAL = {:.6e}'.format(residual)
 
@@ -343,7 +358,7 @@ class Transient(object):
             self._shape_mesh.integrate_precursor_conc(time_from='PREVIOUS_OUT', time_to='FORWARD_OUT')
 
             # Copy current approx of fine mesh flux at FORWARD_OUT to FORWARD_OUT_OLD for convergence check
-            self._shape_mesh.copy_flux(time_from='FORWARD_OUT', time_to='FORWARD_OUT_OLD')
+            self._shape_mesh.copy_flux('FORWARD_OUT', 'FORWARD_OUT_OLD')
 
             # Update the dif coefs at the FORWARD_OUT time
             self._shape_mesh.compute_dif_coefs(time='FORWARD_OUT')
@@ -356,7 +371,7 @@ class Transient(object):
                                self._solver.get_b_shape(), flux_temp, nx, ny, ng, 1.e-8)
 
             # Check for convergence
-            residual = self._shape_mesh.compute_flux_l2_norm(time_1='FORWARD_OUT', time_2='FORWARD_OUT_OLD')
+            residual = self._shape_mesh.compute_power_l2_norm(time_1='FORWARD_OUT', time_2='FORWARD_OUT_OLD')
             power = self._shape_mesh.get_average_power('FORWARD_OUT')
             print 'TIME = {:1.4f}, POWER = {:.6e}, RESIDUAL = {:.6e}'.format(self._clock.get_time('FORWARD_OUT'), power, residual)
 

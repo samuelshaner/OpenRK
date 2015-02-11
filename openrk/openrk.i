@@ -1,4 +1,3 @@
-
 /* File: openrk.i */
 %module openrk
 
@@ -6,8 +5,16 @@
   #define SWIG_FILE_WITH_INIT
   #include "../src/linalg.h"
   #include "../src/log.h"
-
-
+  #include "../src/Material.h"
+  #include "../src/FunctionalMaterial.h"
+  #include "../src/Clock.h"
+  #include "../src/Mesh.h"
+  #include "../src/StructuredMesh.h"
+  #include "../src/StructuredShapeMesh.h"
+  #include "../src/AmpMesh.h"
+  #include "../src/Solver.h"
+  #include "../src/Transient.h"
+  
   #define printf PySys_WriteStdout
 
   /* Exception helpers */
@@ -50,8 +57,26 @@
          (double* flux_temp, int flux_temp1), (double* source, int source1)};
 %apply ( double* INPLACE_ARRAY2, int DIM1, int DIM2 ) {(double *A, int A1, int A2),
          (double *M, int M1, int M2)};
+
+%apply (double* IN_ARRAY1, int DIM1) {(double* xs, int num_groups),
+     (double* time_steps, int num_steps)};
+
+%apply (int* IN_ARRAY1, int DIM1) {(int* group_indices, int length_group_indices)};
+
+%apply (double* IN_ARRAY2, int DIM1, int DIM2) {(double* xs, int num_time_steps, int num_groups),
+     (double* x, int num_time_steps, int num_groups_squared)};
+
 %include <exception.i>
 %include ../src/linalg.h
 %include ../src/log.h
+%include ../src/Material.h
+%include ../src/FunctionalMaterial.h
+%include ../src/Clock.h
+%include ../src/Mesh.h
+%include ../src/StructuredMesh.h
+%include ../src/StructuredShapeMesh.h
+%include ../src/AmpMesh.h
+%include ../src/Solver.h
+%include ../src/Transient.h
 
 #define printf PySys_WriteStdout
