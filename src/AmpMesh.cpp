@@ -126,15 +126,12 @@ void AmpMesh::condenseMaterials(int position, bool save_flux){
   double shape_cell_volume = _shape_mesh->getCellVolume();
   double amp_cell_volume = getCellVolume();
   double* temps = _shape_mesh->getTemperature(position);
-  double sigma_a, sigma_t, sigma_f, nu_sigma_f, dif_coef, rxn, production, velocity, chi_tally;
-  double* chi = new double[_num_amp_energy_groups];
-  double* sigma_s = new double[_num_amp_energy_groups];
-  double sigma_t_group, rxn_group, volume;
+  double chi[_num_amp_energy_groups];
+  double sigma_s[_num_amp_energy_groups];
   Material* amp_mat;
   Material* shape_mat;
-  double shape;
-  double precursor_conc, temp;
-  
+
+  #pragma omp parallel for private(chi, sigma_s, amp_mat, shape_mat)
   for (int i=0; i < _num_x*_num_y; i++){
     
     amp_mat = getMaterial(i);
@@ -142,15 +139,17 @@ void AmpMesh::condenseMaterials(int position, bool save_flux){
     
     for (int g=0; g < _num_amp_energy_groups; g++){
 
-      sigma_a = 0.0;
-      sigma_t = 0.0;
-      sigma_f = 0.0;
-      nu_sigma_f = 0.0;
-      dif_coef = 0.0;
-      rxn = 0.0;
-      production = 0.0;
-      velocity = 0.0;
-
+      double sigma_a = 0.0;
+      double sigma_t = 0.0;
+      double sigma_f = 0.0;
+      double nu_sigma_f = 0.0;
+      double dif_coef = 0.0;
+      double rxn = 0.0;
+      double production = 0.0;
+      double velocity = 0.0;
+      double volume;
+      double temp;
+      
       for (int h=0; h < _num_amp_energy_groups; h++){
         sigma_s[h] = 0.0;
         chi[h] = 0.0;
@@ -162,7 +161,7 @@ void AmpMesh::condenseMaterials(int position, bool save_flux){
         temp = temps[*iter];
 
         for (int e=0; e < _num_amp_energy_groups; e++){
-          chi_tally = 0.0;
+          double chi_tally = 0.0;
 
           for (int ee=_group_indices[e]; ee < _group_indices[e+1]; ee++)
             chi_tally += shape_mat->getChiByGroup(ee, position, temp);
@@ -178,16 +177,16 @@ void AmpMesh::condenseMaterials(int position, bool save_flux){
 
       for (int gg=_group_indices[g]; gg < _group_indices[g+1]; gg++){
 
-        rxn_group = 0.0;
+        double rxn_group = 0.0;
         volume = 0.0;
-        sigma_t_group = 0.0;
+        double sigma_t_group = 0.0;
 
       for (iter = _shape_map[i].begin(); iter != _shape_map[i].end(); ++iter){
 
           shape_mat = _shape_mesh->getMaterial(*iter);
           temp = temps[*iter];
 
-          shape = _shape_mesh->getFluxByValue(*iter, gg, position);
+          double shape = _shape_mesh->getFluxByValue(*iter, gg, position);
           sigma_a += shape_mat->getSigmaAByGroup(gg, position, temp) * shape * shape_cell_volume;
           sigma_t += shape_mat->getSigmaTByGroup(gg, position, temp) * shape * shape_cell_volume;
           sigma_f += shape_mat->getSigmaFByGroup(gg, position, temp) * shape * shape_cell_volume;
@@ -227,7 +226,7 @@ void AmpMesh::condenseMaterials(int position, bool save_flux){
     }
 
     for (int d=0; d < _num_delayed_groups; d++){
-      precursor_conc = 0.0;
+      double precursor_conc = 0.0;
 
       for (iter = _shape_map[i].begin(); iter != _shape_map[i].end(); ++iter){
         if (_shape_mesh->getMaterial(*iter)->isFissionable()){
@@ -238,9 +237,6 @@ void AmpMesh::condenseMaterials(int position, bool save_flux){
       amp_mat->setPrecursorConcByGroup(precursor_conc / amp_cell_volume, d, position);
     }
   }
-
-  delete [] chi;
-  delete [] sigma_s;
 }
 
 
@@ -294,16 +290,19 @@ void AmpMesh::computeCurrent(int position){
   int sm_ch = _shape_mesh->getCellHeight();
   int num_refines = sm_nx / _num_x;
   double* temps = _shape_mesh->getTemperature(position);
-  double current, flux, dif_linear, d, d_next, temp, temp_next, flux_next;
-  Material *mat, *mat_next;
-  int cell_next;
-  double length_perpen, length;
-  
+
+  #pragma omp parallel for 
   for (int i=0; i < _num_x * _num_y; i++){
+
     std::vector<int>::iterator iter;
+    double flux, dif_linear, d, d_next, temp, temp_next, flux_next;
+    int cell_next;
+    double length_perpen, length;
+    Material *mat, *mat_next;
+
     for (int g=0; g < _num_amp_energy_groups; g++){
       for (int s=0; s < 4; s++){
-        current = 0.0;
+        double current = 0.0;
         for (iter = _shape_map[i].begin(); iter != _shape_map[i].end(); ++iter){
 
           mat = _shape_mesh->getMaterial(*iter);
@@ -428,13 +427,14 @@ void AmpMesh::computeDifCoefs(int position){
   double width = getCellWidth();
   double height = getCellHeight();
   double* temps = _temperature[position];
-  int sense;
-  double length, length_perpen;
-  double dif_coef, current, flux, f, dif_linear, dif_nonlinear, flux_next, dif_coef_next, f_next;
   
-  
+  #pragma omp parallel for  
   for (int x=0; x < nx; x++){
     for (int y=0; y < ny; y++){
+
+      int sense;
+      double length, length_perpen;
+      double dif_coef, current, flux, f, dif_linear, dif_nonlinear, flux_next, dif_coef_next, f_next;
       int cell = y*nx+x;
       double temp = temps[cell];
 
@@ -584,12 +584,12 @@ double AmpMesh::computePowerL2Norm(int position_1, int position_2){
 
   double* power_residual = new double[_num_x * _num_y];
   memset(power_residual, 0.0, sizeof(double) * _num_x * _num_y);
-  
+
+  #pragma omp parallel for
   for (int i=0; i < _num_x * _num_y; i++){
     if (_power[position_1][i] > 0.0)
       power_residual[i] = pow((_power[position_1][i] - _power[position_2][i]) / _power[position_1][i], 2);
   }
-
 
   double residual = sqrt(pairwise_sum(power_residual, _num_x*_num_y));
   delete [] power_residual;
@@ -604,6 +604,7 @@ void AmpMesh::interpolateDifNonlinear(int position_begin, int position_end, int 
   double wt_begin = (_clock->getTime(position_end) - _clock->getTime(position)) / dt;
   double wt_end = (_clock->getTime(position) - _clock->getTime(position_begin)) / dt;
 
+  #pragma omp parallel for
   for (int i=0; i < _num_x*_num_y*_num_amp_energy_groups*4; i++){
     _dif_nonlinear[position][i] = _dif_nonlinear[position_begin][i] * wt_begin
       + _dif_nonlinear[position_end][i] * wt_end;

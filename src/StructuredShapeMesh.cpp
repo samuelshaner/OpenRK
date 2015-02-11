@@ -138,15 +138,13 @@ void StructuredShapeMesh::synthesizeFlux(int position){
 
   int ngs = _num_shape_energy_groups;
   int nga = _num_amp_energy_groups;
-  double shape_previous;
-  double shape_forward;
-  double shape_current;
   double dt = _clock->getTime(FORWARD_OUT) - _clock->getTime(PREVIOUS_OUT);
   double wt_begin = (_clock->getTime(FORWARD_OUT) - _clock->getTime(position)) / dt;
   double wt_end = (_clock->getTime(position) - _clock->getTime(PREVIOUS_OUT)) / dt;
-  double time = _clock->getTime(position);
 
+  #pragma omp parallel for
   for (int i=0; i < _num_x * _num_y; i++){
+    double shape_previous, shape_forward, shape_current;
     for (int g=0; g < ngs; g++){
       shape_previous = _flux[PREVIOUS_OUT][i*ngs+g]
         / _amp_mesh->getFlux(PREVIOUS_OUT)[_amp_map[i]*nga+_group_indices[g]];
@@ -166,9 +164,10 @@ void StructuredShapeMesh::reconstructFlux(int position, int position_shape, int 
 
   int ngs = _num_shape_energy_groups;
   int nga = _num_amp_energy_groups;
-  double shape;
-  
+
+  #pragma omp parallel for
   for (int i=0; i < _num_x * _num_y; i++){
+    double shape;
     for (int g=0; g < ngs; g++){
       shape = _flux[position_shape][i*ngs+g]
         / _amp_mesh->getFlux(position_shape)[_amp_map[i]*nga+_group_indices[g]];
@@ -181,6 +180,7 @@ void StructuredShapeMesh::reconstructFlux(int position, int position_shape, int 
 
 void StructuredShapeMesh::computePower(int position){
 
+  #pragma omp parallel for
   for (int i=0; i < _num_x * _num_y; i++){
     double fission_rate = 0.0;
     double temp = _temperature[position][i];
@@ -202,14 +202,16 @@ void StructuredShapeMesh::computeDifCoefs(int position){
   double width = getCellWidth();
   double height = getCellHeight();
   double* temps = _temperature[position];
-  int sense;
-  double length, length_perpen;
-  double dif_coef, current, flux, dif_linear, flux_next, dif_coef_next;
-    
+
+  #pragma omp parallel for
   for (int x=0; x < nx; x++){
     for (int y=0; y < ny; y++){
+
       int cell = y*nx+x;
       double temp = temps[cell];
+      int sense;
+      double length, length_perpen;
+      double dif_coef, current, flux, dif_linear, flux_next, dif_coef_next;
 
       for (int s=0; s < 4; s++){
 
@@ -307,6 +309,7 @@ void StructuredShapeMesh::computeInitialPrecursorConc(int position){
 
   double* temps = _temperature[position];
 
+  #pragma omp parallel for
   for (int i=0; i < _num_x * _num_y; i++){
     
     double fission_rate = 0.0;
@@ -332,7 +335,8 @@ void StructuredShapeMesh::integratePrecursorConc(int position_from, int position
   double* temps_from = _temperature[position_from];
   double* temps_to = _temperature[position_to];
   double dt = _clock->getTime(position_to) - _clock->getTime(position_from);
-  
+
+  #pragma omp parallel for
   for (int i=0; i < _num_x * _num_y; i++){
 
     double fission_rate_from = 0.0;
@@ -367,7 +371,8 @@ void StructuredShapeMesh::integrateTemperature(int position_from, int position_t
   double* temps_from = _temperature[position_from];
   double* temps_to = _temperature[position_to];
   double dt = _clock->getTime(position_to) - _clock->getTime(position_from);
-  
+
+  #pragma omp parallel for
   for (int i=0; i < _num_x * _num_y; i++){
 
     double fission_rate_from = 0.0;
@@ -414,6 +419,7 @@ void StructuredShapeMesh::setGroupStructure(int* group_indices, int length_group
 
 void StructuredShapeMesh::scaleFlux(int position, double scale_val){
 
+  #pragma omp parallel for
   for (int i=0; i < _num_x*_num_y*_num_shape_energy_groups; i++)
     _flux[position][i] *= scale_val;
 }
@@ -437,7 +443,8 @@ double StructuredShapeMesh::computePowerL2Norm(int position_1, int position_2){
 
   double* power_residual = new double[_num_x * _num_y];
   memset(power_residual, 0.0, sizeof(double) * _num_x * _num_y);
-  
+
+  #pragma omp parallel for
   for (int i=0; i < _num_x * _num_y; i++){
     if (_power[position_1][i] > 0.0){
       power_residual[i] = pow((_power[position_1][i] - _power[position_2][i]) / _power[position_1][i], 2);

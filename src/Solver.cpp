@@ -153,6 +153,7 @@ void Solver::makeAMShapeInitial(int position){
   double volume = width * height;
   double* temps = _shape_mesh->getTemperature(position);
 
+  #pragma omp parallel for
   for (int i = 0; i < nx*ny; i++){
     for (int g=0; g < ng*ng; g++)
       _M_shape[i][g] = 0.0;
@@ -163,6 +164,7 @@ void Solver::makeAMShapeInitial(int position){
     }
   }
 
+  #pragma omp parallel for
   for (int y=0; y < ny; y++){
     for (int x=0; x < nx; x++){
       int cell = y*nx+x;
@@ -272,7 +274,8 @@ void Solver::makeAMAmp(double wt){
   double dt = _amp_mesh->getClock()->getDtInner();
   double* temps = _amp_mesh->getTemperature(CURRENT);
   double* temps_prev = _amp_mesh->getTemperature(PREVIOUS_IN);
-  
+
+  #pragma omp parallel for
   for (int i = 0; i < nx*ny; i++){
     for (int g=0; g < ng*ng; g++)
       _M_amp[i][g] = 0.0;
@@ -289,7 +292,8 @@ void Solver::makeAMAmp(double wt){
   double beta = 0.0;
   for (int d=0; d < _amp_mesh->getNumDelayedGroups(); d++)
     beta += _amp_mesh->getDelayedFractionByGroup(d);
- 
+
+  #pragma omp parallel for
   for (int y=0; y < ny; y++){
     for (int x=0; x < nx; x++){
       int cell = y*nx+x;
@@ -452,6 +456,7 @@ void Solver::makeAMShape(double wt){
   double* temps = _shape_mesh->getTemperature(FORWARD_OUT);
   double* temps_prev = _shape_mesh->getTemperature(PREVIOUS_OUT);
 
+  #pragma omp parallel for
   for (int i = 0; i < nx*ny; i++){
     for (int g=0; g < ng*ng; g++)
       _M_shape[i][g] = 0.0;
@@ -468,7 +473,8 @@ void Solver::makeAMShape(double wt){
   double beta = 0.0;
   for (int d=0; d < _shape_mesh->getNumDelayedGroups(); d++)
     beta += _shape_mesh->getDelayedFractionByGroup(d);
- 
+
+  #pragma omp parallel for
   for (int y=0; y < ny; y++){
     for (int x=0; x < nx; x++){
       int cell = y*nx+x;

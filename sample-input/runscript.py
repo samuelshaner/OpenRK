@@ -159,7 +159,7 @@ for i in xrange(1, 5):
 for cell_id in xrange(1, 5):
     shape_mesh.setMaterial(fuel1bin, cell_id)
 
-shape_mesh = shape_mesh.uniformRefine(8)
+shape_mesh = shape_mesh.uniformRefine(2)
 shape_mesh.uniquifyMaterials()
 
 # Create and initialize the amplitude mesh
@@ -182,7 +182,7 @@ shape_mesh.setGroupStructure([0, 1])
 
 # Solve diffusion problem
 solver = rk.Solver(shape_mesh, amp_mesh)
-rk.setNumThreads(1)
+rk.setNumThreads(4)
 
 transient = rk.Transient()
 clock = rk.Clock(dt_inner=1.e-3, dt_outer=1.e-1)

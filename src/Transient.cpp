@@ -1,4 +1,5 @@
 #include "Transient.h"
+
 Transient::Transient(transientMethod inner_method, transientMethod outer_method, double wt_inner, double wt_outer){
 
   /* Initialize variables */
