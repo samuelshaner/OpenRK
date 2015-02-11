@@ -11,6 +11,10 @@ group_structures = dict()
 # Create a sub-dictionary for the CASMO energy group structures
 casmo = dict()
 
+# 2-group structure
+casmo['1-group'] = infermc.EnergyGroups()
+group_edges = np.array([0., 20.])
+casmo['1-group'].group_edges = group_edges
 
 # 2-group structure
 casmo['2-group'] = infermc.EnergyGroups()
