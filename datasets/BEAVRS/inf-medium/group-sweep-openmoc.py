@@ -19,7 +19,7 @@ import numpy
 batches = 100
 inactive = 5
 particles = 250000
-structures = [1,2,4,8,12,16,25,40,70]
+structures = [2,4,8,12,16,25,40,70]
 
 # Initialize array to contain all data
 kinf = numpy.zeros((len(structures), batches-inactive-4), dtype=numpy.float64)
@@ -119,7 +119,7 @@ tally_factory.createTalliesFile()
 print('running openmc...')
 
 executor = openmc.Executor()
-executor.run_simulation(output=True, mpi_procs=8)
+#executor.run_simulation(output=True, mpi_procs=8)
 
 
 #####################   Parametric Sweep Over Energy Groups ####################
@@ -152,7 +152,7 @@ for i, num_groups in enumerate(structures):
     micro_extractor = MicroXSTallyExtractor(statepoint, summary)
     micro_extractor.extractAllMultiGroupXS(groups, 'material')
 
-    micro_extractor.rebalanceAllScatterMatrices()
+#    micro_extractor.rebalanceAllScatterMatrices()
 
     all_materials_xs = micro_extractor._multigroup_xs['material']
 
@@ -249,5 +249,5 @@ plt.title('1.6% Enr. k-inf Error')
 plt.xlim((20,100))
 plt.legend(legend)
 plt.grid()
-plt.ylim(-400, 400)
+plt.ylim(-100, 100)
 plt.savefig('k-inf-err-nu-scatt.png')

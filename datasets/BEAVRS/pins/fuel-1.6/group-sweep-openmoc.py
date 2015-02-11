@@ -19,8 +19,8 @@ import numpy
 # OpenMC simulation parameters
 batches = 100
 inactive = 5
-particles = 10000
-structures = [1,2,4,8,12,16,25] #,40,70]
+particles = 250000
+structures = [1,2,4,8,12,16,25,40,70]
 
 # Initialize array to contain all data
 kinf = numpy.zeros((len(structures), batches-inactive-4), dtype=numpy.float64)
@@ -102,7 +102,7 @@ tally_factory.createTalliesFile()
 print('running openmc...')
 
 executor = openmc.Executor()
-#executor.run_simulation(output=False, mpi_procs=8)
+executor.run_simulation(output=True, mpi_procs=8)
 
 
 #####################   Parametric Sweep Over Energy Groups ####################
@@ -234,4 +234,5 @@ plt.title('1.6% Enr. k-inf Error')
 plt.xlim((20,100))
 plt.legend(legend)
 plt.grid()
+plt.xlim(-400,400)
 plt.savefig('k-inf-err.png')
