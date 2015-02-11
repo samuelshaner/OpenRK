@@ -663,18 +663,22 @@ class XSTallyExtractor(object):
             # Get cross-section NumPy arrays
             transport = transport_xs.getXS()
             absorption = absorption_xs.getXS()
-            scatter = scatter_xs.getXS()
             scatter_matrix = scatter_matrix_xs.getXS()
             nu_scatter_matrix = nu_scatter_matrix_xs.getXS()
 
-            #FIXME: Need MultiGroupXS.getMacroXS() routines - specifically for chi
+            # Compute scatter cross-section in each subdomain, group, nuclide
             scatter = transport - absorption
 
+            # Compute rebalance factors for each subdomain, group, nuclide
             f = scatter / np.sum(scatter_matrix, axis=2)
 
             # Update scattering matrices with f factor
             scatter_matrix *= f
             nu_scatter_matrix *= f
+
+            # Convert NaNs to zero
+            scatter_matrix = np.nan_to_num(scatter_matrix)
+            nu_scatter_matrix = np.nan_to_num(nu_scatter_matrix)
 
             # Assign rebalanced scattering matrixs to the MultiGroupXS
             scatter_matrix_xs._xs[0,...] = scatter_matrix

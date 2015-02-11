@@ -704,13 +704,15 @@ class MicroChi(MicroXS, infermc.Chi):
     num_groups = self._xs.shape[2]
     macro_chi = np.zeros((num_subdomains, num_groups), dtype=np.float)
 
-    for group in range(self._num_groups):
+    if tot_fiss_src > 0.:
 
-      # Sum up nuclide nu-fission source across energy groups, nuclides
-      nuclide_fiss_src = np.sum(nu_fission_in * chi[:,group,:], axis=(1,2))
+      for group in range(self._num_groups):
 
-      # Set the macroscopic chi for all subdomains
-      macro_chi[:,group] = nuclide_fiss_src / tot_fiss_src
+        # Sum up nuclide nu-fission source across energy groups, nuclides
+        nuclide_fiss_src = np.sum(nu_fission_in * chi[:,group,:], axis=(1,2))
+
+        # Set the macroscopic chi for all subdomains
+        macro_chi[:,group] = nuclide_fiss_src / tot_fiss_src
 
     macro_chi = macro_chi.squeeze()
 

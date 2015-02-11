@@ -9,7 +9,7 @@ from infermc.process import MicroXSTallyExtractor
 from openmc.opencg_compatible import get_openmc_geometry
 from openmoc.compatible.opencg_compatible import get_openmoc_geometry
 import matplotlib.pyplot as plt
-import numpy, h5py
+import numpy
 
 
 ################################################################################
@@ -20,7 +20,7 @@ import numpy, h5py
 batches = 100
 inactive = 5
 particles = 10000
-structures = [2,4,8,12,16,25] #,40,70]
+structures = [1,2,4,8,12,16,25] #,40,70]
 
 # Initialize array to contain all data
 kinf = numpy.zeros((len(structures), batches-inactive-4), dtype=numpy.float64)
@@ -91,12 +91,9 @@ for material_id, material in materials.items():
   if material._name == 'Gap':
     gap_id = material_id
 
-
 tally_factory = MicroXSTallyFactory(openmc_geometry)
 
 for i, num_groups in enumerate(structures):
-
-  print('testing {0} groups'.format(num_groups))
   groups = group_structures['CASMO']['{0}-group'.format(num_groups)]
   tally_factory.createAllMultiGroupXS(groups, domain_type='material')
 
@@ -105,7 +102,7 @@ tally_factory.createTalliesFile()
 print('running openmc...')
 
 executor = openmc.Executor()
-executor.run_simulation(output=False, mpi_procs=8)
+#executor.run_simulation(output=False, mpi_procs=8)
 
 
 #####################   Parametric Sweep Over Energy Groups ####################
@@ -115,20 +112,6 @@ for i, num_groups in enumerate(structures):
   print('testing {0} groups'.format(num_groups))
 
   groups = group_structures['CASMO']['{0}-group'.format(num_groups)]
-
-  ##################   Exporting to OpenMC tallies.xml File  ###################
-
-#  tally_factory = MicroXSTallyFactory(openmc_geometry)
-#  tally_factory.createAllMultiGroupXS(groups, domain_type='material')
-#  tally_factory.createTalliesFile()
-
-
-  ###############################   Running OpenMC  ############################
-
-#  print('running openmc...')
-
-#  executor = openmc.Executor()
-#  executor.run_simulation(output=False, mpi_procs=8)
 
   ########################   Extracting Cross-Sections  ########################
 
@@ -142,6 +125,9 @@ for i, num_groups in enumerate(structures):
 
     openmc.reset_auto_ids()
 
+    openmoc_geometry = get_openmoc_geometry(geometry)
+    cells = openmoc_geometry.getRootUniverse().getAllCells()
+
     # Initialize handle on the OpenMC statepoint file
     filename = 'statepoint.{0:03}.h5'.format(batch)
     statepoint = StatePoint(filename)
@@ -149,75 +135,34 @@ for i, num_groups in enumerate(structures):
     micro_extractor = MicroXSTallyExtractor(statepoint, summary)
     micro_extractor.extractAllMultiGroupXS(groups, 'material')
 
-    materials = summary.openmc_geometry.get_all_materials()
+    micro_extractor.rebalanceAllScatterMatrices()
 
-    # DUMP-TO-FILE and PRINT XS
-    filename = 'mgxs-batch-{0}-groups-{1}'.format(batch, num_groups)
+    all_materials_xs = micro_extractor._multigroup_xs['material']
 
-    for material in materials:
+    for material_id in all_materials_xs.keys():
+
+      print('initializing material {0} ...'.format(material_id))
+
+      material_xs = all_materials_xs[material_id]
+      macro_xs = dict()
+
       for xs_type in xs_types:
-        xs = micro_extractor._multigroup_xs['material'][material._id][xs_type]
-        xs.exportResults(filename=filename)
+        multigroup_xs = material_xs[xs_type]
+        macro_xs[xs_type] = multigroup_xs.getMacroXS()
 
-    statepoint.close()
-    del statepoint
-
-    ###################   Injecting Cross-Sections into OpenMOC  #################
-
-    openmoc_geometry = get_openmoc_geometry(geometry)
-    cells = openmoc_geometry.getRootUniverse().getAllCells()
-
-    print('opening {0} ...'.format(filename))
-
-    f = h5py.File('multigroupxs/{0}.h5'.format(filename), 'r')
-
-    mats = f['material']
-
-    for mat_key in mats.keys():
-
-      print('initializing material {0} ...'.format(mat_key))
-
-      material_id = int(mat_key.split(' ')[1])
-      material_group = mats[mat_key]
-
+      #########################  Create OpenMOC Materials  #######################
       openmoc_material = openmoc.Material(material_id)
       openmoc_material.setNumEnergyGroups(num_groups)
       openmoc_material.thisown = 0   # FIXME: Can SWIG do this on its own??
-
-      macro_xs = dict()
-      macro_xs['total'] = numpy.zeros(num_groups)
-      macro_xs['transport'] = numpy.zeros(num_groups)
-      macro_xs['scatter matrix'] = numpy.zeros((num_groups, num_groups))
-      macro_xs['absorption'] = numpy.zeros(num_groups)
-      macro_xs['fission'] = numpy.zeros(num_groups)
-      macro_xs['nu-fission'] = numpy.zeros(num_groups)
-      macro_xs['chi'] = numpy.zeros(num_groups)
-
-      #####################  Calculate Macro Cross-Sections  #####################
-
-      for nuclide in material_group.keys():
-        nuclide_group = material_group[nuclide]
-        density = nuclide_group['density'][0]
-
-        if nuclide == 'total':
-          continue
-
-        for rxn_type in nuclide_group.keys():
-          if rxn_type in macro_xs.keys():
-            micro_xs = nuclide_group[rxn_type]['average'][...]
-            macro_xs[rxn_type] += micro_xs * density
-
-      #########################  Create OpenMOC Materials  #######################
 
       if material_id != gap_id:
         openmoc_material.setSigmaT(macro_xs['transport'])
       else:
         openmoc_material.setSigmaT(macro_xs['total'])
-
       openmoc_material.setSigmaA(macro_xs['absorption'])
       openmoc_material.setSigmaF(macro_xs['fission'])
       openmoc_material.setNuSigmaF(macro_xs['nu-fission'])
-      openmoc_material.setSigmaS(macro_xs['scatter matrix'].ravel())
+      openmoc_material.setSigmaS(macro_xs['nu-scatter matrix'].ravel())
       openmoc_material.setChi(macro_xs['chi'])
 
       ######################  Set Materials for OpenMOC Cells  ###################
@@ -246,7 +191,6 @@ for i, num_groups in enumerate(structures):
                            note='batch-{0}'.format(batch))
 
     print('stored simulation state...')
-    f.close()
 
     kinf[i,j] = solver.getKeff()
 

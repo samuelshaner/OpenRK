@@ -1,14 +1,14 @@
-import opencg, openmc, openmoc
+import openmc, openmoc
 from openmoc.process import store_simulation_state
 from openmc.statepoint import StatePoint
 from openmc.summary import Summary
 from datasets.energy_groups import group_structures
 from infermc.build import MicroXSTallyFactory, xs_types
 from infermc.process import MicroXSTallyExtractor
-from openmc.opencg_compatible import get_openmc_geometry, get_opencg_geometry
+from openmc.opencg_compatible import get_opencg_geometry
 from openmoc.compatible.opencg_compatible import get_openmoc_geometry
 import matplotlib.pyplot as plt
-import numpy, h5py
+import numpy
 
 
 ################################################################################
@@ -105,7 +105,6 @@ settings_file.set_output({'tallies': False, 'summary': True})
 source_bounds = [-0.63, -0.63, -0.63, +0.63, +0.63, +0.63]
 settings_file.set_source_space('box', source_bounds)
 settings_file.export_to_xml()
-
 
 tally_factory = MicroXSTallyFactory(openmc_geometry)
 
