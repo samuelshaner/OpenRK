@@ -685,3 +685,34 @@ class MicroChi(MicroXS, infermc.Chi):
   def createTallies(self):
     super(MicroChi, self).createTallies()
     self.addNuclidesToTallies()
+
+
+  def getMacroXS(self, in_groups='all', out_groups='all', nuclides='all',
+                 subdomains='all', metric='mean'):
+
+    # Extract and clean the Tally data
+    tally_data, zero_indices = super(MicroChi, self).getAllTallyData()
+
+    # Get the mean of the nu-fission in-group tallied reaction rates
+    nu_fission_in = tally_data['nu-fission-in'][0,...]
+
+    # Sum up total nu-fission source across energy groups, nuclides
+    tot_fiss_src = np.sum(nu_fission_in, axis=(1,2))
+
+    chi = self.getXS()
+    num_subdomains = self._xs.shape[1]
+    num_groups = self._xs.shape[2]
+    macro_chi = np.zeros((num_subdomains, num_groups), dtype=np.float)
+
+    for group in range(self._num_groups):
+
+      # Sum up nuclide nu-fission source across energy groups, nuclides
+      nuclide_fiss_src = np.sum(nu_fission_in * chi[:,group,:], axis=(1,2))
+
+      # Set the macroscopic chi for all subdomains
+      macro_chi[:,group] = nuclide_fiss_src / tot_fiss_src
+
+    macro_chi = macro_chi.squeeze()
+
+    return macro_chi
+

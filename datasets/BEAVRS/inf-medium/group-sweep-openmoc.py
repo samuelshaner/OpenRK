@@ -19,7 +19,7 @@ import numpy, h5py
 batches = 100
 inactive = 5
 particles = 50000
-structures = [4] #,4,8,12,16,25] #,40,70]
+structures = [2,4,8,12,16,25] #,40,70]
 
 # Initialize array to contain all data
 kinf = numpy.zeros((len(structures), batches-inactive-4), dtype=numpy.float64)
@@ -251,4 +251,4 @@ plt.xlim((20,100))
 plt.legend(legend)
 plt.grid()
 plt.ylim(-400, 400)
-plt.savefig('k-inf-err-nu-scatt-2.png')
+plt.savefig('k-inf-err-nu-scatt.png')
