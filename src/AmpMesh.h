@@ -31,7 +31,7 @@ protected:
   double _energy_per_fission;
   
 public:
-  AmpMesh(double width=1.0, double height=1.0, int num_x=1, int num_y=1);
+  AmpMesh(double width=1.0, double height=1.0, double depth=1.0, int num_x=1, int num_y=1, int num_z=1);
   virtual ~AmpMesh();
 
   /* Setter functions */

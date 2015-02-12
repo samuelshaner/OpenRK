@@ -28,7 +28,7 @@ protected:
   int* _amp_map;
 
 public:
-  StructuredShapeMesh(double width=1.0, double height=1.0, int num_x=1, int num_y=1);
+  StructuredShapeMesh(double width=1.0, double height=1.0, double depth=1.0, int num_x=1, int num_y=1, int num_z=1);
   virtual ~StructuredShapeMesh();
 
   /* Setter functions */
@@ -49,7 +49,7 @@ public:
   
   /* Worker functions */
   StructuredShapeMesh* clone();
-  StructuredShapeMesh* uniformRefine(int num_refines);
+  StructuredShapeMesh* uniformRefine(int refine_x=1, int refine_y=1, int refine_z=1);
   void initialize();
   void synthesizeFlux(int position);
   void reconstructFlux(int position, int position_shape, int position_amp);

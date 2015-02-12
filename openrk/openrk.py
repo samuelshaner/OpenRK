@@ -356,8 +356,8 @@ class Mesh(_object):
     __swig_getmethods__ = {}
     __getattr__ = lambda self, name: _swig_getattr(self, Mesh, name)
     __repr__ = _swig_repr
-    def __init__(self, width=1.0, height=1.0): 
-        this = _openrk.new_Mesh(width, height)
+    def __init__(self, width=1.0, height=1.0, depth=1.0): 
+        this = _openrk.new_Mesh(width, height, depth)
         try: self.this.append(this)
         except: self.this = this
     __swig_destroy__ = _openrk.delete_Mesh
@@ -369,6 +369,8 @@ class Mesh(_object):
     def setXMax(self, *args, **kwargs): return _openrk.Mesh_setXMax(self, *args, **kwargs)
     def setYMin(self, *args, **kwargs): return _openrk.Mesh_setYMin(self, *args, **kwargs)
     def setYMax(self, *args, **kwargs): return _openrk.Mesh_setYMax(self, *args, **kwargs)
+    def setZMin(self, *args, **kwargs): return _openrk.Mesh_setZMin(self, *args, **kwargs)
+    def setZMax(self, *args, **kwargs): return _openrk.Mesh_setZMax(self, *args, **kwargs)
     def setKeff0(self, *args, **kwargs): return _openrk.Mesh_setKeff0(self, *args, **kwargs)
     def setBoundary(self, *args, **kwargs): return _openrk.Mesh_setBoundary(self, *args, **kwargs)
     def setMaterial(self, *args, **kwargs): return _openrk.Mesh_setMaterial(self, *args, **kwargs)
@@ -379,6 +381,7 @@ class Mesh(_object):
     def getClock(self): return _openrk.Mesh_getClock(self)
     def getWidth(self): return _openrk.Mesh_getWidth(self)
     def getHeight(self): return _openrk.Mesh_getHeight(self)
+    def getDepth(self): return _openrk.Mesh_getDepth(self)
     def getBoundary(self, *args, **kwargs): return _openrk.Mesh_getBoundary(self, *args, **kwargs)
     def getNumShapeEnergyGroups(self): return _openrk.Mesh_getNumShapeEnergyGroups(self)
     def getNumAmpEnergyGroups(self): return _openrk.Mesh_getNumAmpEnergyGroups(self)
@@ -392,6 +395,8 @@ class Mesh(_object):
     def getXMax(self): return _openrk.Mesh_getXMax(self)
     def getYMin(self): return _openrk.Mesh_getYMin(self)
     def getYMax(self): return _openrk.Mesh_getYMax(self)
+    def getZMin(self): return _openrk.Mesh_getZMin(self)
+    def getZMax(self): return _openrk.Mesh_getZMax(self)
     def getFlux(self, *args, **kwargs): return _openrk.Mesh_getFlux(self, *args, **kwargs)
     def getPower(self, *args, **kwargs): return _openrk.Mesh_getPower(self, *args, **kwargs)
     def getTemperature(self, *args, **kwargs): return _openrk.Mesh_getTemperature(self, *args, **kwargs)
@@ -409,14 +414,15 @@ class StructuredMesh(Mesh):
     for _s in [Mesh]: __swig_getmethods__.update(getattr(_s,'__swig_getmethods__',{}))
     __getattr__ = lambda self, name: _swig_getattr(self, StructuredMesh, name)
     __repr__ = _swig_repr
-    def __init__(self, width=1.0, height=1.0, num_x=1, num_y=1): 
-        this = _openrk.new_StructuredMesh(width, height, num_x, num_y)
+    def __init__(self, width=1.0, height=1.0, depth=1.0, num_x=1, num_y=1, num_z=1): 
+        this = _openrk.new_StructuredMesh(width, height, depth, num_x, num_y, num_z)
         try: self.this.append(this)
         except: self.this = this
     __swig_destroy__ = _openrk.delete_StructuredMesh
     __del__ = lambda self : None;
     def setNumX(self, *args, **kwargs): return _openrk.StructuredMesh_setNumX(self, *args, **kwargs)
     def setNumY(self, *args, **kwargs): return _openrk.StructuredMesh_setNumY(self, *args, **kwargs)
+    def setNumZ(self, *args, **kwargs): return _openrk.StructuredMesh_setNumZ(self, *args, **kwargs)
     def setClock(self, *args, **kwargs): return _openrk.StructuredMesh_setClock(self, *args, **kwargs)
     def getCurrent(self, *args, **kwargs): return _openrk.StructuredMesh_getCurrent(self, *args, **kwargs)
     def getDifLinear(self, *args, **kwargs): return _openrk.StructuredMesh_getDifLinear(self, *args, **kwargs)
@@ -425,8 +431,10 @@ class StructuredMesh(Mesh):
     def getNeighborMaterial(self, *args, **kwargs): return _openrk.StructuredMesh_getNeighborMaterial(self, *args, **kwargs)
     def getNumX(self): return _openrk.StructuredMesh_getNumX(self)
     def getNumY(self): return _openrk.StructuredMesh_getNumY(self)
+    def getNumZ(self): return _openrk.StructuredMesh_getNumZ(self)
     def getCellWidth(self): return _openrk.StructuredMesh_getCellWidth(self)
     def getCellHeight(self): return _openrk.StructuredMesh_getCellHeight(self)
+    def getCellDepth(self): return _openrk.StructuredMesh_getCellDepth(self)
     def getCellVolume(self): return _openrk.StructuredMesh_getCellVolume(self)
     def findCell(self, *args, **kwargs): return _openrk.StructuredMesh_findCell(self, *args, **kwargs)
     def computeFuelVolume(self): return _openrk.StructuredMesh_computeFuelVolume(self)
@@ -446,8 +454,8 @@ class StructuredShapeMesh(StructuredMesh):
     for _s in [StructuredMesh]: __swig_getmethods__.update(getattr(_s,'__swig_getmethods__',{}))
     __getattr__ = lambda self, name: _swig_getattr(self, StructuredShapeMesh, name)
     __repr__ = _swig_repr
-    def __init__(self, width=1.0, height=1.0, num_x=1, num_y=1): 
-        this = _openrk.new_StructuredShapeMesh(width, height, num_x, num_y)
+    def __init__(self, width=1.0, height=1.0, depth=1.0, num_x=1, num_y=1, num_z=1): 
+        this = _openrk.new_StructuredShapeMesh(width, height, depth, num_x, num_y, num_z)
         try: self.this.append(this)
         except: self.this = this
     __swig_destroy__ = _openrk.delete_StructuredShapeMesh
@@ -464,7 +472,7 @@ class StructuredShapeMesh(StructuredMesh):
     def getDifNonlinearByValue(self, *args, **kwargs): return _openrk.StructuredShapeMesh_getDifNonlinearByValue(self, *args, **kwargs)
     def getAmpGroup(self, *args, **kwargs): return _openrk.StructuredShapeMesh_getAmpGroup(self, *args, **kwargs)
     def clone(self): return _openrk.StructuredShapeMesh_clone(self)
-    def uniformRefine(self, *args, **kwargs): return _openrk.StructuredShapeMesh_uniformRefine(self, *args, **kwargs)
+    def uniformRefine(self, refine_x=1, refine_y=1, refine_z=1): return _openrk.StructuredShapeMesh_uniformRefine(self, refine_x, refine_y, refine_z)
     def initialize(self): return _openrk.StructuredShapeMesh_initialize(self)
     def synthesizeFlux(self, *args, **kwargs): return _openrk.StructuredShapeMesh_synthesizeFlux(self, *args, **kwargs)
     def reconstructFlux(self, *args, **kwargs): return _openrk.StructuredShapeMesh_reconstructFlux(self, *args, **kwargs)
@@ -491,8 +499,8 @@ class AmpMesh(StructuredMesh):
     for _s in [StructuredMesh]: __swig_getmethods__.update(getattr(_s,'__swig_getmethods__',{}))
     __getattr__ = lambda self, name: _swig_getattr(self, AmpMesh, name)
     __repr__ = _swig_repr
-    def __init__(self, width=1.0, height=1.0, num_x=1, num_y=1): 
-        this = _openrk.new_AmpMesh(width, height, num_x, num_y)
+    def __init__(self, width=1.0, height=1.0, depth=1.0, num_x=1, num_y=1, num_z=1): 
+        this = _openrk.new_AmpMesh(width, height, depth, num_x, num_y, num_z)
         try: self.this.append(this)
         except: self.this = this
     __swig_destroy__ = _openrk.delete_AmpMesh

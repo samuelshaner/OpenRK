@@ -5,8 +5,7 @@
  * @brief Constructor sets the ID and unique ID for the Material.
  * @param id the user-defined ID for the material
  */
-StructuredShapeMesh::StructuredShapeMesh(double width, double height, int num_x, int num_y) :
-  StructuredMesh(width, height, num_x, num_y){
+StructuredShapeMesh::StructuredShapeMesh(double width, double height, double depth, int num_x, int num_y, int num_z) : StructuredMesh(width, height, depth, num_x, num_y, num_z){
 
   _amp_mesh = NULL;
   _group_indices = NULL;
@@ -35,17 +34,22 @@ void StructuredShapeMesh::setAmpMesh(AmpMesh* mesh){
 
   int nx = mesh->getNumX();
   int ny = mesh->getNumY();
+  int nz = mesh->getNumZ();
   int num_refines_x = _num_x / nx;
   int num_refines_y = _num_y / ny;
-  _amp_map = new int[_num_x * _num_y];
+  int num_refines_z = _num_z / nz;
+  _amp_map = new int[_num_x * _num_y * _num_z];
   
-  for (int y=0; y < _num_y; y++){
-    int yy = y / num_refines_y;
-    for (int x=0; x < _num_x; x++){
-      int xx = x / num_refines_x;
-      int amp_cell = yy*nx + xx;
-      int shape_cell = y*_num_x + x;
-      _amp_map[shape_cell] = amp_cell;
+  for (int z=0; z < _num_z; z++){
+    int zz = z / num_refines_z;
+    for (int y=0; y < _num_y; y++){
+      int yy = y / num_refines_y;
+      for (int x=0; x < _num_x; x++){
+        int xx = x / num_refines_x;
+        int amp_cell = zz*nx*ny + yy*nx + xx;
+        int shape_cell = z*_num_z*_num_y + y*_num_x + x;
+        _amp_map[shape_cell] = amp_cell;
+      }
     }
   }
 }
@@ -57,17 +61,17 @@ void StructuredShapeMesh::setFluxByValue(double flux, int cell, int group, int p
 
 
 void StructuredShapeMesh::setCurrentByValue(double current, int cell, int group, int side, int position){
-  _current[position][(cell*4 + side)*_num_shape_energy_groups + group] = current;
+  _current[position][(cell*6 + side)*_num_shape_energy_groups + group] = current;
 }
 
 
 void StructuredShapeMesh::setDifLinearByValue(double dif_linear, int cell, int group, int side, int position){
-  _dif_linear[position][(cell*4 + side)*_num_shape_energy_groups + group] = dif_linear;
+  _dif_linear[position][(cell*6 + side)*_num_shape_energy_groups + group] = dif_linear;
 }
 
 
 void StructuredShapeMesh::setDifNonlinearByValue(double dif_nonlinear, int cell, int group, int side, int position){
-  _dif_nonlinear[position][(cell*4 + side)*_num_shape_energy_groups + group] = dif_nonlinear;
+  _dif_nonlinear[position][(cell*6 + side)*_num_shape_energy_groups + group] = dif_nonlinear;
 }
 
 
@@ -77,59 +81,58 @@ double StructuredShapeMesh::getFluxByValue(int cell, int group, int position){
 
 
 double StructuredShapeMesh::getCurrentByValue(int cell, int group, int side, int position){
-  return _current[position][(cell*4 + side)*_num_shape_energy_groups + group];
+  return _current[position][(cell*6 + side)*_num_shape_energy_groups + group];
 }
 
 
 double StructuredShapeMesh::getDifLinearByValue(int cell, int group, int side, int position){
-  return _dif_linear[position][(cell*4 + side)*_num_shape_energy_groups + group];
+  return _dif_linear[position][(cell*6 + side)*_num_shape_energy_groups + group];
 }
 
 
 double StructuredShapeMesh::getDifNonlinearByValue(int cell, int group, int side, int position){
-  return _dif_nonlinear[position][(cell*4 + side)*_num_shape_energy_groups + group];
+  return _dif_nonlinear[position][(cell*6 + side)*_num_shape_energy_groups + group];
 }
 
 
 void StructuredShapeMesh::copyFlux(int position_from, int position_to){
-  std::copy(_flux[position_from], _flux[position_from] + _num_x*_num_y*_num_shape_energy_groups, _flux[position_to]);
+  std::copy(_flux[position_from], _flux[position_from] + _num_x*_num_y*_num_z*_num_shape_energy_groups, _flux[position_to]);
 }
 
 
 void StructuredShapeMesh::copyCurrent(int position_from, int position_to){
-  std::copy(_current[position_from], _current[position_from] + _num_x*_num_y*_num_shape_energy_groups*4, _current[position_to]);
+  std::copy(_current[position_from], _current[position_from] + _num_x*_num_y*_num_z*_num_shape_energy_groups*6, _current[position_to]);
 }
 
 
 void StructuredShapeMesh::copyDifLinear(int position_from, int position_to){
-  std::copy(_dif_linear[position_from], _dif_linear[position_from] + _num_x*_num_y*_num_shape_energy_groups*4, _dif_linear[position_to]);
+  std::copy(_dif_linear[position_from], _dif_linear[position_from] + _num_x*_num_y*_num_z*_num_shape_energy_groups*6, _dif_linear[position_to]);
 }
 
 
 void StructuredShapeMesh::copyDifNonlinear(int position_from, int position_to){
-  std::copy(_dif_nonlinear[position_from], _dif_nonlinear[position_from] + _num_x*_num_y*_num_shape_energy_groups*4, _dif_nonlinear[position_to]);
+  std::copy(_dif_nonlinear[position_from], _dif_nonlinear[position_from] + _num_x*_num_y*_num_z*_num_shape_energy_groups*6, _dif_nonlinear[position_to]);
 }
 
 
 void StructuredShapeMesh::initialize(){
 
-  _materials = new Material*[_num_x*_num_y];
-  
-  
+  _materials = new Material*[_num_x*_num_y*_num_z];
+    
   for(int c=0; c < 8; c++){
-    _dif_linear[c] = new double[_num_x * _num_y * _num_shape_energy_groups * 4];
-    _dif_nonlinear[c] = new double[_num_x * _num_y * _num_shape_energy_groups * 4];
-    _current[c] = new double[_num_x * _num_y * _num_shape_energy_groups * 4];
-    _flux[c] = new double[_num_x * _num_y * _num_shape_energy_groups];
-    _temperature[c] = new double[_num_x * _num_y];
-    _power[c] = new double[_num_x * _num_y];
+    _dif_linear[c] = new double[_num_x * _num_y * _num_z * _num_shape_energy_groups * 6];
+    _dif_nonlinear[c] = new double[_num_x * _num_y * _num_z * _num_shape_energy_groups * 6];
+    _current[c] = new double[_num_x * _num_y * _num_z * _num_shape_energy_groups * 6];
+    _flux[c] = new double[_num_x * _num_y * _num_z * _num_shape_energy_groups];
+    _temperature[c] = new double[_num_x * _num_y * _num_z];
+    _power[c] = new double[_num_x * _num_y * _num_z];
 
-    memset(_dif_linear[c], 0.0, sizeof(double) * _num_x * _num_y * _num_shape_energy_groups * 4);
-    memset(_dif_nonlinear[c], 0.0, sizeof(double) * _num_x * _num_y * _num_shape_energy_groups * 4);
-    memset(_current[c], 0.0, sizeof(double) * _num_x * _num_y * _num_shape_energy_groups * 4);
-    memset(_flux[c], 1.0, sizeof(double) * _num_x * _num_y * _num_shape_energy_groups);
-    memset(_temperature[c], 300.0, sizeof(double) * _num_x * _num_y);
-    memset(_power[c], 0.0, sizeof(double) * _num_x * _num_y);
+    memset(_dif_linear[c], 0.0, sizeof(double) * _num_x * _num_y * _num_z * _num_shape_energy_groups * 6);
+    memset(_dif_nonlinear[c], 0.0, sizeof(double) * _num_x * _num_y * _num_z * _num_shape_energy_groups * 6);
+    memset(_current[c], 0.0, sizeof(double) * _num_x * _num_y * _num_z * _num_shape_energy_groups * 6);
+    memset(_flux[c], 1.0, sizeof(double) * _num_x * _num_y * _num_z * _num_shape_energy_groups);
+    memset(_temperature[c], 300.0, sizeof(double) * _num_x * _num_y * _num_z);
+    memset(_power[c], 0.0, sizeof(double) * _num_x * _num_y * _num_z);
   }  
 }
 
@@ -143,7 +146,7 @@ void StructuredShapeMesh::synthesizeFlux(int position){
   double wt_end = (_clock->getTime(position) - _clock->getTime(PREVIOUS_OUT)) / dt;
 
   #pragma omp parallel for
-  for (int i=0; i < _num_x * _num_y; i++){
+  for (int i=0; i < _num_x * _num_y * _num_z; i++){
     double shape_previous, shape_forward, shape_current;
     for (int g=0; g < ngs; g++){
       shape_previous = _flux[PREVIOUS_OUT][i*ngs+g]
@@ -166,7 +169,7 @@ void StructuredShapeMesh::reconstructFlux(int position, int position_shape, int 
   int nga = _num_amp_energy_groups;
 
   #pragma omp parallel for
-  for (int i=0; i < _num_x * _num_y; i++){
+  for (int i=0; i < _num_x * _num_y * _num_z; i++){
     double shape;
     for (int g=0; g < ngs; g++){
       shape = _flux[position_shape][i*ngs+g]
@@ -181,7 +184,7 @@ void StructuredShapeMesh::reconstructFlux(int position, int position_shape, int 
 void StructuredShapeMesh::computePower(int position){
 
   #pragma omp parallel for
-  for (int i=0; i < _num_x * _num_y; i++){
+  for (int i=0; i < _num_x * _num_y * _num_z; i++){
     double fission_rate = 0.0;
     double temp = _temperature[position][i];
     
@@ -198,57 +201,67 @@ void StructuredShapeMesh::computeDifCoefs(int position){
 
   int nx = _num_x;
   int ny = _num_y;
+  int nz = _num_z;
   int ng = _num_shape_energy_groups;
   double width = getCellWidth();
   double height = getCellHeight();
+  double depth = getCellDepth();
   double* temps = _temperature[position];
 
-  #pragma omp parallel for
-  for (int x=0; x < nx; x++){
+  
+  for (int z=0; z < nz; z++){
+    #pragma omp parallel for
     for (int y=0; y < ny; y++){
-
-      int cell = y*nx+x;
-      double temp = temps[cell];
-      int sense;
-      double length, length_perpen;
-      double dif_coef, current, flux, dif_linear, flux_next, dif_coef_next;
-
-      for (int s=0; s < 4; s++){
-
-        int cell_next = getNeighborCell(x, y, s);
-
-        if (s == 0 || s == 1)
-          sense = -1;
-        else
-          sense = 1;
-
-        if (s == 0 || s == 2){
-          length = height;
-          length_perpen = width;
-        }
-        else{
-          length = width;
-          length_perpen = height;
-        }
-
-        for (int g=0; g < ng; g++){
-
-          dif_coef = _materials[cell]->getDifCoefByGroup(g, position, temp);
-          current = getCurrentByValue(cell, g, s, position);
-          flux = getFluxByValue(cell, g, position);
-
-          if (cell_next == -1){
-            dif_linear = 2 * dif_coef / length_perpen / (1 + 4 * dif_coef / length_perpen);
-            dif_linear *= _boundaries[s];
+      for (int x=0; x < nx; x++){
+        
+        
+        int cell = z*nx*ny + y*nx + x;
+        double temp = temps[cell];
+        int sense;
+        double length, length_perpen;
+        double dif_coef, current, flux, dif_linear, flux_next, dif_coef_next;
+        
+        for (int s=0; s < 6; s++){
+          
+          int cell_next = getNeighborCell(x, y, z, s);
+          
+          if (s == 0 || s == 1 || sense == 2)
+            sense = -1;
+          else
+            sense = 1;
+          
+          if (s == 0 || s == 3){
+            length = height * depth;
+            length_perpen = width;
+          }
+          else if (s == 1 || s == 4){
+            length = width * depth;
+            length_perpen = height;
           }
           else{
-            flux_next = getFluxByValue(cell_next, g, position);
-            dif_coef_next = _materials[cell_next]->getDifCoefByGroup(g, position, temps[cell_next]);
-            dif_linear = 2 * dif_coef * dif_coef_next / (length_perpen * dif_coef +
-                                                         length_perpen * dif_coef_next);
+            length = width*height;
+            length_perpen = depth;            
           }
-
-          setDifLinearByValue(dif_linear, cell, g, s, position);
+          
+          for (int g=0; g < ng; g++){
+            
+            dif_coef = _materials[cell]->getDifCoefByGroup(g, position, temp);
+            current = getCurrentByValue(cell, g, s, position);
+            flux = getFluxByValue(cell, g, position);
+            
+            if (cell_next == -1){
+              dif_linear = 2 * dif_coef / length_perpen / (1 + 4 * dif_coef / length_perpen);
+              dif_linear *= _boundaries[s];
+            }
+            else{
+              flux_next = getFluxByValue(cell_next, g, position);
+              dif_coef_next = _materials[cell_next]->getDifCoefByGroup(g, position, temps[cell_next]);
+              dif_linear = 2 * dif_coef * dif_coef_next / (length_perpen * dif_coef +
+                                                           length_perpen * dif_coef_next);
+            }
+            
+            setDifLinearByValue(dif_linear, cell, g, s, position);
+          }
         }
       }
     }
@@ -256,22 +269,27 @@ void StructuredShapeMesh::computeDifCoefs(int position){
 }
 
 
-StructuredShapeMesh* StructuredShapeMesh::uniformRefine(int num_refines){
+StructuredShapeMesh* StructuredShapeMesh::uniformRefine(int refine_x, int refine_y, int refine_z){
 
   StructuredShapeMesh* mesh = clone();
 
-  int nx = _num_x * num_refines;
-  int ny = _num_y * num_refines;
+  int nx = _num_x * refine_x;
+  int ny = _num_y * refine_y;
+  int nz = _num_z * refine_z;
   mesh->setNumX(nx);
   mesh->setNumY(ny);
+  mesh->setNumZ(nz);
   mesh->initialize();
 
-  for (int y=0; y < ny; y++){
-    int yy = y / num_refines;
-    for (int x=0; x < nx; x++){    
-      int xx = x / num_refines;
-      mesh->setMaterial(getMaterial(yy*_num_x+xx), y*nx+x);
-      mesh->getTemperature(CURRENT)[y*nx+x] = _temperature[CURRENT][yy*_num_x+xx];      
+  for (int z=0; z < nz; z++){
+    int zz = z / refine_z;
+    for (int y=0; y < ny; y++){
+      int yy = y / refine_y;
+      for (int x=0; x < nx; x++){    
+        int xx = x / refine_x;
+        mesh->setMaterial(getMaterial(zz*_num_x*_num_y + yy*_num_x+xx), z*nx*ny + y*nx+x);
+        mesh->getTemperature(CURRENT)[z*nx*ny+y*nx+x] = _temperature[CURRENT][zz*_num_x*_num_y + yy*_num_x+xx];
+      }
     }
   }
 
@@ -281,7 +299,7 @@ StructuredShapeMesh* StructuredShapeMesh::uniformRefine(int num_refines){
 
 StructuredShapeMesh* StructuredShapeMesh::clone(){
   
-  StructuredShapeMesh* mesh = new StructuredShapeMesh(getWidth(), getHeight(), _num_x, _num_y);
+  StructuredShapeMesh* mesh = new StructuredShapeMesh(getWidth(), getHeight(), getDepth(), _num_x, _num_y, _num_z);
 
   mesh->setNumShapeEnergyGroups(_num_shape_energy_groups);
   mesh->setNumAmpEnergyGroups(_num_amp_energy_groups);
@@ -289,7 +307,7 @@ StructuredShapeMesh* StructuredShapeMesh::clone(){
   mesh->setBuckling(_buckling);
   mesh->setKeff0(_k_eff_0);
  
-  for (int s=0; s < 4; s++)
+  for (int s=0; s < 6; s++)
     mesh->setBoundary(s, _boundaries[s]);
 
   if (_clock != NULL)
@@ -310,7 +328,7 @@ void StructuredShapeMesh::computeInitialPrecursorConc(int position){
   double* temps = _temperature[position];
 
   #pragma omp parallel for
-  for (int i=0; i < _num_x * _num_y; i++){
+  for (int i=0; i < _num_x * _num_y * _num_z; i++){
     
     double fission_rate = 0.0;
     
@@ -337,7 +355,7 @@ void StructuredShapeMesh::integratePrecursorConc(int position_from, int position
   double dt = _clock->getTime(position_to) - _clock->getTime(position_from);
 
   #pragma omp parallel for
-  for (int i=0; i < _num_x * _num_y; i++){
+  for (int i=0; i < _num_x * _num_y * _num_z; i++){
 
     double fission_rate_from = 0.0;
     double fission_rate_to = 0.0;
@@ -373,7 +391,7 @@ void StructuredShapeMesh::integrateTemperature(int position_from, int position_t
   double dt = _clock->getTime(position_to) - _clock->getTime(position_from);
 
   #pragma omp parallel for
-  for (int i=0; i < _num_x * _num_y; i++){
+  for (int i=0; i < _num_x * _num_y * _num_z; i++){
 
     double fission_rate_from = 0.0;
     double fission_rate_to = 0.0;
@@ -420,7 +438,7 @@ void StructuredShapeMesh::setGroupStructure(int* group_indices, int length_group
 void StructuredShapeMesh::scaleFlux(int position, double scale_val){
 
   #pragma omp parallel for
-  for (int i=0; i < _num_x*_num_y*_num_shape_energy_groups; i++)
+  for (int i=0; i < _num_x*_num_y*_num_z*_num_shape_energy_groups; i++)
     _flux[position][i] *= scale_val;
 }
 
@@ -432,7 +450,7 @@ double StructuredShapeMesh::computeAveragePower(int position){
 
   computePower(position);
 
-  return pairwise_sum(_power[position], _num_x*_num_y) * getCellVolume() / _fuel_volume;
+  return pairwise_sum(_power[position], _num_x*_num_y*_num_z) * getCellVolume() / _fuel_volume;
 }  
 
 
@@ -441,17 +459,17 @@ double StructuredShapeMesh::computePowerL2Norm(int position_1, int position_2){
   computePower(position_1);
   computePower(position_2);
 
-  double* power_residual = new double[_num_x * _num_y];
-  memset(power_residual, 0.0, sizeof(double) * _num_x * _num_y);
+  double* power_residual = new double[_num_x * _num_y * _num_z];
+  memset(power_residual, 0.0, sizeof(double) * _num_x * _num_y * _num_z);
 
   #pragma omp parallel for
-  for (int i=0; i < _num_x * _num_y; i++){
+  for (int i=0; i < _num_x * _num_y * _num_z; i++){
     if (_power[position_1][i] > 0.0){
       power_residual[i] = pow((_power[position_1][i] - _power[position_2][i]) / _power[position_1][i], 2);
     }
   }
   
-  double residual = sqrt(pairwise_sum(power_residual, _num_x*_num_y));
+  double residual = sqrt(pairwise_sum(power_residual, _num_x*_num_y*_num_z));
 
   delete [] power_residual;
   return residual;

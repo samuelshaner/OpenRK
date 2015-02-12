@@ -38,6 +38,8 @@ protected:
   double _x_max;
   double _y_min;
   double _y_max;
+  double _z_min;
+  double _z_max;
   double* _offset;
   boundaryType* _boundaries;
   int _num_shape_energy_groups;
@@ -54,7 +56,7 @@ protected:
   double _k_eff_0;
   
 public:
-  Mesh(double width=1.0, double height=1.0);
+  Mesh(double width=1.0, double height=1.0, double depth=1.0);
   virtual ~Mesh();
 
   /* Setter functions */
@@ -66,6 +68,8 @@ public:
   void setXMax(double x_max);
   void setYMin(double y_min);
   void setYMax(double y_max);
+  void setZMin(double z_min);
+  void setZMax(double z_max);
 
   void setKeff0(double k_eff_0);
   void setBoundary(int side, boundaryType boundary);
@@ -80,6 +84,7 @@ public:
   Clock* getClock();
   double getWidth();
   double getHeight();
+  double getDepth();
   boundaryType getBoundary(int side);
   int getNumShapeEnergyGroups();
   int getNumAmpEnergyGroups();
@@ -93,6 +98,8 @@ public:
   double getXMax();
   double getYMin();
   double getYMax();
+  double getZMin();
+  double getZMax();
   
   double* getFlux(int position);
   double* getPower(int position);

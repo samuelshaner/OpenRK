@@ -100,9 +100,9 @@ reflector.setChi([1.0, 0.0])
 reflector.setSigmaS([0.0, 0.04754, 0.0, 0.0])
 reflector.setVelocity([3.e7, 3.e5])
 
-shape_mesh = rk.StructuredShapeMesh(width=165.0, height=165.0, num_x=11, num_y=11)
-shape_mesh.setBoundary(2, 1)
+shape_mesh = rk.StructuredShapeMesh(width=165.0, height=165.0, depth=2.0, num_x=11, num_y=11)
 shape_mesh.setBoundary(3, 1)
+shape_mesh.setBoundary(4, 1)
 shape_mesh.setNumAmpEnergyGroups(2)
 shape_mesh.setNumShapeEnergyGroups(2)
 shape_mesh.setNumDelayedGroups(2)
@@ -159,17 +159,17 @@ for i in xrange(1, 5):
 for cell_id in xrange(1, 5):
     shape_mesh.setMaterial(fuel1bin, cell_id)
 
-shape_mesh = shape_mesh.uniformRefine(2)
+shape_mesh = shape_mesh.uniformRefine(8,8,5)
 shape_mesh.uniquifyMaterials()
 
 # Create and initialize the amplitude mesh
-amp_mesh = rk.AmpMesh(width=165.0, height=165.0, num_x=11, num_y=11)
+amp_mesh = rk.AmpMesh(width=165.0, height=165.0, depth=2.0, num_x=11, num_y=11)
 amp_mesh.setNumAmpEnergyGroups(2)
 amp_mesh.setNumShapeEnergyGroups(2)
 amp_mesh.setNumDelayedGroups(2)
-amp_mesh.setOpticallyThick(True)
-amp_mesh.setBoundary(2, 1)
+amp_mesh.setOpticallyThick(False)
 amp_mesh.setBoundary(3, 1)
+amp_mesh.setBoundary(4, 1)
 amp_mesh.setBuckling(1.e-4)
 amp_mesh.setDelayedFractions([0.0054, 0.001087])
 amp_mesh.setDecayConstants([0.00654, 1.35])
@@ -179,6 +179,7 @@ amp_mesh.setShapeMesh(shape_mesh)
 amp_mesh.setGroupStructure([0, 1, 2])
 shape_mesh.setAmpMesh(amp_mesh)
 shape_mesh.setGroupStructure([0, 1])
+
 
 # Solve diffusion problem
 solver = rk.Solver(shape_mesh, amp_mesh)

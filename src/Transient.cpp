@@ -130,31 +130,31 @@ void Transient::takeInnerStep(){
   _shape_mesh->integratePrecursorConc(PREVIOUS_IN, CURRENT);
 
   _amp_mesh->condenseMaterials(CURRENT);
-
+  
   int ng = _amp_mesh->getNumAmpEnergyGroups();
   int nx = _amp_mesh->getNumX();
   int ny = _amp_mesh->getNumY();
-  double* flux_temp = new double[nx*ny*ng];
-  for (int i=0; i < nx*ny*ng; i++)
-    flux_temp[i] = 0.0;
+  int nz = _amp_mesh->getNumZ();
+  double* flux_temp = new double[nx*ny*nz*ng];
   double tol = 1.e-4;
 
   while (true){
 
     _amp_mesh->copyFlux(CURRENT, FORWARD_IN_OLD);
 
+
     _solver->makeAMAmp(_inner_wt);
-    linearSolve2d(_solver->getAMAmp(), nx*ny, ng*(ng+4), _amp_mesh->getFlux(CURRENT), nx*ny*ng,
-                  _solver->getBAmp(), nx*ny*ng, flux_temp, nx*ny*ng, nx, ny, ng, 1.e-8);
+    linearSolve2d(_solver->getAMAmp(), nx*ny*nz, ng*(ng+6), _amp_mesh->getFlux(CURRENT), nx*ny*nz*ng,
+                  _solver->getBAmp(), nx*ny*nz*ng, flux_temp, nx*ny*nz*ng, nx, ny, nz, ng, 1.e-8);
 
     _shape_mesh->synthesizeFlux(CURRENT);
 
     _shape_mesh->integrateTemperature(PREVIOUS_IN, CURRENT);
     
     _shape_mesh->integratePrecursorConc(PREVIOUS_IN, CURRENT);
-    
-    _amp_mesh->condenseMaterials(CURRENT);
 
+    _amp_mesh->condenseMaterials(CURRENT);
+    
     double residual = _amp_mesh->computePowerL2Norm(CURRENT, FORWARD_IN_OLD);
     double power = _shape_mesh->computeAveragePower(CURRENT);
 
@@ -178,7 +178,8 @@ void Transient::takeOuterStep(){
   int ng = _shape_mesh->getNumShapeEnergyGroups();
   int nx = _shape_mesh->getNumX();
   int ny = _shape_mesh->getNumY();
-  double* flux_temp = new double[nx*ny*ng];
+  int nz = _shape_mesh->getNumZ();
+  double* flux_temp = new double[nx*ny*nz*ng];
   double tol = 1.e-4;
 
   while (_clock->getTime(CURRENT) < _clock->getTime(FORWARD_OUT) - 1.e-6)
@@ -196,8 +197,8 @@ void Transient::takeOuterStep(){
     _shape_mesh->computeDifCoefs(FORWARD_OUT);
 
     _solver->makeAMShape(_outer_wt);
-    linearSolve2d(_solver->getAMShape(), nx*ny, ng*(ng+4), _shape_mesh->getFlux(FORWARD_OUT), nx*ny*ng,
-                  _solver->getBShape(), nx*ny*ng, flux_temp, nx*ny*ng, nx, ny, ng, 1.e-8);
+    linearSolve2d(_solver->getAMShape(), nx*ny*nz, ng*(ng+6), _shape_mesh->getFlux(FORWARD_OUT), nx*ny*ng,
+                  _solver->getBShape(), nx*ny*nz*ng, flux_temp, nx*ny*nz*ng, nx, ny, nz, ng, 1.e-8);
 
     _amp_mesh->computeCurrent(FORWARD_OUT);
     _amp_mesh->condenseMaterials(FORWARD_OUT, true);
@@ -235,7 +236,8 @@ void Transient::takeOuterStepOnly(){
   int ng = _shape_mesh->getNumShapeEnergyGroups();
   int nx = _shape_mesh->getNumX();
   int ny = _shape_mesh->getNumY();
-  double* flux_temp = new double[nx*ny*ng];
+  int nz = _shape_mesh->getNumZ();
+  double* flux_temp = new double[nx*ny*nz*ng];
   double tol = 1.e-8;
     
   while (true){
@@ -249,8 +251,8 @@ void Transient::takeOuterStepOnly(){
     _shape_mesh->computeDifCoefs(FORWARD_OUT);
 
     _solver->makeAMShape(_outer_wt);
-    linearSolve2d(_solver->getAMShape(), nx*ny, ng*(ng+4), _shape_mesh->getFlux(FORWARD_OUT), nx*ny*ng, 
-                _solver->getBShape(), nx*ny*ng, flux_temp, nx*ny*ng, nx, ny, ng, 1.e-8);
+    linearSolve2d(_solver->getAMShape(), nx*ny*nz, ng*(ng+6), _shape_mesh->getFlux(FORWARD_OUT), nx*ny*ng, 
+                  _solver->getBShape(), nx*ny*nz*ng, flux_temp, nx*ny*nz*ng, nx, ny, nz, ng, 1.e-8);
 
     double residual = _shape_mesh->computePowerL2Norm(FORWARD_OUT, FORWARD_OUT_OLD);
     double power = _shape_mesh->computeAveragePower(FORWARD_OUT);
@@ -283,10 +285,10 @@ void Transient::broadcastToActive(clockPosition position){
     _shape_mesh->copyTemperature(position, c);
     _shape_mesh->copyDifLinear(position, c);
 
-    for (int i=0; i < _amp_mesh->getNumX() * _amp_mesh->getNumY(); i++)
+    for (int i=0; i < _amp_mesh->getNumX() * _amp_mesh->getNumY() * _amp_mesh->getNumZ(); i++)
       _amp_mesh->getMaterial(i)->copy(position, c);
 
-    for (int i=0; i < _shape_mesh->getNumX() * _shape_mesh->getNumY(); i++)
+    for (int i=0; i < _shape_mesh->getNumX() * _shape_mesh->getNumY() * _shape_mesh->getNumZ(); i++)
       _shape_mesh->getMaterial(i)->copy(position, c);
   }  
 }
@@ -307,10 +309,10 @@ void Transient::broadcastToAll(clockPosition position){
     _shape_mesh->copyTemperature(position, c);
     _shape_mesh->copyDifLinear(position, c);
 
-    for (int i=0; i < _amp_mesh->getNumX() * _amp_mesh->getNumY(); i++)
+    for (int i=0; i < _amp_mesh->getNumX() * _amp_mesh->getNumY() * _amp_mesh->getNumZ(); i++)
       _amp_mesh->getMaterial(i)->copy(position, c);
 
-    for (int i=0; i < _shape_mesh->getNumX() * _shape_mesh->getNumY(); i++)
+    for (int i=0; i < _shape_mesh->getNumX() * _shape_mesh->getNumY() * _shape_mesh->getNumZ(); i++)
       _shape_mesh->getMaterial(i)->copy(position, c);
   }  
 }
@@ -329,9 +331,9 @@ void Transient::broadcastToOne(clockPosition position_from, clockPosition positi
   _shape_mesh->copyTemperature(position_from, position_to);
   _shape_mesh->copyDifLinear(position_from, position_to);
   
-  for (int i=0; i < _amp_mesh->getNumX() * _amp_mesh->getNumY(); i++)
+  for (int i=0; i < _amp_mesh->getNumX() * _amp_mesh->getNumY() * _amp_mesh->getNumZ(); i++)
     _amp_mesh->getMaterial(i)->copy(position_from, position_to);
   
-  for (int i=0; i < _shape_mesh->getNumX() * _shape_mesh->getNumY(); i++)
+  for (int i=0; i < _shape_mesh->getNumX() * _shape_mesh->getNumY() * _shape_mesh->getNumZ(); i++)
     _shape_mesh->getMaterial(i)->copy(position_from, position_to); 
 }

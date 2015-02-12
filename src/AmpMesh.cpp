@@ -5,8 +5,8 @@
  * @brief Constructor sets the ID and unique ID for the Material.
  * @param id the user-defined ID for the material
  */
-AmpMesh::AmpMesh(double width, double height, int num_x, int num_y) :
-  StructuredMesh(width, height, num_x, num_y){
+AmpMesh::AmpMesh(double width, double height, double depth, int num_x, int num_y, int num_z) :
+  StructuredMesh(width, height, depth, num_x, num_y, num_z){
 
   _shape_mesh = NULL;
   _optically_thick = false;
@@ -39,23 +39,28 @@ void AmpMesh::setOpticallyThick(bool optically_thick){
 void AmpMesh::setShapeMesh(StructuredShapeMesh* mesh){
   _shape_mesh = mesh;
 
-  for (int i=0; i < _num_x*_num_y; i++){
+  for (int i=0; i < _num_x*_num_y*_num_z; i++){
     std::vector<int> *shape_cells = new std::vector<int>;
     _shape_map.push_back(*shape_cells);
   }
   
   int nx = mesh->getNumX();
   int ny = mesh->getNumY();
+  int nz = mesh->getNumZ();
   int num_refines_x = nx / _num_x;
   int num_refines_y = ny / _num_y;
-  
-  for (int y=0; y < ny; y++){
-    int yy = y / num_refines_y;
-    for (int x=0; x < nx; x++){
-      int xx = x / num_refines_x;
-      int amp_cell = yy*_num_x + xx;
-      int shape_cell = y*nx + x;
-      _shape_map[amp_cell].push_back(shape_cell);
+  int num_refines_z = nz / _num_z;
+
+  for (int z=0; z < nz; z++){
+    int zz = z / num_refines_z;
+    for (int y=0; y < ny; y++){
+      int yy = y / num_refines_y;
+      for (int x=0; x < nx; x++){
+        int xx = x / num_refines_x;
+        int amp_cell = zz*_num_x*_num_y + yy*_num_x + xx;
+        int shape_cell = z*nx*ny + y*nx + x;
+        _shape_map[amp_cell].push_back(shape_cell);
+      }
     }
   }
 }
@@ -67,17 +72,17 @@ void AmpMesh::setFluxByValue(double flux, int cell, int group, int position){
 
 
 void AmpMesh::setCurrentByValue(double current, int cell, int group, int side, int position){
-  _current[position][(cell*4 + side)*_num_amp_energy_groups + group] = current;
+  _current[position][(cell*6 + side)*_num_amp_energy_groups + group] = current;
 }
 
 
 void AmpMesh::setDifLinearByValue(double dif_linear, int cell, int group, int side, int position){
-  _dif_linear[position][(cell*4 + side)*_num_amp_energy_groups + group] = dif_linear;
+  _dif_linear[position][(cell*6 + side)*_num_amp_energy_groups + group] = dif_linear;
 }
 
 
 void AmpMesh::setDifNonlinearByValue(double dif_nonlinear, int cell, int group, int side, int position){
-  _dif_nonlinear[position][(cell*4 + side)*_num_amp_energy_groups + group] = dif_nonlinear;
+  _dif_nonlinear[position][(cell*6 + side)*_num_amp_energy_groups + group] = dif_nonlinear;
 }
 
 
@@ -87,37 +92,37 @@ double AmpMesh::getFluxByValue(int cell, int group, int position){
 
 
 double AmpMesh::getCurrentByValue(int cell, int group, int side, int position){
-  return _current[position][(cell*4 + side)*_num_amp_energy_groups + group];
+  return _current[position][(cell*6 + side)*_num_amp_energy_groups + group];
 }
 
 
 double AmpMesh::getDifLinearByValue(int cell, int group, int side, int position){
-  return _dif_linear[position][(cell*4 + side)*_num_amp_energy_groups + group];
+  return _dif_linear[position][(cell*6 + side)*_num_amp_energy_groups + group];
 }
 
 
 double AmpMesh::getDifNonlinearByValue(int cell, int group, int side, int position){
-  return _dif_nonlinear[position][(cell*4 + side)*_num_amp_energy_groups + group];
+  return _dif_nonlinear[position][(cell*6 + side)*_num_amp_energy_groups + group];
 }
 
 
 void AmpMesh::copyFlux(int position_from, int position_to){
-  std::copy(_flux[position_from], _flux[position_from] + _num_x*_num_y*_num_amp_energy_groups, _flux[position_to]);
+  std::copy(_flux[position_from], _flux[position_from] + _num_x*_num_y*_num_z*_num_amp_energy_groups, _flux[position_to]);
 }
 
 
 void AmpMesh::copyCurrent(int position_from, int position_to){
-  std::copy(_current[position_from], _current[position_from] + _num_x*_num_y*_num_amp_energy_groups*4, _current[position_to]);
+  std::copy(_current[position_from], _current[position_from] + _num_x*_num_y*_num_z*_num_amp_energy_groups*6, _current[position_to]);
 }
 
 
 void AmpMesh::copyDifLinear(int position_from, int position_to){
-  std::copy(_dif_linear[position_from], _dif_linear[position_from] + _num_x*_num_y*_num_amp_energy_groups*4, _dif_linear[position_to]);
+  std::copy(_dif_linear[position_from], _dif_linear[position_from] + _num_x*_num_y*_num_z*_num_amp_energy_groups*6, _dif_linear[position_to]);
 }
 
 
 void AmpMesh::copyDifNonlinear(int position_from, int position_to){
-  std::copy(_dif_nonlinear[position_from], _dif_nonlinear[position_from] + _num_x*_num_y*_num_amp_energy_groups*4, _dif_nonlinear[position_to]);
+  std::copy(_dif_nonlinear[position_from], _dif_nonlinear[position_from] + _num_x*_num_y*_num_z*_num_amp_energy_groups*6, _dif_nonlinear[position_to]);
 }
 
 
@@ -132,7 +137,7 @@ void AmpMesh::condenseMaterials(int position, bool save_flux){
   Material* shape_mat;
 
   #pragma omp parallel for private(chi, sigma_s, amp_mat, shape_mat)
-  for (int i=0; i < _num_x*_num_y; i++){
+  for (int i=0; i < _num_x*_num_y*_num_z; i++){
     
     amp_mat = getMaterial(i);
     std::vector<int>::iterator iter;
@@ -242,9 +247,9 @@ void AmpMesh::condenseMaterials(int position, bool save_flux){
 
 void AmpMesh::initialize(){
 
-  _materials = new Material*[_num_x*_num_y];
+  _materials = new Material*[_num_x*_num_y*_num_z];
   
-  for (int i=0; i < _num_x*_num_y; i++){
+  for (int i=0; i < _num_x*_num_y*_num_z; i++){
     Material* material = new Material();
     material->setNumEnergyGroups(_num_amp_energy_groups);
     material->setNumDelayedGroups(_num_delayed_groups);
@@ -252,26 +257,26 @@ void AmpMesh::initialize(){
   }
 
   for(int c=0; c < 8; c++){
-    _dif_linear[c] = new double[_num_x * _num_y * _num_amp_energy_groups * 4];
-    _dif_nonlinear[c] = new double[_num_x * _num_y * _num_amp_energy_groups * 4];
-    _current[c] = new double[_num_x * _num_y * _num_amp_energy_groups * 4];
-    _flux[c] = new double[_num_x * _num_y * _num_amp_energy_groups];
-    _temperature[c] = new double[_num_x * _num_y];
-    _power[c] = new double[_num_x * _num_y];
+    _dif_linear[c] = new double[_num_x * _num_y * _num_z * _num_amp_energy_groups * 6];
+    _dif_nonlinear[c] = new double[_num_x * _num_y * _num_z * _num_amp_energy_groups * 6];
+    _current[c] = new double[_num_x * _num_y * _num_z * _num_amp_energy_groups * 6];
+    _flux[c] = new double[_num_x * _num_y * _num_z * _num_amp_energy_groups];
+    _temperature[c] = new double[_num_x * _num_y * _num_z];
+    _power[c] = new double[_num_x * _num_y * _num_z];
 
-    memset(_dif_linear[c], 0.0, sizeof(double) * _num_x * _num_y * _num_amp_energy_groups * 4);
-    memset(_dif_nonlinear[c], 0.0, sizeof(double) * _num_x * _num_y * _num_amp_energy_groups * 4);
-    memset(_current[c], 0.0, sizeof(double) * _num_x * _num_y * _num_amp_energy_groups * 4);
-    memset(_flux[c], 1.0, sizeof(double) * _num_x * _num_y * _num_amp_energy_groups);
-    memset(_temperature[c], 300.0, sizeof(double) * _num_x * _num_y);
-    memset(_power[c], 0.0, sizeof(double) * _num_x * _num_y);
+    memset(_dif_linear[c], 0.0, sizeof(double) * _num_x * _num_y * _num_z * _num_amp_energy_groups * 6);
+    memset(_dif_nonlinear[c], 0.0, sizeof(double) * _num_x * _num_y * _num_z * _num_amp_energy_groups * 6);
+    memset(_current[c], 0.0, sizeof(double) * _num_x * _num_y * _num_z * _num_amp_energy_groups * 6);
+    memset(_flux[c], 1.0, sizeof(double) * _num_x * _num_y * _num_z * _num_amp_energy_groups);
+    memset(_temperature[c], 300.0, sizeof(double) * _num_x * _num_y * _num_z);
+    memset(_power[c], 0.0, sizeof(double) * _num_x * _num_y * _num_z);
   }  
 }
 
 
 void AmpMesh::computePower(int position){
 
-  for (int i=0; i < _num_x * _num_y; i++){
+  for (int i=0; i < _num_x * _num_y * _num_z; i++){
     double fission_rate = 0.0;
     double temp = _temperature[position][i];
     
@@ -286,13 +291,18 @@ void AmpMesh::computePower(int position){
 void AmpMesh::computeCurrent(int position){
 
   int sm_nx = _shape_mesh->getNumX();
+  int sm_ny = _shape_mesh->getNumY();
+  int sm_nz = _shape_mesh->getNumZ();
   int sm_cw = _shape_mesh->getCellWidth();
   int sm_ch = _shape_mesh->getCellHeight();
-  int num_refines = sm_nx / _num_x;
+  int sm_cd = _shape_mesh->getCellDepth();
+  int num_refines_x = sm_nx / _num_x;
+  int num_refines_y = sm_ny / _num_y;
+  int num_refines_z = sm_nz / _num_z;
   double* temps = _shape_mesh->getTemperature(position);
 
   #pragma omp parallel for 
-  for (int i=0; i < _num_x * _num_y; i++){
+  for (int i=0; i < _num_x * _num_y * _num_z; i++){
 
     std::vector<int>::iterator iter;
     double flux, dif_linear, d, d_next, temp, temp_next, flux_next;
@@ -301,22 +311,25 @@ void AmpMesh::computeCurrent(int position){
     Material *mat, *mat_next;
 
     for (int g=0; g < _num_amp_energy_groups; g++){
-      for (int s=0; s < 4; s++){
+      for (int s=0; s < 6; s++){
         double current = 0.0;
         for (iter = _shape_map[i].begin(); iter != _shape_map[i].end(); ++iter){
 
+          int x = (*iter % (sm_nx*sm_ny)) % sm_nx;
+          int y = (*iter % (sm_nx*sm_ny)) / sm_nx;
+          int z = (*iter / (sm_nx*sm_ny));
           mat = _shape_mesh->getMaterial(*iter);
           temp = temps[*iter];
-          cell_next = _shape_mesh->getNeighborCell(*iter % sm_nx, *iter / sm_nx, s);
+          cell_next = _shape_mesh->getNeighborCell(x, y, z, s);
           temp_next = temps[cell_next];
-          mat_next = _shape_mesh->getNeighborMaterial(*iter % sm_nx, *iter / sm_nx, s);
+          mat_next = _shape_mesh->getNeighborMaterial(x, y, z, s);
 
-          if (s == 0 && (*iter % sm_nx) % num_refines == 0){
+          if (s == 0 && x % num_refines_x == 0){
             for (int gg=_group_indices[g]; gg < _group_indices[g+1]; gg++){
               flux = _shape_mesh->getFluxByValue(*iter, gg, position);
               d = mat->getDifCoefByGroup(gg, position, temp);
               length_perpen = sm_cw;
-              length = sm_ch;
+              length = sm_ch * sm_cd;
 
               if (mat_next == NULL){
                 dif_linear = 2 * d / length_perpen / (1 + 4 * d / length_perpen);
@@ -331,12 +344,13 @@ void AmpMesh::computeCurrent(int position){
               }
             }
           }
-          else if (s == 1 && (*iter / sm_nx) % num_refines == 0){
+
+          else if (s == 1 && y % num_refines_y == 0){
             for (int gg=_group_indices[g]; gg < _group_indices[g+1]; gg++){
               flux = _shape_mesh->getFluxByValue(*iter, gg, position);
               d = mat->getDifCoefByGroup(gg, position, temp);
               length_perpen = sm_ch;
-              length = sm_cw;
+              length = sm_cw * sm_cd;
 
               if (mat_next == NULL){
                 dif_linear = 2 * d / length_perpen / (1 + 4 * d / length_perpen);
@@ -351,12 +365,34 @@ void AmpMesh::computeCurrent(int position){
               }
             }            
           }
-          else if (s == 2 && (*iter % sm_nx) % num_refines == num_refines - 1){
+
+          else if (s == 2 && z % num_refines_z == 0){
+            for (int gg=_group_indices[g]; gg < _group_indices[g+1]; gg++){
+              flux = _shape_mesh->getFluxByValue(*iter, gg, position);
+              d = mat->getDifCoefByGroup(gg, position, temp);
+              length_perpen = sm_cd;
+              length = sm_cw * sm_ch;
+
+              if (mat_next == NULL){
+                dif_linear = 2 * d / length_perpen / (1 + 4 * d / length_perpen);
+                dif_linear *= _shape_mesh->getBoundary(s);
+                current += - dif_linear * flux * length;
+              }
+              else{
+                d_next = mat_next->getDifCoefByGroup(gg, position, temp_next);
+                dif_linear = 2 * d * d_next / (length_perpen * d + length_perpen * d_next);
+                flux_next = _shape_mesh->getFluxByValue(cell_next, gg, position);
+                current += - dif_linear * (flux - flux_next) * length;
+              }
+            }            
+          }
+
+          else if (s == 3 && x % num_refines_x == num_refines_x - 1){
             for (int gg=_group_indices[g]; gg < _group_indices[g+1]; gg++){
               flux = _shape_mesh->getFluxByValue(*iter, gg, position);
               d = mat->getDifCoefByGroup(gg, position, temp);
               length_perpen = sm_cw;
-              length = sm_ch;
+              length = sm_ch * sm_cd;
 
               if (mat_next == NULL){
                 dif_linear = 2 * d / length_perpen / (1 + 4 * d / length_perpen);
@@ -371,13 +407,34 @@ void AmpMesh::computeCurrent(int position){
               }
             }            
           }
-          else if (s == 3 && (*iter / sm_nx) % num_refines == num_refines - 1){
+
+          else if (s == 4 && y % num_refines_y == num_refines_y - 1){
             for (int gg=_group_indices[g]; gg < _group_indices[g+1]; gg++){
               flux = _shape_mesh->getFluxByValue(*iter, gg, position);
               d = mat->getDifCoefByGroup(gg, position, temp);
               length_perpen = sm_ch;
-              length = sm_cw;
+              length = sm_cw * sm_cd;
 
+              if (mat_next == NULL){
+                dif_linear = 2 * d / length_perpen / (1 + 4 * d / length_perpen);
+                dif_linear *= _shape_mesh->getBoundary(s);
+                current += dif_linear * flux * length;
+              }
+              else{
+                d_next = mat_next->getDifCoefByGroup(gg, position, temp_next);
+                dif_linear = 2 * d * d_next / (length_perpen * d + length_perpen * d_next);
+                flux_next = _shape_mesh->getFluxByValue(cell_next, gg, position);
+                current += - dif_linear * (flux_next - flux) * length;
+              }
+            }            
+          }
+          else if (s == 5 && z % num_refines_z == num_refines_z - 1){
+            for (int gg=_group_indices[g]; gg < _group_indices[g+1]; gg++){
+              flux = _shape_mesh->getFluxByValue(*iter, gg, position);
+              d = mat->getDifCoefByGroup(gg, position, temp);
+              length_perpen = sm_cd;
+              length = sm_cw * sm_ch;
+              
               if (mat_next == NULL){
                 dif_linear = 2 * d / length_perpen / (1 + 4 * d / length_perpen);
                 dif_linear *= _shape_mesh->getBoundary(s);
@@ -392,8 +449,8 @@ void AmpMesh::computeCurrent(int position){
             }            
           }
         }
-
-        _current[position][(i*4+s) * _num_amp_energy_groups + g] = current;
+        
+        _current[position][(i*6+s) * _num_amp_energy_groups + g] = current;
       }
     }
   }
@@ -423,87 +480,97 @@ void AmpMesh::computeDifCoefs(int position){
 
   int nx = _num_x;
   int ny = _num_y;
+  int nz = _num_z;
   int ng = _num_amp_energy_groups;
   double width = getCellWidth();
   double height = getCellHeight();
+  double depth = getCellDepth();
   double* temps = _temperature[position];
   
-  #pragma omp parallel for  
-  for (int x=0; x < nx; x++){
+
+  for (int z=0; z < nz; z++){
+    #pragma omp parallel for  
     for (int y=0; y < ny; y++){
+      for (int x=0; x < nx; x++){
 
-      int sense;
-      double length, length_perpen;
-      double dif_coef, current, flux, f, dif_linear, dif_nonlinear, flux_next, dif_coef_next, f_next;
-      int cell = y*nx+x;
-      double temp = temps[cell];
 
-      for (int s=0; s < 4; s++){
-
-        int cell_next = getNeighborCell(x, y, s);
-
-        if (s == 0 || s == 1)
-          sense = -1;
-        else
-          sense = 1;
-
-        if (s == 0 || s == 2){
-          length = height;
-          length_perpen = width;
-        }
-        else{
-          length = width;
-          length_perpen = height;
-        }
-
-        for (int g=0; g < ng; g++){
-
-          dif_coef = _materials[cell]->getDifCoefByGroup(g, position, temp);
-          current = getCurrentByValue(cell, g, s, position);
-          flux = getFluxByValue(cell, g, position);
-          f = computeDifCorrect(dif_coef, length_perpen);
-
-          if (cell_next == -1){
-            dif_linear = 2 * dif_coef * f / length_perpen / (1 + 4 * dif_coef * f / length_perpen);
-            dif_nonlinear = (sense * dif_linear * flux - current / length) / flux;
-            dif_linear *= _boundaries[s];
-            dif_nonlinear *= _boundaries[s];
+        int sense;
+        double length, length_perpen;
+        double dif_coef, current, flux, f, dif_linear, dif_nonlinear, flux_next, dif_coef_next, f_next;
+        int cell = z*nx*ny+y*nx+x;
+        double temp = temps[cell];
+        
+        for (int s=0; s < 6; s++){
+          
+          int cell_next = getNeighborCell(x, y, z, s);
+          
+          if (s == 0 || s == 1 || s == 2)
+            sense = -1;
+          else
+            sense = 1;
+          
+          if (s == 0 || s == 3){
+            length = height * depth;
+            length_perpen = width;
+          }
+          else if (s == 1 || s == 4){
+            length = width * depth;
+            length_perpen = height;
           }
           else{
-            flux_next = getFluxByValue(cell_next, g, position);
-            dif_coef_next = _materials[cell_next]->getDifCoefByGroup(g, position, temps[cell_next]);
-            f_next = computeDifCorrect(dif_coef_next, length_perpen);
-            dif_linear = 2 * dif_coef * f * dif_coef_next * f_next / (length_perpen * dif_coef * f +
-                                                                      length_perpen * dif_coef_next * f_next);
-            dif_nonlinear = - (sense * dif_linear * (flux_next - flux) + current / length)
-              / (flux_next + flux);
-
-            if (dif_nonlinear > dif_linear){
-              if (sense == -1){
-                if (dif_nonlinear > 0.0){
-                  dif_linear = - current / (2 * flux);
-                  dif_nonlinear = - current / (2 * flux);
+           length = width * height;
+           length_perpen = depth;
+          }
+          
+          for (int g=0; g < ng; g++){
+            
+            dif_coef = _materials[cell]->getDifCoefByGroup(g, position, temp);
+            current = getCurrentByValue(cell, g, s, position);
+            flux = getFluxByValue(cell, g, position);
+            f = computeDifCorrect(dif_coef, length_perpen);
+            
+            if (cell_next == -1){
+              dif_linear = 2 * dif_coef * f / length_perpen / (1 + 4 * dif_coef * f / length_perpen);
+              dif_nonlinear = (sense * dif_linear * flux - current / length) / flux;
+              dif_linear *= _boundaries[s];
+              dif_nonlinear *= _boundaries[s];
+            }
+            else{
+              flux_next = getFluxByValue(cell_next, g, position);
+              dif_coef_next = _materials[cell_next]->getDifCoefByGroup(g, position, temps[cell_next]);
+              f_next = computeDifCorrect(dif_coef_next, length_perpen);
+              dif_linear = 2 * dif_coef * f * dif_coef_next * f_next / (length_perpen * dif_coef * f +
+                                                                        length_perpen * dif_coef_next * f_next);
+              dif_nonlinear = - (sense * dif_linear * (flux_next - flux) + current / length)
+                / (flux_next + flux);
+              
+              if (dif_nonlinear > dif_linear){
+                if (sense == -1){
+                  if (dif_nonlinear > 0.0){
+                    dif_linear = - current / (2 * flux);
+                    dif_nonlinear = - current / (2 * flux);
+                  }
+                  else{
+                    dif_linear = current / (2 * flux_next);
+                    dif_nonlinear = - current / (2 * flux_next);                  
+                  }
                 }
                 else{
-                  dif_linear = current / (2 * flux_next);
-                  dif_nonlinear = - current / (2 * flux_next);                  
-                }
-              }
-              else{
-                if (dif_nonlinear > 0.0){
-                  dif_linear = - current / (2 * flux_next);
-                  dif_nonlinear = - current / (2 * flux_next);
-                }
-                else{
-                  dif_linear = current / (2 * flux);
-                  dif_nonlinear = - current / (2 * flux);
+                  if (dif_nonlinear > 0.0){
+                    dif_linear = - current / (2 * flux_next);
+                    dif_nonlinear = - current / (2 * flux_next);
+                  }
+                  else{
+                    dif_linear = current / (2 * flux);
+                    dif_nonlinear = - current / (2 * flux);
+                  }
                 }
               }
             }
+            
+            setDifLinearByValue(dif_linear, cell, g, s, position);
+            setDifNonlinearByValue(dif_nonlinear, cell, g, s, position);          
           }
-
-          setDifLinearByValue(dif_linear, cell, g, s, position);
-          setDifNonlinearByValue(dif_nonlinear, cell, g, s, position);          
         }
       }
     }
@@ -513,7 +580,7 @@ void AmpMesh::computeDifCoefs(int position){
 
 AmpMesh* AmpMesh::clone(){
   
-  AmpMesh* mesh = new AmpMesh(getWidth(), getHeight(), _num_x, _num_y);
+  AmpMesh* mesh = new AmpMesh(getWidth(), getHeight(), getDepth(), _num_x, _num_y, _num_z);
 
   mesh->setNumShapeEnergyGroups(_num_shape_energy_groups);
   mesh->setNumAmpEnergyGroups(_num_amp_energy_groups);
@@ -521,7 +588,7 @@ AmpMesh* AmpMesh::clone(){
   mesh->setBuckling(_buckling);
   mesh->setKeff0(_k_eff_0);
  
-  for (int s=0; s < 4; s++)
+  for (int s=0; s < 6; s++)
     mesh->setBoundary(s, _boundaries[s]);
 
   if (_clock != NULL)
@@ -573,7 +640,7 @@ double AmpMesh::computeAveragePower(int position){
   
   computePower(position);
 
-  return pairwise_sum(_power[position], _num_x*_num_y) * getCellVolume() / _fuel_volume;
+  return pairwise_sum(_power[position], _num_x*_num_y*_num_z) * getCellVolume() / _fuel_volume;
 }  
 
 
@@ -582,16 +649,16 @@ double AmpMesh::computePowerL2Norm(int position_1, int position_2){
   computePower(position_1);
   computePower(position_2);
 
-  double* power_residual = new double[_num_x * _num_y];
-  memset(power_residual, 0.0, sizeof(double) * _num_x * _num_y);
+  double* power_residual = new double[_num_x * _num_y * _num_z];
+  memset(power_residual, 0.0, sizeof(double) * _num_x * _num_y * _num_z);
 
   #pragma omp parallel for
-  for (int i=0; i < _num_x * _num_y; i++){
+  for (int i=0; i < _num_x * _num_y * _num_z; i++){
     if (_power[position_1][i] > 0.0)
       power_residual[i] = pow((_power[position_1][i] - _power[position_2][i]) / _power[position_1][i], 2);
   }
 
-  double residual = sqrt(pairwise_sum(power_residual, _num_x*_num_y));
+  double residual = sqrt(pairwise_sum(power_residual, _num_x*_num_y*_num_z));
   delete [] power_residual;
 
   return residual;
@@ -605,7 +672,7 @@ void AmpMesh::interpolateDifNonlinear(int position_begin, int position_end, int 
   double wt_end = (_clock->getTime(position) - _clock->getTime(position_begin)) / dt;
 
   #pragma omp parallel for
-  for (int i=0; i < _num_x*_num_y*_num_amp_energy_groups*4; i++){
+  for (int i=0; i < _num_x*_num_y*_num_z*_num_amp_energy_groups*6; i++){
     _dif_nonlinear[position][i] = _dif_nonlinear[position_begin][i] * wt_begin
       + _dif_nonlinear[position_end][i] * wt_end;
   }

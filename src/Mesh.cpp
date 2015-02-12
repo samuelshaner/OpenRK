@@ -5,7 +5,7 @@
  * @brief Constructor sets the ID and unique ID for the Material.
  * @param id the user-defined ID for the material
  */
-Mesh::Mesh(double width, double height) {
+Mesh::Mesh(double width, double height, double depth) {
 
   _materials = NULL;
   _offset = NULL;
@@ -19,6 +19,8 @@ Mesh::Mesh(double width, double height) {
   setXMax(width/2.0);
   setYMin(-height/2.0);
   setYMax(height/2.0);
+  setZMin(-depth/2.0);
+  setZMax(depth/2.0);
 
   for (int c=0; c < 8; c++){
     _flux[c] = NULL;
@@ -26,8 +28,8 @@ Mesh::Mesh(double width, double height) {
     _temperature[c] = NULL;
   }
 
-  _boundaries = new boundaryType[4];
-  for (int i=0; i < 4; i++)
+  _boundaries = new boundaryType[6];
+  for (int i=0; i < 6; i++)
     _boundaries[i] = REFLECTIVE;
   
   return;
@@ -94,6 +96,15 @@ void Mesh::setYMax(double y_max){
   _y_max = y_max;
 }
 
+void Mesh::setZMin(double z_min){
+  _z_min = z_min;
+}
+
+
+void Mesh::setZMax(double z_max){
+  _z_max = z_max;
+}
+
 
 double Mesh::getXMin(){
   return _x_min;
@@ -115,6 +126,16 @@ double Mesh::getYMax(){
 }
 
 
+double Mesh::getZMin(){
+  return _z_min;
+}
+
+
+double Mesh::getZMax(){
+  return _z_max;
+}
+
+
 double Mesh::getWidth(){
   return _x_max - _x_min;
 }
@@ -125,11 +146,16 @@ double Mesh::getHeight(){
 }
 
 
+double Mesh::getDepth(){
+  return _z_max - _z_min;
+}
+
+
 void Mesh::setBoundary(int side, boundaryType boundary){
 
-  if (side < 0 || side > 3)
+  if (side < 0 || side > 5)
     log_printf(ERROR, "Unable to set boundary for side %d as there are only"
-               " 4 geometry sides", side);
+               " 6 geometry sides", side);
 
   _boundaries[side] = boundary;
 }
@@ -137,9 +163,9 @@ void Mesh::setBoundary(int side, boundaryType boundary){
 
 boundaryType Mesh::getBoundary(int side){
 
-  if (side < 0 || side > 3)
+  if (side < 0 || side > 5)
     log_printf(ERROR, "Unable to get boundary for side %d as there are only"
-               " 4 geometry sides", side);
+               " 6 geometry sides", side);
   
   return _boundaries[side];
 }
