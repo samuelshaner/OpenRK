@@ -47,7 +47,7 @@ void StructuredShapeMesh::setAmpMesh(AmpMesh* mesh){
       for (int x=0; x < _num_x; x++){
         int xx = x / num_refines_x;
         int amp_cell = zz*nx*ny + yy*nx + xx;
-        int shape_cell = z*_num_z*_num_y + y*_num_x + x;
+        int shape_cell = z*_num_x*_num_y + y*_num_x + x;
         _amp_map[shape_cell] = amp_cell;
       }
     }

@@ -28,7 +28,6 @@ protected:
   bool _optically_thick;
   int* _group_indices;
   std::vector< std::vector<int> > _shape_map;
-  double _energy_per_fission;
   
 public:
   AmpMesh(double width=1.0, double height=1.0, double depth=1.0, int num_x=1, int num_y=1, int num_z=1);
@@ -42,7 +41,6 @@ public:
   void setDifLinearByValue(double dif_linear, int cell, int group, int side, int position);
   void setDifNonlinearByValue(double dif_nonlinear, int cell, int group, int side, int position);
   void setGroupStructure(int* group_indices, int length_group_indices);
-  void setEnergyPerFission(double _energy_per_fission);
   
   /* Getter functions */
   double getFluxByValue(int cell, int group, int position);

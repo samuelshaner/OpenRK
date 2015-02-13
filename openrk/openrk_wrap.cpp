@@ -14941,45 +14941,6 @@ fail:
 }
 
 
-SWIGINTERN PyObject *_wrap_AmpMesh_setEnergyPerFission(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  AmpMesh *arg1 = (AmpMesh *) 0 ;
-  double arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  double val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "_energy_per_fission", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:AmpMesh_setEnergyPerFission",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_AmpMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "AmpMesh_setEnergyPerFission" "', argument " "1"" of type '" "AmpMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< AmpMesh * >(argp1);
-  ecode2 = SWIG_AsVal_double(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "AmpMesh_setEnergyPerFission" "', argument " "2"" of type '" "double""'");
-  } 
-  arg2 = static_cast< double >(val2);
-  {
-    try {
-      (arg1)->setEnergyPerFission(arg2);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
 SWIGINTERN PyObject *_wrap_AmpMesh_getFluxByValue(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
   PyObject *resultobj = 0;
   AmpMesh *arg1 = (AmpMesh *) 0 ;
@@ -17185,7 +17146,6 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"AmpMesh_setDifLinearByValue", (PyCFunction) _wrap_AmpMesh_setDifLinearByValue, METH_VARARGS | METH_KEYWORDS, NULL},
 	 { (char *)"AmpMesh_setDifNonlinearByValue", (PyCFunction) _wrap_AmpMesh_setDifNonlinearByValue, METH_VARARGS | METH_KEYWORDS, NULL},
 	 { (char *)"AmpMesh_setGroupStructure", (PyCFunction) _wrap_AmpMesh_setGroupStructure, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"AmpMesh_setEnergyPerFission", (PyCFunction) _wrap_AmpMesh_setEnergyPerFission, METH_VARARGS | METH_KEYWORDS, NULL},
 	 { (char *)"AmpMesh_getFluxByValue", (PyCFunction) _wrap_AmpMesh_getFluxByValue, METH_VARARGS | METH_KEYWORDS, NULL},
 	 { (char *)"AmpMesh_getCurrentByValue", (PyCFunction) _wrap_AmpMesh_getCurrentByValue, METH_VARARGS | METH_KEYWORDS, NULL},
 	 { (char *)"AmpMesh_getDifLinearByValue", (PyCFunction) _wrap_AmpMesh_getDifLinearByValue, METH_VARARGS | METH_KEYWORDS, NULL},

@@ -11,7 +11,6 @@ AmpMesh::AmpMesh(double width, double height, double depth, int num_x, int num_y
   _shape_mesh = NULL;
   _optically_thick = false;
   _group_indices = NULL;
-  _energy_per_fission = 0.0;
   
   return;
 }
@@ -26,10 +25,6 @@ AmpMesh::~AmpMesh() {
     delete [] _group_indices;
 }
 
-
-void AmpMesh::setEnergyPerFission(double energy_per_fission){
-  _energy_per_fission = energy_per_fission;
-}
 
 void AmpMesh::setOpticallyThick(bool optically_thick){
   _optically_thick = optically_thick;
@@ -283,7 +278,7 @@ void AmpMesh::computePower(int position){
     for (int g=0; g < _num_amp_energy_groups; g++)
       fission_rate += _materials[i]->getSigmaFByGroup(g, position, temp) * getFluxByValue(i, g, position);
     
-    _power[position][i] = fission_rate * _energy_per_fission;
+    _power[position][i] = fission_rate;
   }
 }
 
