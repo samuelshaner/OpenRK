@@ -86,22 +86,6 @@ def linearSolve2d(*args, **kwargs):
   return _openrk.linearSolve2d(*args, **kwargs)
 linearSolve2d = _openrk.linearSolve2d
 
-def vector_copy(*args, **kwargs):
-  return _openrk.vector_copy(*args, **kwargs)
-vector_copy = _openrk.vector_copy
-
-def matrix_zero(*args, **kwargs):
-  return _openrk.matrix_zero(*args, **kwargs)
-matrix_zero = _openrk.matrix_zero
-
-def matrix_zero2d(*args, **kwargs):
-  return _openrk.matrix_zero2d(*args, **kwargs)
-matrix_zero2d = _openrk.matrix_zero2d
-
-def vector_zero(*args, **kwargs):
-  return _openrk.vector_zero(*args, **kwargs)
-vector_zero = _openrk.vector_zero
-
 def matrix_multiplication(*args, **kwargs):
   return _openrk.matrix_multiplication(*args, **kwargs)
 matrix_multiplication = _openrk.matrix_multiplication

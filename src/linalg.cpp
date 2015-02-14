@@ -56,7 +56,7 @@ double eigenvalueSolve(double *A, int A1, int A2,
     /* Normalize the new source to have an average value of 1.0 */
     scale_val = (cx*cy*ng) / sum_new;
     vector_scale(new_source, scale_val, cx*cy*ng);
-    vector_copy(new_source, cx*cy*ng, old_source, cx*cy*ng);
+    std::copy(new_source, new_source + cx*cy*ng, old_source);
 
     log_printf(NORMAL, "CMFD iter: %i, keff: %f, error: %f",
                iter, _k_eff, residual);
@@ -110,19 +110,19 @@ double eigenvalueSolve2d(double **A, int A1, int A2,
     vector_scale(old_source, _k_eff, cx*cy*cz*ng);
 
     /* Compute the L2 norm of source error */
-    residual = 0.0;
+    #pragma omp parallel for
     for (int i = 0; i < cx*cy*cz*ng; i++){
       if (new_source[i] != 0.0)
-        residual += pow((new_source[i] - old_source[i]) / new_source[i], 2);
+        old_source[i] = pow((new_source[i] - old_source[i]) / new_source[i], 2);
     }
 
     /* Compute the source RMS error */
-    residual = sqrt(residual / (cx*cy*cz*ng));
+    residual = sqrt(pairwise_sum(old_source, cx*cy*cz*ng) / (cx*cy*cz*ng));
 
     /* Normalize the new source to have an average value of 1.0 */
     scale_val = (cx*cy*cz*ng) / sum_new;
     vector_scale(new_source, scale_val, cx*cy*cz*ng);
-    vector_copy(new_source, cx*cy*cz*ng, old_source, cx*cy*cz*ng);
+    std::copy(new_source, new_source + cx*cy*cz*ng, old_source);
 
     log_printf(NORMAL, "CMFD iter: %i, keff: %f, error: %f",
                iter, _k_eff, residual);
@@ -160,7 +160,7 @@ void linearSolve(double *A, int A1, int A2,
   while (iter < 1000){
 
     /* Pass new flux to old flux */
-    vector_copy(flux, cx*cy*ng, flux_temp, cx*cy*ng);
+    std::copy(flux, flux + cx*cy*ng, flux_temp);
 
     /* Iteration over red cells */
     #pragma omp parallel for private(row, val, cell)
@@ -278,6 +278,7 @@ void linearSolve(double *A, int A1, int A2,
       if (flux[i] != 0.0)
         residual += pow((flux[i] - flux_temp[i]) / flux[i], 2);
     }
+
     residual = pow(residual, 0.5) / (cx*cy*ng);
 
     /* Increment the interations counter */
@@ -317,7 +318,7 @@ void linearSolve2d(double **A, int A1, int A2,
   while (iter < 1000){
 
     /* Pass new flux to old flux */
-    vector_copy(flux, cx*cy*cz*ng, flux_temp, cx*cy*cz*ng);
+    std::copy(flux, flux + cx*cy*cz*ng, flux_temp);
 
     /* Iteration over red cells */
     for (int z = 0; z < cz; z++){
@@ -459,11 +460,13 @@ void linearSolve2d(double **A, int A1, int A2,
 
     /* Compute the average residual */
     residual = 0.0;
+    #pragma omp parallel for
     for (int i = 0; i < cx*cy*cz*ng; i++){
       if (flux[i] != 0.0)
-        residual += pow((flux[i] - flux_temp[i]) / flux[i], 2);
+        flux_temp[i] = pow((flux[i] - flux_temp[i]) / flux[i], 2);
     }
-    residual = pow(residual, 0.5) / (cx*cy*cz*ng);
+
+    residual = pow(pairwise_sum(flux_temp, cx*cy*cz*ng), 0.5) / (cx*cy*cz*ng);
 
     /* Increment the interations counter */
     iter++;
@@ -480,60 +483,6 @@ void linearSolve2d(double **A, int A1, int A2,
 
 
 /**
- * @brief Copy a vector to another vector.
- * @param vector_from vector to be copied
- * @param vector_to vector to receive copied data
- */
-void vector_copy(double* vector_from, int length_from, double* vector_to, int length_to){
-
-  for (int i = 0; i < length_to; i++)
-    vector_to[i] = vector_from[i];
-}
-
-
-/**
- * @brief Assign all elements in a matrix to zero.
- * @param mat matrix to be zeroed
- * @param width width of matrix row
- * @param height height of matrix copy
- */
-void matrix_zero(double *matrix, int width, int length){
-
-  for (int i = 0; i < length; i++){
-    for (int g = 0; g < width; g++)
-      matrix[i*width + g] = 0.0;
-  }
-}
-
-
-/**
- * @brief Assign all elements in a matrix to zero.
- * @param mat matrix to be zeroed
- * @param width width of matrix row
- * @param height height of matrix copy
- */
-void matrix_zero2d(double **matrix, int width, int length){
-
-  for (int i = 0; i < length; i++){
-    for (int g = 0; g < width; g++)
-      matrix[i][g] = 0.0;
-  }
-}
-
-
-/**
- * @brief Assign all elements in a matrix to zero.
- * @param vecotr vector to be zeroed
- * @param length length of vector
- */
-void vector_zero(double* vector, int length){
-
-  for (int i = 0; i < length; i++)
-    vector[i] = 0.0;
-}
-
-
-/**
  * @brief Multiply matrix by vector (i.e., y = M *x).
  * @param matrix source matrix
  * @param vector_x x vector
@@ -545,8 +494,9 @@ void matrix_multiplication(double *matrix, double* vector_x,
                            double* vector_y, int num_blocks, 
                            int block_width){
 
-  vector_zero(vector_y, num_blocks*block_width); 
-
+  memset(vector_y, 0.0, sizeof(double) * num_blocks*block_width);
+  
+  #pragma omp parallel for
   for (int i = 0; i < num_blocks; i++){
     for (int g = 0; g < block_width; g++){
       for (int e = 0; e < block_width; e++){
@@ -570,8 +520,9 @@ void matrix_multiplication2d(double **matrix, double* vector_x,
                            double* vector_y, int num_blocks, 
                            int block_width){
 
-  vector_zero(vector_y, num_blocks*block_width); 
+  memset(vector_y, 0.0, sizeof(double) * num_blocks*block_width);
 
+  #pragma omp parallel for
   for (int i = 0; i < num_blocks; i++){
     for (int g = 0; g < block_width; g++){
       for (int e = 0; e < block_width; e++){
@@ -591,6 +542,7 @@ void matrix_multiplication2d(double **matrix, double* vector_x,
  */
 void vector_scale(double* vector, double scale_value, int length){
 
+  #pragma omp parallel for
   for (int i = 0; i < length; i++)
     vector[i] *= scale_value;
 }
