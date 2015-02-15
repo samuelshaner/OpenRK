@@ -59,6 +59,10 @@ class configuration:
 
   # Compile using ccache (for developers needing fast recompilation)
   with_ccache = False
+
+  # Build the openmoc.cuda and/or openmoc.cuda/single and/or openmoc.cuda.double
+  # modules (depending on what precision levels are set for fp_precision)
+  with_cuda = False
   
   # Supported C++ compilers: 'gcc'
   cpp_compilers = list()
@@ -92,6 +96,8 @@ class configuration:
                     'src/Transient.cpp',
                     'src/log.cpp' ]
 
+  sources['nvcc'] = ['src/gpu_linalg.cu']
+
 
   #############################################################################
   #                                Compiler Flags
@@ -103,6 +109,9 @@ class configuration:
   compiler_flags['gcc'] = ['-c', '-O3', '-ffast-math', '-fopenmp',
                            '-std=c++0x', '-fpic']
 
+  compiler_flags['nvcc'] =  ['-c', '-O3', '--compiler-options', '-fpic',
+                             '-gencode=arch=compute_20,code=sm_20',
+                             '-gencode=arch=compute_30,code=sm_30']
 
   #############################################################################
   #                                 Linker Flags
@@ -118,6 +127,7 @@ class configuration:
     linker_flags['gcc'] = ['-fopenmp', '-shared',
                            '-Wl,-soname,' + get_openrk_object_name()]
 
+  linker_flags['nvcc'] = ['-shared', get_openmoc()]
 
   #############################################################################
   #                               Shared Libraries
@@ -128,6 +138,7 @@ class configuration:
 
   shared_libraries['gcc'] = ['stdc++', 'gomp', 'dl','pthread', 'm']
 
+  shared_libraries['nvcc'] = ['cudart']
 
   #############################################################################
   #                              Library Directories
@@ -141,6 +152,7 @@ class configuration:
 
   library_directories['gcc'] = [usr_lib]
 
+  library_directories['nvcc'] = [usr_lib, '/usr/local/cuda-5.5/lib64']
 
   #############################################################################
   #                              Include Directories
@@ -151,6 +163,8 @@ class configuration:
   include_directories = dict()
 
   include_directories['gcc'] = list()
+
+  include_directories['nvcc'] = ['/usr/local/cuda-5.5/include']
 
   ###########################################################################
   #                                 SWIG Flags
@@ -187,3 +201,20 @@ class configuration:
                 extra_link_args = self.linker_flags[self.cc],
                 include_dirs = self.include_directories[self.cc],
                 swig_opts = self.swig_flags + ['-D' + self.cc.upper()]))
+
+
+    # The openmoc.cuda extension if requested by the user at compile
+    # time (--with-cuda)
+    if self.with_cuda:
+
+      self.cpp_compilers.append('nvcc')
+
+      self.extensions.append(
+        Extension(name = '_openrk',
+                  sources = copy.deepcopy(self.sources['nvcc']),
+                  library_dirs = self.library_directories['nvcc'],
+                  libraries = self.shared_libraries['nvcc'],
+                  extra_link_args = self.linker_flags['nvcc'],
+                  include_dirs = self.include_directories['nvcc'],
+                  swig_opts = self.swig_flags  + ['-DNVCC'],
+                  export_symbols = ['init_openrk']))

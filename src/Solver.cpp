@@ -20,31 +20,19 @@ Solver::Solver(StructuredShapeMesh* shape_mesh, AmpMesh* amp_mesh){
 
   int nc = _shape_mesh->getNumX() * _shape_mesh->getNumY() * _shape_mesh->getNumZ();
   int ng = _shape_mesh->getNumShapeEnergyGroups();
-  _AM_shape = new double*[nc];
-  _A_shape = new double*[nc];
-  _M_shape = new double*[nc];
+  _AM_shape = new double[nc*ng*(ng+6)];
+  _A_shape = new double[nc*ng*(ng+6)];
+  _M_shape = new double[nc*ng*ng];
   _b_shape = new double[nc*ng];
-
-  for (int i=0; i < nc; i++){
-    _AM_shape[i] = new double[ng*(ng+6)];
-    _A_shape[i] = new double[ng*(ng+6)];
-    _M_shape[i] = new double[ng*ng];
-  }
 
   if (_amp_mesh != NULL){
     nc = _amp_mesh->getNumX() * _amp_mesh->getNumY() * _amp_mesh->getNumZ();
     ng = _amp_mesh->getNumAmpEnergyGroups();
 
-    _AM_amp = new double*[nc];
-    _A_amp = new double*[nc];
-    _M_amp = new double*[nc];
+    _AM_amp = new double[nc*ng*(ng+6)];
+    _A_amp = new double[nc*ng*(ng+6)];
+    _M_amp = new double[nc*ng*ng];
     _b_amp = new double[nc*ng];
-    
-    for (int i=0; i < nc; i++){
-      _AM_amp[i] = new double[ng*(ng+6)];
-      _A_amp[i] = new double[ng*(ng+6)];
-      _M_amp[i] = new double[ng*ng];
-    }
   }
 }
 
@@ -52,23 +40,14 @@ Solver::Solver(StructuredShapeMesh* shape_mesh, AmpMesh* amp_mesh){
 Solver::~Solver(){
 
   if (_AM_shape != NULL){
-    for (int i=0; i < _shape_mesh->getNumX() * _shape_mesh->getNumY() * _shape_mesh->getNumZ(); i++)
-      delete [] _AM_shape[i];
-
     delete [] _AM_shape;
   }    
 
   if (_A_shape != NULL){
-    for (int i=0; i < _shape_mesh->getNumX() * _shape_mesh->getNumY() * _shape_mesh->getNumZ(); i++)
-      delete [] _A_shape[i];
-
     delete [] _A_shape;
   }    
 
   if (_M_shape != NULL){
-    for (int i=0; i < _shape_mesh->getNumX() * _shape_mesh->getNumY() * _shape_mesh->getNumZ(); i++)
-      delete [] _M_shape[i];
-
     delete [] _M_shape;
   }    
 
@@ -77,23 +56,14 @@ Solver::~Solver(){
   }    
 
   if (_AM_amp != NULL){
-    for (int i=0; i < _amp_mesh->getNumX() * _amp_mesh->getNumY() * _amp_mesh->getNumZ(); i++)
-      delete [] _AM_amp[i];
-
     delete [] _AM_amp;
   }    
 
   if (_A_amp != NULL){
-    for (int i=0; i < _amp_mesh->getNumX() * _amp_mesh->getNumY() * _amp_mesh->getNumZ(); i++)
-      delete [] _A_amp[i];
-
     delete [] _A_amp;
   }    
 
   if (_M_amp != NULL){
-    for (int i=0; i < _amp_mesh->getNumX() * _amp_mesh->getNumY() * _amp_mesh->getNumZ(); i++)
-      delete [] _M_amp[i];
-
     delete [] _M_amp;
   }    
 
@@ -103,17 +73,17 @@ Solver::~Solver(){
 }
 
 
-double** Solver::getAMShape(){
+double* Solver::getAMShape(){
   return _AM_shape;
 }
 
 
-double** Solver::getAShape(){
+double* Solver::getAShape(){
   return _A_shape;
 }
 
 
-double** Solver::getMShape(){
+double* Solver::getMShape(){
   return _M_shape;
 }
 
@@ -123,17 +93,17 @@ double* Solver::getBShape(){
 }
 
 
-double** Solver::getAMAmp(){
+double* Solver::getAMAmp(){
   return _AM_amp;
 }
 
 
-double** Solver::getAAmp(){
+double* Solver::getAAmp(){
   return _A_amp;
 }
 
 
-double** Solver::getMAmp(){
+double* Solver::getMAmp(){
   return _M_amp;
 }
 
@@ -158,11 +128,11 @@ void Solver::makeAMShapeInitial(int position){
   #pragma omp parallel for
   for (int i = 0; i < nx*ny*nz; i++){
     for (int g=0; g < ng*ng; g++)
-      _M_shape[i][g] = 0.0;
+      _M_shape(i, g) = 0.0;
 
     for (int g=0; g < ng*(ng+6); g++){
-      _A_shape[i][g] = 0.0;
-      _AM_shape[i][g] = 0.0;
+      _A_shape(i, g) = 0.0;
+      _AM_shape(i, g) = 0.0;
     }
   }
 
@@ -177,83 +147,83 @@ void Solver::makeAMShapeInitial(int position){
           Material* material = _shape_mesh->getMaterial(cell);
           
           /* Absorption term on the diagonal */
-          _A_shape[cell][e * (ng+6) + e + 3] += material->getSigmaAByGroup(e, position, temp) * volume;
+          _A_shape(cell, e * (ng+6) + e + 3) += material->getSigmaAByGroup(e, position, temp) * volume;
           
           /* Buckling term on the diagonal */
-          _A_shape[cell][e * (ng+6) + e + 3] += material->getDifCoefByGroup(e, position, temp) * volume *
+          _A_shape(cell, e * (ng+6) + e + 3) += material->getDifCoefByGroup(e, position, temp) * volume *
             _shape_mesh->getBuckling();
           
           /* Outscattering term on diagonal */
           for (int g=0; g < ng; g++){
             if (e != g)
-              _A_shape[cell][e * (ng+6) + e + 3] += material->getSigmaSByGroup(e, g, position, temp) * volume;
+              _A_shape(cell, e * (ng+6) + e + 3) += material->getSigmaSByGroup(e, g, position, temp) * volume;
           }
           
           /* Fission terms */
           for (int g=0; g < ng; g++){
-            _M_shape[cell][e * ng + g] += material->getChiByGroup(e, position, temp) *
+            _M_shape(cell, e * ng + g) += material->getChiByGroup(e, position, temp) *
               material->getNuSigmaFByGroup(g, position, temp) * volume;
           }
           
           /* Inscattering term on off diagonals */
           for (int g=0; g < ng; g++){
             if (e != g)
-              _A_shape[cell][e * (ng+6) + g + 3] -= material->getSigmaSByGroup(g, e, position, temp) * volume;
+              _A_shape(cell, e * (ng+6) + g + 3) -= material->getSigmaSByGroup(g, e, position, temp) * volume;
           }
 
           /* LEFT SURFACE */
           
           /* Transport term on diagonal */
-          _A_shape[cell][e * (ng+6) + e + 3] += _shape_mesh->getDifLinearByValue(cell, e, 0, position) * height * depth;
+          _A_shape(cell, e * (ng+6) + e + 3) += _shape_mesh->getDifLinearByValue(cell, e, 0, position) * height * depth;
           
           /* Transport term on off diagonals */
           if (x != 0)
-            _A_shape[cell][e * (ng+6)] -= _shape_mesh->getDifLinearByValue(cell, e, 0, position) * height * depth;
+            _A_shape(cell, e * (ng+6)) -= _shape_mesh->getDifLinearByValue(cell, e, 0, position) * height * depth;
           
           /* RIGHT SURFACE */
           
           /* Transport term on diagonal */
-          _A_shape[cell][e * (ng+6) + e + 3] += _shape_mesh->getDifLinearByValue(cell, e, 3, position) * height * depth;
+          _A_shape(cell, e * (ng+6) + e + 3) += _shape_mesh->getDifLinearByValue(cell, e, 3, position) * height * depth;
           
           /* Transport term on off diagonals */
           if (x != nx - 1)
-            _A_shape[cell][e * (ng+6) + ng + 3] -= _shape_mesh->getDifLinearByValue(cell, e, 3, position) * height * depth;
+            _A_shape(cell, e * (ng+6) + ng + 3) -= _shape_mesh->getDifLinearByValue(cell, e, 3, position) * height * depth;
                     
           /* BACK SURFACE */
           
           /* Transport term on diagonal */
-          _A_shape[cell][e * (ng+6) + e + 3] += _shape_mesh->getDifLinearByValue(cell, e, 1, position) * width * depth;
+          _A_shape(cell, e * (ng+6) + e + 3) += _shape_mesh->getDifLinearByValue(cell, e, 1, position) * width * depth;
           
           /* Transport term on off diagonals */
           if (y != 0)
-            _A_shape[cell][e * (ng+6) + 1] -= _shape_mesh->getDifLinearByValue(cell, e, 1, position) * width * depth;
+            _A_shape(cell, e * (ng+6) + 1) -= _shape_mesh->getDifLinearByValue(cell, e, 1, position) * width * depth;
           
           /* FRONT SURFACE */
           
           /* Transport term on diagonal */
-          _A_shape[cell][e * (ng+6) + e + 3] += _shape_mesh->getDifLinearByValue(cell, e, 4, position) * width * depth;
+          _A_shape(cell, e * (ng+6) + e + 3) += _shape_mesh->getDifLinearByValue(cell, e, 4, position) * width * depth;
           
           /* Transport term on off diagonals */
           if (y != ny - 1)
-            _A_shape[cell][e * (ng+6) + ng + 4] -= _shape_mesh->getDifLinearByValue(cell, e, 4, position) * width * depth;
+            _A_shape(cell, e * (ng+6) + ng + 4) -= _shape_mesh->getDifLinearByValue(cell, e, 4, position) * width * depth;
 
           /* BOTTOM SURFACE */
           
           /* Transport term on diagonal */
-          _A_shape[cell][e * (ng+6) + e + 3] += _shape_mesh->getDifLinearByValue(cell, e, 2, position) * width * height;
+          _A_shape(cell, e * (ng+6) + e + 3) += _shape_mesh->getDifLinearByValue(cell, e, 2, position) * width * height;
           
           /* Transport term on off diagonals */
           if (z != 0)
-            _A_shape[cell][e * (ng+6) + 2] -= _shape_mesh->getDifLinearByValue(cell, e, 2, position) * width * height;
+            _A_shape(cell, e * (ng+6) + 2) -= _shape_mesh->getDifLinearByValue(cell, e, 2, position) * width * height;
           
           /* TOP SURFACE */
           
           /* Transport term on diagonal */
-          _A_shape[cell][e * (ng+6) + e + 3] += _shape_mesh->getDifLinearByValue(cell, e, 5, position) * width * height;
+          _A_shape(cell, e * (ng+6) + e + 3) += _shape_mesh->getDifLinearByValue(cell, e, 5, position) * width * height;
           
           /* Transport term on off diagonals */
           if (z != nz - 1)
-            _A_shape[cell][e * (ng+6) + ng + 5] -= _shape_mesh->getDifLinearByValue(cell, e, 5, position) * width * height;
+            _A_shape(cell, e * (ng+6) + ng + 5) -= _shape_mesh->getDifLinearByValue(cell, e, 5, position) * width * height;
         }
       }
     }    
@@ -272,7 +242,7 @@ void Solver::computeInitialShape(double tol){
   double* old_source = new double[nx*ny*nz*ng];
   double* flux_temp = new double[nx*ny*nz*ng];
 
-  _k_eff = eigenvalueSolve2d(_A_shape, nx*ny, ng*(ng+6), _M_shape, nx*ny, ng*ng, _shape_mesh->getFlux(CURRENT), nx*ny*ng, _b_shape, nx*ny*ng, old_source, nx*ny*ng, flux_temp, nx*ny*ng, ng, nx, ny, nz, tol);
+  _k_eff = eigenvalueSolve(_A_shape, _M_shape, _shape_mesh->getFlux(CURRENT), _b_shape, old_source, flux_temp, ng, nx, ny, nz, tol);
 
   log_printf(NORMAL, "done solving eigenvalue problem");
   
@@ -302,11 +272,11 @@ void Solver::makeAMAmp(double wt){
   #pragma omp parallel for
   for (int i = 0; i < nx*ny*nz; i++){
     for (int g=0; g < ng*ng; g++)
-      _M_amp[i][g] = 0.0;
+      _M_amp(i, g) = 0.0;
 
     for (int g=0; g < ng*(ng+6); g++){
-      _A_amp[i][g] = 0.0;
-      _AM_amp[i][g] = 0.0;
+      _A_amp(i, g) = 0.0;
+      _AM_amp(i, g) = 0.0;
     }
 
     for (int g=0; g < ng; g++)
@@ -329,7 +299,7 @@ void Solver::makeAMAmp(double wt){
         for (int e=0; e < ng; e++){
           
           /* Time absorption term on the diagonal */
-          _AM_amp[cell][e * (ng+6) + e + 3] += 1.0 / dt / material->getVelocityByGroup(e, CURRENT, temp) * volume;
+          _AM_amp(cell, e * (ng+6) + e + 3) += 1.0 / dt / material->getVelocityByGroup(e, CURRENT, temp) * volume;
           _b_amp[cell*ng + e] += flux_prev[cell*ng + e] / dt /
             material->getVelocityByGroup(e, PREVIOUS_IN, temp_prev) * volume;
           
@@ -342,28 +312,28 @@ void Solver::makeAMAmp(double wt){
           }
           
           /* Absorption term on the diagonal */
-          _AM_amp[cell][e * (ng+6) + e + 3] += wt * material->getSigmaAByGroup(e, CURRENT, temp) * volume;
-          _b_amp[cell*ng + e] -= (1-wt) * material->getSigmaAByGroup(e, PREVIOUS_IN, temp_prev)
+          _AM_amp(cell, e * (ng+6) + e + 3) += wt * material->getSigmaAByGroup(e, CURRENT, temp) * volume;
+          _b_amp[cell*ng + e] += (1-wt) * material->getSigmaAByGroup(e, PREVIOUS_IN, temp_prev)
             * flux_prev[cell*ng + e] * volume;
           
           /* Buckling term on the diagonal */
-          _AM_amp[cell][e * (ng+6) + e + 3] += wt * material->getDifCoefByGroup(e, CURRENT, temp) * volume *
+          _AM_amp(cell, e * (ng+6) + e + 3) += wt * material->getDifCoefByGroup(e, CURRENT, temp) * volume *
             _amp_mesh->getBuckling();
-          _b_amp[cell*ng + e] -= (1-wt) * material->getDifCoefByGroup(e, PREVIOUS_IN, temp_prev)
+          _b_amp[cell*ng + e] += (1-wt) * material->getDifCoefByGroup(e, PREVIOUS_IN, temp_prev)
             * _amp_mesh->getBuckling() * flux_prev[cell*ng + e] * volume;
           
           /* Outscattering term on diagonal */
           for (int g=0; g < ng; g++){
             if (e != g){
-              _AM_amp[cell][e * (ng+6) + e + 3] += wt * material->getSigmaSByGroup(e, g, CURRENT, temp) * volume;
-              _b_amp[cell*ng+e] -= (1-wt) * material->getSigmaSByGroup(e, g, PREVIOUS_IN, temp_prev)
+              _AM_amp(cell, e * (ng+6) + e + 3) += wt * material->getSigmaSByGroup(e, g, CURRENT, temp) * volume;
+              _b_amp[cell*ng+e] += (1-wt) * material->getSigmaSByGroup(e, g, PREVIOUS_IN, temp_prev)
                 * flux_prev[cell*ng + e] * volume;
             }
           }
           
           /* Fission terms */
           for (int g=0; g < ng; g++){
-            _AM_amp[cell][e * (ng+6) + g + 3] -= wt * (1-beta) * material->getChiByGroup(e, CURRENT, temp) *
+            _AM_amp(cell, e * (ng+6) + g + 3) += wt * (1-beta) * material->getChiByGroup(e, CURRENT, temp) *
               material->getNuSigmaFByGroup(g, CURRENT, temp) / _amp_mesh->getKeff0() * volume;
             _b_amp[cell*ng+e] += (1-wt) * (1-beta) * material->getChiByGroup(e, PREVIOUS_IN, temp_prev) *
               material->getNuSigmaFByGroup(g, PREVIOUS_IN, temp_prev) / _amp_mesh->getKeff0()
@@ -373,7 +343,7 @@ void Solver::makeAMAmp(double wt){
           /* Inscattering term on off diagonals */
           for (int g=0; g < ng; g++){
             if (e != g){
-              _AM_amp[cell][e * (ng+6) + g + 3] -= wt * material->getSigmaSByGroup(g, e, CURRENT, temp) * volume;
+              _AM_amp(cell, e * (ng+6) + g + 3) += wt * material->getSigmaSByGroup(g, e, CURRENT, temp) * volume;
               _b_amp[cell*ng+e] += (1-wt) * material->getSigmaSByGroup(g, e, PREVIOUS_IN, temp_prev)
                 * flux_prev[cell*ng+g] * volume;
             }
@@ -382,17 +352,17 @@ void Solver::makeAMAmp(double wt){
           /* LEFT SURFACE */
           
           /* Transport term on diagonal */
-          _AM_amp[cell][e * (ng+6) + e + 3] += wt *
+          _AM_amp(cell, e * (ng+6) + e + 3) += wt *
             (_amp_mesh->getDifLinearByValue(cell, e, 0, CURRENT) +
              _amp_mesh->getDifNonlinearByValue(cell, e, 0, CURRENT)) * height * depth;
-          _b_amp[cell*ng+e] -= (1-wt) *
+          _b_amp[cell*ng+e] += (1-wt) *
             (_amp_mesh->getDifLinearByValue(cell, e, 0, PREVIOUS_IN) +
              _amp_mesh->getDifNonlinearByValue(cell, e, 0, PREVIOUS_IN)) * height * depth * flux_prev[cell*ng+e];
           
           
           /* Transport term on off diagonals */
           if (x != 0){
-            _AM_amp[cell][e * (ng+6)] -= wt *
+            _AM_amp(cell, e * (ng+6)) += wt *
               (_amp_mesh->getDifLinearByValue(cell, e, 0, CURRENT) -
                _amp_mesh->getDifNonlinearByValue(cell, e, 0, CURRENT)) * height * depth;
             _b_amp[cell*ng+e] += (1-wt) *
@@ -403,17 +373,17 @@ void Solver::makeAMAmp(double wt){
           /* RIGHT SURFACE */
           
           /* Transport term on diagonal */
-          _AM_amp[cell][e * (ng+6) + e + 3] += wt *
+          _AM_amp(cell, e * (ng+6) + e + 3) += wt *
             (_amp_mesh->getDifLinearByValue(cell, e, 3, CURRENT) -
              _amp_mesh->getDifNonlinearByValue(cell, e, 3, CURRENT)) * height * depth;
-          _b_amp[cell*ng+e] -= (1-wt) *
+          _b_amp[cell*ng+e] += (1-wt) *
             (_amp_mesh->getDifLinearByValue(cell, e, 3, PREVIOUS_IN) -
              _amp_mesh->getDifNonlinearByValue(cell, e, 3, PREVIOUS_IN)) * height * depth * flux_prev[cell*ng+e];
           
           
           /* Transport term on off diagonals */
           if (x != nx - 1){
-            _AM_amp[cell][e * (ng+6) + ng + 3] -= wt *
+            _AM_amp(cell, e * (ng+6) + ng + 3) += wt *
               (_amp_mesh->getDifLinearByValue(cell, e, 3, CURRENT) +
                _amp_mesh->getDifNonlinearByValue(cell, e, 3, CURRENT)) * height * depth;
             _b_amp[cell*ng+e] += (1-wt) *
@@ -424,17 +394,17 @@ void Solver::makeAMAmp(double wt){
           /* BACK SURFACE */
           
           /* Transport term on diagonal */
-          _AM_amp[cell][e * (ng+6) + e + 3] += wt *
+          _AM_amp(cell, e * (ng+6) + e + 3) += wt *
             (_amp_mesh->getDifLinearByValue(cell, e, 1, CURRENT) +
              _amp_mesh->getDifNonlinearByValue(cell, e, 1, CURRENT)) * width * depth;
-          _b_amp[cell*ng+e] -= (1-wt) *
+          _b_amp[cell*ng+e] += (1-wt) *
             (_amp_mesh->getDifLinearByValue(cell, e, 1, PREVIOUS_IN) +
              _amp_mesh->getDifNonlinearByValue(cell, e, 1, PREVIOUS_IN)) * width * depth * flux_prev[cell*ng+e];
           
           
           /* Transport term on off diagonals */
           if (y != 0){
-            _AM_amp[cell][e * (ng+6) + 1] -= wt *
+            _AM_amp(cell, e * (ng+6) + 1) += wt *
               (_amp_mesh->getDifLinearByValue(cell, e, 1, CURRENT) -
                _amp_mesh->getDifNonlinearByValue(cell, e, 1, CURRENT)) * width * depth;
             _b_amp[cell*ng+e] += (1-wt) *
@@ -445,17 +415,17 @@ void Solver::makeAMAmp(double wt){
           /* FRONT SURFACE */
           
           /* Transport term on diagonal */
-          _AM_amp[cell][e * (ng+6) + e + 3] += wt *
+          _AM_amp(cell, e * (ng+6) + e + 3) += wt *
             (_amp_mesh->getDifLinearByValue(cell, e, 4, CURRENT) -
              _amp_mesh->getDifNonlinearByValue(cell, e, 4, CURRENT)) * width * depth;
-          _b_amp[cell*ng+e] -= (1-wt) *
+          _b_amp[cell*ng+e] += (1-wt) *
             (_amp_mesh->getDifLinearByValue(cell, e, 4, PREVIOUS_IN) -
              _amp_mesh->getDifNonlinearByValue(cell, e, 4, PREVIOUS_IN)) * width * depth * flux_prev[cell*ng+e];
           
           
           /* Transport term on off diagonals */
           if (y != ny - 1){
-            _AM_amp[cell][e * (ng+6) + ng + 4] -= wt *
+            _AM_amp(cell, e * (ng+6) + ng + 4) += wt *
               (_amp_mesh->getDifLinearByValue(cell, e, 4, CURRENT) +
                _amp_mesh->getDifNonlinearByValue(cell, e, 4, CURRENT)) * width * depth;
             _b_amp[cell*ng+e] += (1-wt) *
@@ -466,17 +436,17 @@ void Solver::makeAMAmp(double wt){
           /* BOTTOM SURFACE */
           
           /* Transport term on diagonal */
-          _AM_amp[cell][e * (ng+6) + e + 3] += wt *
+          _AM_amp(cell, e * (ng+6) + e + 3) += wt *
             (_amp_mesh->getDifLinearByValue(cell, e, 2, CURRENT) +
              _amp_mesh->getDifNonlinearByValue(cell, e, 2, CURRENT)) * width * height;
-          _b_amp[cell*ng+e] -= (1-wt) *
+          _b_amp[cell*ng+e] += (1-wt) *
             (_amp_mesh->getDifLinearByValue(cell, e, 2, PREVIOUS_IN) +
              _amp_mesh->getDifNonlinearByValue(cell, e, 2, PREVIOUS_IN)) * width * height * flux_prev[cell*ng+e];
           
           
           /* Transport term on off diagonals */
           if (z != 0){
-            _AM_amp[cell][e * (ng+6) + 2] -= wt *
+            _AM_amp(cell, e * (ng+6) + 2) += wt *
               (_amp_mesh->getDifLinearByValue(cell, e, 2, CURRENT) -
                _amp_mesh->getDifNonlinearByValue(cell, e, 2, CURRENT)) * width * height;
             _b_amp[cell*ng+e] += (1-wt) *
@@ -487,17 +457,17 @@ void Solver::makeAMAmp(double wt){
           /* TOP SURFACE */
           
           /* Transport term on diagonal */
-          _AM_amp[cell][e * (ng+6) + e + 3] += wt *
+          _AM_amp(cell, e * (ng+6) + e + 3) += wt *
             (_amp_mesh->getDifLinearByValue(cell, e, 5, CURRENT) -
              _amp_mesh->getDifNonlinearByValue(cell, e, 5, CURRENT)) * width * height;
-          _b_amp[cell*ng+e] -= (1-wt) *
+          _b_amp[cell*ng+e] += (1-wt) *
             (_amp_mesh->getDifLinearByValue(cell, e, 5, PREVIOUS_IN) -
              _amp_mesh->getDifNonlinearByValue(cell, e, 5, PREVIOUS_IN)) * width * height * flux_prev[cell*ng+e];
           
           
           /* Transport term on off diagonals */
           if (z != nz - 1){
-            _AM_amp[cell][e * (ng+6) + ng + 5] -= wt *
+            _AM_amp(cell, e * (ng+6) + ng + 5) += wt *
               (_amp_mesh->getDifLinearByValue(cell, e, 5, CURRENT) +
                _amp_mesh->getDifNonlinearByValue(cell, e, 5, CURRENT)) * width * height;
             _b_amp[cell*ng+e] += (1-wt) *
@@ -529,11 +499,11 @@ void Solver::makeAMShape(double wt){
   #pragma omp parallel for
   for (int i = 0; i < nx*ny*nz; i++){
     for (int g=0; g < ng*ng; g++)
-      _M_shape[i][g] = 0.0;
+      _M_shape(i, g) = 0.0;
 
     for (int g=0; g < ng*(ng+6); g++){
-      _A_shape[i][g] = 0.0;
-      _AM_shape[i][g] = 0.0;
+      _A_shape(i, g) = 0.0;
+      _AM_shape(i, g) = 0.0;
     }
 
     for (int g=0; g < ng; g++)
@@ -556,7 +526,7 @@ void Solver::makeAMShape(double wt){
         for (int e=0; e < ng; e++){
           
           /* Time absorption term on the diagonal */
-          _AM_shape[cell][e * (ng+6) + e + 3] += 1.0 / dt / material->getVelocityByGroup(e, FORWARD_OUT, temp) * volume;
+          _AM_shape(cell, e * (ng+6) + e + 3) += 1.0 / dt / material->getVelocityByGroup(e, FORWARD_OUT, temp) * volume;
           _b_shape[cell*ng + e] += flux_prev[cell*ng + e] / dt /
             material->getVelocityByGroup(e, PREVIOUS_OUT, temp_prev) * volume;
           
@@ -571,28 +541,28 @@ void Solver::makeAMShape(double wt){
           }
           
           /* Absorption term on the diagonal */
-          _AM_shape[cell][e * (ng+6) + e + 3] += wt * material->getSigmaAByGroup(e, FORWARD_OUT, temp) * volume;
-          _b_shape[cell*ng + e] -= (1-wt) * material->getSigmaAByGroup(e, PREVIOUS_OUT, temp_prev)
+          _AM_shape(cell, e * (ng+6) + e + 3) += wt * material->getSigmaAByGroup(e, FORWARD_OUT, temp) * volume;
+          _b_shape[cell*ng + e] += (1-wt) * material->getSigmaAByGroup(e, PREVIOUS_OUT, temp_prev)
             * flux_prev[cell*ng + e] * volume;
           
           /* Buckling term on the diagonal */
-          _AM_shape[cell][e * (ng+6) + e + 3] += wt * material->getDifCoefByGroup(e, FORWARD_OUT, temp) * volume *
+          _AM_shape(cell, e * (ng+6) + e + 3) += wt * material->getDifCoefByGroup(e, FORWARD_OUT, temp) * volume *
             _shape_mesh->getBuckling();
-          _b_shape[cell*ng + e] -= (1-wt) * material->getDifCoefByGroup(e, PREVIOUS_OUT, temp_prev)
+          _b_shape[cell*ng + e] += (1-wt) * material->getDifCoefByGroup(e, PREVIOUS_OUT, temp_prev)
             * _shape_mesh->getBuckling() * flux_prev[cell*ng + e] * volume;
           
           /* Outscattering term on diagonal */
           for (int g=0; g < ng; g++){
             if (e != g){
-              _AM_shape[cell][e * (ng+6) + e + 3] += wt * material->getSigmaSByGroup(e, g, FORWARD_OUT, temp) * volume;
-              _b_shape[cell*ng+e] -= (1-wt) * material->getSigmaSByGroup(e, g, PREVIOUS_OUT, temp_prev)
+              _AM_shape(cell, e * (ng+6) + e + 3) += wt * material->getSigmaSByGroup(e, g, FORWARD_OUT, temp) * volume;
+              _b_shape[cell*ng+e] += (1-wt) * material->getSigmaSByGroup(e, g, PREVIOUS_OUT, temp_prev)
                 * flux_prev[cell*ng + e] * volume;
             }
           }
           
           /* Fission terms */
           for (int g=0; g < ng; g++){
-            _AM_shape[cell][e * (ng+6) + g + 3] -= wt * (1-beta) * material->getChiByGroup(e, FORWARD_OUT, temp) *
+            _AM_shape(cell, e * (ng+6) + g + 3) += wt * (1-beta) * material->getChiByGroup(e, FORWARD_OUT, temp) *
               material->getNuSigmaFByGroup(g, FORWARD_OUT, temp) / _shape_mesh->getKeff0() * volume;
             _b_shape[cell*ng+e] += (1-wt) * (1-beta) * material->getChiByGroup(e, PREVIOUS_OUT, temp_prev) *
               material->getNuSigmaFByGroup(g, PREVIOUS_OUT, temp_prev) / _shape_mesh->getKeff0()
@@ -602,7 +572,7 @@ void Solver::makeAMShape(double wt){
           /* Inscattering term on off diagonals */
           for (int g=0; g < ng; g++){
             if (e != g){
-              _AM_shape[cell][e * (ng+6) + g + 3] -= wt * material->getSigmaSByGroup(g, e, FORWARD_OUT, temp) * volume;
+              _AM_shape(cell, e * (ng+6) + g + 3) += wt * material->getSigmaSByGroup(g, e, FORWARD_OUT, temp) * volume;
               _b_shape[cell*ng+e] += (1-wt) * material->getSigmaSByGroup(g, e, PREVIOUS_OUT, temp_prev)
                 * flux_prev[cell*ng+g] * volume;
             }
@@ -611,14 +581,14 @@ void Solver::makeAMShape(double wt){
           /* LEFT SURFACE */
           
           /* Transport term on diagonal */
-          _AM_shape[cell][e * (ng+6) + e + 3] += wt *
+          _AM_shape(cell, e * (ng+6) + e + 3) += wt *
             _shape_mesh->getDifLinearByValue(cell, e, 0, FORWARD_OUT) * height * depth;
-          _b_shape[cell*ng+e] -= (1-wt) *
+          _b_shape[cell*ng+e] += (1-wt) *
             _shape_mesh->getDifLinearByValue(cell, e, 0, PREVIOUS_OUT) * height * depth * flux_prev[cell*ng+e];
           
           /* Transport term on off diagonals */
           if (x != 0){
-            _AM_shape[cell][e * (ng+6)] -= wt *
+            _AM_shape(cell, e * (ng+6)) += wt *
               _shape_mesh->getDifLinearByValue(cell, e, 0, FORWARD_OUT) * height * depth;
             _b_shape[cell*ng+e] += (1-wt) *
               _shape_mesh->getDifLinearByValue(cell, e, 0, PREVIOUS_OUT) * height * depth * flux_prev[(cell-1)*ng+e];
@@ -627,14 +597,14 @@ void Solver::makeAMShape(double wt){
           /* RIGHT SURFACE */
           
           /* Transport term on diagonal */
-          _AM_shape[cell][e * (ng+6) + e + 3] += wt *
+          _AM_shape(cell, e * (ng+6) + e + 3) += wt *
             _shape_mesh->getDifLinearByValue(cell, e, 3, FORWARD_OUT) * height * depth;
-          _b_shape[cell*ng+e] -= (1-wt) *
+          _b_shape[cell*ng+e] += (1-wt) *
             _shape_mesh->getDifLinearByValue(cell, e, 3, PREVIOUS_OUT) * height * depth * flux_prev[cell*ng+e];
           
           /* Transport term on off diagonals */
           if (x != nx - 1){
-            _AM_shape[cell][e * (ng+6) + ng + 3] -= wt *
+            _AM_shape(cell, e * (ng+6) + ng + 3) += wt *
               _shape_mesh->getDifLinearByValue(cell, e, 3, FORWARD_OUT) * height * depth;
             _b_shape[cell*ng+e] += (1-wt) *
               _shape_mesh->getDifLinearByValue(cell, e, 3, PREVIOUS_OUT) * height * depth * flux_prev[(cell+1)*ng+e];
@@ -643,15 +613,15 @@ void Solver::makeAMShape(double wt){
           /* BACK SURFACE */
           
           /* Transport term on diagonal */
-          _AM_shape[cell][e * (ng+6) + e + 3] += wt *
+          _AM_shape(cell, e * (ng+6) + e + 3) += wt *
             _shape_mesh->getDifLinearByValue(cell, e, 1, FORWARD_OUT) * width * depth;
-          _b_shape[cell*ng+e] -= (1-wt) *
+          _b_shape[cell*ng+e] += (1-wt) *
             _shape_mesh->getDifLinearByValue(cell, e, 1, PREVIOUS_OUT) * width * depth * flux_prev[cell*ng+e];
           
           
           /* Transport term on off diagonals */
           if (y != 0){
-            _AM_shape[cell][e * (ng+6) + 1] -= wt *
+            _AM_shape(cell, e * (ng+6) + 1) += wt *
               _shape_mesh->getDifLinearByValue(cell, e, 1, FORWARD_OUT) * width * depth;
             _b_shape[cell*ng+e] += (1-wt) *
               _shape_mesh->getDifLinearByValue(cell, e, 1, PREVIOUS_OUT) * width * depth * flux_prev[(cell-nx)*ng+e];
@@ -660,15 +630,15 @@ void Solver::makeAMShape(double wt){
           /* FRONT SURFACE */
           
           /* Transport term on diagonal */
-          _AM_shape[cell][e * (ng+6) + e + 3] += wt *
+          _AM_shape(cell, e * (ng+6) + e + 3) += wt *
             _shape_mesh->getDifLinearByValue(cell, e, 4, FORWARD_OUT) * width * depth;
-          _b_shape[cell*ng+e] -= (1-wt) *
+          _b_shape[cell*ng+e] += (1-wt) *
             _shape_mesh->getDifLinearByValue(cell, e, 4, PREVIOUS_OUT) * width * depth * flux_prev[cell*ng+e];
           
           
           /* Transport term on off diagonals */
           if (y != ny - 1){
-            _AM_shape[cell][e * (ng+6) + ng + 4] -= wt *
+            _AM_shape(cell, e * (ng+6) + ng + 4) += wt *
               _shape_mesh->getDifLinearByValue(cell, e, 4, FORWARD_OUT) * width * depth;
             _b_shape[cell*ng+e] += (1-wt) *
               _shape_mesh->getDifLinearByValue(cell, e, 4, PREVIOUS_OUT) * width * depth * flux_prev[(cell+nx)*ng+e];
@@ -677,15 +647,15 @@ void Solver::makeAMShape(double wt){
           /* BOTTOM SURFACE */
           
           /* Transport term on diagonal */
-          _AM_shape[cell][e * (ng+6) + e + 3] += wt *
+          _AM_shape(cell, e * (ng+6) + e + 3) += wt *
             _shape_mesh->getDifLinearByValue(cell, e, 2, FORWARD_OUT) * width * height;
-          _b_shape[cell*ng+e] -= (1-wt) *
+          _b_shape[cell*ng+e] += (1-wt) *
             _shape_mesh->getDifLinearByValue(cell, e, 2, PREVIOUS_OUT) * width * height * flux_prev[cell*ng+e];
           
           
           /* Transport term on off diagonals */
           if (z != 0){
-            _AM_shape[cell][e * (ng+6) + 2] -= wt *
+            _AM_shape(cell, e * (ng+6) + 2) += wt *
               _shape_mesh->getDifLinearByValue(cell, e, 2, FORWARD_OUT) * width * height;
             _b_shape[cell*ng+e] += (1-wt) *
               _shape_mesh->getDifLinearByValue(cell, e, 2, PREVIOUS_OUT) * width * height * flux_prev[(cell-nx)*ng+e];
@@ -694,15 +664,15 @@ void Solver::makeAMShape(double wt){
           /* TOP SURFACE */
           
           /* Transport term on diagonal */
-          _AM_shape[cell][e * (ng+6) + e + 3] += wt *
+          _AM_shape(cell, e * (ng+6) + e + 3) += wt *
             _shape_mesh->getDifLinearByValue(cell, e, 5, FORWARD_OUT) * width * height;
-          _b_shape[cell*ng+e] -= (1-wt) *
+          _b_shape[cell*ng+e] += (1-wt) *
             _shape_mesh->getDifLinearByValue(cell, e, 5, PREVIOUS_OUT) * width * height * flux_prev[cell*ng+e];
           
           
           /* Transport term on off diagonals */
           if (z != nz - 1){
-            _AM_shape[cell][e * (ng+6) + ng + 5] -= wt *
+            _AM_shape(cell, e * (ng+6) + ng + 5) += wt *
               _shape_mesh->getDifLinearByValue(cell, e, 5, FORWARD_OUT) * width * height;
             _b_shape[cell*ng+e] += (1-wt) *
               _shape_mesh->getDifLinearByValue(cell, e, 5, PREVIOUS_OUT) * width * height * flux_prev[(cell+nx)*ng+e];

@@ -35,6 +35,7 @@ class custom_install(install):
   # The user options for a customized OpenMOC build
   user_options = [
     ('cc=', None, "Compiler (gcc) for main openmoc module"),
+    ('with-cuda', None, "Build openmoc.cuda module for NVIDIA GPUs"),
     ('with-gcc', None, "Build openmoc.gnu modules using GNU compiler"),
     ('with-ccache', None, "Build with ccache for rapid recompilation")
   ]
@@ -45,6 +46,7 @@ class custom_install(install):
 
   # Set some compile options to be boolean switches
   boolean_options = ['with-gcc',
+                     'with-cuda',
                      'with-ccache']
 
 
@@ -75,6 +77,7 @@ class custom_install(install):
     # extension modules
     self.with_gcc = False
     self.with_ccache = True
+    self.with_cuda = False
     
   def finalize_options(self):
     """Extract options from the flags invoked by the user at compile time.
@@ -91,6 +94,7 @@ class custom_install(install):
     install.finalize_options(self)
 
     config.with_ccache = self.with_ccache
+    config.with_cuda = self.with_cuda
     
     # Check that the user specified a supported C++ compiler
     if self.cc not in ['gcc']:
@@ -128,9 +132,34 @@ def customize_compiler(self):
   # based on source extension, so we add that functionality here
   def _compile(obj, src, ext, cc_args, extra_postargs, pp_opts):
 
-    self.set_executable('compiler_so', 'ccache gcc')
+    # If GNU is a defined macro and the source is C++, use gcc
+    if '-DGNU' in pp_opts and os.path.splitext(src)[1] == '.cpp':
+      if config.with_ccache:
+        self.set_executable('compiler_so', 'ccache gcc')
+      else:
+        self.set_executable('compiler_so', 'gcc')
 
-    postargs = config.compiler_flags['gcc']
+      postargs = config.compiler_flags['gcc']
+
+    # If CUDA is a defined macro and the source is C++, compile
+    # SWIG-wrapped CUDA code with gcc
+    elif '-DCUDA' in pp_opts and os.path.splitext(src)[1] == '.cpp':
+      if config.with_ccache:
+        self.set_executable('compiler_so', 'ccache gcc')
+      else:
+        self.set_executable('compiler_so', 'gcc')
+
+      postargs = config.compiler_flags['gcc']
+
+
+    # If CUDA is a defined macro and the source is CUDA, use nvcc
+    elif '-DCUDA' in pp_opts and os.path.splitext(src)[1] == '.cu':
+      if config.with_ccache:
+        self.set_executable('compiler_so', 'ccache nvcc')
+      else:
+        self.set_executable('compiler_so', 'nvcc')
+
+      postargs = config.compiler_flags['nvcc']
 
     # Now call distutils-defined _compile method
     super_compile(obj, src, ext, cc_args, postargs, pp_opts)

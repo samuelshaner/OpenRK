@@ -144,8 +144,8 @@ void Transient::takeInnerStep(){
 
 
     _solver->makeAMAmp(_inner_wt);
-    linearSolve2d(_solver->getAMAmp(), nx*ny*nz, ng*(ng+6), _amp_mesh->getFlux(CURRENT), nx*ny*nz*ng,
-                  _solver->getBAmp(), nx*ny*nz*ng, flux_temp, nx*ny*nz*ng, nx, ny, nz, ng, 1.e-8);
+    linearSolve(_solver->getAMAmp(), _amp_mesh->getFlux(CURRENT),
+                  _solver->getBAmp(), flux_temp, nx, ny, nz, ng, 1.e-8);
 
     _shape_mesh->synthesizeFlux(CURRENT);
 
@@ -197,8 +197,8 @@ void Transient::takeOuterStep(){
     _shape_mesh->computeDifCoefs(FORWARD_OUT);
 
     _solver->makeAMShape(_outer_wt);
-    linearSolve2d(_solver->getAMShape(), nx*ny*nz, ng*(ng+6), _shape_mesh->getFlux(FORWARD_OUT), nx*ny*ng,
-                  _solver->getBShape(), nx*ny*nz*ng, flux_temp, nx*ny*nz*ng, nx, ny, nz, ng, 1.e-8);
+    linearSolve(_solver->getAMShape(), _shape_mesh->getFlux(FORWARD_OUT),
+                  _solver->getBShape(), flux_temp, nx, ny, nz, ng, 1.e-8);
 
     _amp_mesh->computeCurrent(FORWARD_OUT);
     _amp_mesh->condenseMaterials(FORWARD_OUT, true);
@@ -251,8 +251,8 @@ void Transient::takeOuterStepOnly(){
     _shape_mesh->computeDifCoefs(FORWARD_OUT);
 
     _solver->makeAMShape(_outer_wt);
-    linearSolve2d(_solver->getAMShape(), nx*ny*nz, ng*(ng+6), _shape_mesh->getFlux(FORWARD_OUT), nx*ny*ng, 
-                  _solver->getBShape(), nx*ny*nz*ng, flux_temp, nx*ny*nz*ng, nx, ny, nz, ng, 1.e-8);
+    linearSolve(_solver->getAMShape(), _shape_mesh->getFlux(FORWARD_OUT), 
+                  _solver->getBShape(), flux_temp, nx, ny, nz, ng, 1.e-8);
 
     double residual = _shape_mesh->computePowerL2Norm(FORWARD_OUT, FORWARD_OUT_OLD);
     double power = _shape_mesh->computeAveragePower(FORWARD_OUT);

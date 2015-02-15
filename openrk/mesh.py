@@ -7,7 +7,6 @@ import checkvalue as cv
 from clock import Clock
 from math import floor, exp, cos, pi, asin
 from material import TransientMaterial, FunctionalMaterial
-from numba import jit
 
 # A static variable for auto-generated Mesh UIDs
 AUTO_MESH_UID = 1

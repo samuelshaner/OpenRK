@@ -232,7 +232,7 @@ shape_mesh.setGroupStructure([0, 1])
 
 # Solve diffusion problem
 solver = rk.Solver(shape_mesh, amp_mesh)
-rk.setNumThreads(4)
+rk.setNumThreads(8)
 
 transient = rk.Transient()
 clock = rk.Clock(dt_inner=1.e-3, dt_outer=1.e-1)

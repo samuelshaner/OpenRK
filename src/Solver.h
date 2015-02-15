@@ -19,18 +19,36 @@
 #include "linalg.h"
 #endif
 
+/** Indexing macro for the scalar flux in each FSR and energy group */
+#define _AM_shape(r,e) (_AM_shape[(r)*_shape_mesh->getNumShapeEnergyGroups()*(_shape_mesh->getNumShapeEnergyGroups()+6) + (e)])
+
+/** Indexing macro for the scalar flux in each FSR and energy group */
+#define _A_shape(r,e) (_A_shape[(r)*_shape_mesh->getNumShapeEnergyGroups()*(_shape_mesh->getNumShapeEnergyGroups()+6) + (e)])
+
+/** Indexing macro for the scalar flux in each FSR and energy group */
+#define _M_shape(r,e) (_M_shape[(r)*_shape_mesh->getNumShapeEnergyGroups()*_shape_mesh->getNumShapeEnergyGroups() + (e)])
+
+/** Indexing macro for the scalar flux in each FSR and energy group */
+#define _AM_amp(r,e) (_AM_amp[(r)*_amp_mesh->getNumAmpEnergyGroups()*(_amp_mesh->getNumAmpEnergyGroups()+6) + (e)])
+
+/** Indexing macro for the scalar flux in each FSR and energy group */
+#define _A_amp(r,e) (_A_amp[(r)*_amp_mesh->getNumAmpEnergyGroups()*(_amp_mesh->getNumAmpEnergyGroups()+6) + (e)])
+
+/** Indexing macro for the scalar flux in each FSR and energy group */
+#define _M_amp(r,e) (_M_amp[(r)*_amp_mesh->getNumAmpEnergyGroups()*_amp_mesh->getNumAmpEnergyGroups() + (e)])
+
 
 class Solver {
 
 private:
 
-  double** _A_shape;
-  double** _AM_shape;
-  double** _M_shape;
+  double* _A_shape;
+  double* _AM_shape;
+  double* _M_shape;
   double* _b_shape;
-  double** _A_amp;
-  double** _AM_amp;
-  double** _M_amp;
+  double* _A_amp;
+  double* _AM_amp;
+  double* _M_amp;
   double* _b_amp;
 
   double _k_eff;
@@ -43,13 +61,13 @@ public:
   virtual ~Solver();
 
   /* Getter functions */
-  double** getAMShape();
-  double** getAShape();
-  double** getMShape();
+  double* getAMShape();
+  double* getAShape();
+  double* getMShape();
   double* getBShape();
-  double** getAMAmp();
-  double** getAAmp();
-  double** getMAmp();
+  double* getAMAmp();
+  double* getAAmp();
+  double* getMAmp();
   double* getBAmp();
   
   /* Setter functions */
