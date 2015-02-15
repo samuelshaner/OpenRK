@@ -90,15 +90,6 @@ def check_is_float_or_int(val, name, param):
               ' parameter {2}'.format(name, val, param)
         raise ValueError(msg)
 
-
-def check_clock_position(position, name):
-    clock = ck.Clock()
-    if position not in clock.get_positions():
-        msg = 'Unable to get/set {0} with a non valid clock position {1}' \
-            .format(name, position)
-        raise ValueError(msg)
-
-
 def check_is_bool(val, name, param):
     if not is_bool(val):
         msg = 'Unable to get/set {0} with a non-bool value {1} for' \

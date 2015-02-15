@@ -180,7 +180,7 @@ for k in xrange(1,11):
         cell = k*nx*ny + cell_id
         shape_mesh.setMaterial(fuel1bin, cell)
 
-#shape_mesh = shape_mesh.uniformRefine(8,8,6)
+#shape_mesh = shape_mesh.uniformRefine(3,3,4)
 shape_mesh.uniquifyMaterials()
 
 # Create and initialize the amplitude mesh
@@ -205,7 +205,7 @@ shape_mesh.setGroupStructure([0, 1])
 
 # Solve diffusion problem
 solver = rk.Solver(shape_mesh, amp_mesh)
-rk.setNumThreads(4)
+rk.setNumThreads(2)
 
 transient = rk.Transient()
 clock = rk.Clock(dt_inner=1.e-3, dt_outer=1.e-1)
@@ -224,4 +224,9 @@ transient.computeInitialShape()
     #rk.plotter.plot_temperature(mesh, name='mesh-temp-{:.4f}s'.format(mesh.get_clock().get_time('CURRENT')))
 
 
-#plotter.plot_materials(shape_mesh)
+plotter.plot_flux(shape_mesh, plane='xy')
+plotter.plot_power(shape_mesh, plane='xy')
+plotter.plot_temperature(shape_mesh, plane='yz')
+plotter.plot_materials(shape_mesh, plane='xz')
+plotter.plot_sigma_a(shape_mesh, plane='yz')
+plotter.plot_precursor_conc(shape_mesh, plane='xz')
