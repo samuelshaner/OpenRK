@@ -10,6 +10,7 @@
 
 #ifdef __cplusplus
 #include "Solver.h"
+#include "UnstructuredShapeMesh.h"
 #endif
 
 
@@ -34,14 +35,16 @@ private:
   double _outer_wt;
   double _initial_power;
   Clock* _clock;
-  StructuredShapeMesh* _shape_mesh;
+  ShapeMesh* _shape_mesh;
   AmpMesh* _amp_mesh;
   Solver* _solver;
   double _k_eff_0;
 
   
 public:
-  Transient(transientMethod inner_method=BACKWARD_EULER, transientMethod outer_method=BACKWARD_EULER, double wt_inner=1.0, double wt_outer=1.0);
+  Transient(transientMethod inner_method=BACKWARD_EULER, 
+            transientMethod outer_method=BACKWARD_EULER, 
+            double wt_inner=1.0, double wt_outer=1.0);
   virtual ~Transient();
 
   /* Getter functions */
@@ -52,7 +55,7 @@ public:
   void setInitialPower(double initial_power);
   void setClock(Clock* clock);
   void setSolver(Solver* solver);
-  void setShapeMesh(StructuredShapeMesh* mesh);
+  void setShapeMesh(ShapeMesh* mesh);
   void setAmpMesh(AmpMesh* mesh);
     
   /* Worker functions */

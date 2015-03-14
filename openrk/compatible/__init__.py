@@ -1,1 +1,1 @@
-from openmoc_compatible import *
+from openmc_compatible import *

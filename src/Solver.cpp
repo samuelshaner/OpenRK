@@ -1,6 +1,6 @@
 #include "Solver.h"
 
-Solver::Solver(StructuredShapeMesh* shape_mesh, AmpMesh* amp_mesh){
+Solver::Solver(AmpMesh* amp_mesh, StructuredShapeMesh* shape_mesh){
 
   /* Initialize variables */
   _AM_shape = NULL;
@@ -18,7 +18,7 @@ Solver::Solver(StructuredShapeMesh* shape_mesh, AmpMesh* amp_mesh){
   _shape_mesh = shape_mesh;
   _amp_mesh = amp_mesh;
 
-  int nc = _shape_mesh->getNumX() * _shape_mesh->getNumY() * _shape_mesh->getNumZ();
+  int nc = _shape_mesh->getNumCells();
   int ng = _shape_mesh->getNumShapeEnergyGroups();
   _AM_shape = new double*[nc];
   _A_shape = new double*[nc];
@@ -32,7 +32,7 @@ Solver::Solver(StructuredShapeMesh* shape_mesh, AmpMesh* amp_mesh){
   }
 
   if (_amp_mesh != NULL){
-    nc = _amp_mesh->getNumX() * _amp_mesh->getNumY() * _amp_mesh->getNumZ();
+    nc = _amp_mesh->getNumCells();
     ng = _amp_mesh->getNumAmpEnergyGroups();
 
     _AM_amp = new double*[nc];
@@ -52,21 +52,21 @@ Solver::Solver(StructuredShapeMesh* shape_mesh, AmpMesh* amp_mesh){
 Solver::~Solver(){
 
   if (_AM_shape != NULL){
-    for (int i=0; i < _shape_mesh->getNumX() * _shape_mesh->getNumY() * _shape_mesh->getNumZ(); i++)
+    for (int i=0; i < _shape_mesh->getNumCells(); i++)
       delete [] _AM_shape[i];
 
     delete [] _AM_shape;
   }    
 
   if (_A_shape != NULL){
-    for (int i=0; i < _shape_mesh->getNumX() * _shape_mesh->getNumY() * _shape_mesh->getNumZ(); i++)
+    for (int i=0; i < _shape_mesh->getNumCells(); i++)
       delete [] _A_shape[i];
 
     delete [] _A_shape;
   }    
 
   if (_M_shape != NULL){
-    for (int i=0; i < _shape_mesh->getNumX() * _shape_mesh->getNumY() * _shape_mesh->getNumZ(); i++)
+    for (int i=0; i < _shape_mesh->getNumCells(); i++)
       delete [] _M_shape[i];
 
     delete [] _M_shape;
@@ -77,21 +77,21 @@ Solver::~Solver(){
   }    
 
   if (_AM_amp != NULL){
-    for (int i=0; i < _amp_mesh->getNumX() * _amp_mesh->getNumY() * _amp_mesh->getNumZ(); i++)
+    for (int i=0; i < _amp_mesh->getNumCells(); i++)
       delete [] _AM_amp[i];
 
     delete [] _AM_amp;
   }    
 
   if (_A_amp != NULL){
-    for (int i=0; i < _amp_mesh->getNumX() * _amp_mesh->getNumY() * _amp_mesh->getNumZ(); i++)
+    for (int i=0; i < _amp_mesh->getNumCells(); i++)
       delete [] _A_amp[i];
 
     delete [] _A_amp;
   }    
 
   if (_M_amp != NULL){
-    for (int i=0; i < _amp_mesh->getNumX() * _amp_mesh->getNumY() * _amp_mesh->getNumZ(); i++)
+    for (int i=0; i < _amp_mesh->getNumCells(); i++)
       delete [] _M_amp[i];
 
     delete [] _M_amp;
@@ -712,5 +712,3 @@ void Solver::makeAMShape(double wt){
     }    
   }
 }
-
-

@@ -494,6 +494,7 @@ class AmpMesh(StructuredMesh):
     def setDifLinearByValue(self, *args, **kwargs): return _openrk.AmpMesh_setDifLinearByValue(self, *args, **kwargs)
     def setDifNonlinearByValue(self, *args, **kwargs): return _openrk.AmpMesh_setDifNonlinearByValue(self, *args, **kwargs)
     def setGroupStructure(self, *args, **kwargs): return _openrk.AmpMesh_setGroupStructure(self, *args, **kwargs)
+    def setCurrents(self, *args, **kwargs): return _openrk.AmpMesh_setCurrents(self, *args, **kwargs)
     def getFluxByValue(self, *args, **kwargs): return _openrk.AmpMesh_getFluxByValue(self, *args, **kwargs)
     def getCurrentByValue(self, *args, **kwargs): return _openrk.AmpMesh_getCurrentByValue(self, *args, **kwargs)
     def getDifLinearByValue(self, *args, **kwargs): return _openrk.AmpMesh_getDifLinearByValue(self, *args, **kwargs)

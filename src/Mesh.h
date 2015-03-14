@@ -25,6 +25,17 @@ enum boundaryType {
 
 
 /**
+ * @enum meshType
+ * @brief The mesh types
+ */
+enum meshType {
+  AMPMESH,
+  STRUCTURED_SHAPE_MESH,
+  UNSTRUCTURED_SHAPE_MESH
+};
+
+
+/**
  * @class Mesh Mesh.h "src/Mesh.h"
  * @brief The Mesh class represents a unique material and its relevant
  *        nuclear data (i.e., multigroup cross-sections) for neutron transport.
@@ -33,27 +44,29 @@ class Mesh {
 
 protected:
 
-  Material** _materials;
   double _x_min;
   double _x_max;
   double _y_min;
   double _y_max;
   double _z_min;
   double _z_max;
-  double* _offset;
-  boundaryType* _boundaries;
-  int _num_shape_energy_groups;
-  int _num_amp_energy_groups;
-  int _num_delayed_groups;
-  Clock* _clock;
-  std::map<int, double*> _flux;
-  std::map<int, double*> _temperature;
-  std::map<int, double*> _power;
+
   double _fuel_volume;
   double _buckling;
   double* _decay_constants;
   double* _delayed_fractions;
   double _k_eff_0;
+  int _num_shape_energy_groups;
+  int _num_amp_energy_groups;
+  int _num_delayed_groups;
+  Clock* _clock;
+
+  std::map<int, double*> _flux;
+  std::map<int, double*> _temperature;
+  std::map<int, double*> _power;
+  Material** _materials;
+  boundaryType* _boundaries;
+  meshType _mesh_type;
   
 public:
   Mesh(double width=1.0, double height=1.0, double depth=1.0);
@@ -74,6 +87,7 @@ public:
   void setKeff0(double k_eff_0);
   void setBoundary(int side, boundaryType boundary);
   void setMaterial(Material* material, int cell);  
+  void setClock(Clock* clock);
 
   void setBuckling(double buckling);
   void setDecayConstants(double* xs, int num_groups);
@@ -86,6 +100,7 @@ public:
   double getHeight();
   double getDepth();
   boundaryType getBoundary(int side);
+  meshType getMeshType();
   int getNumShapeEnergyGroups();
   int getNumAmpEnergyGroups();
   int getNumDelayedGroups();
@@ -100,6 +115,8 @@ public:
   double getYMax();
   double getZMin();
   double getZMax();
+  virtual int getNumCells() = 0;
+  virtual double getCellVolume(int cell) = 0;
   
   double* getFlux(int position);
   double* getPower(int position);
@@ -110,6 +127,11 @@ public:
   Material* getMaterial(int cell);
   
   /* Worker functions */
+  void computeFuelVolume();
+  void uniquifyMaterials();
+  void copyPower(int position_from, int position_to);
+  void copyTemperature(int position_from, int position_to);
+  virtual void initialize();
 };
 
 #endif /* MESH_H_ */

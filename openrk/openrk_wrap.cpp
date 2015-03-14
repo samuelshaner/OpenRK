@@ -14763,6 +14763,65 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_AmpMesh_setCurrents(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  AmpMesh *arg1 = (AmpMesh *) 0 ;
+  double *arg2 = (double *) 0 ;
+  int arg3 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyArrayObject *array2 = NULL ;
+  int is_new_object2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "xs", NULL 
+  };
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:AmpMesh_setCurrents",kwnames,&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_AmpMesh, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "AmpMesh_setCurrents" "', argument " "1"" of type '" "AmpMesh *""'"); 
+  }
+  arg1 = reinterpret_cast< AmpMesh * >(argp1);
+  {
+    npy_intp size[1] = {
+      -1 
+    };
+    array2 = obj_to_array_contiguous_allow_conversion(obj1,
+      NPY_DOUBLE,
+      &is_new_object2);
+    if (!array2 || !require_dimensions(array2, 1) ||
+      !require_size(array2, size, 1)) SWIG_fail;
+    arg2 = (double*) array_data(array2);
+    arg3 = (int) array_size(array2,0);
+  }
+  {
+    try {
+      (arg1)->setCurrents(arg2,arg3);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  {
+    if (is_new_object2 && array2)
+    {
+      Py_DECREF(array2); 
+    }
+  }
+  return resultobj;
+fail:
+  {
+    if (is_new_object2 && array2)
+    {
+      Py_DECREF(array2); 
+    }
+  }
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *_wrap_AmpMesh_getFluxByValue(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
   PyObject *resultobj = 0;
   AmpMesh *arg1 = (AmpMesh *) 0 ;
@@ -16964,6 +17023,7 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"AmpMesh_setDifLinearByValue", (PyCFunction) _wrap_AmpMesh_setDifLinearByValue, METH_VARARGS | METH_KEYWORDS, NULL},
 	 { (char *)"AmpMesh_setDifNonlinearByValue", (PyCFunction) _wrap_AmpMesh_setDifNonlinearByValue, METH_VARARGS | METH_KEYWORDS, NULL},
 	 { (char *)"AmpMesh_setGroupStructure", (PyCFunction) _wrap_AmpMesh_setGroupStructure, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"AmpMesh_setCurrents", (PyCFunction) _wrap_AmpMesh_setCurrents, METH_VARARGS | METH_KEYWORDS, NULL},
 	 { (char *)"AmpMesh_getFluxByValue", (PyCFunction) _wrap_AmpMesh_getFluxByValue, METH_VARARGS | METH_KEYWORDS, NULL},
 	 { (char *)"AmpMesh_getCurrentByValue", (PyCFunction) _wrap_AmpMesh_getCurrentByValue, METH_VARARGS | METH_KEYWORDS, NULL},
 	 { (char *)"AmpMesh_getDifLinearByValue", (PyCFunction) _wrap_AmpMesh_getDifLinearByValue, METH_VARARGS | METH_KEYWORDS, NULL},

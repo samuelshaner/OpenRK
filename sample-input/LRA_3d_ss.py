@@ -218,8 +218,8 @@ transient.setSolver(solver)
 transient.setInitialPower(1.e-6)
 transient.computeInitialShape()
 
-#for i in xrange(300):
-#    transient.takeOuterStep()
+for i in xrange(300):
+    transient.takeOuterStep()
     #rk.plotter.plot_power(mesh, name='mesh-power-{:.4f}s'.format(mesh.get_clock().get_time('CURRENT')))
     #rk.plotter.plot_temperature(mesh, name='mesh-temp-{:.4f}s'.format(mesh.get_clock().get_time('CURRENT')))
 

@@ -84,7 +84,7 @@ void Transient::setSolver(Solver* solver){
 }
 
 
-void Transient::setShapeMesh(StructuredShapeMesh* mesh){
+void Transient::setShapeMesh(ShapeMesh* mesh){
   _shape_mesh = mesh;
 }
 
@@ -99,6 +99,10 @@ void Transient::setClock(Clock* clock){
 }
 
 void Transient::computeInitialShape(){
+
+  if (_shape_mesh->getMeshType() != STRUCTURED_SHAPE_MESH)
+    log_printf(ERROR, "Unable to compute the initial shape since the shape"
+               " mesh is not a StructuredShapeMesh");
 
   _amp_mesh->setClock(_clock);
   _shape_mesh->setClock(_clock);
@@ -172,33 +176,41 @@ void Transient::takeInnerStep(){
 
 void Transient::takeOuterStep(){
 
+  if (_shape_mesh->getMeshType() != STRUCTURED_SHAPE_MESH)
+    log_printf(ERROR, "Unable to compute the take outer step since the shape"
+               " mesh is not a StructuredShapeMesh");
+
+  StructuredShapeMesh* shape_mesh = static_cast<StructuredShapeMesh*>(_shape_mesh);
+
   _clock->takeOuterStep();
 
   broadcastToActive(FORWARD_OUT);  
-  int ng = _shape_mesh->getNumShapeEnergyGroups();
-  int nx = _shape_mesh->getNumX();
-  int ny = _shape_mesh->getNumY();
-  int nz = _shape_mesh->getNumZ();
+  int ng = shape_mesh->getNumShapeEnergyGroups();
+  int nx = shape_mesh->getNumX();
+  int ny = shape_mesh->getNumY();
+  int nz = shape_mesh->getNumZ();
   double* flux_temp = new double[nx*ny*nz*ng];
   double tol = 1.e-4;
 
   while (_clock->getTime(CURRENT) < _clock->getTime(FORWARD_OUT) - 1.e-6)
     takeInnerStep();
   
-  _shape_mesh->reconstructFlux(CURRENT, FORWARD_OUT, CURRENT);
+  shape_mesh->reconstructFlux(CURRENT, FORWARD_OUT, CURRENT);
   broadcastToOne(CURRENT, FORWARD_OUT);
   broadcastToOne(PREVIOUS_OUT, CURRENT);
   broadcastToOne(PREVIOUS_OUT, PREVIOUS_IN);
     
   while (true){
 
-    _shape_mesh->copyFlux(FORWARD_OUT, FORWARD_OUT_OLD);
+    shape_mesh->copyFlux(FORWARD_OUT, FORWARD_OUT_OLD);
 
-    _shape_mesh->computeDifCoefs(FORWARD_OUT);
+    shape_mesh->computeDifCoefs(FORWARD_OUT);
 
     _solver->makeAMShape(_outer_wt);
-    linearSolve2d(_solver->getAMShape(), nx*ny*nz, ng*(ng+6), _shape_mesh->getFlux(FORWARD_OUT), nx*ny*ng,
-                  _solver->getBShape(), nx*ny*nz*ng, flux_temp, nx*ny*nz*ng, nx, ny, nz, ng, 1.e-8);
+    linearSolve2d(_solver->getAMShape(), nx*ny*nz, ng*(ng+6), 
+                  _shape_mesh->getFlux(FORWARD_OUT), nx*ny*ng,
+                  _solver->getBShape(), nx*ny*nz*ng, flux_temp, 
+                  nx*ny*nz*ng, nx, ny, nz, ng, 1.e-8);
 
     _amp_mesh->computeCurrent(FORWARD_OUT);
     _amp_mesh->condenseMaterials(FORWARD_OUT, true);
@@ -209,10 +221,10 @@ void Transient::takeOuterStep(){
     while (_clock->getTime(CURRENT) < _clock->getTime(FORWARD_OUT) - 1.e-6)
       takeInnerStep();
 
-    _shape_mesh->reconstructFlux(CURRENT, FORWARD_OUT, CURRENT);
+    shape_mesh->reconstructFlux(CURRENT, FORWARD_OUT, CURRENT);
     broadcastToOne(CURRENT, FORWARD_OUT);
 
-    double residual = _shape_mesh->computePowerL2Norm(FORWARD_OUT, FORWARD_OUT_OLD);
+    double residual = shape_mesh->computePowerL2Norm(FORWARD_OUT, FORWARD_OUT_OLD);
     
     log_printf(NORMAL, "OUTER RESIDUAL = %.6e", residual);
 
@@ -230,33 +242,42 @@ void Transient::takeOuterStep(){
 
 void Transient::takeOuterStepOnly(){
 
+  if (_shape_mesh->getMeshType() != STRUCTURED_SHAPE_MESH)
+    log_printf(ERROR, "Unable to compute the take outer step only since the shape"
+               " mesh is not a StructuredShapeMesh");
+
+  StructuredShapeMesh* shape_mesh = static_cast<StructuredShapeMesh*>(_shape_mesh);
+
   _clock->takeOuterStep();
 
   broadcastToActive(FORWARD_OUT);  
-  int ng = _shape_mesh->getNumShapeEnergyGroups();
-  int nx = _shape_mesh->getNumX();
-  int ny = _shape_mesh->getNumY();
-  int nz = _shape_mesh->getNumZ();
+  int ng = shape_mesh->getNumShapeEnergyGroups();
+  int nx = shape_mesh->getNumX();
+  int ny = shape_mesh->getNumY();
+  int nz = shape_mesh->getNumZ();
   double* flux_temp = new double[nx*ny*nz*ng];
   double tol = 1.e-8;
     
   while (true){
 
-    _shape_mesh->integrateTemperature(PREVIOUS_OUT, FORWARD_OUT);
+    shape_mesh->integrateTemperature(PREVIOUS_OUT, FORWARD_OUT);
 
-    _shape_mesh->integratePrecursorConc(PREVIOUS_OUT, FORWARD_OUT);
+    shape_mesh->integratePrecursorConc(PREVIOUS_OUT, FORWARD_OUT);
 
-    _shape_mesh->copyFlux(FORWARD_OUT, FORWARD_OUT_OLD);
+    shape_mesh->copyFlux(FORWARD_OUT, FORWARD_OUT_OLD);
     
-    _shape_mesh->computeDifCoefs(FORWARD_OUT);
+    shape_mesh->computeDifCoefs(FORWARD_OUT);
 
     _solver->makeAMShape(_outer_wt);
-    linearSolve2d(_solver->getAMShape(), nx*ny*nz, ng*(ng+6), _shape_mesh->getFlux(FORWARD_OUT), nx*ny*ng, 
-                  _solver->getBShape(), nx*ny*nz*ng, flux_temp, nx*ny*nz*ng, nx, ny, nz, ng, 1.e-8);
+    linearSolve2d(_solver->getAMShape(), nx*ny*nz, ng*(ng+6), 
+                  _shape_mesh->getFlux(FORWARD_OUT), nx*ny*ng, 
+                  _solver->getBShape(), nx*ny*nz*ng, flux_temp, 
+                  nx*ny*nz*ng, nx, ny, nz, ng, 1.e-8);
 
-    double residual = _shape_mesh->computePowerL2Norm(FORWARD_OUT, FORWARD_OUT_OLD);
-    double power = _shape_mesh->computeAveragePower(FORWARD_OUT);
-    log_printf(NORMAL, "TIME = %1.4f, POWER = %.6e, RESIDUAL = %.6e", _clock->getTime(FORWARD_OUT), power, residual);
+    double residual = shape_mesh->computePowerL2Norm(FORWARD_OUT, FORWARD_OUT_OLD);
+    double power = shape_mesh->computeAveragePower(FORWARD_OUT);
+    log_printf(NORMAL, "TIME = %1.4f, POWER = %.6e, RESIDUAL = %.6e", 
+               _clock->getTime(FORWARD_OUT), power, residual);
 
     log_printf(NORMAL, "OUTER RESIDUAL = %.6e", residual);
 
@@ -281,14 +302,15 @@ void Transient::broadcastToActive(clockPosition position){
     _amp_mesh->copyDifNonlinear(position, c);
 
     _shape_mesh->copyFlux(position, c);
-    _shape_mesh->copyCurrent(position, c);
     _shape_mesh->copyTemperature(position, c);
-    _shape_mesh->copyDifLinear(position, c);
 
-    for (int i=0; i < _amp_mesh->getNumX() * _amp_mesh->getNumY() * _amp_mesh->getNumZ(); i++)
+    if (_shape_mesh->getMeshType() == STRUCTURED_SHAPE_MESH)
+      static_cast<StructuredShapeMesh*>(_shape_mesh)->copyDifLinear(position, c);
+
+    for (int i=0; i < _amp_mesh->getNumCells(); i++)
       _amp_mesh->getMaterial(i)->copy(position, c);
 
-    for (int i=0; i < _shape_mesh->getNumX() * _shape_mesh->getNumY() * _shape_mesh->getNumZ(); i++)
+    for (int i=0; i < _shape_mesh->getNumCells(); i++)
       _shape_mesh->getMaterial(i)->copy(position, c);
   }  
 }
@@ -305,14 +327,15 @@ void Transient::broadcastToAll(clockPosition position){
     _amp_mesh->copyDifNonlinear(position, c);
 
     _shape_mesh->copyFlux(position, c);
-    _shape_mesh->copyCurrent(position, c);
     _shape_mesh->copyTemperature(position, c);
-    _shape_mesh->copyDifLinear(position, c);
 
-    for (int i=0; i < _amp_mesh->getNumX() * _amp_mesh->getNumY() * _amp_mesh->getNumZ(); i++)
+    if (_shape_mesh->getMeshType() == STRUCTURED_SHAPE_MESH)
+      static_cast<StructuredShapeMesh*>(_shape_mesh)->copyDifLinear(position, c);
+
+    for (int i=0; i < _amp_mesh->getNumCells(); i++)
       _amp_mesh->getMaterial(i)->copy(position, c);
 
-    for (int i=0; i < _shape_mesh->getNumX() * _shape_mesh->getNumY() * _shape_mesh->getNumZ(); i++)
+    for (int i=0; i < _shape_mesh->getNumCells(); i++)
       _shape_mesh->getMaterial(i)->copy(position, c);
   }  
 }
@@ -327,13 +350,14 @@ void Transient::broadcastToOne(clockPosition position_from, clockPosition positi
   _amp_mesh->copyDifNonlinear(position_from, position_to);
   
   _shape_mesh->copyFlux(position_from, position_to);
-  _shape_mesh->copyCurrent(position_from, position_to);
   _shape_mesh->copyTemperature(position_from, position_to);
-  _shape_mesh->copyDifLinear(position_from, position_to);
+
+  if (_shape_mesh->getMeshType() == STRUCTURED_SHAPE_MESH)
+    static_cast<StructuredShapeMesh*>(_shape_mesh)->copyDifLinear(position_from, position_to);
   
-  for (int i=0; i < _amp_mesh->getNumX() * _amp_mesh->getNumY() * _amp_mesh->getNumZ(); i++)
+  for (int i=0; i < _amp_mesh->getNumCells(); i++)
     _amp_mesh->getMaterial(i)->copy(position_from, position_to);
   
-  for (int i=0; i < _shape_mesh->getNumX() * _shape_mesh->getNumY() * _shape_mesh->getNumZ(); i++)
+  for (int i=0; i < _shape_mesh->getNumCells(); i++)
     _shape_mesh->getMaterial(i)->copy(position_from, position_to); 
 }
