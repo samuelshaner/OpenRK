@@ -479,3 +479,26 @@ double StructuredShapeMesh::computePowerL2Norm(int position_1, int position_2){
 int StructuredShapeMesh::getAmpGroup(int shape_group){
   return _group_indices[shape_group];
 }
+
+
+void StructuredShapeMesh::uniquifyMaterials(){
+
+  Material* material;
+  
+  for (int i=0; i < _num_x*_num_y*_num_z; i++){
+    material = _materials[i]->clone();
+    _materials[i] = material;
+  }
+}
+
+
+double StructuredShapeMesh::getMaxTemperature(int position){
+
+  double temp_max = _temperature[position][0];
+  for (int i=0; i < _num_x*_num_y*_num_z; i++){
+    if (_temperature[position][i] > temp_max)
+      temp_max = _temperature[position][i];
+  }
+
+  return temp_max;
+}

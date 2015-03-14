@@ -3,9 +3,9 @@ import openrk.plotter as plotter
 from time import sleep
 
 # Specify number of refinements
-num_refines_x = 3
-num_refines_y = 3
-num_refines_z = 4
+num_refines_x = 1
+num_refines_y = 1
+num_refines_z = 1
 
 shape_mesh = rk.StructuredShapeMesh(width=165.0, height=165.0, depth=360.0, num_x=11*num_refines_x, num_y=11*num_refines_y, num_z=12*num_refines_z)
 shape_mesh.setBoundary(2, 1)

@@ -13,17 +13,6 @@
 #endif
 
 
-/**
- * @enum transientMethod
- * @brief The supported transientMethods
- */
-enum transientMethod {
-  FORWARD_EULER,
-  BACKWARD_EULER,
-  CRANK_NICOLSON,
-  CUSTOM
-};
-
 class Transient {
 
 private:

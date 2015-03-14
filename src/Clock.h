@@ -21,21 +21,6 @@
 #endif
 
 
-/**
- * @enum clockPosition
- * @brief The positions of the clock
- */
-enum clockPosition {
-  START,
-  PREVIOUS_OUT,
-  PREVIOUS_IN,
-  CURRENT,
-  FORWARD_IN_OLD,
-  FORWARD_OUT,
-  FORWARD_OUT_OLD,
-  END
-};
-
 class Clock {
 
 private:

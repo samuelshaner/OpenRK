@@ -5,7 +5,7 @@ import openrk.solver
 import openrk.plotter
 import numpy as np
 
-mesh = rk.mesh.StructuredMesh(165.0, 165.0, 165, 165)
+mesh = rk.StructuredMesh(165.0, 165.0, 165, 165)
 mesh.setBoundary(2, 1)
 mesh.setBoundary(3, 1)
 

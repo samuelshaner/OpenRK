@@ -49,7 +49,7 @@ public:
   virtual void setDifCoef(double* xs, int num_time_steps, int num_groups);
   virtual void setVelocity(double* xs, int num_time_steps, int num_groups);
   void setDopplerCoefficients(double* xs, int num_groups);
-  
+
   virtual void setSigmaTByGroup(double xs, int group, int position=CURRENT);
   virtual void setSigmaAByGroup(double xs, int group, int position=CURRENT);
   virtual void setSigmaFByGroup(double xs, int group, int position=CURRENT);
@@ -58,7 +58,7 @@ public:
   virtual void setChiByGroup(double xs, int group, int position=CURRENT);
   virtual void setDifCoefByGroup(double xs, int group, int position=CURRENT);
   virtual void setVelocityByGroup(double xs, int group, int position=CURRENT);
-  
+
   /* Getter functions */
   virtual double getSigmaTByGroup(int group, int position=CURRENT, double temp=0.0);
   virtual double getSigmaAByGroup(int group, int position=CURRENT, double temp=0.0);

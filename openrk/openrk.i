@@ -5,9 +5,9 @@
   #define SWIG_FILE_WITH_INIT
   #include "../src/linalg.h"
   #include "../src/log.h"
+  #include "../src/Clock.h"
   #include "../src/Material.h"
   #include "../src/FunctionalMaterial.h"
-  #include "../src/Clock.h"
   #include "../src/Mesh.h"
   #include "../src/StructuredMesh.h"
   #include "../src/StructuredShapeMesh.h"
@@ -35,6 +35,10 @@
   }
 
 %}
+
+%warnfilter(506) log_printf(logLevel level, const char *format, ...);
+%warnfilter(511) swig::SwigPyIterator;
+
 
 %exception {
   try {
@@ -69,9 +73,9 @@
 %include <exception.i>
 %include ../src/linalg.h
 %include ../src/log.h
+%include ../src/Clock.h
 %include ../src/Material.h
 %include ../src/FunctionalMaterial.h
-%include ../src/Clock.h
 %include ../src/Mesh.h
 %include ../src/StructuredMesh.h
 %include ../src/StructuredShapeMesh.h

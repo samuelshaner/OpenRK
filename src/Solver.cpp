@@ -1,4 +1,4 @@
-#include "Solver.h"
+include "Solver.h"
 
 Solver::Solver(StructuredShapeMesh* shape_mesh, AmpMesh* amp_mesh){
 
@@ -296,9 +296,11 @@ void Solver::makeAMAmp(double wt){
   double volume = width * height * depth;
   double* flux_prev = _amp_mesh->getFlux(PREVIOUS_IN);
   double dt = _amp_mesh->getClock()->getDtInner();
-  double* temps = _amp_mesh->getTemperature(CURRENT);
-  double* temps_prev = _amp_mesh->getTemperature(PREVIOUS_IN);
-
+  double* temps = _shape_mesh->getTemperature(CURRENT);
+  double* temps_prev = _shape_mesh->getTemperature(PREVIOUS_IN);
+  std::vector<int>::iterator iter;
+  std::vector<int> shape_map = _amp_mesh->getShapeMap();
+  
   #pragma omp parallel for
   for (int i = 0; i < nx*ny*nz; i++){
     for (int g=0; g < ng*ng; g++)
@@ -321,46 +323,50 @@ void Solver::makeAMAmp(double wt){
     #pragma omp parallel for
     for (int y=0; y < ny; y++){
       for (int x=0; x < nx; x++){
-        int cell = z*nx*ny + y*nx+x;
-        double temp = temps[cell];
-        double temp_prev = temps_prev[cell];
-        Material* material = _amp_mesh->getMaterial(cell);
-        
-        for (int e=0; e < ng; e++){
-          
-          /* Time absorption term on the diagonal */
-          _AM_amp[cell][e * (ng+6) + e + 3] += 1.0 / dt / material->getVelocityByGroup(e, CURRENT, temp) * volume;
-          _b_amp[cell*ng + e] += flux_prev[cell*ng + e] / dt /
-            material->getVelocityByGroup(e, PREVIOUS_IN, temp_prev) * volume;
-          
-          /* Delayed neutron precursors */
-          for (int d=0; d < _amp_mesh->getNumDelayedGroups(); d++){
-            _b_amp[cell*ng + e] += wt * material->getChiByGroup(e, CURRENT, temp)
-              * _amp_mesh->getDecayConstantByGroup(d) * material->getPrecursorConcByGroup(d, CURRENT) * volume;
-            _b_amp[cell*ng + e] += (1-wt) * material->getChiByGroup(e, PREVIOUS_IN, temp_prev)
-              * _amp_mesh->getDecayConstantByGroup(d) * material->getPrecursorConcByGroup(d, PREVIOUS_IN) * volume;
-          }
-          
-          /* Absorption term on the diagonal */
-          _AM_amp[cell][e * (ng+6) + e + 3] += wt * material->getSigmaAByGroup(e, CURRENT, temp) * volume;
-          _b_amp[cell*ng + e] -= (1-wt) * material->getSigmaAByGroup(e, PREVIOUS_IN, temp_prev)
-            * flux_prev[cell*ng + e] * volume;
-          
-          /* Buckling term on the diagonal */
-          _AM_amp[cell][e * (ng+6) + e + 3] += wt * material->getDifCoefByGroup(e, CURRENT, temp) * volume *
-            _amp_mesh->getBuckling();
-          _b_amp[cell*ng + e] -= (1-wt) * material->getDifCoefByGroup(e, PREVIOUS_IN, temp_prev)
-            * _amp_mesh->getBuckling() * flux_prev[cell*ng + e] * volume;
-          
-          /* Outscattering term on diagonal */
-          for (int g=0; g < ng; g++){
-            if (e != g){
-              _AM_amp[cell][e * (ng+6) + e + 3] += wt * material->getSigmaSByGroup(e, g, CURRENT, temp) * volume;
-              _b_amp[cell*ng+e] -= (1-wt) * material->getSigmaSByGroup(e, g, PREVIOUS_IN, temp_prev)
+        int amp_cell = z*nx*ny + y*nx+x;
+        for (int cg=0; cg < ng; cg++){
+          for (int sg=group_indices[cg]; sg < group_indices[cg+1]; sg++){
+            for (iter = shape_map[i].begin(); iter != shape_map[i].end(); ++iter){
+
+              int shape_cell = *iter;
+              
+              double temp = temps[shape_cell];
+              double temp_prev = temps_prev[shape_cell];
+              Material* material = _shape_mesh->getMaterial(cell);
+              
+              /* Time absorption term on the diagonal */
+              _AM_amp[amp_cell][cg * (ng+6) + cg + 3] += 1.0 / dt / material->getVelocityByGroup(sg, CURRENT, temp) * volume;
+              _b_amp[cell*ng + e] += flux_prev[cell*ng + e] / dt /
+                material->getVelocityByGroup(e, PREVIOUS_IN, temp_prev) * volume;
+              
+              /* Delayed neutron precursors */
+              for (int d=0; d < _amp_mesh->getNumDelayedGroups(); d++){
+                _b_amp[cell*ng + e] += wt * material->getChiByGroup(e, CURRENT, temp)
+                  * _amp_mesh->getDecayConstantByGroup(d) * material->getPrecursorConcByGroup(d, CURRENT) * volume;
+                _b_amp[cell*ng + e] += (1-wt) * material->getChiByGroup(e, PREVIOUS_IN, temp_prev)
+                  * _amp_mesh->getDecayConstantByGroup(d) * material->getPrecursorConcByGroup(d, PREVIOUS_IN) * volume;
+              }
+              
+              /* Absorption term on the diagonal */
+              _AM_amp[cell][e * (ng+6) + e + 3] += wt * material->getSigmaAByGroup(e, CURRENT, temp) * volume;
+              _b_amp[cell*ng + e] -= (1-wt) * material->getSigmaAByGroup(e, PREVIOUS_IN, temp_prev)
                 * flux_prev[cell*ng + e] * volume;
+              
+            /* Buckling term on the diagonal */
+            _AM_amp[cell][e * (ng+6) + e + 3] += wt * material->getDifCoefByGroup(e, CURRENT, temp) * volume *
+              _amp_mesh->getBuckling();
+            _b_amp[cell*ng + e] -= (1-wt) * material->getDifCoefByGroup(e, PREVIOUS_IN, temp_prev)
+              * _amp_mesh->getBuckling() * flux_prev[cell*ng + e] * volume;
+            
+            /* Outscattering term on diagonal */
+            for (int g=0; g < ng; g++){
+              if (e != g){
+                _AM_amp[cell][e * (ng+6) + e + 3] += wt * material->getSigmaSByGroup(e, g, CURRENT, temp) * volume;
+                _b_amp[cell*ng+e] -= (1-wt) * material->getSigmaSByGroup(e, g, PREVIOUS_IN, temp_prev)
+                  * flux_prev[cell*ng + e] * volume;
+              }
             }
-          }
-          
+            
           /* Fission terms */
           for (int g=0; g < ng; g++){
             _AM_amp[cell][e * (ng+6) + g + 3] -= wt * (1-beta) * material->getChiByGroup(e, CURRENT, temp) *

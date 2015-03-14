@@ -5,29 +5,22 @@
  * @brief Constructor sets the ID and unique ID for the Material.
  * @param id the user-defined ID for the material
  */
-Mesh::Mesh(double width, double height, double depth) {
+Mesh::Mesh(double width_x, double width_y, double width_z) {
 
   _materials = NULL;
-  _offset = NULL;
   _clock = NULL;
   _decay_constants = NULL;
   _delayed_fractions = NULL;
   _k_eff_0 = 0.0;
   
   /* Set mesh properties */
-  setXMin(-width/2.0);
-  setXMax(width/2.0);
-  setYMin(-height/2.0);
-  setYMax(height/2.0);
-  setZMin(-depth/2.0);
-  setZMax(depth/2.0);
-
-  for (int c=0; c < 8; c++){
-    _flux[c] = NULL;
-    _power[c] = NULL;
-    _temperature[c] = NULL;
-  }
-
+  setXMin(-width_x/2.0);
+  setXMax(width_x/2.0);
+  setYMin(-width_y/2.0);
+  setYMax(width_y/2.0);
+  setZMin(-width_z/2.0);
+  setZMax(width_z/2.0);
+  
   _boundaries = new boundaryType[6];
   for (int i=0; i < 6; i++)
     _boundaries[i] = REFLECTIVE;
@@ -41,24 +34,18 @@ Mesh::Mesh(double width, double height, double depth) {
  */
 Mesh::~Mesh() {
 
-  for (int c=0; c < 8; c++){
-    if (_flux[c] != NULL)
-      delete [] _flux[c];
+  std::map<int, std::map<int, double*> >::iterator iter;
+  
+  for (iter=_field_variables.begin(); iter != _field_variables.end(); ++iter){
+    for (int c=0; c < NUM_CLOCK_POSITIONS; c++){
+      if (iter->second[c] != NULL)
+        delete [] iter->second[c];
+    }
 
-    if (_power[c] != NULL)
-      delete [] _power[c];
-
-    if (_temperature[c] != NULL)
-      delete [] _temperature[c];
-
+    iter->second.clear();
   }
-
-  _flux.clear();
-  _power.clear();
-  _temperature.clear();
-
-  if (_materials != NULL)
-    delete [] _materials;
+  
+  _field_variables.clear();
 }
 
 
@@ -136,22 +123,22 @@ double Mesh::getZMax(){
 }
 
 
-double Mesh::getWidth(){
+double Mesh::getWidthX(){
   return _x_max - _x_min;
 }
 
 
-double Mesh::getHeight(){
+double Mesh::getWidthY(){
   return _y_max - _y_min;
 }
 
 
-double Mesh::getDepth(){
+double Mesh::getWidthZ(){
   return _z_max - _z_min;
 }
 
 
-void Mesh::setBoundary(int side, boundaryType boundary){
+void Mesh::setBoundary(surfaceLocation side, boundaryType boundary){
 
   if (side < 0 || side > 5)
     log_printf(ERROR, "Unable to set boundary for side %d as there are only"
@@ -161,7 +148,7 @@ void Mesh::setBoundary(int side, boundaryType boundary){
 }
 
 
-boundaryType Mesh::getBoundary(int side){
+boundaryType Mesh::getBoundary(surfaceLocation side){
 
   if (side < 0 || side > 5)
     log_printf(ERROR, "Unable to get boundary for side %d as there are only"
@@ -171,13 +158,8 @@ boundaryType Mesh::getBoundary(int side){
 }
 
 
-void Mesh::setNumShapeEnergyGroups(int num_groups){
-  _num_shape_energy_groups = num_groups;
-}
-
-
-void Mesh::setNumAmpEnergyGroups(int num_groups){
-  _num_amp_energy_groups = num_groups;
+void Mesh::setNumEnergyGroups(int num_groups){
+  _num_energy_groups = num_groups;
 }
 
 
@@ -199,13 +181,8 @@ void Mesh::setNumDelayedGroups(int num_groups){
 }
 
 
-int Mesh::getNumShapeEnergyGroups(){
-  return _num_shape_energy_groups;
-}
-
-
-int Mesh::getNumAmpEnergyGroups(){
-  return _num_amp_energy_groups;
+int Mesh::getNumEnergyGroups(){
+  return _num_energy_groups;
 }
 
 
@@ -214,33 +191,27 @@ int Mesh::getNumDelayedGroups(){
 }
 
 
-double* Mesh::getFlux(int position){
-  return _flux[position];
+double* Mesh::getFieldVariable(fieldVariable name, int position){
+  return _field_variables[name][position];
 }
 
 
-double* Mesh::getPower(int position){
-  return _power[position];
+double Mesh::getFieldVariableByValue(fieldVariable name, int position, int cell, int group){
+  int num_groups = getNumFieldVariableGroups(name);
+  return _power[name][position][cell*num_groups + group];
+}
+
+double Mesh::copyFieldVariable(fieldVariable name, int position_from, int position_to){
+  int num_groups = getNumFieldVariableGroups(name);
+  std::copy(_field_variables[name][position_from], _field_variables[name][position_from]\
+            + getNumCells() * num_groups, _field_variables[name][position_to]);
 }
 
 
-double* Mesh::getTemperature(int position){
-  return _temperature[position];
-}
-
-
-double Mesh::getPowerByValue(int cell, int position){
-  return _power[position][cell];
-}
-
-
-double Mesh::getTemperatureByValue(int cell, int position){
-  return _temperature[position][cell];
-}
-
-
-void Mesh::setMaterial(Material* material, int cell){
-  _materials[cell] = material;
+void Mesh::setFieldVariableByValue(fieldVariable name, double value, int cell, \
+                                   int position, int group){
+  int num_groups = getNumFieldVariableGroups(name);
+  _field_variables[name][position][cell*num_groups + group] = value;
 }
 
 
@@ -288,6 +259,6 @@ double Mesh::getDelayedFractionByGroup(int group){
 }
 
 
-Material* Mesh::getMaterial(int cell){
-  return _materials[cell];
+void Mesh::setClock(Clock* clock){
+  _clock = clock;
 }
