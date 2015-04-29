@@ -65,7 +65,8 @@ public:
   void scaleFlux(int position, double scale_val);
   double computeAveragePower(int position);
   double computePowerL2Norm(int position_1, int position_2);
-  
+  int findAmpCell(int shape_cell);
+  void saveShape();  
 };
 
 #endif /* STRUCTUREDSHAPEMESH_H_ */

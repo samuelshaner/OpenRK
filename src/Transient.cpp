@@ -103,7 +103,7 @@ void Transient::computeInitialShape(){
   _amp_mesh->setClock(_clock);
   _shape_mesh->setClock(_clock);
 
-  _solver->computeInitialShape(1.e-10);
+  _solver->computeInitialShape(1.e-8);
 
   double initial_power = _shape_mesh->computeAveragePower(CURRENT);
   _shape_mesh->scaleFlux(CURRENT, _initial_power / initial_power);
@@ -113,8 +113,12 @@ void Transient::computeInitialShape(){
   _amp_mesh->condenseMaterials(CURRENT, true);
   _amp_mesh->computeCurrent(CURRENT);
   _amp_mesh->computeDifCoefs(CURRENT);
-  broadcastToAll(CURRENT);  
+  broadcastToAll(CURRENT);
+
+  _shape_mesh->saveShape();
 }
+
+
 
 
 void Transient::takeInnerStep(){
@@ -122,13 +126,9 @@ void Transient::takeInnerStep(){
   _clock->takeInnerStep();
 
   _amp_mesh->interpolateDifNonlinear(PREVIOUS_OUT, FORWARD_OUT, CURRENT);
-
   _shape_mesh->synthesizeFlux(CURRENT);
-
   _shape_mesh->integrateTemperature(PREVIOUS_IN, CURRENT);
-
   _shape_mesh->integratePrecursorConc(PREVIOUS_IN, CURRENT);
-
   _amp_mesh->condenseMaterials(CURRENT);
   
   int ng = _amp_mesh->getNumAmpEnergyGroups();
@@ -140,19 +140,15 @@ void Transient::takeInnerStep(){
 
   while (true){
 
-    _amp_mesh->copyFlux(CURRENT, FORWARD_IN_OLD);
-
+    broadcastToOne(CURRENT, FORWARD_IN_OLD);
 
     _solver->makeAMAmp(_inner_wt);
     linearSolve2d(_solver->getAMAmp(), nx*ny*nz, ng*(ng+6), _amp_mesh->getFlux(CURRENT), nx*ny*nz*ng,
                   _solver->getBAmp(), nx*ny*nz*ng, flux_temp, nx*ny*nz*ng, nx, ny, nz, ng, 1.e-8);
 
     _shape_mesh->synthesizeFlux(CURRENT);
-
-    _shape_mesh->integrateTemperature(PREVIOUS_IN, CURRENT);
-    
+    _shape_mesh->integrateTemperature(PREVIOUS_IN, CURRENT);    
     _shape_mesh->integratePrecursorConc(PREVIOUS_IN, CURRENT);
-
     _amp_mesh->condenseMaterials(CURRENT);
     
     double residual = _amp_mesh->computePowerL2Norm(CURRENT, FORWARD_IN_OLD);
@@ -170,7 +166,8 @@ void Transient::takeInnerStep(){
 }
 
 
-void Transient::takeOuterStep(){
+
+void Transient::takeOuterStep(double tol){
 
   _clock->takeOuterStep();
 
@@ -180,7 +177,6 @@ void Transient::takeOuterStep(){
   int ny = _shape_mesh->getNumY();
   int nz = _shape_mesh->getNumZ();
   double* flux_temp = new double[nx*ny*nz*ng];
-  double tol = 1.e-4;
 
   while (_clock->getTime(CURRENT) < _clock->getTime(FORWARD_OUT) - 1.e-6)
     takeInnerStep();
@@ -196,6 +192,7 @@ void Transient::takeOuterStep(){
 
     _shape_mesh->computeDifCoefs(FORWARD_OUT);
 
+    _solver->computeAmpFrequency();
     _solver->makeAMShape(_outer_wt);
     linearSolve2d(_solver->getAMShape(), nx*ny*nz, ng*(ng+6), _shape_mesh->getFlux(FORWARD_OUT), nx*ny*ng,
                   _solver->getBShape(), nx*ny*nz*ng, flux_temp, nx*ny*nz*ng, nx, ny, nz, ng, 1.e-8);
@@ -227,8 +224,8 @@ void Transient::takeOuterStep(){
   delete [] flux_temp;  
 }
 
-
-void Transient::takeOuterStepOnly(){
+/*
+void Transient::takeOuterStep(double tol){
 
   _clock->takeOuterStep();
 
@@ -238,7 +235,58 @@ void Transient::takeOuterStepOnly(){
   int ny = _shape_mesh->getNumY();
   int nz = _shape_mesh->getNumZ();
   double* flux_temp = new double[nx*ny*nz*ng];
-  double tol = 1.e-8;
+    
+  while (true){
+
+    _shape_mesh->copyFlux(FORWARD_OUT, FORWARD_OUT_OLD);
+
+    while (_clock->getTime(CURRENT) < _clock->getTime(FORWARD_OUT) - 1.e-6)
+      takeInnerStep();
+
+    _shape_mesh->reconstructFlux(CURRENT, FORWARD_OUT, CURRENT);
+    broadcastToOne(CURRENT, FORWARD_OUT);
+    broadcastToOne(PREVIOUS_OUT, CURRENT);
+    broadcastToOne(PREVIOUS_OUT, PREVIOUS_IN);
+
+    _shape_mesh->computeDifCoefs(FORWARD_OUT);
+
+    _solver->computeAmpFrequency();
+    _solver->makeAMShape(_outer_wt);
+    linearSolve2d(_solver->getAMShape(), nx*ny*nz, ng*(ng+6), _shape_mesh->getFlux(FORWARD_OUT), nx*ny*ng,
+                  _solver->getBShape(), nx*ny*nz*ng, flux_temp, nx*ny*nz*ng, nx, ny, nz, ng, 1.e-8);
+
+    _amp_mesh->computeCurrent(FORWARD_OUT);
+    _amp_mesh->condenseMaterials(FORWARD_OUT, true);
+    _amp_mesh->computeDifCoefs(FORWARD_OUT);
+    //_amp_mesh->copyFlux(CURRENT, FORWARD_OUT);
+
+    double residual = _shape_mesh->computePowerL2Norm(FORWARD_OUT, FORWARD_OUT_OLD);
+    
+    log_printf(NORMAL, "OUTER RESIDUAL = %.6e", residual);
+
+    if (residual < tol)
+      break;
+    else{
+      _clock->resetToPreviousOuterStep();
+      broadcastToOne(PREVIOUS_OUT, CURRENT);
+      broadcastToOne(PREVIOUS_OUT, PREVIOUS_IN);
+    }
+  }
+
+  delete [] flux_temp;  
+}
+*/
+
+void Transient::takeOuterStepOnly(double tol){
+
+  _clock->takeOuterStep();
+
+  broadcastToActive(FORWARD_OUT);  
+  int ng = _shape_mesh->getNumShapeEnergyGroups();
+  int nx = _shape_mesh->getNumX();
+  int ny = _shape_mesh->getNumY();
+  int nz = _shape_mesh->getNumZ();
+  double* flux_temp = new double[nx*ny*nz*ng];
     
   while (true){
 
@@ -251,23 +299,26 @@ void Transient::takeOuterStepOnly(){
     _shape_mesh->computeDifCoefs(FORWARD_OUT);
 
     _solver->makeAMShape(_outer_wt);
-    linearSolve2d(_solver->getAMShape(), nx*ny*nz, ng*(ng+6), _shape_mesh->getFlux(FORWARD_OUT), nx*ny*ng, 
-                  _solver->getBShape(), nx*ny*nz*ng, flux_temp, nx*ny*nz*ng, nx, ny, nz, ng, 1.e-8);
+    linearSolve2d(_solver->getAMShape(), nx*ny*nz, ng*(ng+6), _shape_mesh->getFlux(FORWARD_OUT), 
+                  nx*ny*ng, _solver->getBShape(), nx*ny*nz*ng, flux_temp, nx*ny*nz*ng, 
+                  nx, ny, nz, ng, 1.e-8);
 
     double residual = _shape_mesh->computePowerL2Norm(FORWARD_OUT, FORWARD_OUT_OLD);
     double power = _shape_mesh->computeAveragePower(FORWARD_OUT);
-    log_printf(NORMAL, "TIME = %1.4f, POWER = %.6e, RESIDUAL = %.6e", _clock->getTime(FORWARD_OUT), power, residual);
+    log_printf(NORMAL, "TIME = %1.4f, POWER = %.6e, RESIDUAL = %.6e", _clock->getTime(FORWARD_OUT), 
+               power, residual);
 
-    log_printf(NORMAL, "OUTER RESIDUAL = %.6e", residual);
+    //log_printf(NORMAL, "OUTER RESIDUAL = %.6e", residual);
 
     if (residual < tol){
-      _clock->setTime(FORWARD_OUT, _clock->getTime(CURRENT));
+      //_clock->setTime(FORWARD_OUT, _clock->getTime(CURRENT));
       break;
     }
   }
 
   delete [] flux_temp;  
 }
+
 
 
 void Transient::broadcastToActive(clockPosition position){

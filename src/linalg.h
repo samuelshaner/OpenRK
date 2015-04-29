@@ -47,5 +47,6 @@ void matrix_multiplication2d(double **matrix, double* vector_x,
                              int block_width);
 void vector_scale(double* vector, double scale_value, int length);
 void setNumThreads(int num_threads);
+void matMultA(double** A, double* flux, double* vec_y, int nx, int ny, int nz, int ng);
 
 #endif /* LINALG_H_ */

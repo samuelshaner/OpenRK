@@ -340,8 +340,7 @@ void StructuredShapeMesh::computeInitialPrecursorConc(int position){
       
       for (int d=0; d < _num_delayed_groups; d++){
         double conc = fission_rate * _delayed_fractions[d] / _k_eff_0 / _decay_constants[d];
-        _materials[i]->setPrecursorConcByGroup(conc, d, position);
-        
+        _materials[i]->setPrecursorConcByGroup(conc, d, position);        
       }
     }
   }
@@ -398,11 +397,12 @@ void StructuredShapeMesh::integrateTemperature(int position_from, int position_t
     
     if (_materials[i]->isFissionable()){
       for (int g=0; g < _num_shape_energy_groups; g++){
-        fission_rate_from += _materials[i]->getNuSigmaFByGroup(g, position_from, temps_from[i]) *
+        fission_rate_from += _materials[i]->getSigmaFByGroup(g, position_from, temps_from[i]) *
           getFluxByValue(i, g, position_from);
-        fission_rate_to += _materials[i]->getNuSigmaFByGroup(g, position_to, temps_to[i]) *
+        fission_rate_to += _materials[i]->getSigmaFByGroup(g, position_to, temps_to[i]) *
           getFluxByValue(i, g, position_to);
       }
+      
       
       _temperature[position_to][i] = _temperature[position_from][i] + dt * 0.5 *
         (fission_rate_from + fission_rate_to) * _materials[i]->getTemperatureConversionFactor();
@@ -479,3 +479,25 @@ double StructuredShapeMesh::computePowerL2Norm(int position_1, int position_2){
 int StructuredShapeMesh::getAmpGroup(int shape_group){
   return _group_indices[shape_group];
 }
+
+
+int StructuredShapeMesh::findAmpCell(int shape_cell){
+  return _amp_map[shape_cell];
+}
+
+
+void StructuredShapeMesh::saveShape(){
+
+  int ngs = _num_shape_energy_groups;
+  int nga = _num_amp_energy_groups;
+
+  #pragma omp parallel for
+  for (int i=0; i < _num_x * _num_y * _num_z; i++){
+    double shape;
+    for (int g=0; g < ngs; g++){
+      _flux[END][i*ngs+g] = _flux[CURRENT][i*ngs+g]
+        / _amp_mesh->getFlux(CURRENT)[_amp_map[i]*nga+_group_indices[g]];
+    }
+  }
+}
+

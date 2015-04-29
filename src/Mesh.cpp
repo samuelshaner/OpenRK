@@ -14,6 +14,11 @@ Mesh::Mesh(double width, double height, double depth) {
   _delayed_fractions = NULL;
   _k_eff_0 = 0.0;
   
+  /* Set coarse mesh properties */
+  _num_x_coarse = 1;
+  _num_y_coarse = 1;
+  _num_z_coarse = 1;
+  
   /* Set mesh properties */
   setXMin(-width/2.0);
   setXMax(width/2.0);
@@ -25,7 +30,6 @@ Mesh::Mesh(double width, double height, double depth) {
   for (int c=0; c < 8; c++){
     _flux[c] = NULL;
     _power[c] = NULL;
-    _temperature[c] = NULL;
   }
 
   _boundaries = new boundaryType[6];
@@ -48,17 +52,17 @@ Mesh::~Mesh() {
     if (_power[c] != NULL)
       delete [] _power[c];
 
-    if (_temperature[c] != NULL)
-      delete [] _temperature[c];
-
   }
 
   _flux.clear();
   _power.clear();
-  _temperature.clear();
+}
 
-  if (_materials != NULL)
-    delete [] _materials;
+
+void Mesh::setCoarseMeshDimensions(int num_x, int num_y, int num_z){
+  _num_x_coarse = num_x;
+  _num_y_coarse = num_y;
+  _num_z_coarse = num_z;
 }
 
 
@@ -171,13 +175,8 @@ boundaryType Mesh::getBoundary(int side){
 }
 
 
-void Mesh::setNumShapeEnergyGroups(int num_groups){
-  _num_shape_energy_groups = num_groups;
-}
-
-
-void Mesh::setNumAmpEnergyGroups(int num_groups){
-  _num_amp_energy_groups = num_groups;
+void Mesh::setNumEnergyGroups(int num_groups){
+  _num_energy_groups = num_groups;
 }
 
 
@@ -199,13 +198,8 @@ void Mesh::setNumDelayedGroups(int num_groups){
 }
 
 
-int Mesh::getNumShapeEnergyGroups(){
-  return _num_shape_energy_groups;
-}
-
-
-int Mesh::getNumAmpEnergyGroups(){
-  return _num_amp_energy_groups;
+int Mesh::getNumEnergyGroups(){
+  return _num_energy_groups;
 }
 
 
@@ -224,23 +218,8 @@ double* Mesh::getPower(int position){
 }
 
 
-double* Mesh::getTemperature(int position){
-  return _temperature[position];
-}
-
-
 double Mesh::getPowerByValue(int cell, int position){
   return _power[position][cell];
-}
-
-
-double Mesh::getTemperatureByValue(int cell, int position){
-  return _temperature[position][cell];
-}
-
-
-void Mesh::setMaterial(Material* material, int cell){
-  _materials[cell] = material;
 }
 
 
@@ -285,9 +264,4 @@ double Mesh::getDecayConstantByGroup(int group){
 
 double Mesh::getDelayedFractionByGroup(int group){
   return _delayed_fractions[group];
-}
-
-
-Material* Mesh::getMaterial(int cell){
-  return _materials[cell];
 }

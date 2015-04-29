@@ -3,7 +3,6 @@ __email__ = 'shaner@mit.edu'
 
 # Import modules
 import numpy as np
-import clock as ck
 
 
 def is_integer(val):

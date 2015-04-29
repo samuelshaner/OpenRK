@@ -58,8 +58,8 @@ public:
   /* Worker functions */
   void computeInitialShape();
   void takeInnerStep();
-  void takeOuterStep();
-  void takeOuterStepOnly();
+  void takeOuterStep(double tol=1.e-6);
+  void takeOuterStepOnly(double tol=1.e-6);
   void broadcastToActive(clockPosition position);
   void broadcastToAll(clockPosition position);
   void broadcastToOne(clockPosition position_from, clockPosition position_to);  

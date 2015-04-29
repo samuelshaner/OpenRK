@@ -66,38 +66,8 @@ void AmpMesh::setFluxByValue(double flux, int cell, int group, int position){
 }
 
 
-void AmpMesh::setCurrentByValue(double current, int cell, int group, int side, int position){
-  _current[position][(cell*6 + side)*_num_amp_energy_groups + group] = current;
-}
-
-
-void AmpMesh::setDifLinearByValue(double dif_linear, int cell, int group, int side, int position){
-  _dif_linear[position][(cell*6 + side)*_num_amp_energy_groups + group] = dif_linear;
-}
-
-
-void AmpMesh::setDifNonlinearByValue(double dif_nonlinear, int cell, int group, int side, int position){
-  _dif_nonlinear[position][(cell*6 + side)*_num_amp_energy_groups + group] = dif_nonlinear;
-}
-
-
 double AmpMesh::getFluxByValue(int cell, int group, int position){
   return _flux[position][cell*_num_amp_energy_groups + group];
-}
-
-
-double AmpMesh::getCurrentByValue(int cell, int group, int side, int position){
-  return _current[position][(cell*6 + side)*_num_amp_energy_groups + group];
-}
-
-
-double AmpMesh::getDifLinearByValue(int cell, int group, int side, int position){
-  return _dif_linear[position][(cell*6 + side)*_num_amp_energy_groups + group];
-}
-
-
-double AmpMesh::getDifNonlinearByValue(int cell, int group, int side, int position){
-  return _dif_nonlinear[position][(cell*6 + side)*_num_amp_energy_groups + group];
 }
 
 
@@ -106,164 +76,13 @@ void AmpMesh::copyFlux(int position_from, int position_to){
 }
 
 
-void AmpMesh::copyCurrent(int position_from, int position_to){
-  std::copy(_current[position_from], _current[position_from] + _num_x*_num_y*_num_z*_num_amp_energy_groups*6, _current[position_to]);
-}
-
-
-void AmpMesh::copyDifLinear(int position_from, int position_to){
-  std::copy(_dif_linear[position_from], _dif_linear[position_from] + _num_x*_num_y*_num_z*_num_amp_energy_groups*6, _dif_linear[position_to]);
-}
-
-
-void AmpMesh::copyDifNonlinear(int position_from, int position_to){
-  std::copy(_dif_nonlinear[position_from], _dif_nonlinear[position_from] + _num_x*_num_y*_num_z*_num_amp_energy_groups*6, _dif_nonlinear[position_to]);
-}
-
-
-void AmpMesh::condenseMaterials(int position, bool save_flux){
-
-  double shape_cell_volume = _shape_mesh->getCellVolume();
-  double amp_cell_volume = getCellVolume();
-  double* temps = _shape_mesh->getTemperature(position);
-  double chi[_num_amp_energy_groups];
-  double sigma_s[_num_amp_energy_groups];
-  Material* amp_mat;
-  Material* shape_mat;
-
-  #pragma omp parallel for private(chi, sigma_s, amp_mat, shape_mat)
-  for (int i=0; i < _num_x*_num_y*_num_z; i++){
-    
-    amp_mat = getMaterial(i);
-    std::vector<int>::iterator iter;
-    
-    for (int g=0; g < _num_amp_energy_groups; g++){
-
-      double sigma_a = 0.0;
-      double sigma_t = 0.0;
-      double sigma_f = 0.0;
-      double nu_sigma_f = 0.0;
-      double dif_coef = 0.0;
-      double rxn = 0.0;
-      double production = 0.0;
-      double velocity = 0.0;
-      double volume;
-      double temp;
-      
-      for (int h=0; h < _num_amp_energy_groups; h++){
-        sigma_s[h] = 0.0;
-        chi[h] = 0.0;
-      }
-      
-      for (iter = _shape_map[i].begin(); iter != _shape_map[i].end(); ++iter){
-
-        shape_mat = _shape_mesh->getMaterial(*iter);
-        temp = temps[*iter];
-
-        for (int e=0; e < _num_amp_energy_groups; e++){
-          double chi_tally = 0.0;
-
-          for (int ee=_group_indices[e]; ee < _group_indices[e+1]; ee++)
-            chi_tally += shape_mat->getChiByGroup(ee, position, temp);
-          
-          for (int h=0; h < _num_shape_energy_groups; h++){
-            chi[e] += chi_tally * shape_mat->getNuSigmaFByGroup(h, position, temp) *
-              _shape_mesh->getFluxByValue(*iter, h, position) * shape_cell_volume;
-            production += chi_tally * shape_mat->getNuSigmaFByGroup(h, position, temp) *
-              _shape_mesh->getFluxByValue(*iter, h, position) * shape_cell_volume;
-          }
-        }
-      }
-
-      for (int gg=_group_indices[g]; gg < _group_indices[g+1]; gg++){
-
-        double rxn_group = 0.0;
-        volume = 0.0;
-        double sigma_t_group = 0.0;
-
-      for (iter = _shape_map[i].begin(); iter != _shape_map[i].end(); ++iter){
-
-          shape_mat = _shape_mesh->getMaterial(*iter);
-          temp = temps[*iter];
-
-          double shape = _shape_mesh->getFluxByValue(*iter, gg, position);
-          sigma_a += shape_mat->getSigmaAByGroup(gg, position, temp) * shape * shape_cell_volume;
-          sigma_t += shape_mat->getSigmaTByGroup(gg, position, temp) * shape * shape_cell_volume;
-          sigma_f += shape_mat->getSigmaFByGroup(gg, position, temp) * shape * shape_cell_volume;
-          nu_sigma_f += shape_mat->getNuSigmaFByGroup(gg, position, temp) * shape * shape_cell_volume;
-          rxn += shape * shape_cell_volume;
-          rxn_group += shape * shape_cell_volume;
-          volume += shape_cell_volume;
-          sigma_t_group += shape_mat->getSigmaTByGroup(gg, position, temp) * shape * shape_cell_volume;
-          velocity += 1.0 / shape_mat->getVelocityByGroup(gg, position, temp) * shape * shape_cell_volume;
-
-          for (int h=0; h < _num_shape_energy_groups; h++){
-            sigma_s[_shape_mesh->getAmpGroup(h)] += shape_mat->getSigmaSByGroup(gg, h, position, temp) *
-              shape * shape_cell_volume;
-          }
-        }
-
-        dif_coef += rxn_group / (3.0 * sigma_t_group / rxn_group);
-      }
-
-      amp_mat->setSigmaAByGroup(sigma_a / rxn, g, position);
-      amp_mat->setSigmaTByGroup(sigma_t / rxn, g, position);
-      amp_mat->setSigmaFByGroup(sigma_f / rxn, g, position);
-      amp_mat->setNuSigmaFByGroup(nu_sigma_f / rxn, g, position);
-      amp_mat->setDifCoefByGroup(dif_coef / rxn, g, position);
-      amp_mat->setVelocityByGroup(1.0 / (velocity / rxn), g, position);
-
-      if (save_flux)
-        _flux[position][i*_num_amp_energy_groups + g] = rxn / volume;
-
-      if (production != 0.0)
-        amp_mat->setChiByGroup(chi[g] / production, g, position);
-      else
-        amp_mat->setChiByGroup(0.0, g, position);      
-
-      for (int e=0; e < _num_amp_energy_groups; e++)
-        amp_mat->setSigmaSByGroup(sigma_s[e] / rxn, g, e, position);
-    }
-
-    for (int d=0; d < _num_delayed_groups; d++){
-      double precursor_conc = 0.0;
-
-      for (iter = _shape_map[i].begin(); iter != _shape_map[i].end(); ++iter){
-        if (_shape_mesh->getMaterial(*iter)->isFissionable()){
-          precursor_conc += _shape_mesh->getMaterial(*iter)->getPrecursorConcByGroup(d, position) * shape_cell_volume;
-        }
-      }
-        
-      amp_mat->setPrecursorConcByGroup(precursor_conc / amp_cell_volume, d, position);
-    }
-  }
-}
-
-
 void AmpMesh::initialize(){
 
-  _materials = new Material*[_num_x*_num_y*_num_z];
-  
-  for (int i=0; i < _num_x*_num_y*_num_z; i++){
-    Material* material = new Material();
-    material->setNumEnergyGroups(_num_amp_energy_groups);
-    material->setNumDelayedGroups(_num_delayed_groups);
-    _materials[i] = material;
-  }
-
   for(int c=0; c < 8; c++){
-    _dif_linear[c] = new double[_num_x * _num_y * _num_z * _num_amp_energy_groups * 6];
-    _dif_nonlinear[c] = new double[_num_x * _num_y * _num_z * _num_amp_energy_groups * 6];
-    _current[c] = new double[_num_x * _num_y * _num_z * _num_amp_energy_groups * 6];
     _flux[c] = new double[_num_x * _num_y * _num_z * _num_amp_energy_groups];
-    _temperature[c] = new double[_num_x * _num_y * _num_z];
     _power[c] = new double[_num_x * _num_y * _num_z];
 
-    memset(_dif_linear[c], 0.0, sizeof(double) * _num_x * _num_y * _num_z * _num_amp_energy_groups * 6);
-    memset(_dif_nonlinear[c], 0.0, sizeof(double) * _num_x * _num_y * _num_z * _num_amp_energy_groups * 6);
-    memset(_current[c], 0.0, sizeof(double) * _num_x * _num_y * _num_z * _num_amp_energy_groups * 6);
-    memset(_flux[c], 1.0, sizeof(double) * _num_x * _num_y * _num_z * _num_amp_energy_groups);
-    memset(_temperature[c], 300.0, sizeof(double) * _num_x * _num_y * _num_z);
+    memset(_flux[c], 1.0, sizeof(double) * _num_x * _num_y * _num_z * _num_energy_groups);
     memset(_power[c], 0.0, sizeof(double) * _num_x * _num_y * _num_z);
   }  
 }
@@ -275,9 +94,10 @@ void AmpMesh::computePower(int position){
     double fission_rate = 0.0;
     double temp = _temperature[position][i];
     
-    for (int g=0; g < _num_amp_energy_groups; g++)
+    for (int g=0; g < _num_amp_energy_groups; g++){
       fission_rate += _materials[i]->getSigmaFByGroup(g, position, temp) * getFluxByValue(i, g, position);
-    
+    } 
+   
     _power[position][i] = fission_rate;
   }
 }
@@ -649,8 +469,9 @@ double AmpMesh::computePowerL2Norm(int position_1, int position_2){
 
   #pragma omp parallel for
   for (int i=0; i < _num_x * _num_y * _num_z; i++){
-    if (_power[position_1][i] > 0.0)
+    if (_power[position_1][i] > 0.0){
       power_residual[i] = pow((_power[position_1][i] - _power[position_2][i]) / _power[position_1][i], 2);
+    }
   }
 
   double residual = sqrt(pairwise_sum(power_residual, _num_x*_num_y*_num_z));

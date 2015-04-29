@@ -272,7 +272,7 @@ double FunctionalMaterial::getSigmaAByGroup(int group, int position, double temp
 
   if (temp == 0.0)
     log_printf(ERROR, "Unable to get sigma_a by group for FunctionalMaterial %d"
-               " with no input temperature", _id);
+               " with temperature %.6f", _id, temp);
   
   if (_doppler_coefficients == NULL)
     log_printf(ERROR, "Unable to get sigma_a by group for FunctionalMaterial %d"

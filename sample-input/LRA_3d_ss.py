@@ -77,7 +77,8 @@ fuel2bino = rk.FunctionalMaterial()
 fuel2bino.setTimeSteps([0.0, 2.0, 3.0])
 fuel2bino.setNumEnergyGroups(2)
 fuel2bino.setNumDelayedGroups(2)
-fuel2bino.setSigmaA([[0.008002, 0.08344], [0.008002, 0.073324], [0.008002, 0.073324]])
+#fuel2bino.setSigmaA([[0.008002, 0.08344], [0.008002, 0.073324], [0.008002, 0.073324]])
+fuel2bino.setSigmaA([[0.008002, 0.08344], [0.008002, 0.08344], [0.008002, 0.08344]])
 fuel2bino.setDifCoef([[1.259, 0.2091], [1.259, 0.2091], [1.259, 0.2091]])
 fuel2bino.setSigmaT([[1.0/(3.0*1.259), 1.0/(3.0*0.2091)], [1.0/(3.0*1.259), 1.0/(3.0*0.2091)], [1.0/(3.0*1.259), 1.0/(3.0*0.2091)]])
 fuel2bino.setNuSigmaF([[0.004663, 0.1021], [0.004663, 0.1021], [0.004663, 0.1021]])
@@ -180,7 +181,7 @@ for k in xrange(1,11):
         cell = k*nx*ny + cell_id
         shape_mesh.setMaterial(fuel1bin, cell)
 
-#shape_mesh = shape_mesh.uniformRefine(3,3,4)
+shape_mesh = shape_mesh.uniformRefine(3,3,4)
 shape_mesh.uniquifyMaterials()
 
 # Create and initialize the amplitude mesh
@@ -188,7 +189,7 @@ amp_mesh = rk.AmpMesh(width=165.0, height=165.0, depth=360.0, num_x=11, num_y=11
 amp_mesh.setNumAmpEnergyGroups(2)
 amp_mesh.setNumShapeEnergyGroups(2)
 amp_mesh.setNumDelayedGroups(2)
-amp_mesh.setOpticallyThick(False)
+amp_mesh.setOpticallyThick(True)
 amp_mesh.setBoundary(2, 1)
 amp_mesh.setBoundary(3, 1)
 amp_mesh.setBoundary(4, 1)
@@ -205,10 +206,10 @@ shape_mesh.setGroupStructure([0, 1])
 
 # Solve diffusion problem
 solver = rk.Solver(shape_mesh, amp_mesh)
-rk.setNumThreads(2)
+rk.setNumThreads(8)
 
 transient = rk.Transient()
-clock = rk.Clock(dt_inner=1.e-3, dt_outer=1.e-1)
+clock = rk.Clock(dt_inner=1.e-3, dt_outer=1.e-2)
 transient.setClock(clock)
 #transient.setOuterMethod(rk.CRANK_NICOLSON)
 #transient.setInnerMethod(rk.CRANK_NICOLSON)
@@ -218,15 +219,15 @@ transient.setSolver(solver)
 transient.setInitialPower(1.e-6)
 transient.computeInitialShape()
 
-#for i in xrange(300):
-#    transient.takeOuterStep()
+for i in xrange(int(round(3.0/clock.getDtOuter()))):
+    transient.takeOuterStep(1.e-4)
     #rk.plotter.plot_power(mesh, name='mesh-power-{:.4f}s'.format(mesh.get_clock().get_time('CURRENT')))
     #rk.plotter.plot_temperature(mesh, name='mesh-temp-{:.4f}s'.format(mesh.get_clock().get_time('CURRENT')))
 
 
-plotter.plot_flux(shape_mesh, plane='xy')
-plotter.plot_power(shape_mesh, plane='xy')
-plotter.plot_temperature(shape_mesh, plane='yz')
-plotter.plot_materials(shape_mesh, plane='xz')
-plotter.plot_sigma_a(shape_mesh, plane='yz')
-plotter.plot_precursor_conc(shape_mesh, plane='xz')
+plotter.plot_flux(mesh, plane='xy')
+plotter.plot_power(mesh, plane='xy')
+plotter.plot_temperature(mesh, plane='xy')
+plotter.plot_materials(mesh, plane='xy')
+#plotter.plot_sigma_a(mesh, plane='yz')
+#plotter.plot_precursor_conc(mesh, plane='xz')

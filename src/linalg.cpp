@@ -561,3 +561,60 @@ void setNumThreads(int num_threads) {
   /* Set the number of threads for OpenMP */
   omp_set_num_threads(num_threads);
 }
+
+
+void matMultA(double** A, double* flux, double* vec_y, int nx, int ny, int nz, int ng){
+
+  vector_scale(vec_y, 0.0, nx*ny*nz*ng);
+  int row;
+  int cell;
+  double val;
+  
+  for (int z = 0; z < nz; z++){
+    for (int y = 0; y < ny; y++){
+      for (int x = 0; x < nx; x++){
+        for (int g = 0; g < ng; g++){
+          row = (y*nx+x)*ng + g;
+          
+          cell = z*nx*ny+y*nx+x;
+          
+          for (int g = 0; g < ng; g++){
+            
+            row = cell*ng + g;
+            val = 0.0;
+
+            /* Left surface */
+            if (x != 0)
+              val += flux[row - ng] * A[cell][g*(ng+6)];
+            
+            /* Back surface */
+            if (y != 0)
+              val += flux[row - nx * ng] * A[cell][g*(ng+6)+1];
+            
+            /* Bottom surface */
+            if (z != 0)
+              val += flux[row - nx * ny * ng] * A[cell][g*(ng+6)+2];
+            
+            /* Group-to-group */
+            for (int e = 0; e < ng; e++)
+              val += flux[cell*ng+e] * A[cell][g*(ng+6)+3+e];
+            
+            /* Right surface */
+            if (x != nx - 1)
+              val += flux[row + ng] * A[cell][g*(ng+6)+ng+3];
+            
+            /* Front surface */
+            if (y != ny - 1)
+              val += flux[row + ng*nx] * A[cell][g*(ng+6)+ng+4];
+            
+            /* Front surface */
+            if (z != nz - 1)
+              val += flux[row + ng*nx*ny] * A[cell][g*(ng+6)+ng+5];
+            
+            vec_y[row] = -val;
+          }
+        }
+      }
+    } 
+  }
+}
