@@ -47,6 +47,10 @@ double** SolverDiffusion::getShapeAMMatrix(){
 }
 
 
+double* SolverDiffusion::getShapeSource(){
+  return _shape_source;
+}
+
 void SolverDiffusion::generateInitialShapeMatrices(){
 
   int nx = _geometry_diffusion->getNumXShape();
@@ -57,9 +61,6 @@ void SolverDiffusion::generateInitialShapeMatrices(){
   double height = _geometry->getHeight() / ny;
   double depth = _geometry->getDepth() / nz;
   double volume = width * height * depth;
-  int cell;
-  double temp;
-  Material* material;
 
   #pragma omp parallel for
   for (int i = 0; i < nx*ny*nz; i++){
@@ -77,7 +78,7 @@ void SolverDiffusion::generateInitialShapeMatrices(){
       for (int x=0; x < nx; x++){
         int cell = z*nx*ny + y*nx+x;
         double temp = temps[cell];
-        Material* material = _shape_mesh->getMaterial(cell);
+        Material* material = _geometry->getMaterial(cell);
         
         for (int e=0; e < ng; e++){
           
@@ -231,7 +232,7 @@ void SolverDiffusion::computeDiffusionCoefficientsFine(int time){
            length_perpen = depth;
           }
           
-          for (int g=0; g < ng; g++){
+          for (int g=0; g < _num_energy_groups; g++){
             
             dif_coef = material->getDifCoefByValue(cell, g, time);
             
@@ -573,9 +574,9 @@ void SolverDiffusion::generateAmpCurrent(int time){
                                       getFluxByValue(neighbor_cell, e, time));
                 }
               }
-              
-              setCurrentByValue(current, cell_amp, e, s, CURRENT);
             }
+
+            setCurrentByValue(current, cell_amp, e, s, CURRENT);
           }
         }
       }
@@ -682,3 +683,11 @@ void SolverDiffusion::takeOuterStepOnly(){
 }
 
 
+void SolverDiffusion::takeInnerStep(){
+  return;
+}
+
+
+void SolverDiffusion::takeOuterStep(){
+  return;
+}

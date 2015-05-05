@@ -10,6 +10,7 @@
 
 #ifdef __cplusplus
 #include "Solver.h"
+#include "GeometryDiffusion.h"
 #endif
 
 
@@ -43,9 +44,9 @@ public:
   void setDifLinearFineByValue(double value, int cell, int group, int time);  
 
   /* Worker functions */
-a  virtual void takeInnerStep();
-a  virtual void takeOuterStep();
-a  virtual void takeOuterStepOnly();
+  virtual void takeInnerStep();
+  virtual void takeOuterStep();
+  virtual void takeOuterStepOnly();
   virtual void computeInitialShape();
   void generateShapeMatrices();
   void computeDiffusionCoefficientsFine(int time);

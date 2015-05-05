@@ -12,6 +12,7 @@
 #include "Material.h"
 #include "linalg.h"
 #include <map>
+#include <vector>
 #endif
 
 /**
@@ -52,6 +53,7 @@ protected:
   Material** _materials;
   boundaryType* _boundaries;
   int _num_energy_groups;
+  int _num_delayed_groups;
   double* _volumes;
 
   /* mapping of cells between shape and amplitude */
@@ -92,8 +94,11 @@ public:
   std::vector< std::vector<int> > getAmpToShapeMap();
   int* getShapeToAmpMap();
   int getNumEnergyGroups();
+  int getNumDelayedGroups();
   int getNeighborAmpCell(int x, int y, int z, int side);
   double getVolume(int cell);
+  int getNumShapeCells();
+  int getNumAmpCells();
 
   /* Worker functions */
   void addShapeCellToAmpCell(int shape_cell, int amp_cell);

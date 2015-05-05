@@ -8,7 +8,7 @@
 GeometryDiffusion::GeometryDiffusion(double width, double height, double depth) : Geometry(width, height, depth){
 
   /* Set fine mesh properties */
-  setFineMeshDimensions();
+  setShapeMeshDimensions();
   
   return;
 }
@@ -21,7 +21,7 @@ GeometryDiffusion::~GeometryDiffusion() {
 }
 
 
-void GeometryDiffusion::setFineMeshDimensions(int num_x, int num_y, int num_z){
+void GeometryDiffusion::setShapeMeshDimensions(int num_x, int num_y, int num_z){
   _num_x_shape = num_x;
   _num_y_shape = num_y;
   _num_z_shape = num_z;
@@ -86,14 +86,14 @@ int GeometryDiffusion::getNeighborShapeCell(int x, int y, int z, int side){
 }
 
 
-void GeometryDiffusion::uniformRefine(int refine_x, int refine_y, int refine_z){
+GeometryDiffusion* GeometryDiffusion::uniformRefine(int refine_x, int refine_y, int refine_z){
 
   GeometryDiffusion* geometry = clone();
 
   int nx = _num_x_shape * refine_x;
   int ny = _num_y_shape * refine_y;
   int nz = _num_z_shape * refine_z;
-  geometry->setFineMeshDimensions(nx, ny, nz);
+  geometry->setShapeMeshDimensions(nx, ny, nz);
 
   for (int z=0; z < nz; z++){
     int zz = z / refine_z;
@@ -112,7 +112,7 @@ void GeometryDiffusion::uniformRefine(int refine_x, int refine_y, int refine_z){
 
 GeometryDiffusion* GeometryDiffusion::clone(){
 
-  GeoemtryDiffusion* geometry = new GeometryDiffusion(getWidth(), getHeight(), getDepth());
+  GeometryDiffusion* geometry = new GeometryDiffusion(getWidth(), getHeight(), getDepth());
   geometry->setAmpMeshDimensions(_num_x_amp, _num_y_amp, _num_z_amp);
   geometry->setShapeMeshDimensions(_num_x_shape, _num_y_shape, _num_z_shape);
   geometry->setNumShapeCells(_num_shape_cells);
@@ -121,7 +121,7 @@ GeometryDiffusion* GeometryDiffusion::clone(){
     geometry->setBoundary(i, _boundaries[i]);
 
   for (int i=0; i < _num_shape_cells; i++)
-    geometry->setMaterial(_materials[i]->clone());
+    geometry->setMaterial(_materials[i]->clone(), i);
 
   return geometry;
 }
@@ -140,7 +140,7 @@ void GeometryDiffusion::generateCellMap(){
       for (int x=0; x < _num_x_shape; x++){
         int xx = x / num_refines_x;
         int amp_cell = zz*_num_x_amp*_num_y_amp + yy*_num_x_amp + xx;
-        int shape_cell = z*nx*ny + y*nx + x;
+        int shape_cell = z*_num_x_shape*_num_y_shape + y*_num_x_shape + x;
         addShapeCellToAmpCell(shape_cell, amp_cell);
       }
     }

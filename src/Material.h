@@ -75,6 +75,9 @@ protected:
   /** An array of the delayed neutron precursor concentration for each delayed group */
   double* _precursor_conc;
 
+  double* _decay_constant;
+  double* _delayed_fraction;
+
   /** A pointer to a Clock used to keep track of current state of transient */
   Clock* _clock;
 
@@ -110,6 +113,8 @@ public:
   virtual void setVelocityByGroup(double xs, int group, int position=CURRENT);
   virtual void setPrecursorConcByGroup(double xs, int group, int position=CURRENT);
   void setTemperatureConversionFactor(double conversion_factor);
+  virtual void setDecayConstantByGroup(double xs, int group, int position=CURRENT);
+  virtual void setDelayedFractionByGroup(double xs, int group, int position=CURRENT);
   
   void setClock(Clock* clock);
 
@@ -129,6 +134,8 @@ public:
   double* getDifCoef();
   double* getVelocity();
   double* getPrecursorConc();
+  double* getDecayConstant();
+  double* getDelayedFraction();
 
   virtual double getSigmaTByGroup(int group, int position=CURRENT, double temp=0.0);
   virtual double getSigmaAByGroup(int group, int position=CURRENT, double temp=0.0);
@@ -139,6 +146,9 @@ public:
   virtual double getDifCoefByGroup(int group, int position=CURRENT, double temp=0.0);
   virtual double getVelocityByGroup(int group, int position=CURRENT, double temp=0.0);
   virtual double getPrecursorConcByGroup(int group, int position=CURRENT, double temp=0.0);
+  virtual double getDecayConstantByGroup(int group, int position=CURRENT, double temp=0.0);
+  virtual double getDelayedFractionByGroup(int group, int position=CURRENT, double temp=0.0);
+  virtual double getDelayedFractionTotal(int position=CURRENT, double temp=0.0);
   double getTemperatureConversionFactor();
   
   bool isFissionable();

@@ -32,16 +32,16 @@ public:
   virtual ~GeometryDiffusion();
 
   /* Setter functions */
-  void setFineMeshDimensions(int num_x=1, int num_y=1, int num_z=1);
+  void setShapeMeshDimensions(int num_x=1, int num_y=1, int num_z=1);
   
   /* Getter functions */
   int getNumXShape();
   int getNumYShape();
   int getNumZShape();
-  getNeighborShapeCell(int x, int y, int z, int side);
+  int getNeighborShapeCell(int x, int y, int z, int side);
 
   /* Worker functions */
-  void uniformRefine(int refine_x, int refine_y, int refine_z);
+  GeometryDiffusion* uniformRefine(int refine_x, int refine_y, int refine_z);
   virtual GeometryDiffusion* clone();
   void generateCellMap();
 };

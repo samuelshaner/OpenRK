@@ -8,12 +8,10 @@
   #include "../src/Material.h"
   #include "../src/FunctionalMaterial.h"
   #include "../src/Clock.h"
-  #include "../src/Mesh.h"
-  #include "../src/StructuredMesh.h"
-  #include "../src/StructuredShapeMesh.h"
-  #include "../src/AmpMesh.h"
   #include "../src/Solver.h"
-  #include "../src/Transient.h"
+  #include "../src/SolverDiffusion.h"
+  #include "../src/Geometry.h"
+  #include "../src/GeometryDiffusion.h"
   
   #define printf PySys_WriteStdout
 
@@ -72,11 +70,9 @@
 %include ../src/Material.h
 %include ../src/FunctionalMaterial.h
 %include ../src/Clock.h
-%include ../src/Mesh.h
-%include ../src/StructuredMesh.h
-%include ../src/StructuredShapeMesh.h
-%include ../src/AmpMesh.h
 %include ../src/Solver.h
-%include ../src/Transient.h
+%include ../src/SolverDiffusion.h
+%include ../src/Geometry.h
+%include ../src/GeometryDiffusion.h
 
 #define printf PySys_WriteStdout

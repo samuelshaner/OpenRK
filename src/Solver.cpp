@@ -79,8 +79,8 @@ double** Solver::getAmpMatrix(){
 }
 
 
-double* Solver::getAmpShape(){
-  return _amp_shape;
+double* Solver::getAmpSource(){
+  return _amp_source;
 }
 
 
@@ -95,7 +95,6 @@ void Solver::generateAmplitudeMatrix(double wt){
   double depth = _geometry->getDepth() / nz;
   double dt = _clock->getDtInner();
   int row_amp, row_shape, diag;
-  int ng = _num_energy_groups;
 
   double* shape = getShape(CURRENT);
   double* shape_prev = getShape(PREVIOUS_IN);
@@ -126,7 +125,7 @@ void Solver::generateAmplitudeMatrix(double wt){
           
           /* Loop over shape cells in this amp cell */
           std::vector<int>::iterator iter;
-          for (iter = amp_to_shape.begin(); iter != amp_to_shape.end(); ++iter){
+          for (iter = amp_to_shape[cell_amp].begin(); iter != amp_to_shape[cell_amp].end(); ++iter){
             
             int cell_shape = *iter;
             Material* material = _geometry->getMaterial(cell_shape);
@@ -136,10 +135,10 @@ void Solver::generateAmplitudeMatrix(double wt){
             row_shape = cell_shape*ng + e;
 
             /* Time absorption term on the diagonal */
-            if (method == IQS){
+            if (_method == IQS){
               
               _amp_matrix[cell_amp][diag] += 2.0 / dt / 
-                _material->getVelocityByGroup(e, CURRENT, temp) * volume * 
+                material->getVelocityByGroup(e, CURRENT, temp) * volume * 
                 shape[row_shape];
               
               _amp_matrix[cell_amp][diag] -= 1.0 / dt / 
@@ -150,7 +149,7 @@ void Solver::generateAmplitudeMatrix(double wt){
                 material->getVelocityByGroup(e, PREVIOUS_IN, temp_prev) * 
                 volume * amp_prev[row_amp];
             }
-            else if (method == THETA){
+            else if (_method == THETA){
               _amp_matrix[cell_amp][diag] += 1.0 / dt / 
                 material->getVelocityByGroup(e, CURRENT, temp) * 
                 volume * shape[row_shape];
@@ -248,12 +247,12 @@ void Solver::generateAmplitudeMatrix(double wt){
           /* Transport term on off diagonals */
           if (x != 0){
             _amp_matrix[cell_amp][e * (ng+6)] -= wt *
-              (_amp_mesh->getDifLinearByValue(cell_amp, e, 0, CURRENT) -
-               _amp_mesh->getDifNonlinearByValue(cell_amp, e, 0, CURRENT)) * height * depth;
+              (getDifLinearByValue(cell_amp, e, 0, CURRENT) -
+               getDifNonlinearByValue(cell_amp, e, 0, CURRENT)) * height * depth;
 
             _amp_source[row_amp] += (1-wt) *
-              (_amp_mesh->getDifLinearByValue(cell_amp, e, 0, PREVIOUS_IN) -
-               _amp_mesh->getDifNonlinearByValue(cell_amp, e, 0, PREVIOUS_IN)) * height * 
+              (getDifLinearByValue(cell_amp, e, 0, PREVIOUS_IN) -
+               getDifNonlinearByValue(cell_amp, e, 0, PREVIOUS_IN)) * height * 
               depth * amp_prev[(cell_amp-1)*ng+e];
           }          
 
@@ -444,7 +443,7 @@ double Solver::getAmplitudeByValue(int cell, int group, int time){
 }
 
 
-double Solver::getPowerByValue(int cell, int group, int time){
+double Solver::getPowerByValue(int cell, int time){
   return _power[time][cell];
 }
 
@@ -517,7 +516,7 @@ void Solver::copyFrequency(int time_from, int time_to){
 
 void Solver::copyPrecursors(int time_from, int time_to){
   for (int i=0; i < _num_shape_cells; i++){
-    Material* material = _materials[i];
+    Material* material = _geometry->getMaterial(i);
     for (int e=0; e < _num_energy_groups; e++){
       double conc = material->getPrecursorConcByGroup(e, time_from);
       material->setPrecursorConcByGroup(conc, e, time_to); 
@@ -527,16 +526,16 @@ void Solver::copyPrecursors(int time_from, int time_to){
 
 void Solver::copyFieldVariables(int time_from, int time_to){
 
-  copyTemperature(time_from, time_to);
-  copyFlux(time_from, time_to);
-  copyShape(time_from, time_to);
-  copyAmplitude(time_from, time_to);
-  copyPower(time_from, time_to);
-  copyCurrent(time_from, time_to);
-  copyDifLinear(time_from, time_to);
+  copyTemperature (time_from, time_to);
+  copyFlux        (time_from, time_to);
+  copyShape       (time_from, time_to);
+  copyAmplitude   (time_from, time_to);
+  copyPower       (time_from, time_to);
+  copyCurrent     (time_from, time_to);
+  copyDifLinear   (time_from, time_to);
   copyDifNonlinear(time_from, time_to);
-  copyFrequency(time_from, time_to);
-  copyPrecursors(time_from, time_to);
+  copyFrequency   (time_from, time_to);
+  copyPrecursors  (time_from, time_to);
 }
 
 
@@ -596,7 +595,7 @@ void Solver::setDifNonlinearByValue(double value, int cell, int group, int side,
 void Solver::integratePrecursorConcentrations(int time_from, int time_to){
 
   double* temps_from = getTemperature(time_from);
-  double* temps_to = getTemperature(time_to);
+  double* temps_to   = getTemperature(time_to);
   double dt = _clock->getTime(time_to) - _clock->getTime(time_from);
 
   #pragma omp parallel for
@@ -650,10 +649,10 @@ void Solver::computeInitialPrecursorConcentrations(){
       }
       
       for (int d=0; d < _num_delayed_groups; d++){
-        double delayed_fraction = material->getDelayedFractionByGroup(d, time_from);
-        double decay_constant = material->getDecayConstantByGroup(d, time_from);
+        double delayed_fraction = material->getDelayedFractionByGroup(d, CURRENT);
+        double decay_constant = material->getDecayConstantByGroup(d, CURRENT);
         double conc = delayed_fraction / decay_constant / _k_eff_0 * fission_rate;
-        material->setPrecursorConcByGroup(conc, d, time);
+        material->setPrecursorConcByGroup(conc, d, CURRENT);
       }
     }
   }
@@ -663,18 +662,16 @@ void Solver::computeInitialPrecursorConcentrations(){
 void Solver::computePower(int time){
 
   double* temps = getTemperature(time);
-  double cell_power = 0.0;
 
   for (int i=0; i < _num_shape_cells; i++){
 
-    double fission_rate = 0.0;
+    double cell_power = 0.0;
     Material* material = _geometry->getMaterial(i);
 
     if (material->isFissionable()){
-      fuel_volume += _volumes[i];
       for (int g=0; g < _num_energy_groups; g++){
-        cell_power += material->getSigmaFByGroup(g, CURRENT, temps[i]) * 
-          getFluxByValue(i, g, CURRENT) * material->getEnergyPerFission() * _volumes[i];
+        cell_power += material->getSigmaFByGroup(g, time, temps[i]) * 
+          getFluxByValue(i, g, time) * material->getEnergyPerFission() * _geometry->getVolume(i);
       }
     }
 
@@ -703,7 +700,7 @@ void Solver::normalizeFlux(){
 
 double Solver::computeAveragePower(int time){
   
-  computerPower(time);
+  computePower(time);
   double average_power = 0.0;
   double fuel_volume = 0.0;
 
@@ -713,7 +710,7 @@ double Solver::computeAveragePower(int time){
     average_power += getPowerByValue(i, time);
 
     if (material->isFissionable())
-      fuel_volume += _volumes[i];
+      fuel_volume += _geometry->getVolume(i);
   }
 
   /* Divide cumulative power by fuel volume */
@@ -723,24 +720,47 @@ double Solver::computeAveragePower(int time){
 }
 
 
+double Solver::computePowerRMSError(int time_1, int time_2){
+  
+  computePower(time_1);
+  computePower(time_2);
+  double power_rmse = 0.0;
+
+  for (int i=0; i < _num_shape_cells; i++){
+
+    Material* material = _geometry->getMaterial(i);
+    double power_1 = getPowerByValue(i, time_1);
+    double power_2 = getPowerByValue(i, time_2);
+
+    if (power_1 > 0.0)
+      power_rmse += pow((power_2 - power_1)/power_1, 2.0);
+  }
+
+  /* Divide cumulative power by fuel volume */
+  power_rmse = pow(power_rmse, 0.5);
+
+  return power_rmse;
+}
+
+
 void Solver::integrateTemperature(int time_from, int time_to){
 
   double* temps_from = getTemperature(time_from);
-  double* temps_to = getTemperature(time_to);
+  double* temps_to   = getTemperature(time_to);
   double dt = _clock->getTime(time_to) - _clock->getTime(time_from);
 
   #pragma omp parallel for
   for (int i=0; i < _num_shape_cells; i++){
 
     double fission_rate_from = 0.0;
-    double fission_rate_to = 0.0;
+    double fission_rate_to   = 0.0;
     Material* material = _geometry->getMaterial(i);
     
     if (material->isFissionable()){
       for (int g=0; g < _num_energy_groups; g++){
         fission_rate_from += material->getSigmaFByGroup(g, time_from, temps_from[i]) *
           getFluxByValue(i, g, time_from);
-        fission_rate_to += material->getSigmaFByGroup(g, time_to, temps_to[i]) *
+        fission_rate_to   += material->getSigmaFByGroup(g, time_to  , temps_to[i]  ) *
           getFluxByValue(i, g, time_to);
       }
       
@@ -761,7 +781,7 @@ void Solver::computeShape(int time, int time_flux, int time_amp){
   for (int i=0; i < _num_amp_cells; i++){
 
     std::vector<int>::iterator iter;
-    for (iter = amp_to_shape.begin(); iter != amp_to_shape.end(); ++iter){
+    for (iter = amp_to_shape[i].begin(); iter != amp_to_shape[i].end(); ++iter){
       
       for (int g=0; g < _num_energy_groups; g++){
         double flux = getFluxByValue(*iter, g, time_flux);
@@ -819,7 +839,7 @@ void Solver::reconstructFlux(int time, int time_shape, int time_amp){
   for (int i=0; i < _num_amp_cells; i++){
 
     std::vector<int>::iterator iter;
-    for (iter = amp_to_shape.begin(); iter != amp_to_shape.end(); ++iter){
+    for (iter = amp_to_shape[i].begin(); iter != amp_to_shape[i].end(); ++iter){
       
       for (int g=0; g < _num_energy_groups; g++){
         double shape = getShapeByValue(*iter, g, time_shape);
@@ -851,7 +871,7 @@ void Solver::computeDiffusionCoefficients(int time){
   int nx = _geometry->getNumXAmp();
   int ny = _geometry->getNumYAmp();
   int nz = _geometry->getNumZAmp();
-  int ng = _num_energy_groups
+  int ng = _num_energy_groups;
   double width = _geometry->getWidth() / nx;
   double height = _geometry->getHeight() / ny;
   double depth = _geometry->getDepth() / nz;
@@ -867,7 +887,6 @@ void Solver::computeDiffusionCoefficients(int time){
   double trans_tally, rxn_tally, temp, volume, dif_coef, flux;
   Material* material;
   int cell_amp, cell_shape;
-  double temp, volume;
 
   /* Condense the diffusion coefficients */
   for (int i=0; i < _num_amp_cells; i++){
@@ -878,13 +897,13 @@ void Solver::computeDiffusionCoefficients(int time){
       
       /* Loop over shape cells in this amp cell */
       std::vector<int>::iterator iter;
-      for (iter = amp_to_shape.begin(); iter != amp_to_shape.end(); ++iter){
+      for (iter = amp_to_shape[i].begin(); iter != amp_to_shape[i].end(); ++iter){
         
         cell_shape = *iter;
         material = _geometry->getMaterial(cell_shape);
         temp = temps[cell_shape];
         volume = _geometry->getVolume(cell_shape);
-        dif_coef = material->getDifCoef(cell_shape, e, time);
+        dif_coef = material->getDifCoefByGroup(e, time, temp);
         flux = getFluxByValue(cell_shape, e, time);
         
         trans_tally += 1.0 / (3.0*dif_coef) * flux * volume;
@@ -938,8 +957,8 @@ void Solver::computeDiffusionCoefficients(int time){
               dif_linear = 2 * dif_coef / length_perpen / 
                 (1 + 4 * dif_coef / length_perpen);
               dif_nonlinear = (sense * dif_linear * flux - current / length) / flux;
-              dif_linear *= _boundaries[s];
-              dif_nonlinear *= _boundaries[s];
+              dif_linear *= _geometry->getBoundary(s);
+              dif_nonlinear *= _geometry->getBoundary(s);
             }
             else{
               flux_next = getAmplitudeByValue(cell_next, g, time);
@@ -1024,7 +1043,7 @@ void Solver::computeFrequency(){
 
           /* Loop over shape cells in this amp cell */
           std::vector<int>::iterator iter;
-          for (iter = amp_to_shape.begin(); iter != amp_to_shape.end(); ++iter){
+          for (iter = amp_to_shape[cell_amp].begin(); iter != amp_to_shape[cell_amp].end(); ++iter){
             
             int cell_shape = *iter;
             Material* material = _geometry->getMaterial(cell_shape);
@@ -1032,7 +1051,7 @@ void Solver::computeFrequency(){
             double volume = _geometry->getVolume(cell_shape);
             int row_shape = cell_shape*ng + e;
 
-            double mult = - material->getVelocity(e, CURRENT, temp) / 
+            double mult = - material->getVelocityByGroup(e, CURRENT, temp) / 
               (volume * shape[row_shape]);
 
             /* Time absorption term on the diagonal */
@@ -1097,8 +1116,8 @@ void Solver::computeFrequency(){
           /* Transport term on off diagonals */
           if (x != 0){
             frequency[row_amp] -= mult * 
-              (_amp_mesh->getDifLinearByValue(cell_amp, e, 0, CURRENT) -
-               _amp_mesh->getDifNonlinearByValue(cell_amp, e, 0, CURRENT)) * height * 
+              (getDifLinearByValue(cell_amp, e, 0, CURRENT) -
+               getDifNonlinearByValue(cell_amp, e, 0, CURRENT)) * height * 
               depth * amp[(cell_amp-1)*ng+e];
           }
 
@@ -1203,6 +1222,16 @@ double Solver::getKeff0(){
 }
 
 
-double Solver::setInitialPower(double power){
+void Solver::setInitialPower(double power){
   _initial_power = power;
+}
+
+
+transientMethod Solver::getMethod(){
+  return _method;
+}
+
+
+void Solver::setMethod(transientMethod method){
+  _method = method;
 }

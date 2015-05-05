@@ -2937,20 +2937,20 @@ SWIG_Python_NonDynamicSetAttr(PyObject *obj, PyObject *name, PyObject *value) {
 
 /* -------- TYPES TABLE (BEGIN) -------- */
 
-#define SWIGTYPE_p_AmpMesh swig_types[0]
-#define SWIGTYPE_p_Clock swig_types[1]
-#define SWIGTYPE_p_FunctionalMaterial swig_types[2]
-#define SWIGTYPE_p_Material swig_types[3]
-#define SWIGTYPE_p_Mesh swig_types[4]
+#define SWIGTYPE_p_Clock swig_types[0]
+#define SWIGTYPE_p_FunctionalMaterial swig_types[1]
+#define SWIGTYPE_p_Geometry swig_types[2]
+#define SWIGTYPE_p_GeometryDiffusion swig_types[3]
+#define SWIGTYPE_p_Material swig_types[4]
 #define SWIGTYPE_p_Solver swig_types[5]
-#define SWIGTYPE_p_StructuredMesh swig_types[6]
-#define SWIGTYPE_p_StructuredShapeMesh swig_types[7]
-#define SWIGTYPE_p_Transient swig_types[8]
-#define SWIGTYPE_p_char swig_types[9]
-#define SWIGTYPE_p_double swig_types[10]
-#define SWIGTYPE_p_logLevels swig_types[11]
-#define SWIGTYPE_p_p_double swig_types[12]
-#define SWIGTYPE_p_std__string swig_types[13]
+#define SWIGTYPE_p_SolverDiffusion swig_types[6]
+#define SWIGTYPE_p_char swig_types[7]
+#define SWIGTYPE_p_double swig_types[8]
+#define SWIGTYPE_p_int swig_types[9]
+#define SWIGTYPE_p_logLevels swig_types[10]
+#define SWIGTYPE_p_p_double swig_types[11]
+#define SWIGTYPE_p_std__string swig_types[12]
+#define SWIGTYPE_p_std__vectorT_std__vectorT_int_t_t swig_types[13]
 static swig_type_info *swig_types[15];
 static swig_module_info swig_module = {swig_types, 14, 0, 0, 0, 0};
 #define SWIG_TypeQuery(name) SWIG_TypeQueryModule(&swig_module, &swig_module, name)
@@ -3055,12 +3055,10 @@ namespace swig {
   #include "../src/Material.h"
   #include "../src/FunctionalMaterial.h"
   #include "../src/Clock.h"
-  #include "../src/Mesh.h"
-  #include "../src/StructuredMesh.h"
-  #include "../src/StructuredShapeMesh.h"
-  #include "../src/AmpMesh.h"
   #include "../src/Solver.h"
-  #include "../src/Transient.h"
+  #include "../src/SolverDiffusion.h"
+  #include "../src/Geometry.h"
+  #include "../src/GeometryDiffusion.h"
   
   #define printf PySys_WriteStdout
 
@@ -3869,17 +3867,6 @@ SWIGINTERNINLINE PyObject*
   SWIG_From_bool  (bool value)
 {
   return PyBool_FromLong(value ? 1 : 0);
-}
-
-
-SWIGINTERN int
-SWIG_AsVal_bool (PyObject *obj, bool *val)
-{
-  int r = PyObject_IsTrue(obj);
-  if (r == -1)
-    return SWIG_ERROR;
-  if (val) *val = r ? true : false;
-  return SWIG_OK;
 }
 
 #ifdef __cplusplus
@@ -6500,6 +6487,124 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_Material_setDecayConstantByGroup(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Material *arg1 = (Material *) 0 ;
+  double arg2 ;
+  int arg3 ;
+  int arg4 = (int) CURRENT ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  int val4 ;
+  int ecode4 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "xs",(char *) "group",(char *) "position", NULL 
+  };
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOO|O:Material_setDecayConstantByGroup",kwnames,&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Material, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Material_setDecayConstantByGroup" "', argument " "1"" of type '" "Material *""'"); 
+  }
+  arg1 = reinterpret_cast< Material * >(argp1);
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Material_setDecayConstantByGroup" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = static_cast< double >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Material_setDecayConstantByGroup" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  if (obj3) {
+    ecode4 = SWIG_AsVal_int(obj3, &val4);
+    if (!SWIG_IsOK(ecode4)) {
+      SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "Material_setDecayConstantByGroup" "', argument " "4"" of type '" "int""'");
+    } 
+    arg4 = static_cast< int >(val4);
+  }
+  {
+    try {
+      (arg1)->setDecayConstantByGroup(arg2,arg3,arg4);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Material_setDelayedFractionByGroup(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Material *arg1 = (Material *) 0 ;
+  double arg2 ;
+  int arg3 ;
+  int arg4 = (int) CURRENT ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  int val4 ;
+  int ecode4 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "xs",(char *) "group",(char *) "position", NULL 
+  };
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOO|O:Material_setDelayedFractionByGroup",kwnames,&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Material, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Material_setDelayedFractionByGroup" "', argument " "1"" of type '" "Material *""'"); 
+  }
+  arg1 = reinterpret_cast< Material * >(argp1);
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Material_setDelayedFractionByGroup" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = static_cast< double >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Material_setDelayedFractionByGroup" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  if (obj3) {
+    ecode4 = SWIG_AsVal_int(obj3, &val4);
+    if (!SWIG_IsOK(ecode4)) {
+      SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "Material_setDelayedFractionByGroup" "', argument " "4"" of type '" "int""'");
+    } 
+    arg4 = static_cast< int >(val4);
+  }
+  {
+    try {
+      (arg1)->setDelayedFractionByGroup(arg2,arg3,arg4);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *_wrap_Material_setClock(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
   PyObject *resultobj = 0;
   Material *arg1 = (Material *) 0 ;
@@ -6892,6 +6997,62 @@ SWIGINTERN PyObject *_wrap_Material_getPrecursorConc(PyObject *SWIGUNUSEDPARM(se
   {
     try {
       result = (double *)(arg1)->getPrecursorConc();
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_double, 0 |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Material_getDecayConstant(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Material *arg1 = (Material *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  double *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:Material_getDecayConstant",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Material, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Material_getDecayConstant" "', argument " "1"" of type '" "Material *""'"); 
+  }
+  arg1 = reinterpret_cast< Material * >(argp1);
+  {
+    try {
+      result = (double *)(arg1)->getDecayConstant();
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_double, 0 |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Material_getDelayedFraction(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Material *arg1 = (Material *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  double *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:Material_getDelayedFraction",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Material, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Material_getDelayedFraction" "', argument " "1"" of type '" "Material *""'"); 
+  }
+  arg1 = reinterpret_cast< Material * >(argp1);
+  {
+    try {
+      result = (double *)(arg1)->getDelayedFraction();
     } catch (const std::exception &e) {
       SWIG_exception(SWIG_RuntimeError, e.what());
     }
@@ -7459,6 +7620,183 @@ SWIGINTERN PyObject *_wrap_Material_getPrecursorConcByGroup(PyObject *SWIGUNUSED
   {
     try {
       result = (double)(arg1)->getPrecursorConcByGroup(arg2,arg3,arg4);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_From_double(static_cast< double >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Material_getDecayConstantByGroup(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Material *arg1 = (Material *) 0 ;
+  int arg2 ;
+  int arg3 = (int) CURRENT ;
+  double arg4 = (double) 0.0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  double val4 ;
+  int ecode4 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "group",(char *) "position",(char *) "temp", NULL 
+  };
+  double result;
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO|OO:Material_getDecayConstantByGroup",kwnames,&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Material, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Material_getDecayConstantByGroup" "', argument " "1"" of type '" "Material *""'"); 
+  }
+  arg1 = reinterpret_cast< Material * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Material_getDecayConstantByGroup" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  if (obj2) {
+    ecode3 = SWIG_AsVal_int(obj2, &val3);
+    if (!SWIG_IsOK(ecode3)) {
+      SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Material_getDecayConstantByGroup" "', argument " "3"" of type '" "int""'");
+    } 
+    arg3 = static_cast< int >(val3);
+  }
+  if (obj3) {
+    ecode4 = SWIG_AsVal_double(obj3, &val4);
+    if (!SWIG_IsOK(ecode4)) {
+      SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "Material_getDecayConstantByGroup" "', argument " "4"" of type '" "double""'");
+    } 
+    arg4 = static_cast< double >(val4);
+  }
+  {
+    try {
+      result = (double)(arg1)->getDecayConstantByGroup(arg2,arg3,arg4);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_From_double(static_cast< double >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Material_getDelayedFractionByGroup(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Material *arg1 = (Material *) 0 ;
+  int arg2 ;
+  int arg3 = (int) CURRENT ;
+  double arg4 = (double) 0.0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  double val4 ;
+  int ecode4 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "group",(char *) "position",(char *) "temp", NULL 
+  };
+  double result;
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO|OO:Material_getDelayedFractionByGroup",kwnames,&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Material, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Material_getDelayedFractionByGroup" "', argument " "1"" of type '" "Material *""'"); 
+  }
+  arg1 = reinterpret_cast< Material * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Material_getDelayedFractionByGroup" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  if (obj2) {
+    ecode3 = SWIG_AsVal_int(obj2, &val3);
+    if (!SWIG_IsOK(ecode3)) {
+      SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Material_getDelayedFractionByGroup" "', argument " "3"" of type '" "int""'");
+    } 
+    arg3 = static_cast< int >(val3);
+  }
+  if (obj3) {
+    ecode4 = SWIG_AsVal_double(obj3, &val4);
+    if (!SWIG_IsOK(ecode4)) {
+      SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "Material_getDelayedFractionByGroup" "', argument " "4"" of type '" "double""'");
+    } 
+    arg4 = static_cast< double >(val4);
+  }
+  {
+    try {
+      result = (double)(arg1)->getDelayedFractionByGroup(arg2,arg3,arg4);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_From_double(static_cast< double >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Material_getDelayedFractionTotal(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Material *arg1 = (Material *) 0 ;
+  int arg2 = (int) CURRENT ;
+  double arg3 = (double) 0.0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  double val3 ;
+  int ecode3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "position",(char *) "temp", NULL 
+  };
+  double result;
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"O|OO:Material_getDelayedFractionTotal",kwnames,&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Material, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Material_getDelayedFractionTotal" "', argument " "1"" of type '" "Material *""'"); 
+  }
+  arg1 = reinterpret_cast< Material * >(argp1);
+  if (obj1) {
+    ecode2 = SWIG_AsVal_int(obj1, &val2);
+    if (!SWIG_IsOK(ecode2)) {
+      SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Material_getDelayedFractionTotal" "', argument " "2"" of type '" "int""'");
+    } 
+    arg2 = static_cast< int >(val2);
+  }
+  if (obj2) {
+    ecode3 = SWIG_AsVal_double(obj2, &val3);
+    if (!SWIG_IsOK(ecode3)) {
+      SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Material_getDelayedFractionTotal" "', argument " "3"" of type '" "double""'");
+    } 
+    arg3 = static_cast< double >(val3);
+  }
+  {
+    try {
+      result = (double)(arg1)->getDelayedFractionTotal(arg2,arg3);
     } catch (const std::exception &e) {
       SWIG_exception(SWIG_RuntimeError, e.what());
     }
@@ -10114,5699 +10452,6 @@ SWIGINTERN PyObject *Clock_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject
   return SWIG_Py_Void();
 }
 
-SWIGINTERN PyObject *_wrap_new_Mesh(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  double arg1 = (double) 1.0 ;
-  double arg2 = (double) 1.0 ;
-  double arg3 = (double) 1.0 ;
-  double val1 ;
-  int ecode1 = 0 ;
-  double val2 ;
-  int ecode2 = 0 ;
-  double val3 ;
-  int ecode3 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  char *  kwnames[] = {
-    (char *) "width",(char *) "height",(char *) "depth", NULL 
-  };
-  Mesh *result = 0 ;
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"|OOO:new_Mesh",kwnames,&obj0,&obj1,&obj2)) SWIG_fail;
-  if (obj0) {
-    ecode1 = SWIG_AsVal_double(obj0, &val1);
-    if (!SWIG_IsOK(ecode1)) {
-      SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "new_Mesh" "', argument " "1"" of type '" "double""'");
-    } 
-    arg1 = static_cast< double >(val1);
-  }
-  if (obj1) {
-    ecode2 = SWIG_AsVal_double(obj1, &val2);
-    if (!SWIG_IsOK(ecode2)) {
-      SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "new_Mesh" "', argument " "2"" of type '" "double""'");
-    } 
-    arg2 = static_cast< double >(val2);
-  }
-  if (obj2) {
-    ecode3 = SWIG_AsVal_double(obj2, &val3);
-    if (!SWIG_IsOK(ecode3)) {
-      SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "new_Mesh" "', argument " "3"" of type '" "double""'");
-    } 
-    arg3 = static_cast< double >(val3);
-  }
-  {
-    try {
-      result = (Mesh *)new Mesh(arg1,arg2,arg3);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_Mesh, SWIG_POINTER_NEW |  0 );
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_delete_Mesh(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:delete_Mesh",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Mesh, SWIG_POINTER_DISOWN |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_Mesh" "', argument " "1"" of type '" "Mesh *""'"); 
-  }
-  arg1 = reinterpret_cast< Mesh * >(argp1);
-  {
-    try {
-      delete arg1;
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Mesh_setNumShapeEnergyGroups(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "num_groups", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Mesh_setNumShapeEnergyGroups",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Mesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Mesh_setNumShapeEnergyGroups" "', argument " "1"" of type '" "Mesh *""'"); 
-  }
-  arg1 = reinterpret_cast< Mesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Mesh_setNumShapeEnergyGroups" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  {
-    try {
-      (arg1)->setNumShapeEnergyGroups(arg2);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Mesh_setNumAmpEnergyGroups(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "num_groups", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Mesh_setNumAmpEnergyGroups",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Mesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Mesh_setNumAmpEnergyGroups" "', argument " "1"" of type '" "Mesh *""'"); 
-  }
-  arg1 = reinterpret_cast< Mesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Mesh_setNumAmpEnergyGroups" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  {
-    try {
-      (arg1)->setNumAmpEnergyGroups(arg2);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Mesh_setNumDelayedGroups(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "num_groups", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Mesh_setNumDelayedGroups",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Mesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Mesh_setNumDelayedGroups" "', argument " "1"" of type '" "Mesh *""'"); 
-  }
-  arg1 = reinterpret_cast< Mesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Mesh_setNumDelayedGroups" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  {
-    try {
-      (arg1)->setNumDelayedGroups(arg2);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Mesh_setXMin(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
-  double arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  double val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "x_min", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Mesh_setXMin",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Mesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Mesh_setXMin" "', argument " "1"" of type '" "Mesh *""'"); 
-  }
-  arg1 = reinterpret_cast< Mesh * >(argp1);
-  ecode2 = SWIG_AsVal_double(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Mesh_setXMin" "', argument " "2"" of type '" "double""'");
-  } 
-  arg2 = static_cast< double >(val2);
-  {
-    try {
-      (arg1)->setXMin(arg2);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Mesh_setXMax(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
-  double arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  double val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "x_max", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Mesh_setXMax",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Mesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Mesh_setXMax" "', argument " "1"" of type '" "Mesh *""'"); 
-  }
-  arg1 = reinterpret_cast< Mesh * >(argp1);
-  ecode2 = SWIG_AsVal_double(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Mesh_setXMax" "', argument " "2"" of type '" "double""'");
-  } 
-  arg2 = static_cast< double >(val2);
-  {
-    try {
-      (arg1)->setXMax(arg2);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Mesh_setYMin(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
-  double arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  double val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "y_min", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Mesh_setYMin",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Mesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Mesh_setYMin" "', argument " "1"" of type '" "Mesh *""'"); 
-  }
-  arg1 = reinterpret_cast< Mesh * >(argp1);
-  ecode2 = SWIG_AsVal_double(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Mesh_setYMin" "', argument " "2"" of type '" "double""'");
-  } 
-  arg2 = static_cast< double >(val2);
-  {
-    try {
-      (arg1)->setYMin(arg2);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Mesh_setYMax(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
-  double arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  double val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "y_max", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Mesh_setYMax",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Mesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Mesh_setYMax" "', argument " "1"" of type '" "Mesh *""'"); 
-  }
-  arg1 = reinterpret_cast< Mesh * >(argp1);
-  ecode2 = SWIG_AsVal_double(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Mesh_setYMax" "', argument " "2"" of type '" "double""'");
-  } 
-  arg2 = static_cast< double >(val2);
-  {
-    try {
-      (arg1)->setYMax(arg2);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Mesh_setZMin(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
-  double arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  double val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "z_min", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Mesh_setZMin",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Mesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Mesh_setZMin" "', argument " "1"" of type '" "Mesh *""'"); 
-  }
-  arg1 = reinterpret_cast< Mesh * >(argp1);
-  ecode2 = SWIG_AsVal_double(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Mesh_setZMin" "', argument " "2"" of type '" "double""'");
-  } 
-  arg2 = static_cast< double >(val2);
-  {
-    try {
-      (arg1)->setZMin(arg2);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Mesh_setZMax(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
-  double arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  double val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "z_max", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Mesh_setZMax",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Mesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Mesh_setZMax" "', argument " "1"" of type '" "Mesh *""'"); 
-  }
-  arg1 = reinterpret_cast< Mesh * >(argp1);
-  ecode2 = SWIG_AsVal_double(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Mesh_setZMax" "', argument " "2"" of type '" "double""'");
-  } 
-  arg2 = static_cast< double >(val2);
-  {
-    try {
-      (arg1)->setZMax(arg2);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Mesh_setKeff0(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
-  double arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  double val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "k_eff_0", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Mesh_setKeff0",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Mesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Mesh_setKeff0" "', argument " "1"" of type '" "Mesh *""'"); 
-  }
-  arg1 = reinterpret_cast< Mesh * >(argp1);
-  ecode2 = SWIG_AsVal_double(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Mesh_setKeff0" "', argument " "2"" of type '" "double""'");
-  } 
-  arg2 = static_cast< double >(val2);
-  {
-    try {
-      (arg1)->setKeff0(arg2);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Mesh_setBoundary(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
-  int arg2 ;
-  boundaryType arg3 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  int val3 ;
-  int ecode3 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "side",(char *) "boundary", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOO:Mesh_setBoundary",kwnames,&obj0,&obj1,&obj2)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Mesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Mesh_setBoundary" "', argument " "1"" of type '" "Mesh *""'"); 
-  }
-  arg1 = reinterpret_cast< Mesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Mesh_setBoundary" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  ecode3 = SWIG_AsVal_int(obj2, &val3);
-  if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Mesh_setBoundary" "', argument " "3"" of type '" "boundaryType""'");
-  } 
-  arg3 = static_cast< boundaryType >(val3);
-  {
-    try {
-      (arg1)->setBoundary(arg2,arg3);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Mesh_setMaterial(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
-  Material *arg2 = (Material *) 0 ;
-  int arg3 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  void *argp2 = 0 ;
-  int res2 = 0 ;
-  int val3 ;
-  int ecode3 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "material",(char *) "cell", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOO:Mesh_setMaterial",kwnames,&obj0,&obj1,&obj2)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Mesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Mesh_setMaterial" "', argument " "1"" of type '" "Mesh *""'"); 
-  }
-  arg1 = reinterpret_cast< Mesh * >(argp1);
-  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_Material, 0 |  0 );
-  if (!SWIG_IsOK(res2)) {
-    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "Mesh_setMaterial" "', argument " "2"" of type '" "Material *""'"); 
-  }
-  arg2 = reinterpret_cast< Material * >(argp2);
-  ecode3 = SWIG_AsVal_int(obj2, &val3);
-  if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Mesh_setMaterial" "', argument " "3"" of type '" "int""'");
-  } 
-  arg3 = static_cast< int >(val3);
-  {
-    try {
-      (arg1)->setMaterial(arg2,arg3);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Mesh_setBuckling(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
-  double arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  double val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "buckling", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Mesh_setBuckling",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Mesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Mesh_setBuckling" "', argument " "1"" of type '" "Mesh *""'"); 
-  }
-  arg1 = reinterpret_cast< Mesh * >(argp1);
-  ecode2 = SWIG_AsVal_double(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Mesh_setBuckling" "', argument " "2"" of type '" "double""'");
-  } 
-  arg2 = static_cast< double >(val2);
-  {
-    try {
-      (arg1)->setBuckling(arg2);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Mesh_setDecayConstants(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
-  double *arg2 = (double *) 0 ;
-  int arg3 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyArrayObject *array2 = NULL ;
-  int is_new_object2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "xs", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Mesh_setDecayConstants",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Mesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Mesh_setDecayConstants" "', argument " "1"" of type '" "Mesh *""'"); 
-  }
-  arg1 = reinterpret_cast< Mesh * >(argp1);
-  {
-    npy_intp size[1] = {
-      -1 
-    };
-    array2 = obj_to_array_contiguous_allow_conversion(obj1,
-      NPY_DOUBLE,
-      &is_new_object2);
-    if (!array2 || !require_dimensions(array2, 1) ||
-      !require_size(array2, size, 1)) SWIG_fail;
-    arg2 = (double*) array_data(array2);
-    arg3 = (int) array_size(array2,0);
-  }
-  {
-    try {
-      (arg1)->setDecayConstants(arg2,arg3);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  {
-    if (is_new_object2 && array2)
-    {
-      Py_DECREF(array2); 
-    }
-  }
-  return resultobj;
-fail:
-  {
-    if (is_new_object2 && array2)
-    {
-      Py_DECREF(array2); 
-    }
-  }
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Mesh_setDelayedFractions(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
-  double *arg2 = (double *) 0 ;
-  int arg3 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyArrayObject *array2 = NULL ;
-  int is_new_object2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "xs", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Mesh_setDelayedFractions",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Mesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Mesh_setDelayedFractions" "', argument " "1"" of type '" "Mesh *""'"); 
-  }
-  arg1 = reinterpret_cast< Mesh * >(argp1);
-  {
-    npy_intp size[1] = {
-      -1 
-    };
-    array2 = obj_to_array_contiguous_allow_conversion(obj1,
-      NPY_DOUBLE,
-      &is_new_object2);
-    if (!array2 || !require_dimensions(array2, 1) ||
-      !require_size(array2, size, 1)) SWIG_fail;
-    arg2 = (double*) array_data(array2);
-    arg3 = (int) array_size(array2,0);
-  }
-  {
-    try {
-      (arg1)->setDelayedFractions(arg2,arg3);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  {
-    if (is_new_object2 && array2)
-    {
-      Py_DECREF(array2); 
-    }
-  }
-  return resultobj;
-fail:
-  {
-    if (is_new_object2 && array2)
-    {
-      Py_DECREF(array2); 
-    }
-  }
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Mesh_getKeff0(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  double result;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:Mesh_getKeff0",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Mesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Mesh_getKeff0" "', argument " "1"" of type '" "Mesh *""'"); 
-  }
-  arg1 = reinterpret_cast< Mesh * >(argp1);
-  {
-    try {
-      result = (double)(arg1)->getKeff0();
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_From_double(static_cast< double >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Mesh_getClock(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  Clock *result = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:Mesh_getClock",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Mesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Mesh_getClock" "', argument " "1"" of type '" "Mesh *""'"); 
-  }
-  arg1 = reinterpret_cast< Mesh * >(argp1);
-  {
-    try {
-      result = (Clock *)(arg1)->getClock();
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_Clock, 0 |  0 );
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Mesh_getWidth(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  double result;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:Mesh_getWidth",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Mesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Mesh_getWidth" "', argument " "1"" of type '" "Mesh *""'"); 
-  }
-  arg1 = reinterpret_cast< Mesh * >(argp1);
-  {
-    try {
-      result = (double)(arg1)->getWidth();
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_From_double(static_cast< double >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Mesh_getHeight(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  double result;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:Mesh_getHeight",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Mesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Mesh_getHeight" "', argument " "1"" of type '" "Mesh *""'"); 
-  }
-  arg1 = reinterpret_cast< Mesh * >(argp1);
-  {
-    try {
-      result = (double)(arg1)->getHeight();
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_From_double(static_cast< double >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Mesh_getDepth(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  double result;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:Mesh_getDepth",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Mesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Mesh_getDepth" "', argument " "1"" of type '" "Mesh *""'"); 
-  }
-  arg1 = reinterpret_cast< Mesh * >(argp1);
-  {
-    try {
-      result = (double)(arg1)->getDepth();
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_From_double(static_cast< double >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Mesh_getBoundary(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "side", NULL 
-  };
-  boundaryType result;
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Mesh_getBoundary",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Mesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Mesh_getBoundary" "', argument " "1"" of type '" "Mesh *""'"); 
-  }
-  arg1 = reinterpret_cast< Mesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Mesh_getBoundary" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  {
-    try {
-      result = (boundaryType)(arg1)->getBoundary(arg2);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_From_int(static_cast< int >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Mesh_getNumShapeEnergyGroups(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  int result;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:Mesh_getNumShapeEnergyGroups",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Mesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Mesh_getNumShapeEnergyGroups" "', argument " "1"" of type '" "Mesh *""'"); 
-  }
-  arg1 = reinterpret_cast< Mesh * >(argp1);
-  {
-    try {
-      result = (int)(arg1)->getNumShapeEnergyGroups();
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_From_int(static_cast< int >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Mesh_getNumAmpEnergyGroups(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  int result;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:Mesh_getNumAmpEnergyGroups",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Mesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Mesh_getNumAmpEnergyGroups" "', argument " "1"" of type '" "Mesh *""'"); 
-  }
-  arg1 = reinterpret_cast< Mesh * >(argp1);
-  {
-    try {
-      result = (int)(arg1)->getNumAmpEnergyGroups();
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_From_int(static_cast< int >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Mesh_getNumDelayedGroups(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  int result;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:Mesh_getNumDelayedGroups",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Mesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Mesh_getNumDelayedGroups" "', argument " "1"" of type '" "Mesh *""'"); 
-  }
-  arg1 = reinterpret_cast< Mesh * >(argp1);
-  {
-    try {
-      result = (int)(arg1)->getNumDelayedGroups();
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_From_int(static_cast< int >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Mesh_getBuckling(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  double result;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:Mesh_getBuckling",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Mesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Mesh_getBuckling" "', argument " "1"" of type '" "Mesh *""'"); 
-  }
-  arg1 = reinterpret_cast< Mesh * >(argp1);
-  {
-    try {
-      result = (double)(arg1)->getBuckling();
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_From_double(static_cast< double >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Mesh_getDecayConstants(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  double *result = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:Mesh_getDecayConstants",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Mesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Mesh_getDecayConstants" "', argument " "1"" of type '" "Mesh *""'"); 
-  }
-  arg1 = reinterpret_cast< Mesh * >(argp1);
-  {
-    try {
-      result = (double *)(arg1)->getDecayConstants();
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_double, 0 |  0 );
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Mesh_getDelayedFractions(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  double *result = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:Mesh_getDelayedFractions",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Mesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Mesh_getDelayedFractions" "', argument " "1"" of type '" "Mesh *""'"); 
-  }
-  arg1 = reinterpret_cast< Mesh * >(argp1);
-  {
-    try {
-      result = (double *)(arg1)->getDelayedFractions();
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_double, 0 |  0 );
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Mesh_getDecayConstantByGroup(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "group", NULL 
-  };
-  double result;
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Mesh_getDecayConstantByGroup",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Mesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Mesh_getDecayConstantByGroup" "', argument " "1"" of type '" "Mesh *""'"); 
-  }
-  arg1 = reinterpret_cast< Mesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Mesh_getDecayConstantByGroup" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  {
-    try {
-      result = (double)(arg1)->getDecayConstantByGroup(arg2);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_From_double(static_cast< double >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Mesh_getDelayedFractionByGroup(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "group", NULL 
-  };
-  double result;
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Mesh_getDelayedFractionByGroup",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Mesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Mesh_getDelayedFractionByGroup" "', argument " "1"" of type '" "Mesh *""'"); 
-  }
-  arg1 = reinterpret_cast< Mesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Mesh_getDelayedFractionByGroup" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  {
-    try {
-      result = (double)(arg1)->getDelayedFractionByGroup(arg2);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_From_double(static_cast< double >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Mesh_getXMin(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  double result;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:Mesh_getXMin",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Mesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Mesh_getXMin" "', argument " "1"" of type '" "Mesh *""'"); 
-  }
-  arg1 = reinterpret_cast< Mesh * >(argp1);
-  {
-    try {
-      result = (double)(arg1)->getXMin();
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_From_double(static_cast< double >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Mesh_getXMax(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  double result;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:Mesh_getXMax",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Mesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Mesh_getXMax" "', argument " "1"" of type '" "Mesh *""'"); 
-  }
-  arg1 = reinterpret_cast< Mesh * >(argp1);
-  {
-    try {
-      result = (double)(arg1)->getXMax();
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_From_double(static_cast< double >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Mesh_getYMin(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  double result;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:Mesh_getYMin",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Mesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Mesh_getYMin" "', argument " "1"" of type '" "Mesh *""'"); 
-  }
-  arg1 = reinterpret_cast< Mesh * >(argp1);
-  {
-    try {
-      result = (double)(arg1)->getYMin();
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_From_double(static_cast< double >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Mesh_getYMax(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  double result;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:Mesh_getYMax",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Mesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Mesh_getYMax" "', argument " "1"" of type '" "Mesh *""'"); 
-  }
-  arg1 = reinterpret_cast< Mesh * >(argp1);
-  {
-    try {
-      result = (double)(arg1)->getYMax();
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_From_double(static_cast< double >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Mesh_getZMin(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  double result;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:Mesh_getZMin",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Mesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Mesh_getZMin" "', argument " "1"" of type '" "Mesh *""'"); 
-  }
-  arg1 = reinterpret_cast< Mesh * >(argp1);
-  {
-    try {
-      result = (double)(arg1)->getZMin();
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_From_double(static_cast< double >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Mesh_getZMax(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  double result;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:Mesh_getZMax",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Mesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Mesh_getZMax" "', argument " "1"" of type '" "Mesh *""'"); 
-  }
-  arg1 = reinterpret_cast< Mesh * >(argp1);
-  {
-    try {
-      result = (double)(arg1)->getZMax();
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_From_double(static_cast< double >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Mesh_getFlux(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "position", NULL 
-  };
-  double *result = 0 ;
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Mesh_getFlux",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Mesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Mesh_getFlux" "', argument " "1"" of type '" "Mesh *""'"); 
-  }
-  arg1 = reinterpret_cast< Mesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Mesh_getFlux" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  {
-    try {
-      result = (double *)(arg1)->getFlux(arg2);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_double, 0 |  0 );
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Mesh_getPower(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "position", NULL 
-  };
-  double *result = 0 ;
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Mesh_getPower",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Mesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Mesh_getPower" "', argument " "1"" of type '" "Mesh *""'"); 
-  }
-  arg1 = reinterpret_cast< Mesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Mesh_getPower" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  {
-    try {
-      result = (double *)(arg1)->getPower(arg2);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_double, 0 |  0 );
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Mesh_getTemperature(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "position", NULL 
-  };
-  double *result = 0 ;
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Mesh_getTemperature",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Mesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Mesh_getTemperature" "', argument " "1"" of type '" "Mesh *""'"); 
-  }
-  arg1 = reinterpret_cast< Mesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Mesh_getTemperature" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  {
-    try {
-      result = (double *)(arg1)->getTemperature(arg2);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_double, 0 |  0 );
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Mesh_getPowerByValue(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
-  int arg2 ;
-  int arg3 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  int val3 ;
-  int ecode3 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "cell",(char *) "position", NULL 
-  };
-  double result;
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOO:Mesh_getPowerByValue",kwnames,&obj0,&obj1,&obj2)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Mesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Mesh_getPowerByValue" "', argument " "1"" of type '" "Mesh *""'"); 
-  }
-  arg1 = reinterpret_cast< Mesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Mesh_getPowerByValue" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  ecode3 = SWIG_AsVal_int(obj2, &val3);
-  if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Mesh_getPowerByValue" "', argument " "3"" of type '" "int""'");
-  } 
-  arg3 = static_cast< int >(val3);
-  {
-    try {
-      result = (double)(arg1)->getPowerByValue(arg2,arg3);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_From_double(static_cast< double >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Mesh_getTemperatureByValue(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
-  int arg2 ;
-  int arg3 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  int val3 ;
-  int ecode3 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "cell",(char *) "position", NULL 
-  };
-  double result;
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOO:Mesh_getTemperatureByValue",kwnames,&obj0,&obj1,&obj2)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Mesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Mesh_getTemperatureByValue" "', argument " "1"" of type '" "Mesh *""'"); 
-  }
-  arg1 = reinterpret_cast< Mesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Mesh_getTemperatureByValue" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  ecode3 = SWIG_AsVal_int(obj2, &val3);
-  if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Mesh_getTemperatureByValue" "', argument " "3"" of type '" "int""'");
-  } 
-  arg3 = static_cast< int >(val3);
-  {
-    try {
-      result = (double)(arg1)->getTemperatureByValue(arg2,arg3);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_From_double(static_cast< double >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Mesh_getMaterial(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "cell", NULL 
-  };
-  Material *result = 0 ;
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Mesh_getMaterial",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Mesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Mesh_getMaterial" "', argument " "1"" of type '" "Mesh *""'"); 
-  }
-  arg1 = reinterpret_cast< Mesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Mesh_getMaterial" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  {
-    try {
-      result = (Material *)(arg1)->getMaterial(arg2);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_Material, 0 |  0 );
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *Mesh_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *obj;
-  if (!PyArg_ParseTuple(args,(char*)"O:swigregister", &obj)) return NULL;
-  SWIG_TypeNewClientData(SWIGTYPE_p_Mesh, SWIG_NewClientData(obj));
-  return SWIG_Py_Void();
-}
-
-SWIGINTERN PyObject *_wrap_new_StructuredMesh(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  double arg1 = (double) 1.0 ;
-  double arg2 = (double) 1.0 ;
-  double arg3 = (double) 1.0 ;
-  int arg4 = (int) 1 ;
-  int arg5 = (int) 1 ;
-  int arg6 = (int) 1 ;
-  double val1 ;
-  int ecode1 = 0 ;
-  double val2 ;
-  int ecode2 = 0 ;
-  double val3 ;
-  int ecode3 = 0 ;
-  int val4 ;
-  int ecode4 = 0 ;
-  int val5 ;
-  int ecode5 = 0 ;
-  int val6 ;
-  int ecode6 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  PyObject * obj3 = 0 ;
-  PyObject * obj4 = 0 ;
-  PyObject * obj5 = 0 ;
-  char *  kwnames[] = {
-    (char *) "width",(char *) "height",(char *) "depth",(char *) "num_x",(char *) "num_y",(char *) "num_z", NULL 
-  };
-  StructuredMesh *result = 0 ;
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"|OOOOOO:new_StructuredMesh",kwnames,&obj0,&obj1,&obj2,&obj3,&obj4,&obj5)) SWIG_fail;
-  if (obj0) {
-    ecode1 = SWIG_AsVal_double(obj0, &val1);
-    if (!SWIG_IsOK(ecode1)) {
-      SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "new_StructuredMesh" "', argument " "1"" of type '" "double""'");
-    } 
-    arg1 = static_cast< double >(val1);
-  }
-  if (obj1) {
-    ecode2 = SWIG_AsVal_double(obj1, &val2);
-    if (!SWIG_IsOK(ecode2)) {
-      SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "new_StructuredMesh" "', argument " "2"" of type '" "double""'");
-    } 
-    arg2 = static_cast< double >(val2);
-  }
-  if (obj2) {
-    ecode3 = SWIG_AsVal_double(obj2, &val3);
-    if (!SWIG_IsOK(ecode3)) {
-      SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "new_StructuredMesh" "', argument " "3"" of type '" "double""'");
-    } 
-    arg3 = static_cast< double >(val3);
-  }
-  if (obj3) {
-    ecode4 = SWIG_AsVal_int(obj3, &val4);
-    if (!SWIG_IsOK(ecode4)) {
-      SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "new_StructuredMesh" "', argument " "4"" of type '" "int""'");
-    } 
-    arg4 = static_cast< int >(val4);
-  }
-  if (obj4) {
-    ecode5 = SWIG_AsVal_int(obj4, &val5);
-    if (!SWIG_IsOK(ecode5)) {
-      SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "new_StructuredMesh" "', argument " "5"" of type '" "int""'");
-    } 
-    arg5 = static_cast< int >(val5);
-  }
-  if (obj5) {
-    ecode6 = SWIG_AsVal_int(obj5, &val6);
-    if (!SWIG_IsOK(ecode6)) {
-      SWIG_exception_fail(SWIG_ArgError(ecode6), "in method '" "new_StructuredMesh" "', argument " "6"" of type '" "int""'");
-    } 
-    arg6 = static_cast< int >(val6);
-  }
-  {
-    try {
-      result = (StructuredMesh *)new StructuredMesh(arg1,arg2,arg3,arg4,arg5,arg6);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_StructuredMesh, SWIG_POINTER_NEW |  0 );
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_delete_StructuredMesh(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  StructuredMesh *arg1 = (StructuredMesh *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:delete_StructuredMesh",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredMesh, SWIG_POINTER_DISOWN |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_StructuredMesh" "', argument " "1"" of type '" "StructuredMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredMesh * >(argp1);
-  {
-    try {
-      delete arg1;
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredMesh_setNumX(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  StructuredMesh *arg1 = (StructuredMesh *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "num_x", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:StructuredMesh_setNumX",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredMesh_setNumX" "', argument " "1"" of type '" "StructuredMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredMesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "StructuredMesh_setNumX" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  {
-    try {
-      (arg1)->setNumX(arg2);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredMesh_setNumY(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  StructuredMesh *arg1 = (StructuredMesh *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "num_y", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:StructuredMesh_setNumY",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredMesh_setNumY" "', argument " "1"" of type '" "StructuredMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredMesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "StructuredMesh_setNumY" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  {
-    try {
-      (arg1)->setNumY(arg2);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredMesh_setNumZ(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  StructuredMesh *arg1 = (StructuredMesh *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "num_z", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:StructuredMesh_setNumZ",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredMesh_setNumZ" "', argument " "1"" of type '" "StructuredMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredMesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "StructuredMesh_setNumZ" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  {
-    try {
-      (arg1)->setNumZ(arg2);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredMesh_setClock(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  StructuredMesh *arg1 = (StructuredMesh *) 0 ;
-  Clock *arg2 = (Clock *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  void *argp2 = 0 ;
-  int res2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "clock", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:StructuredMesh_setClock",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredMesh_setClock" "', argument " "1"" of type '" "StructuredMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredMesh * >(argp1);
-  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_Clock, 0 |  0 );
-  if (!SWIG_IsOK(res2)) {
-    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "StructuredMesh_setClock" "', argument " "2"" of type '" "Clock *""'"); 
-  }
-  arg2 = reinterpret_cast< Clock * >(argp2);
-  {
-    try {
-      (arg1)->setClock(arg2);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredMesh_getCurrent(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  StructuredMesh *arg1 = (StructuredMesh *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "position", NULL 
-  };
-  double *result = 0 ;
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:StructuredMesh_getCurrent",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredMesh_getCurrent" "', argument " "1"" of type '" "StructuredMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredMesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "StructuredMesh_getCurrent" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  {
-    try {
-      result = (double *)(arg1)->getCurrent(arg2);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_double, 0 |  0 );
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredMesh_getDifLinear(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  StructuredMesh *arg1 = (StructuredMesh *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "position", NULL 
-  };
-  double *result = 0 ;
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:StructuredMesh_getDifLinear",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredMesh_getDifLinear" "', argument " "1"" of type '" "StructuredMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredMesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "StructuredMesh_getDifLinear" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  {
-    try {
-      result = (double *)(arg1)->getDifLinear(arg2);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_double, 0 |  0 );
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredMesh_getDifNonlinear(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  StructuredMesh *arg1 = (StructuredMesh *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "position", NULL 
-  };
-  double *result = 0 ;
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:StructuredMesh_getDifNonlinear",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredMesh_getDifNonlinear" "', argument " "1"" of type '" "StructuredMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredMesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "StructuredMesh_getDifNonlinear" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  {
-    try {
-      result = (double *)(arg1)->getDifNonlinear(arg2);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_double, 0 |  0 );
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredMesh_getNeighborCell(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  StructuredMesh *arg1 = (StructuredMesh *) 0 ;
-  int arg2 ;
-  int arg3 ;
-  int arg4 ;
-  int arg5 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  int val3 ;
-  int ecode3 = 0 ;
-  int val4 ;
-  int ecode4 = 0 ;
-  int val5 ;
-  int ecode5 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  PyObject * obj3 = 0 ;
-  PyObject * obj4 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "x",(char *) "y",(char *) "z",(char *) "side", NULL 
-  };
-  int result;
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOOOO:StructuredMesh_getNeighborCell",kwnames,&obj0,&obj1,&obj2,&obj3,&obj4)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredMesh_getNeighborCell" "', argument " "1"" of type '" "StructuredMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredMesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "StructuredMesh_getNeighborCell" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  ecode3 = SWIG_AsVal_int(obj2, &val3);
-  if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "StructuredMesh_getNeighborCell" "', argument " "3"" of type '" "int""'");
-  } 
-  arg3 = static_cast< int >(val3);
-  ecode4 = SWIG_AsVal_int(obj3, &val4);
-  if (!SWIG_IsOK(ecode4)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "StructuredMesh_getNeighborCell" "', argument " "4"" of type '" "int""'");
-  } 
-  arg4 = static_cast< int >(val4);
-  ecode5 = SWIG_AsVal_int(obj4, &val5);
-  if (!SWIG_IsOK(ecode5)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "StructuredMesh_getNeighborCell" "', argument " "5"" of type '" "int""'");
-  } 
-  arg5 = static_cast< int >(val5);
-  {
-    try {
-      result = (int)(arg1)->getNeighborCell(arg2,arg3,arg4,arg5);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_From_int(static_cast< int >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredMesh_getNeighborMaterial(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  StructuredMesh *arg1 = (StructuredMesh *) 0 ;
-  int arg2 ;
-  int arg3 ;
-  int arg4 ;
-  int arg5 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  int val3 ;
-  int ecode3 = 0 ;
-  int val4 ;
-  int ecode4 = 0 ;
-  int val5 ;
-  int ecode5 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  PyObject * obj3 = 0 ;
-  PyObject * obj4 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "x",(char *) "y",(char *) "z",(char *) "side", NULL 
-  };
-  Material *result = 0 ;
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOOOO:StructuredMesh_getNeighborMaterial",kwnames,&obj0,&obj1,&obj2,&obj3,&obj4)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredMesh_getNeighborMaterial" "', argument " "1"" of type '" "StructuredMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredMesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "StructuredMesh_getNeighborMaterial" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  ecode3 = SWIG_AsVal_int(obj2, &val3);
-  if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "StructuredMesh_getNeighborMaterial" "', argument " "3"" of type '" "int""'");
-  } 
-  arg3 = static_cast< int >(val3);
-  ecode4 = SWIG_AsVal_int(obj3, &val4);
-  if (!SWIG_IsOK(ecode4)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "StructuredMesh_getNeighborMaterial" "', argument " "4"" of type '" "int""'");
-  } 
-  arg4 = static_cast< int >(val4);
-  ecode5 = SWIG_AsVal_int(obj4, &val5);
-  if (!SWIG_IsOK(ecode5)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "StructuredMesh_getNeighborMaterial" "', argument " "5"" of type '" "int""'");
-  } 
-  arg5 = static_cast< int >(val5);
-  {
-    try {
-      result = (Material *)(arg1)->getNeighborMaterial(arg2,arg3,arg4,arg5);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_Material, 0 |  0 );
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredMesh_getNumX(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  StructuredMesh *arg1 = (StructuredMesh *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  int result;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:StructuredMesh_getNumX",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredMesh_getNumX" "', argument " "1"" of type '" "StructuredMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredMesh * >(argp1);
-  {
-    try {
-      result = (int)(arg1)->getNumX();
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_From_int(static_cast< int >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredMesh_getNumY(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  StructuredMesh *arg1 = (StructuredMesh *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  int result;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:StructuredMesh_getNumY",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredMesh_getNumY" "', argument " "1"" of type '" "StructuredMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredMesh * >(argp1);
-  {
-    try {
-      result = (int)(arg1)->getNumY();
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_From_int(static_cast< int >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredMesh_getNumZ(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  StructuredMesh *arg1 = (StructuredMesh *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  int result;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:StructuredMesh_getNumZ",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredMesh_getNumZ" "', argument " "1"" of type '" "StructuredMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredMesh * >(argp1);
-  {
-    try {
-      result = (int)(arg1)->getNumZ();
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_From_int(static_cast< int >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredMesh_getCellWidth(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  StructuredMesh *arg1 = (StructuredMesh *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  double result;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:StructuredMesh_getCellWidth",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredMesh_getCellWidth" "', argument " "1"" of type '" "StructuredMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredMesh * >(argp1);
-  {
-    try {
-      result = (double)(arg1)->getCellWidth();
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_From_double(static_cast< double >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredMesh_getCellHeight(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  StructuredMesh *arg1 = (StructuredMesh *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  double result;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:StructuredMesh_getCellHeight",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredMesh_getCellHeight" "', argument " "1"" of type '" "StructuredMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredMesh * >(argp1);
-  {
-    try {
-      result = (double)(arg1)->getCellHeight();
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_From_double(static_cast< double >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredMesh_getCellDepth(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  StructuredMesh *arg1 = (StructuredMesh *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  double result;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:StructuredMesh_getCellDepth",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredMesh_getCellDepth" "', argument " "1"" of type '" "StructuredMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredMesh * >(argp1);
-  {
-    try {
-      result = (double)(arg1)->getCellDepth();
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_From_double(static_cast< double >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredMesh_getCellVolume(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  StructuredMesh *arg1 = (StructuredMesh *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  double result;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:StructuredMesh_getCellVolume",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredMesh_getCellVolume" "', argument " "1"" of type '" "StructuredMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredMesh * >(argp1);
-  {
-    try {
-      result = (double)(arg1)->getCellVolume();
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_From_double(static_cast< double >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredMesh_findCell(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  StructuredMesh *arg1 = (StructuredMesh *) 0 ;
-  double arg2 ;
-  double arg3 ;
-  double arg4 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  double val2 ;
-  int ecode2 = 0 ;
-  double val3 ;
-  int ecode3 = 0 ;
-  double val4 ;
-  int ecode4 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  PyObject * obj3 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "x",(char *) "y",(char *) "z", NULL 
-  };
-  int result;
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOOO:StructuredMesh_findCell",kwnames,&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredMesh_findCell" "', argument " "1"" of type '" "StructuredMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredMesh * >(argp1);
-  ecode2 = SWIG_AsVal_double(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "StructuredMesh_findCell" "', argument " "2"" of type '" "double""'");
-  } 
-  arg2 = static_cast< double >(val2);
-  ecode3 = SWIG_AsVal_double(obj2, &val3);
-  if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "StructuredMesh_findCell" "', argument " "3"" of type '" "double""'");
-  } 
-  arg3 = static_cast< double >(val3);
-  ecode4 = SWIG_AsVal_double(obj3, &val4);
-  if (!SWIG_IsOK(ecode4)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "StructuredMesh_findCell" "', argument " "4"" of type '" "double""'");
-  } 
-  arg4 = static_cast< double >(val4);
-  {
-    try {
-      result = (int)(arg1)->findCell(arg2,arg3,arg4);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_From_int(static_cast< int >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredMesh_computeFuelVolume(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  StructuredMesh *arg1 = (StructuredMesh *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:StructuredMesh_computeFuelVolume",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredMesh_computeFuelVolume" "', argument " "1"" of type '" "StructuredMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredMesh * >(argp1);
-  {
-    try {
-      (arg1)->computeFuelVolume();
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredMesh_uniquifyMaterials(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  StructuredMesh *arg1 = (StructuredMesh *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:StructuredMesh_uniquifyMaterials",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredMesh_uniquifyMaterials" "', argument " "1"" of type '" "StructuredMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredMesh * >(argp1);
-  {
-    try {
-      (arg1)->uniquifyMaterials();
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredMesh_getMaxTemperature(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  StructuredMesh *arg1 = (StructuredMesh *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "position", NULL 
-  };
-  double result;
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:StructuredMesh_getMaxTemperature",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredMesh_getMaxTemperature" "', argument " "1"" of type '" "StructuredMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredMesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "StructuredMesh_getMaxTemperature" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  {
-    try {
-      result = (double)(arg1)->getMaxTemperature(arg2);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_From_double(static_cast< double >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredMesh_copyPower(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  StructuredMesh *arg1 = (StructuredMesh *) 0 ;
-  int arg2 ;
-  int arg3 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  int val3 ;
-  int ecode3 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "position_from",(char *) "position_to", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOO:StructuredMesh_copyPower",kwnames,&obj0,&obj1,&obj2)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredMesh_copyPower" "', argument " "1"" of type '" "StructuredMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredMesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "StructuredMesh_copyPower" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  ecode3 = SWIG_AsVal_int(obj2, &val3);
-  if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "StructuredMesh_copyPower" "', argument " "3"" of type '" "int""'");
-  } 
-  arg3 = static_cast< int >(val3);
-  {
-    try {
-      (arg1)->copyPower(arg2,arg3);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredMesh_copyTemperature(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  StructuredMesh *arg1 = (StructuredMesh *) 0 ;
-  int arg2 ;
-  int arg3 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  int val3 ;
-  int ecode3 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "position_from",(char *) "position_to", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOO:StructuredMesh_copyTemperature",kwnames,&obj0,&obj1,&obj2)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredMesh_copyTemperature" "', argument " "1"" of type '" "StructuredMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredMesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "StructuredMesh_copyTemperature" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  ecode3 = SWIG_AsVal_int(obj2, &val3);
-  if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "StructuredMesh_copyTemperature" "', argument " "3"" of type '" "int""'");
-  } 
-  arg3 = static_cast< int >(val3);
-  {
-    try {
-      (arg1)->copyTemperature(arg2,arg3);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredMesh_setTemperature(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  StructuredMesh *arg1 = (StructuredMesh *) 0 ;
-  double arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  double val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "temperature", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:StructuredMesh_setTemperature",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredMesh_setTemperature" "', argument " "1"" of type '" "StructuredMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredMesh * >(argp1);
-  ecode2 = SWIG_AsVal_double(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "StructuredMesh_setTemperature" "', argument " "2"" of type '" "double""'");
-  } 
-  arg2 = static_cast< double >(val2);
-  {
-    try {
-      (arg1)->setTemperature(arg2);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *StructuredMesh_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *obj;
-  if (!PyArg_ParseTuple(args,(char*)"O:swigregister", &obj)) return NULL;
-  SWIG_TypeNewClientData(SWIGTYPE_p_StructuredMesh, SWIG_NewClientData(obj));
-  return SWIG_Py_Void();
-}
-
-SWIGINTERN PyObject *_wrap_new_StructuredShapeMesh(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  double arg1 = (double) 1.0 ;
-  double arg2 = (double) 1.0 ;
-  double arg3 = (double) 1.0 ;
-  int arg4 = (int) 1 ;
-  int arg5 = (int) 1 ;
-  int arg6 = (int) 1 ;
-  double val1 ;
-  int ecode1 = 0 ;
-  double val2 ;
-  int ecode2 = 0 ;
-  double val3 ;
-  int ecode3 = 0 ;
-  int val4 ;
-  int ecode4 = 0 ;
-  int val5 ;
-  int ecode5 = 0 ;
-  int val6 ;
-  int ecode6 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  PyObject * obj3 = 0 ;
-  PyObject * obj4 = 0 ;
-  PyObject * obj5 = 0 ;
-  char *  kwnames[] = {
-    (char *) "width",(char *) "height",(char *) "depth",(char *) "num_x",(char *) "num_y",(char *) "num_z", NULL 
-  };
-  StructuredShapeMesh *result = 0 ;
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"|OOOOOO:new_StructuredShapeMesh",kwnames,&obj0,&obj1,&obj2,&obj3,&obj4,&obj5)) SWIG_fail;
-  if (obj0) {
-    ecode1 = SWIG_AsVal_double(obj0, &val1);
-    if (!SWIG_IsOK(ecode1)) {
-      SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "new_StructuredShapeMesh" "', argument " "1"" of type '" "double""'");
-    } 
-    arg1 = static_cast< double >(val1);
-  }
-  if (obj1) {
-    ecode2 = SWIG_AsVal_double(obj1, &val2);
-    if (!SWIG_IsOK(ecode2)) {
-      SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "new_StructuredShapeMesh" "', argument " "2"" of type '" "double""'");
-    } 
-    arg2 = static_cast< double >(val2);
-  }
-  if (obj2) {
-    ecode3 = SWIG_AsVal_double(obj2, &val3);
-    if (!SWIG_IsOK(ecode3)) {
-      SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "new_StructuredShapeMesh" "', argument " "3"" of type '" "double""'");
-    } 
-    arg3 = static_cast< double >(val3);
-  }
-  if (obj3) {
-    ecode4 = SWIG_AsVal_int(obj3, &val4);
-    if (!SWIG_IsOK(ecode4)) {
-      SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "new_StructuredShapeMesh" "', argument " "4"" of type '" "int""'");
-    } 
-    arg4 = static_cast< int >(val4);
-  }
-  if (obj4) {
-    ecode5 = SWIG_AsVal_int(obj4, &val5);
-    if (!SWIG_IsOK(ecode5)) {
-      SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "new_StructuredShapeMesh" "', argument " "5"" of type '" "int""'");
-    } 
-    arg5 = static_cast< int >(val5);
-  }
-  if (obj5) {
-    ecode6 = SWIG_AsVal_int(obj5, &val6);
-    if (!SWIG_IsOK(ecode6)) {
-      SWIG_exception_fail(SWIG_ArgError(ecode6), "in method '" "new_StructuredShapeMesh" "', argument " "6"" of type '" "int""'");
-    } 
-    arg6 = static_cast< int >(val6);
-  }
-  {
-    try {
-      result = (StructuredShapeMesh *)new StructuredShapeMesh(arg1,arg2,arg3,arg4,arg5,arg6);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_StructuredShapeMesh, SWIG_POINTER_NEW |  0 );
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_delete_StructuredShapeMesh(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  StructuredShapeMesh *arg1 = (StructuredShapeMesh *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:delete_StructuredShapeMesh",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredShapeMesh, SWIG_POINTER_DISOWN |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_StructuredShapeMesh" "', argument " "1"" of type '" "StructuredShapeMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredShapeMesh * >(argp1);
-  {
-    try {
-      delete arg1;
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredShapeMesh_setAmpMesh(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  StructuredShapeMesh *arg1 = (StructuredShapeMesh *) 0 ;
-  AmpMesh *arg2 = (AmpMesh *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  void *argp2 = 0 ;
-  int res2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "mesh", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:StructuredShapeMesh_setAmpMesh",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredShapeMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredShapeMesh_setAmpMesh" "', argument " "1"" of type '" "StructuredShapeMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredShapeMesh * >(argp1);
-  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_AmpMesh, 0 |  0 );
-  if (!SWIG_IsOK(res2)) {
-    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "StructuredShapeMesh_setAmpMesh" "', argument " "2"" of type '" "AmpMesh *""'"); 
-  }
-  arg2 = reinterpret_cast< AmpMesh * >(argp2);
-  {
-    try {
-      (arg1)->setAmpMesh(arg2);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredShapeMesh_setFluxByValue(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  StructuredShapeMesh *arg1 = (StructuredShapeMesh *) 0 ;
-  double arg2 ;
-  int arg3 ;
-  int arg4 ;
-  int arg5 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  double val2 ;
-  int ecode2 = 0 ;
-  int val3 ;
-  int ecode3 = 0 ;
-  int val4 ;
-  int ecode4 = 0 ;
-  int val5 ;
-  int ecode5 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  PyObject * obj3 = 0 ;
-  PyObject * obj4 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "flux",(char *) "cell",(char *) "group",(char *) "position", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOOOO:StructuredShapeMesh_setFluxByValue",kwnames,&obj0,&obj1,&obj2,&obj3,&obj4)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredShapeMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredShapeMesh_setFluxByValue" "', argument " "1"" of type '" "StructuredShapeMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredShapeMesh * >(argp1);
-  ecode2 = SWIG_AsVal_double(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "StructuredShapeMesh_setFluxByValue" "', argument " "2"" of type '" "double""'");
-  } 
-  arg2 = static_cast< double >(val2);
-  ecode3 = SWIG_AsVal_int(obj2, &val3);
-  if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "StructuredShapeMesh_setFluxByValue" "', argument " "3"" of type '" "int""'");
-  } 
-  arg3 = static_cast< int >(val3);
-  ecode4 = SWIG_AsVal_int(obj3, &val4);
-  if (!SWIG_IsOK(ecode4)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "StructuredShapeMesh_setFluxByValue" "', argument " "4"" of type '" "int""'");
-  } 
-  arg4 = static_cast< int >(val4);
-  ecode5 = SWIG_AsVal_int(obj4, &val5);
-  if (!SWIG_IsOK(ecode5)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "StructuredShapeMesh_setFluxByValue" "', argument " "5"" of type '" "int""'");
-  } 
-  arg5 = static_cast< int >(val5);
-  {
-    try {
-      (arg1)->setFluxByValue(arg2,arg3,arg4,arg5);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredShapeMesh_setCurrentByValue(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  StructuredShapeMesh *arg1 = (StructuredShapeMesh *) 0 ;
-  double arg2 ;
-  int arg3 ;
-  int arg4 ;
-  int arg5 ;
-  int arg6 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  double val2 ;
-  int ecode2 = 0 ;
-  int val3 ;
-  int ecode3 = 0 ;
-  int val4 ;
-  int ecode4 = 0 ;
-  int val5 ;
-  int ecode5 = 0 ;
-  int val6 ;
-  int ecode6 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  PyObject * obj3 = 0 ;
-  PyObject * obj4 = 0 ;
-  PyObject * obj5 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "current",(char *) "cell",(char *) "group",(char *) "side",(char *) "position", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOOOOO:StructuredShapeMesh_setCurrentByValue",kwnames,&obj0,&obj1,&obj2,&obj3,&obj4,&obj5)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredShapeMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredShapeMesh_setCurrentByValue" "', argument " "1"" of type '" "StructuredShapeMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredShapeMesh * >(argp1);
-  ecode2 = SWIG_AsVal_double(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "StructuredShapeMesh_setCurrentByValue" "', argument " "2"" of type '" "double""'");
-  } 
-  arg2 = static_cast< double >(val2);
-  ecode3 = SWIG_AsVal_int(obj2, &val3);
-  if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "StructuredShapeMesh_setCurrentByValue" "', argument " "3"" of type '" "int""'");
-  } 
-  arg3 = static_cast< int >(val3);
-  ecode4 = SWIG_AsVal_int(obj3, &val4);
-  if (!SWIG_IsOK(ecode4)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "StructuredShapeMesh_setCurrentByValue" "', argument " "4"" of type '" "int""'");
-  } 
-  arg4 = static_cast< int >(val4);
-  ecode5 = SWIG_AsVal_int(obj4, &val5);
-  if (!SWIG_IsOK(ecode5)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "StructuredShapeMesh_setCurrentByValue" "', argument " "5"" of type '" "int""'");
-  } 
-  arg5 = static_cast< int >(val5);
-  ecode6 = SWIG_AsVal_int(obj5, &val6);
-  if (!SWIG_IsOK(ecode6)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode6), "in method '" "StructuredShapeMesh_setCurrentByValue" "', argument " "6"" of type '" "int""'");
-  } 
-  arg6 = static_cast< int >(val6);
-  {
-    try {
-      (arg1)->setCurrentByValue(arg2,arg3,arg4,arg5,arg6);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredShapeMesh_setDifLinearByValue(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  StructuredShapeMesh *arg1 = (StructuredShapeMesh *) 0 ;
-  double arg2 ;
-  int arg3 ;
-  int arg4 ;
-  int arg5 ;
-  int arg6 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  double val2 ;
-  int ecode2 = 0 ;
-  int val3 ;
-  int ecode3 = 0 ;
-  int val4 ;
-  int ecode4 = 0 ;
-  int val5 ;
-  int ecode5 = 0 ;
-  int val6 ;
-  int ecode6 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  PyObject * obj3 = 0 ;
-  PyObject * obj4 = 0 ;
-  PyObject * obj5 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "dif_linear",(char *) "cell",(char *) "group",(char *) "side",(char *) "position", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOOOOO:StructuredShapeMesh_setDifLinearByValue",kwnames,&obj0,&obj1,&obj2,&obj3,&obj4,&obj5)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredShapeMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredShapeMesh_setDifLinearByValue" "', argument " "1"" of type '" "StructuredShapeMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredShapeMesh * >(argp1);
-  ecode2 = SWIG_AsVal_double(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "StructuredShapeMesh_setDifLinearByValue" "', argument " "2"" of type '" "double""'");
-  } 
-  arg2 = static_cast< double >(val2);
-  ecode3 = SWIG_AsVal_int(obj2, &val3);
-  if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "StructuredShapeMesh_setDifLinearByValue" "', argument " "3"" of type '" "int""'");
-  } 
-  arg3 = static_cast< int >(val3);
-  ecode4 = SWIG_AsVal_int(obj3, &val4);
-  if (!SWIG_IsOK(ecode4)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "StructuredShapeMesh_setDifLinearByValue" "', argument " "4"" of type '" "int""'");
-  } 
-  arg4 = static_cast< int >(val4);
-  ecode5 = SWIG_AsVal_int(obj4, &val5);
-  if (!SWIG_IsOK(ecode5)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "StructuredShapeMesh_setDifLinearByValue" "', argument " "5"" of type '" "int""'");
-  } 
-  arg5 = static_cast< int >(val5);
-  ecode6 = SWIG_AsVal_int(obj5, &val6);
-  if (!SWIG_IsOK(ecode6)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode6), "in method '" "StructuredShapeMesh_setDifLinearByValue" "', argument " "6"" of type '" "int""'");
-  } 
-  arg6 = static_cast< int >(val6);
-  {
-    try {
-      (arg1)->setDifLinearByValue(arg2,arg3,arg4,arg5,arg6);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredShapeMesh_setDifNonlinearByValue(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  StructuredShapeMesh *arg1 = (StructuredShapeMesh *) 0 ;
-  double arg2 ;
-  int arg3 ;
-  int arg4 ;
-  int arg5 ;
-  int arg6 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  double val2 ;
-  int ecode2 = 0 ;
-  int val3 ;
-  int ecode3 = 0 ;
-  int val4 ;
-  int ecode4 = 0 ;
-  int val5 ;
-  int ecode5 = 0 ;
-  int val6 ;
-  int ecode6 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  PyObject * obj3 = 0 ;
-  PyObject * obj4 = 0 ;
-  PyObject * obj5 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "dif_nonlinear",(char *) "cell",(char *) "group",(char *) "side",(char *) "position", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOOOOO:StructuredShapeMesh_setDifNonlinearByValue",kwnames,&obj0,&obj1,&obj2,&obj3,&obj4,&obj5)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredShapeMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredShapeMesh_setDifNonlinearByValue" "', argument " "1"" of type '" "StructuredShapeMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredShapeMesh * >(argp1);
-  ecode2 = SWIG_AsVal_double(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "StructuredShapeMesh_setDifNonlinearByValue" "', argument " "2"" of type '" "double""'");
-  } 
-  arg2 = static_cast< double >(val2);
-  ecode3 = SWIG_AsVal_int(obj2, &val3);
-  if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "StructuredShapeMesh_setDifNonlinearByValue" "', argument " "3"" of type '" "int""'");
-  } 
-  arg3 = static_cast< int >(val3);
-  ecode4 = SWIG_AsVal_int(obj3, &val4);
-  if (!SWIG_IsOK(ecode4)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "StructuredShapeMesh_setDifNonlinearByValue" "', argument " "4"" of type '" "int""'");
-  } 
-  arg4 = static_cast< int >(val4);
-  ecode5 = SWIG_AsVal_int(obj4, &val5);
-  if (!SWIG_IsOK(ecode5)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "StructuredShapeMesh_setDifNonlinearByValue" "', argument " "5"" of type '" "int""'");
-  } 
-  arg5 = static_cast< int >(val5);
-  ecode6 = SWIG_AsVal_int(obj5, &val6);
-  if (!SWIG_IsOK(ecode6)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode6), "in method '" "StructuredShapeMesh_setDifNonlinearByValue" "', argument " "6"" of type '" "int""'");
-  } 
-  arg6 = static_cast< int >(val6);
-  {
-    try {
-      (arg1)->setDifNonlinearByValue(arg2,arg3,arg4,arg5,arg6);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredShapeMesh_setGroupStructure(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  StructuredShapeMesh *arg1 = (StructuredShapeMesh *) 0 ;
-  int *arg2 = (int *) 0 ;
-  int arg3 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyArrayObject *array2 = NULL ;
-  int is_new_object2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "group_indices", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:StructuredShapeMesh_setGroupStructure",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredShapeMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredShapeMesh_setGroupStructure" "', argument " "1"" of type '" "StructuredShapeMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredShapeMesh * >(argp1);
-  {
-    npy_intp size[1] = {
-      -1 
-    };
-    array2 = obj_to_array_contiguous_allow_conversion(obj1,
-      NPY_INT,
-      &is_new_object2);
-    if (!array2 || !require_dimensions(array2, 1) ||
-      !require_size(array2, size, 1)) SWIG_fail;
-    arg2 = (int*) array_data(array2);
-    arg3 = (int) array_size(array2,0);
-  }
-  {
-    try {
-      (arg1)->setGroupStructure(arg2,arg3);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  {
-    if (is_new_object2 && array2)
-    {
-      Py_DECREF(array2); 
-    }
-  }
-  return resultobj;
-fail:
-  {
-    if (is_new_object2 && array2)
-    {
-      Py_DECREF(array2); 
-    }
-  }
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredShapeMesh_getFluxByValue(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  StructuredShapeMesh *arg1 = (StructuredShapeMesh *) 0 ;
-  int arg2 ;
-  int arg3 ;
-  int arg4 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  int val3 ;
-  int ecode3 = 0 ;
-  int val4 ;
-  int ecode4 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  PyObject * obj3 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "cell",(char *) "group",(char *) "position", NULL 
-  };
-  double result;
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOOO:StructuredShapeMesh_getFluxByValue",kwnames,&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredShapeMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredShapeMesh_getFluxByValue" "', argument " "1"" of type '" "StructuredShapeMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredShapeMesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "StructuredShapeMesh_getFluxByValue" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  ecode3 = SWIG_AsVal_int(obj2, &val3);
-  if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "StructuredShapeMesh_getFluxByValue" "', argument " "3"" of type '" "int""'");
-  } 
-  arg3 = static_cast< int >(val3);
-  ecode4 = SWIG_AsVal_int(obj3, &val4);
-  if (!SWIG_IsOK(ecode4)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "StructuredShapeMesh_getFluxByValue" "', argument " "4"" of type '" "int""'");
-  } 
-  arg4 = static_cast< int >(val4);
-  {
-    try {
-      result = (double)(arg1)->getFluxByValue(arg2,arg3,arg4);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_From_double(static_cast< double >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredShapeMesh_getCurrentByValue(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  StructuredShapeMesh *arg1 = (StructuredShapeMesh *) 0 ;
-  int arg2 ;
-  int arg3 ;
-  int arg4 ;
-  int arg5 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  int val3 ;
-  int ecode3 = 0 ;
-  int val4 ;
-  int ecode4 = 0 ;
-  int val5 ;
-  int ecode5 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  PyObject * obj3 = 0 ;
-  PyObject * obj4 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "cell",(char *) "group",(char *) "side",(char *) "position", NULL 
-  };
-  double result;
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOOOO:StructuredShapeMesh_getCurrentByValue",kwnames,&obj0,&obj1,&obj2,&obj3,&obj4)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredShapeMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredShapeMesh_getCurrentByValue" "', argument " "1"" of type '" "StructuredShapeMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredShapeMesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "StructuredShapeMesh_getCurrentByValue" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  ecode3 = SWIG_AsVal_int(obj2, &val3);
-  if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "StructuredShapeMesh_getCurrentByValue" "', argument " "3"" of type '" "int""'");
-  } 
-  arg3 = static_cast< int >(val3);
-  ecode4 = SWIG_AsVal_int(obj3, &val4);
-  if (!SWIG_IsOK(ecode4)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "StructuredShapeMesh_getCurrentByValue" "', argument " "4"" of type '" "int""'");
-  } 
-  arg4 = static_cast< int >(val4);
-  ecode5 = SWIG_AsVal_int(obj4, &val5);
-  if (!SWIG_IsOK(ecode5)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "StructuredShapeMesh_getCurrentByValue" "', argument " "5"" of type '" "int""'");
-  } 
-  arg5 = static_cast< int >(val5);
-  {
-    try {
-      result = (double)(arg1)->getCurrentByValue(arg2,arg3,arg4,arg5);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_From_double(static_cast< double >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredShapeMesh_getDifLinearByValue(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  StructuredShapeMesh *arg1 = (StructuredShapeMesh *) 0 ;
-  int arg2 ;
-  int arg3 ;
-  int arg4 ;
-  int arg5 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  int val3 ;
-  int ecode3 = 0 ;
-  int val4 ;
-  int ecode4 = 0 ;
-  int val5 ;
-  int ecode5 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  PyObject * obj3 = 0 ;
-  PyObject * obj4 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "cell",(char *) "group",(char *) "side",(char *) "position", NULL 
-  };
-  double result;
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOOOO:StructuredShapeMesh_getDifLinearByValue",kwnames,&obj0,&obj1,&obj2,&obj3,&obj4)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredShapeMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredShapeMesh_getDifLinearByValue" "', argument " "1"" of type '" "StructuredShapeMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredShapeMesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "StructuredShapeMesh_getDifLinearByValue" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  ecode3 = SWIG_AsVal_int(obj2, &val3);
-  if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "StructuredShapeMesh_getDifLinearByValue" "', argument " "3"" of type '" "int""'");
-  } 
-  arg3 = static_cast< int >(val3);
-  ecode4 = SWIG_AsVal_int(obj3, &val4);
-  if (!SWIG_IsOK(ecode4)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "StructuredShapeMesh_getDifLinearByValue" "', argument " "4"" of type '" "int""'");
-  } 
-  arg4 = static_cast< int >(val4);
-  ecode5 = SWIG_AsVal_int(obj4, &val5);
-  if (!SWIG_IsOK(ecode5)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "StructuredShapeMesh_getDifLinearByValue" "', argument " "5"" of type '" "int""'");
-  } 
-  arg5 = static_cast< int >(val5);
-  {
-    try {
-      result = (double)(arg1)->getDifLinearByValue(arg2,arg3,arg4,arg5);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_From_double(static_cast< double >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredShapeMesh_getDifNonlinearByValue(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  StructuredShapeMesh *arg1 = (StructuredShapeMesh *) 0 ;
-  int arg2 ;
-  int arg3 ;
-  int arg4 ;
-  int arg5 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  int val3 ;
-  int ecode3 = 0 ;
-  int val4 ;
-  int ecode4 = 0 ;
-  int val5 ;
-  int ecode5 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  PyObject * obj3 = 0 ;
-  PyObject * obj4 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "cell",(char *) "group",(char *) "side",(char *) "position", NULL 
-  };
-  double result;
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOOOO:StructuredShapeMesh_getDifNonlinearByValue",kwnames,&obj0,&obj1,&obj2,&obj3,&obj4)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredShapeMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredShapeMesh_getDifNonlinearByValue" "', argument " "1"" of type '" "StructuredShapeMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredShapeMesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "StructuredShapeMesh_getDifNonlinearByValue" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  ecode3 = SWIG_AsVal_int(obj2, &val3);
-  if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "StructuredShapeMesh_getDifNonlinearByValue" "', argument " "3"" of type '" "int""'");
-  } 
-  arg3 = static_cast< int >(val3);
-  ecode4 = SWIG_AsVal_int(obj3, &val4);
-  if (!SWIG_IsOK(ecode4)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "StructuredShapeMesh_getDifNonlinearByValue" "', argument " "4"" of type '" "int""'");
-  } 
-  arg4 = static_cast< int >(val4);
-  ecode5 = SWIG_AsVal_int(obj4, &val5);
-  if (!SWIG_IsOK(ecode5)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "StructuredShapeMesh_getDifNonlinearByValue" "', argument " "5"" of type '" "int""'");
-  } 
-  arg5 = static_cast< int >(val5);
-  {
-    try {
-      result = (double)(arg1)->getDifNonlinearByValue(arg2,arg3,arg4,arg5);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_From_double(static_cast< double >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredShapeMesh_getAmpGroup(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  StructuredShapeMesh *arg1 = (StructuredShapeMesh *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "shape_group", NULL 
-  };
-  int result;
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:StructuredShapeMesh_getAmpGroup",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredShapeMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredShapeMesh_getAmpGroup" "', argument " "1"" of type '" "StructuredShapeMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredShapeMesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "StructuredShapeMesh_getAmpGroup" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  {
-    try {
-      result = (int)(arg1)->getAmpGroup(arg2);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_From_int(static_cast< int >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredShapeMesh_clone(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  StructuredShapeMesh *arg1 = (StructuredShapeMesh *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  StructuredShapeMesh *result = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:StructuredShapeMesh_clone",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredShapeMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredShapeMesh_clone" "', argument " "1"" of type '" "StructuredShapeMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredShapeMesh * >(argp1);
-  {
-    try {
-      result = (StructuredShapeMesh *)(arg1)->clone();
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_StructuredShapeMesh, 0 |  0 );
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredShapeMesh_uniformRefine(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  StructuredShapeMesh *arg1 = (StructuredShapeMesh *) 0 ;
-  int arg2 = (int) 1 ;
-  int arg3 = (int) 1 ;
-  int arg4 = (int) 1 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  int val3 ;
-  int ecode3 = 0 ;
-  int val4 ;
-  int ecode4 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  PyObject * obj3 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "refine_x",(char *) "refine_y",(char *) "refine_z", NULL 
-  };
-  StructuredShapeMesh *result = 0 ;
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"O|OOO:StructuredShapeMesh_uniformRefine",kwnames,&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredShapeMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredShapeMesh_uniformRefine" "', argument " "1"" of type '" "StructuredShapeMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredShapeMesh * >(argp1);
-  if (obj1) {
-    ecode2 = SWIG_AsVal_int(obj1, &val2);
-    if (!SWIG_IsOK(ecode2)) {
-      SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "StructuredShapeMesh_uniformRefine" "', argument " "2"" of type '" "int""'");
-    } 
-    arg2 = static_cast< int >(val2);
-  }
-  if (obj2) {
-    ecode3 = SWIG_AsVal_int(obj2, &val3);
-    if (!SWIG_IsOK(ecode3)) {
-      SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "StructuredShapeMesh_uniformRefine" "', argument " "3"" of type '" "int""'");
-    } 
-    arg3 = static_cast< int >(val3);
-  }
-  if (obj3) {
-    ecode4 = SWIG_AsVal_int(obj3, &val4);
-    if (!SWIG_IsOK(ecode4)) {
-      SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "StructuredShapeMesh_uniformRefine" "', argument " "4"" of type '" "int""'");
-    } 
-    arg4 = static_cast< int >(val4);
-  }
-  {
-    try {
-      result = (StructuredShapeMesh *)(arg1)->uniformRefine(arg2,arg3,arg4);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_StructuredShapeMesh, 0 |  0 );
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredShapeMesh_initialize(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  StructuredShapeMesh *arg1 = (StructuredShapeMesh *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:StructuredShapeMesh_initialize",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredShapeMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredShapeMesh_initialize" "', argument " "1"" of type '" "StructuredShapeMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredShapeMesh * >(argp1);
-  {
-    try {
-      (arg1)->initialize();
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredShapeMesh_synthesizeFlux(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  StructuredShapeMesh *arg1 = (StructuredShapeMesh *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "position", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:StructuredShapeMesh_synthesizeFlux",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredShapeMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredShapeMesh_synthesizeFlux" "', argument " "1"" of type '" "StructuredShapeMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredShapeMesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "StructuredShapeMesh_synthesizeFlux" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  {
-    try {
-      (arg1)->synthesizeFlux(arg2);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredShapeMesh_reconstructFlux(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  StructuredShapeMesh *arg1 = (StructuredShapeMesh *) 0 ;
-  int arg2 ;
-  int arg3 ;
-  int arg4 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  int val3 ;
-  int ecode3 = 0 ;
-  int val4 ;
-  int ecode4 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  PyObject * obj3 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "position",(char *) "position_shape",(char *) "position_amp", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOOO:StructuredShapeMesh_reconstructFlux",kwnames,&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredShapeMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredShapeMesh_reconstructFlux" "', argument " "1"" of type '" "StructuredShapeMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredShapeMesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "StructuredShapeMesh_reconstructFlux" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  ecode3 = SWIG_AsVal_int(obj2, &val3);
-  if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "StructuredShapeMesh_reconstructFlux" "', argument " "3"" of type '" "int""'");
-  } 
-  arg3 = static_cast< int >(val3);
-  ecode4 = SWIG_AsVal_int(obj3, &val4);
-  if (!SWIG_IsOK(ecode4)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "StructuredShapeMesh_reconstructFlux" "', argument " "4"" of type '" "int""'");
-  } 
-  arg4 = static_cast< int >(val4);
-  {
-    try {
-      (arg1)->reconstructFlux(arg2,arg3,arg4);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredShapeMesh_computePower(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  StructuredShapeMesh *arg1 = (StructuredShapeMesh *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "position", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:StructuredShapeMesh_computePower",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredShapeMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredShapeMesh_computePower" "', argument " "1"" of type '" "StructuredShapeMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredShapeMesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "StructuredShapeMesh_computePower" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  {
-    try {
-      (arg1)->computePower(arg2);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredShapeMesh_computeInitialPrecursorConc(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  StructuredShapeMesh *arg1 = (StructuredShapeMesh *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "position", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:StructuredShapeMesh_computeInitialPrecursorConc",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredShapeMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredShapeMesh_computeInitialPrecursorConc" "', argument " "1"" of type '" "StructuredShapeMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredShapeMesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "StructuredShapeMesh_computeInitialPrecursorConc" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  {
-    try {
-      (arg1)->computeInitialPrecursorConc(arg2);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredShapeMesh_integratePrecursorConc(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  StructuredShapeMesh *arg1 = (StructuredShapeMesh *) 0 ;
-  int arg2 ;
-  int arg3 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  int val3 ;
-  int ecode3 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "position_from",(char *) "position_to", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOO:StructuredShapeMesh_integratePrecursorConc",kwnames,&obj0,&obj1,&obj2)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredShapeMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredShapeMesh_integratePrecursorConc" "', argument " "1"" of type '" "StructuredShapeMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredShapeMesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "StructuredShapeMesh_integratePrecursorConc" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  ecode3 = SWIG_AsVal_int(obj2, &val3);
-  if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "StructuredShapeMesh_integratePrecursorConc" "', argument " "3"" of type '" "int""'");
-  } 
-  arg3 = static_cast< int >(val3);
-  {
-    try {
-      (arg1)->integratePrecursorConc(arg2,arg3);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredShapeMesh_integrateTemperature(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  StructuredShapeMesh *arg1 = (StructuredShapeMesh *) 0 ;
-  int arg2 ;
-  int arg3 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  int val3 ;
-  int ecode3 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "position_from",(char *) "position_to", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOO:StructuredShapeMesh_integrateTemperature",kwnames,&obj0,&obj1,&obj2)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredShapeMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredShapeMesh_integrateTemperature" "', argument " "1"" of type '" "StructuredShapeMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredShapeMesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "StructuredShapeMesh_integrateTemperature" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  ecode3 = SWIG_AsVal_int(obj2, &val3);
-  if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "StructuredShapeMesh_integrateTemperature" "', argument " "3"" of type '" "int""'");
-  } 
-  arg3 = static_cast< int >(val3);
-  {
-    try {
-      (arg1)->integrateTemperature(arg2,arg3);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredShapeMesh_computeDifCoefs(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  StructuredShapeMesh *arg1 = (StructuredShapeMesh *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "position", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:StructuredShapeMesh_computeDifCoefs",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredShapeMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredShapeMesh_computeDifCoefs" "', argument " "1"" of type '" "StructuredShapeMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredShapeMesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "StructuredShapeMesh_computeDifCoefs" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  {
-    try {
-      (arg1)->computeDifCoefs(arg2);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredShapeMesh_copyFlux(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  StructuredShapeMesh *arg1 = (StructuredShapeMesh *) 0 ;
-  int arg2 ;
-  int arg3 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  int val3 ;
-  int ecode3 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "position_from",(char *) "position_to", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOO:StructuredShapeMesh_copyFlux",kwnames,&obj0,&obj1,&obj2)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredShapeMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredShapeMesh_copyFlux" "', argument " "1"" of type '" "StructuredShapeMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredShapeMesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "StructuredShapeMesh_copyFlux" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  ecode3 = SWIG_AsVal_int(obj2, &val3);
-  if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "StructuredShapeMesh_copyFlux" "', argument " "3"" of type '" "int""'");
-  } 
-  arg3 = static_cast< int >(val3);
-  {
-    try {
-      (arg1)->copyFlux(arg2,arg3);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredShapeMesh_copyCurrent(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  StructuredShapeMesh *arg1 = (StructuredShapeMesh *) 0 ;
-  int arg2 ;
-  int arg3 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  int val3 ;
-  int ecode3 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "position_from",(char *) "position_to", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOO:StructuredShapeMesh_copyCurrent",kwnames,&obj0,&obj1,&obj2)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredShapeMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredShapeMesh_copyCurrent" "', argument " "1"" of type '" "StructuredShapeMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredShapeMesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "StructuredShapeMesh_copyCurrent" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  ecode3 = SWIG_AsVal_int(obj2, &val3);
-  if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "StructuredShapeMesh_copyCurrent" "', argument " "3"" of type '" "int""'");
-  } 
-  arg3 = static_cast< int >(val3);
-  {
-    try {
-      (arg1)->copyCurrent(arg2,arg3);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredShapeMesh_copyDifLinear(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  StructuredShapeMesh *arg1 = (StructuredShapeMesh *) 0 ;
-  int arg2 ;
-  int arg3 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  int val3 ;
-  int ecode3 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "position_from",(char *) "position_to", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOO:StructuredShapeMesh_copyDifLinear",kwnames,&obj0,&obj1,&obj2)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredShapeMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredShapeMesh_copyDifLinear" "', argument " "1"" of type '" "StructuredShapeMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredShapeMesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "StructuredShapeMesh_copyDifLinear" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  ecode3 = SWIG_AsVal_int(obj2, &val3);
-  if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "StructuredShapeMesh_copyDifLinear" "', argument " "3"" of type '" "int""'");
-  } 
-  arg3 = static_cast< int >(val3);
-  {
-    try {
-      (arg1)->copyDifLinear(arg2,arg3);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredShapeMesh_copyDifNonlinear(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  StructuredShapeMesh *arg1 = (StructuredShapeMesh *) 0 ;
-  int arg2 ;
-  int arg3 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  int val3 ;
-  int ecode3 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "position_from",(char *) "position_to", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOO:StructuredShapeMesh_copyDifNonlinear",kwnames,&obj0,&obj1,&obj2)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredShapeMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredShapeMesh_copyDifNonlinear" "', argument " "1"" of type '" "StructuredShapeMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredShapeMesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "StructuredShapeMesh_copyDifNonlinear" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  ecode3 = SWIG_AsVal_int(obj2, &val3);
-  if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "StructuredShapeMesh_copyDifNonlinear" "', argument " "3"" of type '" "int""'");
-  } 
-  arg3 = static_cast< int >(val3);
-  {
-    try {
-      (arg1)->copyDifNonlinear(arg2,arg3);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredShapeMesh_scaleFlux(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  StructuredShapeMesh *arg1 = (StructuredShapeMesh *) 0 ;
-  int arg2 ;
-  double arg3 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  double val3 ;
-  int ecode3 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "position",(char *) "scale_val", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOO:StructuredShapeMesh_scaleFlux",kwnames,&obj0,&obj1,&obj2)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredShapeMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredShapeMesh_scaleFlux" "', argument " "1"" of type '" "StructuredShapeMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredShapeMesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "StructuredShapeMesh_scaleFlux" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  ecode3 = SWIG_AsVal_double(obj2, &val3);
-  if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "StructuredShapeMesh_scaleFlux" "', argument " "3"" of type '" "double""'");
-  } 
-  arg3 = static_cast< double >(val3);
-  {
-    try {
-      (arg1)->scaleFlux(arg2,arg3);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredShapeMesh_computeAveragePower(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  StructuredShapeMesh *arg1 = (StructuredShapeMesh *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "position", NULL 
-  };
-  double result;
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:StructuredShapeMesh_computeAveragePower",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredShapeMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredShapeMesh_computeAveragePower" "', argument " "1"" of type '" "StructuredShapeMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredShapeMesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "StructuredShapeMesh_computeAveragePower" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  {
-    try {
-      result = (double)(arg1)->computeAveragePower(arg2);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_From_double(static_cast< double >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredShapeMesh_computePowerL2Norm(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  StructuredShapeMesh *arg1 = (StructuredShapeMesh *) 0 ;
-  int arg2 ;
-  int arg3 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  int val3 ;
-  int ecode3 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "position_1",(char *) "position_2", NULL 
-  };
-  double result;
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOO:StructuredShapeMesh_computePowerL2Norm",kwnames,&obj0,&obj1,&obj2)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredShapeMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredShapeMesh_computePowerL2Norm" "', argument " "1"" of type '" "StructuredShapeMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredShapeMesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "StructuredShapeMesh_computePowerL2Norm" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  ecode3 = SWIG_AsVal_int(obj2, &val3);
-  if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "StructuredShapeMesh_computePowerL2Norm" "', argument " "3"" of type '" "int""'");
-  } 
-  arg3 = static_cast< int >(val3);
-  {
-    try {
-      result = (double)(arg1)->computePowerL2Norm(arg2,arg3);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_From_double(static_cast< double >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredShapeMesh_findAmpCell(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  StructuredShapeMesh *arg1 = (StructuredShapeMesh *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "shape_cell", NULL 
-  };
-  int result;
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:StructuredShapeMesh_findAmpCell",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredShapeMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredShapeMesh_findAmpCell" "', argument " "1"" of type '" "StructuredShapeMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredShapeMesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "StructuredShapeMesh_findAmpCell" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  {
-    try {
-      result = (int)(arg1)->findAmpCell(arg2);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_From_int(static_cast< int >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_StructuredShapeMesh_saveShape(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  StructuredShapeMesh *arg1 = (StructuredShapeMesh *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:StructuredShapeMesh_saveShape",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredShapeMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "StructuredShapeMesh_saveShape" "', argument " "1"" of type '" "StructuredShapeMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredShapeMesh * >(argp1);
-  {
-    try {
-      (arg1)->saveShape();
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *StructuredShapeMesh_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *obj;
-  if (!PyArg_ParseTuple(args,(char*)"O:swigregister", &obj)) return NULL;
-  SWIG_TypeNewClientData(SWIGTYPE_p_StructuredShapeMesh, SWIG_NewClientData(obj));
-  return SWIG_Py_Void();
-}
-
-SWIGINTERN PyObject *_wrap_new_AmpMesh(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  double arg1 = (double) 1.0 ;
-  double arg2 = (double) 1.0 ;
-  double arg3 = (double) 1.0 ;
-  int arg4 = (int) 1 ;
-  int arg5 = (int) 1 ;
-  int arg6 = (int) 1 ;
-  double val1 ;
-  int ecode1 = 0 ;
-  double val2 ;
-  int ecode2 = 0 ;
-  double val3 ;
-  int ecode3 = 0 ;
-  int val4 ;
-  int ecode4 = 0 ;
-  int val5 ;
-  int ecode5 = 0 ;
-  int val6 ;
-  int ecode6 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  PyObject * obj3 = 0 ;
-  PyObject * obj4 = 0 ;
-  PyObject * obj5 = 0 ;
-  char *  kwnames[] = {
-    (char *) "width",(char *) "height",(char *) "depth",(char *) "num_x",(char *) "num_y",(char *) "num_z", NULL 
-  };
-  AmpMesh *result = 0 ;
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"|OOOOOO:new_AmpMesh",kwnames,&obj0,&obj1,&obj2,&obj3,&obj4,&obj5)) SWIG_fail;
-  if (obj0) {
-    ecode1 = SWIG_AsVal_double(obj0, &val1);
-    if (!SWIG_IsOK(ecode1)) {
-      SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "new_AmpMesh" "', argument " "1"" of type '" "double""'");
-    } 
-    arg1 = static_cast< double >(val1);
-  }
-  if (obj1) {
-    ecode2 = SWIG_AsVal_double(obj1, &val2);
-    if (!SWIG_IsOK(ecode2)) {
-      SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "new_AmpMesh" "', argument " "2"" of type '" "double""'");
-    } 
-    arg2 = static_cast< double >(val2);
-  }
-  if (obj2) {
-    ecode3 = SWIG_AsVal_double(obj2, &val3);
-    if (!SWIG_IsOK(ecode3)) {
-      SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "new_AmpMesh" "', argument " "3"" of type '" "double""'");
-    } 
-    arg3 = static_cast< double >(val3);
-  }
-  if (obj3) {
-    ecode4 = SWIG_AsVal_int(obj3, &val4);
-    if (!SWIG_IsOK(ecode4)) {
-      SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "new_AmpMesh" "', argument " "4"" of type '" "int""'");
-    } 
-    arg4 = static_cast< int >(val4);
-  }
-  if (obj4) {
-    ecode5 = SWIG_AsVal_int(obj4, &val5);
-    if (!SWIG_IsOK(ecode5)) {
-      SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "new_AmpMesh" "', argument " "5"" of type '" "int""'");
-    } 
-    arg5 = static_cast< int >(val5);
-  }
-  if (obj5) {
-    ecode6 = SWIG_AsVal_int(obj5, &val6);
-    if (!SWIG_IsOK(ecode6)) {
-      SWIG_exception_fail(SWIG_ArgError(ecode6), "in method '" "new_AmpMesh" "', argument " "6"" of type '" "int""'");
-    } 
-    arg6 = static_cast< int >(val6);
-  }
-  {
-    try {
-      result = (AmpMesh *)new AmpMesh(arg1,arg2,arg3,arg4,arg5,arg6);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_AmpMesh, SWIG_POINTER_NEW |  0 );
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_delete_AmpMesh(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  AmpMesh *arg1 = (AmpMesh *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:delete_AmpMesh",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_AmpMesh, SWIG_POINTER_DISOWN |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_AmpMesh" "', argument " "1"" of type '" "AmpMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< AmpMesh * >(argp1);
-  {
-    try {
-      delete arg1;
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_AmpMesh_setOpticallyThick(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  AmpMesh *arg1 = (AmpMesh *) 0 ;
-  bool arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  bool val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "optically_thick", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:AmpMesh_setOpticallyThick",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_AmpMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "AmpMesh_setOpticallyThick" "', argument " "1"" of type '" "AmpMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< AmpMesh * >(argp1);
-  ecode2 = SWIG_AsVal_bool(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "AmpMesh_setOpticallyThick" "', argument " "2"" of type '" "bool""'");
-  } 
-  arg2 = static_cast< bool >(val2);
-  {
-    try {
-      (arg1)->setOpticallyThick(arg2);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_AmpMesh_setShapeMesh(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  AmpMesh *arg1 = (AmpMesh *) 0 ;
-  StructuredShapeMesh *arg2 = (StructuredShapeMesh *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  void *argp2 = 0 ;
-  int res2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "mesh", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:AmpMesh_setShapeMesh",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_AmpMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "AmpMesh_setShapeMesh" "', argument " "1"" of type '" "AmpMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< AmpMesh * >(argp1);
-  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_StructuredShapeMesh, 0 |  0 );
-  if (!SWIG_IsOK(res2)) {
-    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "AmpMesh_setShapeMesh" "', argument " "2"" of type '" "StructuredShapeMesh *""'"); 
-  }
-  arg2 = reinterpret_cast< StructuredShapeMesh * >(argp2);
-  {
-    try {
-      (arg1)->setShapeMesh(arg2);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_AmpMesh_setFluxByValue(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  AmpMesh *arg1 = (AmpMesh *) 0 ;
-  double arg2 ;
-  int arg3 ;
-  int arg4 ;
-  int arg5 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  double val2 ;
-  int ecode2 = 0 ;
-  int val3 ;
-  int ecode3 = 0 ;
-  int val4 ;
-  int ecode4 = 0 ;
-  int val5 ;
-  int ecode5 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  PyObject * obj3 = 0 ;
-  PyObject * obj4 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "flux",(char *) "cell",(char *) "group",(char *) "position", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOOOO:AmpMesh_setFluxByValue",kwnames,&obj0,&obj1,&obj2,&obj3,&obj4)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_AmpMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "AmpMesh_setFluxByValue" "', argument " "1"" of type '" "AmpMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< AmpMesh * >(argp1);
-  ecode2 = SWIG_AsVal_double(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "AmpMesh_setFluxByValue" "', argument " "2"" of type '" "double""'");
-  } 
-  arg2 = static_cast< double >(val2);
-  ecode3 = SWIG_AsVal_int(obj2, &val3);
-  if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "AmpMesh_setFluxByValue" "', argument " "3"" of type '" "int""'");
-  } 
-  arg3 = static_cast< int >(val3);
-  ecode4 = SWIG_AsVal_int(obj3, &val4);
-  if (!SWIG_IsOK(ecode4)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "AmpMesh_setFluxByValue" "', argument " "4"" of type '" "int""'");
-  } 
-  arg4 = static_cast< int >(val4);
-  ecode5 = SWIG_AsVal_int(obj4, &val5);
-  if (!SWIG_IsOK(ecode5)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "AmpMesh_setFluxByValue" "', argument " "5"" of type '" "int""'");
-  } 
-  arg5 = static_cast< int >(val5);
-  {
-    try {
-      (arg1)->setFluxByValue(arg2,arg3,arg4,arg5);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_AmpMesh_setCurrentByValue(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  AmpMesh *arg1 = (AmpMesh *) 0 ;
-  double arg2 ;
-  int arg3 ;
-  int arg4 ;
-  int arg5 ;
-  int arg6 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  double val2 ;
-  int ecode2 = 0 ;
-  int val3 ;
-  int ecode3 = 0 ;
-  int val4 ;
-  int ecode4 = 0 ;
-  int val5 ;
-  int ecode5 = 0 ;
-  int val6 ;
-  int ecode6 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  PyObject * obj3 = 0 ;
-  PyObject * obj4 = 0 ;
-  PyObject * obj5 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "current",(char *) "cell",(char *) "group",(char *) "side",(char *) "position", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOOOOO:AmpMesh_setCurrentByValue",kwnames,&obj0,&obj1,&obj2,&obj3,&obj4,&obj5)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_AmpMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "AmpMesh_setCurrentByValue" "', argument " "1"" of type '" "AmpMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< AmpMesh * >(argp1);
-  ecode2 = SWIG_AsVal_double(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "AmpMesh_setCurrentByValue" "', argument " "2"" of type '" "double""'");
-  } 
-  arg2 = static_cast< double >(val2);
-  ecode3 = SWIG_AsVal_int(obj2, &val3);
-  if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "AmpMesh_setCurrentByValue" "', argument " "3"" of type '" "int""'");
-  } 
-  arg3 = static_cast< int >(val3);
-  ecode4 = SWIG_AsVal_int(obj3, &val4);
-  if (!SWIG_IsOK(ecode4)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "AmpMesh_setCurrentByValue" "', argument " "4"" of type '" "int""'");
-  } 
-  arg4 = static_cast< int >(val4);
-  ecode5 = SWIG_AsVal_int(obj4, &val5);
-  if (!SWIG_IsOK(ecode5)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "AmpMesh_setCurrentByValue" "', argument " "5"" of type '" "int""'");
-  } 
-  arg5 = static_cast< int >(val5);
-  ecode6 = SWIG_AsVal_int(obj5, &val6);
-  if (!SWIG_IsOK(ecode6)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode6), "in method '" "AmpMesh_setCurrentByValue" "', argument " "6"" of type '" "int""'");
-  } 
-  arg6 = static_cast< int >(val6);
-  {
-    try {
-      (arg1)->setCurrentByValue(arg2,arg3,arg4,arg5,arg6);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_AmpMesh_setDifLinearByValue(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  AmpMesh *arg1 = (AmpMesh *) 0 ;
-  double arg2 ;
-  int arg3 ;
-  int arg4 ;
-  int arg5 ;
-  int arg6 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  double val2 ;
-  int ecode2 = 0 ;
-  int val3 ;
-  int ecode3 = 0 ;
-  int val4 ;
-  int ecode4 = 0 ;
-  int val5 ;
-  int ecode5 = 0 ;
-  int val6 ;
-  int ecode6 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  PyObject * obj3 = 0 ;
-  PyObject * obj4 = 0 ;
-  PyObject * obj5 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "dif_linear",(char *) "cell",(char *) "group",(char *) "side",(char *) "position", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOOOOO:AmpMesh_setDifLinearByValue",kwnames,&obj0,&obj1,&obj2,&obj3,&obj4,&obj5)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_AmpMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "AmpMesh_setDifLinearByValue" "', argument " "1"" of type '" "AmpMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< AmpMesh * >(argp1);
-  ecode2 = SWIG_AsVal_double(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "AmpMesh_setDifLinearByValue" "', argument " "2"" of type '" "double""'");
-  } 
-  arg2 = static_cast< double >(val2);
-  ecode3 = SWIG_AsVal_int(obj2, &val3);
-  if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "AmpMesh_setDifLinearByValue" "', argument " "3"" of type '" "int""'");
-  } 
-  arg3 = static_cast< int >(val3);
-  ecode4 = SWIG_AsVal_int(obj3, &val4);
-  if (!SWIG_IsOK(ecode4)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "AmpMesh_setDifLinearByValue" "', argument " "4"" of type '" "int""'");
-  } 
-  arg4 = static_cast< int >(val4);
-  ecode5 = SWIG_AsVal_int(obj4, &val5);
-  if (!SWIG_IsOK(ecode5)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "AmpMesh_setDifLinearByValue" "', argument " "5"" of type '" "int""'");
-  } 
-  arg5 = static_cast< int >(val5);
-  ecode6 = SWIG_AsVal_int(obj5, &val6);
-  if (!SWIG_IsOK(ecode6)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode6), "in method '" "AmpMesh_setDifLinearByValue" "', argument " "6"" of type '" "int""'");
-  } 
-  arg6 = static_cast< int >(val6);
-  {
-    try {
-      (arg1)->setDifLinearByValue(arg2,arg3,arg4,arg5,arg6);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_AmpMesh_setDifNonlinearByValue(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  AmpMesh *arg1 = (AmpMesh *) 0 ;
-  double arg2 ;
-  int arg3 ;
-  int arg4 ;
-  int arg5 ;
-  int arg6 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  double val2 ;
-  int ecode2 = 0 ;
-  int val3 ;
-  int ecode3 = 0 ;
-  int val4 ;
-  int ecode4 = 0 ;
-  int val5 ;
-  int ecode5 = 0 ;
-  int val6 ;
-  int ecode6 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  PyObject * obj3 = 0 ;
-  PyObject * obj4 = 0 ;
-  PyObject * obj5 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "dif_nonlinear",(char *) "cell",(char *) "group",(char *) "side",(char *) "position", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOOOOO:AmpMesh_setDifNonlinearByValue",kwnames,&obj0,&obj1,&obj2,&obj3,&obj4,&obj5)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_AmpMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "AmpMesh_setDifNonlinearByValue" "', argument " "1"" of type '" "AmpMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< AmpMesh * >(argp1);
-  ecode2 = SWIG_AsVal_double(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "AmpMesh_setDifNonlinearByValue" "', argument " "2"" of type '" "double""'");
-  } 
-  arg2 = static_cast< double >(val2);
-  ecode3 = SWIG_AsVal_int(obj2, &val3);
-  if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "AmpMesh_setDifNonlinearByValue" "', argument " "3"" of type '" "int""'");
-  } 
-  arg3 = static_cast< int >(val3);
-  ecode4 = SWIG_AsVal_int(obj3, &val4);
-  if (!SWIG_IsOK(ecode4)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "AmpMesh_setDifNonlinearByValue" "', argument " "4"" of type '" "int""'");
-  } 
-  arg4 = static_cast< int >(val4);
-  ecode5 = SWIG_AsVal_int(obj4, &val5);
-  if (!SWIG_IsOK(ecode5)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "AmpMesh_setDifNonlinearByValue" "', argument " "5"" of type '" "int""'");
-  } 
-  arg5 = static_cast< int >(val5);
-  ecode6 = SWIG_AsVal_int(obj5, &val6);
-  if (!SWIG_IsOK(ecode6)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode6), "in method '" "AmpMesh_setDifNonlinearByValue" "', argument " "6"" of type '" "int""'");
-  } 
-  arg6 = static_cast< int >(val6);
-  {
-    try {
-      (arg1)->setDifNonlinearByValue(arg2,arg3,arg4,arg5,arg6);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_AmpMesh_setGroupStructure(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  AmpMesh *arg1 = (AmpMesh *) 0 ;
-  int *arg2 = (int *) 0 ;
-  int arg3 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyArrayObject *array2 = NULL ;
-  int is_new_object2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "group_indices", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:AmpMesh_setGroupStructure",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_AmpMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "AmpMesh_setGroupStructure" "', argument " "1"" of type '" "AmpMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< AmpMesh * >(argp1);
-  {
-    npy_intp size[1] = {
-      -1 
-    };
-    array2 = obj_to_array_contiguous_allow_conversion(obj1,
-      NPY_INT,
-      &is_new_object2);
-    if (!array2 || !require_dimensions(array2, 1) ||
-      !require_size(array2, size, 1)) SWIG_fail;
-    arg2 = (int*) array_data(array2);
-    arg3 = (int) array_size(array2,0);
-  }
-  {
-    try {
-      (arg1)->setGroupStructure(arg2,arg3);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  {
-    if (is_new_object2 && array2)
-    {
-      Py_DECREF(array2); 
-    }
-  }
-  return resultobj;
-fail:
-  {
-    if (is_new_object2 && array2)
-    {
-      Py_DECREF(array2); 
-    }
-  }
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_AmpMesh_getFluxByValue(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  AmpMesh *arg1 = (AmpMesh *) 0 ;
-  int arg2 ;
-  int arg3 ;
-  int arg4 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  int val3 ;
-  int ecode3 = 0 ;
-  int val4 ;
-  int ecode4 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  PyObject * obj3 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "cell",(char *) "group",(char *) "position", NULL 
-  };
-  double result;
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOOO:AmpMesh_getFluxByValue",kwnames,&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_AmpMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "AmpMesh_getFluxByValue" "', argument " "1"" of type '" "AmpMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< AmpMesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "AmpMesh_getFluxByValue" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  ecode3 = SWIG_AsVal_int(obj2, &val3);
-  if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "AmpMesh_getFluxByValue" "', argument " "3"" of type '" "int""'");
-  } 
-  arg3 = static_cast< int >(val3);
-  ecode4 = SWIG_AsVal_int(obj3, &val4);
-  if (!SWIG_IsOK(ecode4)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "AmpMesh_getFluxByValue" "', argument " "4"" of type '" "int""'");
-  } 
-  arg4 = static_cast< int >(val4);
-  {
-    try {
-      result = (double)(arg1)->getFluxByValue(arg2,arg3,arg4);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_From_double(static_cast< double >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_AmpMesh_getCurrentByValue(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  AmpMesh *arg1 = (AmpMesh *) 0 ;
-  int arg2 ;
-  int arg3 ;
-  int arg4 ;
-  int arg5 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  int val3 ;
-  int ecode3 = 0 ;
-  int val4 ;
-  int ecode4 = 0 ;
-  int val5 ;
-  int ecode5 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  PyObject * obj3 = 0 ;
-  PyObject * obj4 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "cell",(char *) "group",(char *) "side",(char *) "position", NULL 
-  };
-  double result;
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOOOO:AmpMesh_getCurrentByValue",kwnames,&obj0,&obj1,&obj2,&obj3,&obj4)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_AmpMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "AmpMesh_getCurrentByValue" "', argument " "1"" of type '" "AmpMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< AmpMesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "AmpMesh_getCurrentByValue" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  ecode3 = SWIG_AsVal_int(obj2, &val3);
-  if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "AmpMesh_getCurrentByValue" "', argument " "3"" of type '" "int""'");
-  } 
-  arg3 = static_cast< int >(val3);
-  ecode4 = SWIG_AsVal_int(obj3, &val4);
-  if (!SWIG_IsOK(ecode4)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "AmpMesh_getCurrentByValue" "', argument " "4"" of type '" "int""'");
-  } 
-  arg4 = static_cast< int >(val4);
-  ecode5 = SWIG_AsVal_int(obj4, &val5);
-  if (!SWIG_IsOK(ecode5)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "AmpMesh_getCurrentByValue" "', argument " "5"" of type '" "int""'");
-  } 
-  arg5 = static_cast< int >(val5);
-  {
-    try {
-      result = (double)(arg1)->getCurrentByValue(arg2,arg3,arg4,arg5);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_From_double(static_cast< double >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_AmpMesh_getDifLinearByValue(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  AmpMesh *arg1 = (AmpMesh *) 0 ;
-  int arg2 ;
-  int arg3 ;
-  int arg4 ;
-  int arg5 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  int val3 ;
-  int ecode3 = 0 ;
-  int val4 ;
-  int ecode4 = 0 ;
-  int val5 ;
-  int ecode5 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  PyObject * obj3 = 0 ;
-  PyObject * obj4 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "cell",(char *) "group",(char *) "side",(char *) "position", NULL 
-  };
-  double result;
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOOOO:AmpMesh_getDifLinearByValue",kwnames,&obj0,&obj1,&obj2,&obj3,&obj4)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_AmpMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "AmpMesh_getDifLinearByValue" "', argument " "1"" of type '" "AmpMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< AmpMesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "AmpMesh_getDifLinearByValue" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  ecode3 = SWIG_AsVal_int(obj2, &val3);
-  if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "AmpMesh_getDifLinearByValue" "', argument " "3"" of type '" "int""'");
-  } 
-  arg3 = static_cast< int >(val3);
-  ecode4 = SWIG_AsVal_int(obj3, &val4);
-  if (!SWIG_IsOK(ecode4)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "AmpMesh_getDifLinearByValue" "', argument " "4"" of type '" "int""'");
-  } 
-  arg4 = static_cast< int >(val4);
-  ecode5 = SWIG_AsVal_int(obj4, &val5);
-  if (!SWIG_IsOK(ecode5)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "AmpMesh_getDifLinearByValue" "', argument " "5"" of type '" "int""'");
-  } 
-  arg5 = static_cast< int >(val5);
-  {
-    try {
-      result = (double)(arg1)->getDifLinearByValue(arg2,arg3,arg4,arg5);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_From_double(static_cast< double >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_AmpMesh_getDifNonlinearByValue(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  AmpMesh *arg1 = (AmpMesh *) 0 ;
-  int arg2 ;
-  int arg3 ;
-  int arg4 ;
-  int arg5 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  int val3 ;
-  int ecode3 = 0 ;
-  int val4 ;
-  int ecode4 = 0 ;
-  int val5 ;
-  int ecode5 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  PyObject * obj3 = 0 ;
-  PyObject * obj4 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "cell",(char *) "group",(char *) "side",(char *) "position", NULL 
-  };
-  double result;
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOOOO:AmpMesh_getDifNonlinearByValue",kwnames,&obj0,&obj1,&obj2,&obj3,&obj4)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_AmpMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "AmpMesh_getDifNonlinearByValue" "', argument " "1"" of type '" "AmpMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< AmpMesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "AmpMesh_getDifNonlinearByValue" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  ecode3 = SWIG_AsVal_int(obj2, &val3);
-  if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "AmpMesh_getDifNonlinearByValue" "', argument " "3"" of type '" "int""'");
-  } 
-  arg3 = static_cast< int >(val3);
-  ecode4 = SWIG_AsVal_int(obj3, &val4);
-  if (!SWIG_IsOK(ecode4)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "AmpMesh_getDifNonlinearByValue" "', argument " "4"" of type '" "int""'");
-  } 
-  arg4 = static_cast< int >(val4);
-  ecode5 = SWIG_AsVal_int(obj4, &val5);
-  if (!SWIG_IsOK(ecode5)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "AmpMesh_getDifNonlinearByValue" "', argument " "5"" of type '" "int""'");
-  } 
-  arg5 = static_cast< int >(val5);
-  {
-    try {
-      result = (double)(arg1)->getDifNonlinearByValue(arg2,arg3,arg4,arg5);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_From_double(static_cast< double >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_AmpMesh_clone(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  AmpMesh *arg1 = (AmpMesh *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  AmpMesh *result = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:AmpMesh_clone",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_AmpMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "AmpMesh_clone" "', argument " "1"" of type '" "AmpMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< AmpMesh * >(argp1);
-  {
-    try {
-      result = (AmpMesh *)(arg1)->clone();
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_AmpMesh, 0 |  0 );
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_AmpMesh_initialize(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  AmpMesh *arg1 = (AmpMesh *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:AmpMesh_initialize",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_AmpMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "AmpMesh_initialize" "', argument " "1"" of type '" "AmpMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< AmpMesh * >(argp1);
-  {
-    try {
-      (arg1)->initialize();
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_AmpMesh_condenseMaterials(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  AmpMesh *arg1 = (AmpMesh *) 0 ;
-  int arg2 ;
-  bool arg3 = (bool) false ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  bool val3 ;
-  int ecode3 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "position",(char *) "save_flux", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO|O:AmpMesh_condenseMaterials",kwnames,&obj0,&obj1,&obj2)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_AmpMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "AmpMesh_condenseMaterials" "', argument " "1"" of type '" "AmpMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< AmpMesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "AmpMesh_condenseMaterials" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  if (obj2) {
-    ecode3 = SWIG_AsVal_bool(obj2, &val3);
-    if (!SWIG_IsOK(ecode3)) {
-      SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "AmpMesh_condenseMaterials" "', argument " "3"" of type '" "bool""'");
-    } 
-    arg3 = static_cast< bool >(val3);
-  }
-  {
-    try {
-      (arg1)->condenseMaterials(arg2,arg3);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_AmpMesh_computePower(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  AmpMesh *arg1 = (AmpMesh *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "position", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:AmpMesh_computePower",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_AmpMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "AmpMesh_computePower" "', argument " "1"" of type '" "AmpMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< AmpMesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "AmpMesh_computePower" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  {
-    try {
-      (arg1)->computePower(arg2);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_AmpMesh_computeCurrent(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  AmpMesh *arg1 = (AmpMesh *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "position", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:AmpMesh_computeCurrent",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_AmpMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "AmpMesh_computeCurrent" "', argument " "1"" of type '" "AmpMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< AmpMesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "AmpMesh_computeCurrent" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  {
-    try {
-      (arg1)->computeCurrent(arg2);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_AmpMesh_computeDifCorrect(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  AmpMesh *arg1 = (AmpMesh *) 0 ;
-  double arg2 ;
-  double arg3 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  double val2 ;
-  int ecode2 = 0 ;
-  double val3 ;
-  int ecode3 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "dif_coef",(char *) "length", NULL 
-  };
-  double result;
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOO:AmpMesh_computeDifCorrect",kwnames,&obj0,&obj1,&obj2)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_AmpMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "AmpMesh_computeDifCorrect" "', argument " "1"" of type '" "AmpMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< AmpMesh * >(argp1);
-  ecode2 = SWIG_AsVal_double(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "AmpMesh_computeDifCorrect" "', argument " "2"" of type '" "double""'");
-  } 
-  arg2 = static_cast< double >(val2);
-  ecode3 = SWIG_AsVal_double(obj2, &val3);
-  if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "AmpMesh_computeDifCorrect" "', argument " "3"" of type '" "double""'");
-  } 
-  arg3 = static_cast< double >(val3);
-  {
-    try {
-      result = (double)(arg1)->computeDifCorrect(arg2,arg3);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_From_double(static_cast< double >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_AmpMesh_computeDifCoefs(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  AmpMesh *arg1 = (AmpMesh *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "position", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:AmpMesh_computeDifCoefs",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_AmpMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "AmpMesh_computeDifCoefs" "', argument " "1"" of type '" "AmpMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< AmpMesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "AmpMesh_computeDifCoefs" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  {
-    try {
-      (arg1)->computeDifCoefs(arg2);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_AmpMesh_copyFlux(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  AmpMesh *arg1 = (AmpMesh *) 0 ;
-  int arg2 ;
-  int arg3 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  int val3 ;
-  int ecode3 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "position_from",(char *) "position_to", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOO:AmpMesh_copyFlux",kwnames,&obj0,&obj1,&obj2)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_AmpMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "AmpMesh_copyFlux" "', argument " "1"" of type '" "AmpMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< AmpMesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "AmpMesh_copyFlux" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  ecode3 = SWIG_AsVal_int(obj2, &val3);
-  if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "AmpMesh_copyFlux" "', argument " "3"" of type '" "int""'");
-  } 
-  arg3 = static_cast< int >(val3);
-  {
-    try {
-      (arg1)->copyFlux(arg2,arg3);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_AmpMesh_copyCurrent(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  AmpMesh *arg1 = (AmpMesh *) 0 ;
-  int arg2 ;
-  int arg3 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  int val3 ;
-  int ecode3 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "position_from",(char *) "position_to", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOO:AmpMesh_copyCurrent",kwnames,&obj0,&obj1,&obj2)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_AmpMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "AmpMesh_copyCurrent" "', argument " "1"" of type '" "AmpMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< AmpMesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "AmpMesh_copyCurrent" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  ecode3 = SWIG_AsVal_int(obj2, &val3);
-  if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "AmpMesh_copyCurrent" "', argument " "3"" of type '" "int""'");
-  } 
-  arg3 = static_cast< int >(val3);
-  {
-    try {
-      (arg1)->copyCurrent(arg2,arg3);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_AmpMesh_copyDifLinear(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  AmpMesh *arg1 = (AmpMesh *) 0 ;
-  int arg2 ;
-  int arg3 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  int val3 ;
-  int ecode3 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "position_from",(char *) "position_to", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOO:AmpMesh_copyDifLinear",kwnames,&obj0,&obj1,&obj2)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_AmpMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "AmpMesh_copyDifLinear" "', argument " "1"" of type '" "AmpMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< AmpMesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "AmpMesh_copyDifLinear" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  ecode3 = SWIG_AsVal_int(obj2, &val3);
-  if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "AmpMesh_copyDifLinear" "', argument " "3"" of type '" "int""'");
-  } 
-  arg3 = static_cast< int >(val3);
-  {
-    try {
-      (arg1)->copyDifLinear(arg2,arg3);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_AmpMesh_copyDifNonlinear(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  AmpMesh *arg1 = (AmpMesh *) 0 ;
-  int arg2 ;
-  int arg3 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  int val3 ;
-  int ecode3 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "position_from",(char *) "position_to", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOO:AmpMesh_copyDifNonlinear",kwnames,&obj0,&obj1,&obj2)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_AmpMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "AmpMesh_copyDifNonlinear" "', argument " "1"" of type '" "AmpMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< AmpMesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "AmpMesh_copyDifNonlinear" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  ecode3 = SWIG_AsVal_int(obj2, &val3);
-  if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "AmpMesh_copyDifNonlinear" "', argument " "3"" of type '" "int""'");
-  } 
-  arg3 = static_cast< int >(val3);
-  {
-    try {
-      (arg1)->copyDifNonlinear(arg2,arg3);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_AmpMesh_computeAveragePower(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  AmpMesh *arg1 = (AmpMesh *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "position", NULL 
-  };
-  double result;
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:AmpMesh_computeAveragePower",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_AmpMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "AmpMesh_computeAveragePower" "', argument " "1"" of type '" "AmpMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< AmpMesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "AmpMesh_computeAveragePower" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  {
-    try {
-      result = (double)(arg1)->computeAveragePower(arg2);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_From_double(static_cast< double >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_AmpMesh_computePowerL2Norm(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  AmpMesh *arg1 = (AmpMesh *) 0 ;
-  int arg2 ;
-  int arg3 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  int val3 ;
-  int ecode3 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "position_1",(char *) "position_2", NULL 
-  };
-  double result;
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOO:AmpMesh_computePowerL2Norm",kwnames,&obj0,&obj1,&obj2)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_AmpMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "AmpMesh_computePowerL2Norm" "', argument " "1"" of type '" "AmpMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< AmpMesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "AmpMesh_computePowerL2Norm" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  ecode3 = SWIG_AsVal_int(obj2, &val3);
-  if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "AmpMesh_computePowerL2Norm" "', argument " "3"" of type '" "int""'");
-  } 
-  arg3 = static_cast< int >(val3);
-  {
-    try {
-      result = (double)(arg1)->computePowerL2Norm(arg2,arg3);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_From_double(static_cast< double >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_AmpMesh_interpolateDifNonlinear(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  AmpMesh *arg1 = (AmpMesh *) 0 ;
-  int arg2 ;
-  int arg3 ;
-  int arg4 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  int val3 ;
-  int ecode3 = 0 ;
-  int val4 ;
-  int ecode4 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  PyObject * obj3 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "position_begin",(char *) "position_end",(char *) "position", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOOO:AmpMesh_interpolateDifNonlinear",kwnames,&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_AmpMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "AmpMesh_interpolateDifNonlinear" "', argument " "1"" of type '" "AmpMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< AmpMesh * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "AmpMesh_interpolateDifNonlinear" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  ecode3 = SWIG_AsVal_int(obj2, &val3);
-  if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "AmpMesh_interpolateDifNonlinear" "', argument " "3"" of type '" "int""'");
-  } 
-  arg3 = static_cast< int >(val3);
-  ecode4 = SWIG_AsVal_int(obj3, &val4);
-  if (!SWIG_IsOK(ecode4)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "AmpMesh_interpolateDifNonlinear" "', argument " "4"" of type '" "int""'");
-  } 
-  arg4 = static_cast< int >(val4);
-  {
-    try {
-      (arg1)->interpolateDifNonlinear(arg2,arg3,arg4);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *AmpMesh_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *obj;
-  if (!PyArg_ParseTuple(args,(char*)"O:swigregister", &obj)) return NULL;
-  SWIG_TypeNewClientData(SWIGTYPE_p_AmpMesh, SWIG_NewClientData(obj));
-  return SWIG_Py_Void();
-}
-
-SWIGINTERN PyObject *_wrap_new_Solver(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  StructuredShapeMesh *arg1 = (StructuredShapeMesh *) 0 ;
-  AmpMesh *arg2 = (AmpMesh *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  void *argp2 = 0 ;
-  int res2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "shape_mesh",(char *) "amp_mesh", NULL 
-  };
-  Solver *result = 0 ;
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:new_Solver",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_StructuredShapeMesh, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "new_Solver" "', argument " "1"" of type '" "StructuredShapeMesh *""'"); 
-  }
-  arg1 = reinterpret_cast< StructuredShapeMesh * >(argp1);
-  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_AmpMesh, 0 |  0 );
-  if (!SWIG_IsOK(res2)) {
-    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "new_Solver" "', argument " "2"" of type '" "AmpMesh *""'"); 
-  }
-  arg2 = reinterpret_cast< AmpMesh * >(argp2);
-  {
-    try {
-      result = (Solver *)new Solver(arg1,arg2);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_Solver, SWIG_POINTER_NEW |  0 );
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
 SWIGINTERN PyObject *_wrap_delete_Solver(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   Solver *arg1 = (Solver *) 0 ;
@@ -15834,7 +10479,7 @@ fail:
 }
 
 
-SWIGINTERN PyObject *_wrap_Solver_getAMShape(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+SWIGINTERN PyObject *_wrap_Solver_getAmpMatrix(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   Solver *arg1 = (Solver *) 0 ;
   void *argp1 = 0 ;
@@ -15842,15 +10487,15 @@ SWIGINTERN PyObject *_wrap_Solver_getAMShape(PyObject *SWIGUNUSEDPARM(self), PyO
   PyObject * obj0 = 0 ;
   double **result = 0 ;
   
-  if (!PyArg_ParseTuple(args,(char *)"O:Solver_getAMShape",&obj0)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"O:Solver_getAmpMatrix",&obj0)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_getAMShape" "', argument " "1"" of type '" "Solver *""'"); 
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_getAmpMatrix" "', argument " "1"" of type '" "Solver *""'"); 
   }
   arg1 = reinterpret_cast< Solver * >(argp1);
   {
     try {
-      result = (double **)(arg1)->getAMShape();
+      result = (double **)(arg1)->getAmpMatrix();
     } catch (const std::exception &e) {
       SWIG_exception(SWIG_RuntimeError, e.what());
     }
@@ -15862,63 +10507,7 @@ fail:
 }
 
 
-SWIGINTERN PyObject *_wrap_Solver_getAShape(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  Solver *arg1 = (Solver *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  double **result = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:Solver_getAShape",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_getAShape" "', argument " "1"" of type '" "Solver *""'"); 
-  }
-  arg1 = reinterpret_cast< Solver * >(argp1);
-  {
-    try {
-      result = (double **)(arg1)->getAShape();
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_p_double, 0 |  0 );
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Solver_getMShape(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  Solver *arg1 = (Solver *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  double **result = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:Solver_getMShape",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_getMShape" "', argument " "1"" of type '" "Solver *""'"); 
-  }
-  arg1 = reinterpret_cast< Solver * >(argp1);
-  {
-    try {
-      result = (double **)(arg1)->getMShape();
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_p_double, 0 |  0 );
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Solver_getBShape(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+SWIGINTERN PyObject *_wrap_Solver_getAmpSource(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   Solver *arg1 = (Solver *) 0 ;
   void *argp1 = 0 ;
@@ -15926,15 +10515,15 @@ SWIGINTERN PyObject *_wrap_Solver_getBShape(PyObject *SWIGUNUSEDPARM(self), PyOb
   PyObject * obj0 = 0 ;
   double *result = 0 ;
   
-  if (!PyArg_ParseTuple(args,(char *)"O:Solver_getBShape",&obj0)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"O:Solver_getAmpSource",&obj0)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_getBShape" "', argument " "1"" of type '" "Solver *""'"); 
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_getAmpSource" "', argument " "1"" of type '" "Solver *""'"); 
   }
   arg1 = reinterpret_cast< Solver * >(argp1);
   {
     try {
-      result = (double *)(arg1)->getBShape();
+      result = (double *)(arg1)->getAmpSource();
     } catch (const std::exception &e) {
       SWIG_exception(SWIG_RuntimeError, e.what());
     }
@@ -15946,119 +10535,91 @@ fail:
 }
 
 
-SWIGINTERN PyObject *_wrap_Solver_getAMAmp(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+SWIGINTERN PyObject *_wrap_Solver_getKeff0(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   Solver *arg1 = (Solver *) 0 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
   PyObject * obj0 = 0 ;
-  double **result = 0 ;
+  double result;
   
-  if (!PyArg_ParseTuple(args,(char *)"O:Solver_getAMAmp",&obj0)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"O:Solver_getKeff0",&obj0)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_getAMAmp" "', argument " "1"" of type '" "Solver *""'"); 
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_getKeff0" "', argument " "1"" of type '" "Solver *""'"); 
   }
   arg1 = reinterpret_cast< Solver * >(argp1);
   {
     try {
-      result = (double **)(arg1)->getAMAmp();
+      result = (double)(arg1)->getKeff0();
     } catch (const std::exception &e) {
       SWIG_exception(SWIG_RuntimeError, e.what());
     }
   }
-  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_p_double, 0 |  0 );
+  resultobj = SWIG_From_double(static_cast< double >(result));
   return resultobj;
 fail:
   return NULL;
 }
 
 
-SWIGINTERN PyObject *_wrap_Solver_getAAmp(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+SWIGINTERN PyObject *_wrap_Solver_getMethod(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   Solver *arg1 = (Solver *) 0 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
   PyObject * obj0 = 0 ;
-  double **result = 0 ;
+  transientMethod result;
   
-  if (!PyArg_ParseTuple(args,(char *)"O:Solver_getAAmp",&obj0)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"O:Solver_getMethod",&obj0)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_getAAmp" "', argument " "1"" of type '" "Solver *""'"); 
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_getMethod" "', argument " "1"" of type '" "Solver *""'"); 
   }
   arg1 = reinterpret_cast< Solver * >(argp1);
   {
     try {
-      result = (double **)(arg1)->getAAmp();
+      result = (transientMethod)(arg1)->getMethod();
     } catch (const std::exception &e) {
       SWIG_exception(SWIG_RuntimeError, e.what());
     }
   }
-  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_p_double, 0 |  0 );
+  resultobj = SWIG_From_int(static_cast< int >(result));
   return resultobj;
 fail:
   return NULL;
 }
 
 
-SWIGINTERN PyObject *_wrap_Solver_getMAmp(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+SWIGINTERN PyObject *_wrap_Solver_getBuckling(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   Solver *arg1 = (Solver *) 0 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
   PyObject * obj0 = 0 ;
-  double **result = 0 ;
+  double result;
   
-  if (!PyArg_ParseTuple(args,(char *)"O:Solver_getMAmp",&obj0)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"O:Solver_getBuckling",&obj0)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_getMAmp" "', argument " "1"" of type '" "Solver *""'"); 
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_getBuckling" "', argument " "1"" of type '" "Solver *""'"); 
   }
   arg1 = reinterpret_cast< Solver * >(argp1);
   {
     try {
-      result = (double **)(arg1)->getMAmp();
+      result = (double)(arg1)->getBuckling();
     } catch (const std::exception &e) {
       SWIG_exception(SWIG_RuntimeError, e.what());
     }
   }
-  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_p_double, 0 |  0 );
+  resultobj = SWIG_From_double(static_cast< double >(result));
   return resultobj;
 fail:
   return NULL;
 }
 
 
-SWIGINTERN PyObject *_wrap_Solver_getBAmp(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  Solver *arg1 = (Solver *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  double *result = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:Solver_getBAmp",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_getBAmp" "', argument " "1"" of type '" "Solver *""'"); 
-  }
-  arg1 = reinterpret_cast< Solver * >(argp1);
-  {
-    try {
-      result = (double *)(arg1)->getBAmp();
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_double, 0 |  0 );
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Solver_makeAMShapeInitial(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+SWIGINTERN PyObject *_wrap_Solver_getTemperature(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
   PyObject *resultobj = 0;
   Solver *arg1 = (Solver *) 0 ;
   int arg2 ;
@@ -16069,23 +10630,954 @@ SWIGINTERN PyObject *_wrap_Solver_makeAMShapeInitial(PyObject *SWIGUNUSEDPARM(se
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
   char *  kwnames[] = {
-    (char *) "self",(char *) "position", NULL 
+    (char *) "self",(char *) "time", NULL 
   };
+  double *result = 0 ;
   
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Solver_makeAMShapeInitial",kwnames,&obj0,&obj1)) SWIG_fail;
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Solver_getTemperature",kwnames,&obj0,&obj1)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_makeAMShapeInitial" "', argument " "1"" of type '" "Solver *""'"); 
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_getTemperature" "', argument " "1"" of type '" "Solver *""'"); 
   }
   arg1 = reinterpret_cast< Solver * >(argp1);
   ecode2 = SWIG_AsVal_int(obj1, &val2);
   if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_makeAMShapeInitial" "', argument " "2"" of type '" "int""'");
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_getTemperature" "', argument " "2"" of type '" "int""'");
   } 
   arg2 = static_cast< int >(val2);
   {
     try {
-      (arg1)->makeAMShapeInitial(arg2);
+      result = (double *)(arg1)->getTemperature(arg2);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_double, 0 |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_getFlux(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  int arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "time", NULL 
+  };
+  double *result = 0 ;
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Solver_getFlux",kwnames,&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_getFlux" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_getFlux" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  {
+    try {
+      result = (double *)(arg1)->getFlux(arg2);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_double, 0 |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_getShape(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  int arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "time", NULL 
+  };
+  double *result = 0 ;
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Solver_getShape",kwnames,&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_getShape" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_getShape" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  {
+    try {
+      result = (double *)(arg1)->getShape(arg2);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_double, 0 |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_getAmplitude(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  int arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "time", NULL 
+  };
+  double *result = 0 ;
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Solver_getAmplitude",kwnames,&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_getAmplitude" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_getAmplitude" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  {
+    try {
+      result = (double *)(arg1)->getAmplitude(arg2);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_double, 0 |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_getPower(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  int arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "time", NULL 
+  };
+  double *result = 0 ;
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Solver_getPower",kwnames,&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_getPower" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_getPower" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  {
+    try {
+      result = (double *)(arg1)->getPower(arg2);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_double, 0 |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_getCurrent(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  int arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "time", NULL 
+  };
+  double *result = 0 ;
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Solver_getCurrent",kwnames,&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_getCurrent" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_getCurrent" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  {
+    try {
+      result = (double *)(arg1)->getCurrent(arg2);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_double, 0 |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_getDifLinear(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  int arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "time", NULL 
+  };
+  double *result = 0 ;
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Solver_getDifLinear",kwnames,&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_getDifLinear" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_getDifLinear" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  {
+    try {
+      result = (double *)(arg1)->getDifLinear(arg2);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_double, 0 |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_getDifNonlinear(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  int arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "time", NULL 
+  };
+  double *result = 0 ;
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Solver_getDifNonlinear",kwnames,&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_getDifNonlinear" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_getDifNonlinear" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  {
+    try {
+      result = (double *)(arg1)->getDifNonlinear(arg2);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_double, 0 |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_getDifFrequency(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  int arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "time", NULL 
+  };
+  double *result = 0 ;
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Solver_getDifFrequency",kwnames,&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_getDifFrequency" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_getDifFrequency" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  {
+    try {
+      result = (double *)(arg1)->getDifFrequency(arg2);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_double, 0 |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_getFrequency(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  int arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "time", NULL 
+  };
+  double *result = 0 ;
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Solver_getFrequency",kwnames,&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_getFrequency" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_getFrequency" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  {
+    try {
+      result = (double *)(arg1)->getFrequency(arg2);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_double, 0 |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_getTemperatureByValue(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  int arg2 ;
+  int arg3 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "cell",(char *) "time", NULL 
+  };
+  double result;
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOO:Solver_getTemperatureByValue",kwnames,&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_getTemperatureByValue" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_getTemperatureByValue" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Solver_getTemperatureByValue" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  {
+    try {
+      result = (double)(arg1)->getTemperatureByValue(arg2,arg3);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_From_double(static_cast< double >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_getFluxByValue(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  int arg2 ;
+  int arg3 ;
+  int arg4 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  int val4 ;
+  int ecode4 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "cell",(char *) "group",(char *) "time", NULL 
+  };
+  double result;
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOOO:Solver_getFluxByValue",kwnames,&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_getFluxByValue" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_getFluxByValue" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Solver_getFluxByValue" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  ecode4 = SWIG_AsVal_int(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "Solver_getFluxByValue" "', argument " "4"" of type '" "int""'");
+  } 
+  arg4 = static_cast< int >(val4);
+  {
+    try {
+      result = (double)(arg1)->getFluxByValue(arg2,arg3,arg4);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_From_double(static_cast< double >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_getShapeByValue(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  int arg2 ;
+  int arg3 ;
+  int arg4 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  int val4 ;
+  int ecode4 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "cell",(char *) "group",(char *) "time", NULL 
+  };
+  double result;
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOOO:Solver_getShapeByValue",kwnames,&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_getShapeByValue" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_getShapeByValue" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Solver_getShapeByValue" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  ecode4 = SWIG_AsVal_int(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "Solver_getShapeByValue" "', argument " "4"" of type '" "int""'");
+  } 
+  arg4 = static_cast< int >(val4);
+  {
+    try {
+      result = (double)(arg1)->getShapeByValue(arg2,arg3,arg4);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_From_double(static_cast< double >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_getAmplitudeByValue(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  int arg2 ;
+  int arg3 ;
+  int arg4 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  int val4 ;
+  int ecode4 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "cell",(char *) "group",(char *) "time", NULL 
+  };
+  double result;
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOOO:Solver_getAmplitudeByValue",kwnames,&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_getAmplitudeByValue" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_getAmplitudeByValue" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Solver_getAmplitudeByValue" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  ecode4 = SWIG_AsVal_int(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "Solver_getAmplitudeByValue" "', argument " "4"" of type '" "int""'");
+  } 
+  arg4 = static_cast< int >(val4);
+  {
+    try {
+      result = (double)(arg1)->getAmplitudeByValue(arg2,arg3,arg4);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_From_double(static_cast< double >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_getPowerByValue(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  int arg2 ;
+  int arg3 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "cell",(char *) "time", NULL 
+  };
+  double result;
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOO:Solver_getPowerByValue",kwnames,&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_getPowerByValue" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_getPowerByValue" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Solver_getPowerByValue" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  {
+    try {
+      result = (double)(arg1)->getPowerByValue(arg2,arg3);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_From_double(static_cast< double >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_getCurrentByValue(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  int arg2 ;
+  int arg3 ;
+  int arg4 ;
+  int arg5 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  int val4 ;
+  int ecode4 = 0 ;
+  int val5 ;
+  int ecode5 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "cell",(char *) "group",(char *) "side",(char *) "time", NULL 
+  };
+  double result;
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOOOO:Solver_getCurrentByValue",kwnames,&obj0,&obj1,&obj2,&obj3,&obj4)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_getCurrentByValue" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_getCurrentByValue" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Solver_getCurrentByValue" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  ecode4 = SWIG_AsVal_int(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "Solver_getCurrentByValue" "', argument " "4"" of type '" "int""'");
+  } 
+  arg4 = static_cast< int >(val4);
+  ecode5 = SWIG_AsVal_int(obj4, &val5);
+  if (!SWIG_IsOK(ecode5)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "Solver_getCurrentByValue" "', argument " "5"" of type '" "int""'");
+  } 
+  arg5 = static_cast< int >(val5);
+  {
+    try {
+      result = (double)(arg1)->getCurrentByValue(arg2,arg3,arg4,arg5);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_From_double(static_cast< double >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_getDifLinearByValue(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  int arg2 ;
+  int arg3 ;
+  int arg4 ;
+  int arg5 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  int val4 ;
+  int ecode4 = 0 ;
+  int val5 ;
+  int ecode5 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "cell",(char *) "group",(char *) "side",(char *) "time", NULL 
+  };
+  double result;
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOOOO:Solver_getDifLinearByValue",kwnames,&obj0,&obj1,&obj2,&obj3,&obj4)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_getDifLinearByValue" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_getDifLinearByValue" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Solver_getDifLinearByValue" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  ecode4 = SWIG_AsVal_int(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "Solver_getDifLinearByValue" "', argument " "4"" of type '" "int""'");
+  } 
+  arg4 = static_cast< int >(val4);
+  ecode5 = SWIG_AsVal_int(obj4, &val5);
+  if (!SWIG_IsOK(ecode5)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "Solver_getDifLinearByValue" "', argument " "5"" of type '" "int""'");
+  } 
+  arg5 = static_cast< int >(val5);
+  {
+    try {
+      result = (double)(arg1)->getDifLinearByValue(arg2,arg3,arg4,arg5);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_From_double(static_cast< double >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_getDifNonlinearByValue(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  int arg2 ;
+  int arg3 ;
+  int arg4 ;
+  int arg5 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  int val4 ;
+  int ecode4 = 0 ;
+  int val5 ;
+  int ecode5 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "cell",(char *) "group",(char *) "side",(char *) "time", NULL 
+  };
+  double result;
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOOOO:Solver_getDifNonlinearByValue",kwnames,&obj0,&obj1,&obj2,&obj3,&obj4)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_getDifNonlinearByValue" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_getDifNonlinearByValue" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Solver_getDifNonlinearByValue" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  ecode4 = SWIG_AsVal_int(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "Solver_getDifNonlinearByValue" "', argument " "4"" of type '" "int""'");
+  } 
+  arg4 = static_cast< int >(val4);
+  ecode5 = SWIG_AsVal_int(obj4, &val5);
+  if (!SWIG_IsOK(ecode5)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "Solver_getDifNonlinearByValue" "', argument " "5"" of type '" "int""'");
+  } 
+  arg5 = static_cast< int >(val5);
+  {
+    try {
+      result = (double)(arg1)->getDifNonlinearByValue(arg2,arg3,arg4,arg5);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_From_double(static_cast< double >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_getFrequencyByValue(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  int arg2 ;
+  int arg3 ;
+  int arg4 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  int val4 ;
+  int ecode4 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "cell",(char *) "group",(char *) "time", NULL 
+  };
+  double result;
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOOO:Solver_getFrequencyByValue",kwnames,&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_getFrequencyByValue" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_getFrequencyByValue" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Solver_getFrequencyByValue" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  ecode4 = SWIG_AsVal_int(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "Solver_getFrequencyByValue" "', argument " "4"" of type '" "int""'");
+  } 
+  arg4 = static_cast< int >(val4);
+  {
+    try {
+      result = (double)(arg1)->getFrequencyByValue(arg2,arg3,arg4);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_From_double(static_cast< double >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_setMethod(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  transientMethod arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "method", NULL 
+  };
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Solver_setMethod",kwnames,&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_setMethod" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_setMethod" "', argument " "2"" of type '" "transientMethod""'");
+  } 
+  arg2 = static_cast< transientMethod >(val2);
+  {
+    try {
+      (arg1)->setMethod(arg2);
     } catch (const std::exception &e) {
       SWIG_exception(SWIG_RuntimeError, e.what());
     }
@@ -16097,7 +11589,7 @@ fail:
 }
 
 
-SWIGINTERN PyObject *_wrap_Solver_computeInitialShape(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+SWIGINTERN PyObject *_wrap_Solver_setEndTime(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
   PyObject *resultobj = 0;
   Solver *arg1 = (Solver *) 0 ;
   double arg2 ;
@@ -16108,23 +11600,1501 @@ SWIGINTERN PyObject *_wrap_Solver_computeInitialShape(PyObject *SWIGUNUSEDPARM(s
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
   char *  kwnames[] = {
-    (char *) "self",(char *) "tol", NULL 
+    (char *) "self",(char *) "time", NULL 
   };
   
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Solver_computeInitialShape",kwnames,&obj0,&obj1)) SWIG_fail;
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Solver_setEndTime",kwnames,&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_setEndTime" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_setEndTime" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = static_cast< double >(val2);
+  {
+    try {
+      (arg1)->setEndTime(arg2);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_setInnerTimeStepSize(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  double arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "time", NULL 
+  };
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Solver_setInnerTimeStepSize",kwnames,&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_setInnerTimeStepSize" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_setInnerTimeStepSize" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = static_cast< double >(val2);
+  {
+    try {
+      (arg1)->setInnerTimeStepSize(arg2);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_setOuterTimeStepSize(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  double arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "time", NULL 
+  };
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Solver_setOuterTimeStepSize",kwnames,&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_setOuterTimeStepSize" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_setOuterTimeStepSize" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = static_cast< double >(val2);
+  {
+    try {
+      (arg1)->setOuterTimeStepSize(arg2);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_setBuckling(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  double arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "buckling", NULL 
+  };
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Solver_setBuckling",kwnames,&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_setBuckling" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_setBuckling" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = static_cast< double >(val2);
+  {
+    try {
+      (arg1)->setBuckling(arg2);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_setInitialPower(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  double arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "power", NULL 
+  };
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Solver_setInitialPower",kwnames,&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_setInitialPower" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_setInitialPower" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = static_cast< double >(val2);
+  {
+    try {
+      (arg1)->setInitialPower(arg2);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_setTemperatureByValue(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  double arg2 ;
+  int arg3 ;
+  int arg4 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  int val4 ;
+  int ecode4 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "value",(char *) "cell",(char *) "time", NULL 
+  };
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOOO:Solver_setTemperatureByValue",kwnames,&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_setTemperatureByValue" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_setTemperatureByValue" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = static_cast< double >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Solver_setTemperatureByValue" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  ecode4 = SWIG_AsVal_int(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "Solver_setTemperatureByValue" "', argument " "4"" of type '" "int""'");
+  } 
+  arg4 = static_cast< int >(val4);
+  {
+    try {
+      (arg1)->setTemperatureByValue(arg2,arg3,arg4);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_setShapeByValue(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  double arg2 ;
+  int arg3 ;
+  int arg4 ;
+  int arg5 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  int val4 ;
+  int ecode4 = 0 ;
+  int val5 ;
+  int ecode5 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "value",(char *) "cell",(char *) "group",(char *) "time", NULL 
+  };
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOOOO:Solver_setShapeByValue",kwnames,&obj0,&obj1,&obj2,&obj3,&obj4)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_setShapeByValue" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_setShapeByValue" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = static_cast< double >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Solver_setShapeByValue" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  ecode4 = SWIG_AsVal_int(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "Solver_setShapeByValue" "', argument " "4"" of type '" "int""'");
+  } 
+  arg4 = static_cast< int >(val4);
+  ecode5 = SWIG_AsVal_int(obj4, &val5);
+  if (!SWIG_IsOK(ecode5)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "Solver_setShapeByValue" "', argument " "5"" of type '" "int""'");
+  } 
+  arg5 = static_cast< int >(val5);
+  {
+    try {
+      (arg1)->setShapeByValue(arg2,arg3,arg4,arg5);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_setAmplitudeByValue(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  double arg2 ;
+  int arg3 ;
+  int arg4 ;
+  int arg5 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  int val4 ;
+  int ecode4 = 0 ;
+  int val5 ;
+  int ecode5 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "value",(char *) "cell",(char *) "group",(char *) "time", NULL 
+  };
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOOOO:Solver_setAmplitudeByValue",kwnames,&obj0,&obj1,&obj2,&obj3,&obj4)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_setAmplitudeByValue" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_setAmplitudeByValue" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = static_cast< double >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Solver_setAmplitudeByValue" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  ecode4 = SWIG_AsVal_int(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "Solver_setAmplitudeByValue" "', argument " "4"" of type '" "int""'");
+  } 
+  arg4 = static_cast< int >(val4);
+  ecode5 = SWIG_AsVal_int(obj4, &val5);
+  if (!SWIG_IsOK(ecode5)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "Solver_setAmplitudeByValue" "', argument " "5"" of type '" "int""'");
+  } 
+  arg5 = static_cast< int >(val5);
+  {
+    try {
+      (arg1)->setAmplitudeByValue(arg2,arg3,arg4,arg5);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_setPowerByValue(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  double arg2 ;
+  int arg3 ;
+  int arg4 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  int val4 ;
+  int ecode4 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "value",(char *) "cell",(char *) "time", NULL 
+  };
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOOO:Solver_setPowerByValue",kwnames,&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_setPowerByValue" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_setPowerByValue" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = static_cast< double >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Solver_setPowerByValue" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  ecode4 = SWIG_AsVal_int(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "Solver_setPowerByValue" "', argument " "4"" of type '" "int""'");
+  } 
+  arg4 = static_cast< int >(val4);
+  {
+    try {
+      (arg1)->setPowerByValue(arg2,arg3,arg4);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_setFrequencyByValue(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  double arg2 ;
+  int arg3 ;
+  int arg4 ;
+  int arg5 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  int val4 ;
+  int ecode4 = 0 ;
+  int val5 ;
+  int ecode5 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "value",(char *) "cell",(char *) "group",(char *) "time", NULL 
+  };
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOOOO:Solver_setFrequencyByValue",kwnames,&obj0,&obj1,&obj2,&obj3,&obj4)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_setFrequencyByValue" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_setFrequencyByValue" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = static_cast< double >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Solver_setFrequencyByValue" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  ecode4 = SWIG_AsVal_int(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "Solver_setFrequencyByValue" "', argument " "4"" of type '" "int""'");
+  } 
+  arg4 = static_cast< int >(val4);
+  ecode5 = SWIG_AsVal_int(obj4, &val5);
+  if (!SWIG_IsOK(ecode5)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "Solver_setFrequencyByValue" "', argument " "5"" of type '" "int""'");
+  } 
+  arg5 = static_cast< int >(val5);
+  {
+    try {
+      (arg1)->setFrequencyByValue(arg2,arg3,arg4,arg5);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_setCurrentByValue(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  double arg2 ;
+  int arg3 ;
+  int arg4 ;
+  int arg5 ;
+  int arg6 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  int val4 ;
+  int ecode4 = 0 ;
+  int val5 ;
+  int ecode5 = 0 ;
+  int val6 ;
+  int ecode6 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
+  PyObject * obj5 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "value",(char *) "cell",(char *) "group",(char *) "side",(char *) "time", NULL 
+  };
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOOOOO:Solver_setCurrentByValue",kwnames,&obj0,&obj1,&obj2,&obj3,&obj4,&obj5)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_setCurrentByValue" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_setCurrentByValue" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = static_cast< double >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Solver_setCurrentByValue" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  ecode4 = SWIG_AsVal_int(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "Solver_setCurrentByValue" "', argument " "4"" of type '" "int""'");
+  } 
+  arg4 = static_cast< int >(val4);
+  ecode5 = SWIG_AsVal_int(obj4, &val5);
+  if (!SWIG_IsOK(ecode5)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "Solver_setCurrentByValue" "', argument " "5"" of type '" "int""'");
+  } 
+  arg5 = static_cast< int >(val5);
+  ecode6 = SWIG_AsVal_int(obj5, &val6);
+  if (!SWIG_IsOK(ecode6)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode6), "in method '" "Solver_setCurrentByValue" "', argument " "6"" of type '" "int""'");
+  } 
+  arg6 = static_cast< int >(val6);
+  {
+    try {
+      (arg1)->setCurrentByValue(arg2,arg3,arg4,arg5,arg6);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_setFluxByValue(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  double arg2 ;
+  int arg3 ;
+  int arg4 ;
+  int arg5 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  int val4 ;
+  int ecode4 = 0 ;
+  int val5 ;
+  int ecode5 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "value",(char *) "cell",(char *) "group",(char *) "time", NULL 
+  };
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOOOO:Solver_setFluxByValue",kwnames,&obj0,&obj1,&obj2,&obj3,&obj4)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_setFluxByValue" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_setFluxByValue" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = static_cast< double >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Solver_setFluxByValue" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  ecode4 = SWIG_AsVal_int(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "Solver_setFluxByValue" "', argument " "4"" of type '" "int""'");
+  } 
+  arg4 = static_cast< int >(val4);
+  ecode5 = SWIG_AsVal_int(obj4, &val5);
+  if (!SWIG_IsOK(ecode5)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "Solver_setFluxByValue" "', argument " "5"" of type '" "int""'");
+  } 
+  arg5 = static_cast< int >(val5);
+  {
+    try {
+      (arg1)->setFluxByValue(arg2,arg3,arg4,arg5);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_setDifLinearByValue(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  double arg2 ;
+  int arg3 ;
+  int arg4 ;
+  int arg5 ;
+  int arg6 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  int val4 ;
+  int ecode4 = 0 ;
+  int val5 ;
+  int ecode5 = 0 ;
+  int val6 ;
+  int ecode6 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
+  PyObject * obj5 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "value",(char *) "cell",(char *) "group",(char *) "side",(char *) "time", NULL 
+  };
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOOOOO:Solver_setDifLinearByValue",kwnames,&obj0,&obj1,&obj2,&obj3,&obj4,&obj5)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_setDifLinearByValue" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_setDifLinearByValue" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = static_cast< double >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Solver_setDifLinearByValue" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  ecode4 = SWIG_AsVal_int(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "Solver_setDifLinearByValue" "', argument " "4"" of type '" "int""'");
+  } 
+  arg4 = static_cast< int >(val4);
+  ecode5 = SWIG_AsVal_int(obj4, &val5);
+  if (!SWIG_IsOK(ecode5)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "Solver_setDifLinearByValue" "', argument " "5"" of type '" "int""'");
+  } 
+  arg5 = static_cast< int >(val5);
+  ecode6 = SWIG_AsVal_int(obj5, &val6);
+  if (!SWIG_IsOK(ecode6)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode6), "in method '" "Solver_setDifLinearByValue" "', argument " "6"" of type '" "int""'");
+  } 
+  arg6 = static_cast< int >(val6);
+  {
+    try {
+      (arg1)->setDifLinearByValue(arg2,arg3,arg4,arg5,arg6);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_setDifNonlinearByValue(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  double arg2 ;
+  int arg3 ;
+  int arg4 ;
+  int arg5 ;
+  int arg6 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  int val4 ;
+  int ecode4 = 0 ;
+  int val5 ;
+  int ecode5 = 0 ;
+  int val6 ;
+  int ecode6 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
+  PyObject * obj5 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "value",(char *) "cell",(char *) "group",(char *) "side",(char *) "time", NULL 
+  };
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOOOOO:Solver_setDifNonlinearByValue",kwnames,&obj0,&obj1,&obj2,&obj3,&obj4,&obj5)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_setDifNonlinearByValue" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_setDifNonlinearByValue" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = static_cast< double >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Solver_setDifNonlinearByValue" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  ecode4 = SWIG_AsVal_int(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "Solver_setDifNonlinearByValue" "', argument " "4"" of type '" "int""'");
+  } 
+  arg4 = static_cast< int >(val4);
+  ecode5 = SWIG_AsVal_int(obj4, &val5);
+  if (!SWIG_IsOK(ecode5)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "Solver_setDifNonlinearByValue" "', argument " "5"" of type '" "int""'");
+  } 
+  arg5 = static_cast< int >(val5);
+  ecode6 = SWIG_AsVal_int(obj5, &val6);
+  if (!SWIG_IsOK(ecode6)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode6), "in method '" "Solver_setDifNonlinearByValue" "', argument " "6"" of type '" "int""'");
+  } 
+  arg6 = static_cast< int >(val6);
+  {
+    try {
+      (arg1)->setDifNonlinearByValue(arg2,arg3,arg4,arg5,arg6);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_generateAmplitudeMatrix(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  double arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "wt", NULL 
+  };
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Solver_generateAmplitudeMatrix",kwnames,&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_generateAmplitudeMatrix" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_generateAmplitudeMatrix" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = static_cast< double >(val2);
+  {
+    try {
+      (arg1)->generateAmplitudeMatrix(arg2);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_integratePrecursorConcentrations(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  int arg2 ;
+  int arg3 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "time_from",(char *) "time_to", NULL 
+  };
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOO:Solver_integratePrecursorConcentrations",kwnames,&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_integratePrecursorConcentrations" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_integratePrecursorConcentrations" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Solver_integratePrecursorConcentrations" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  {
+    try {
+      (arg1)->integratePrecursorConcentrations(arg2,arg3);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_integrateTemperature(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  int arg2 ;
+  int arg3 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "time_from",(char *) "time_to", NULL 
+  };
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOO:Solver_integrateTemperature",kwnames,&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_integrateTemperature" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_integrateTemperature" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Solver_integrateTemperature" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  {
+    try {
+      (arg1)->integrateTemperature(arg2,arg3);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_interpolateShape(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  int arg2 ;
+  int arg3 ;
+  int arg4 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  int val4 ;
+  int ecode4 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "time",(char *) "time_forward",(char *) "time_backward", NULL 
+  };
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOOO:Solver_interpolateShape",kwnames,&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_interpolateShape" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_interpolateShape" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Solver_interpolateShape" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  ecode4 = SWIG_AsVal_int(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "Solver_interpolateShape" "', argument " "4"" of type '" "int""'");
+  } 
+  arg4 = static_cast< int >(val4);
+  {
+    try {
+      (arg1)->interpolateShape(arg2,arg3,arg4);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_interpolateDifNonlinear(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  int arg2 ;
+  int arg3 ;
+  int arg4 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  int val4 ;
+  int ecode4 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "time",(char *) "time_forward",(char *) "time_backward", NULL 
+  };
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOOO:Solver_interpolateDifNonlinear",kwnames,&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_interpolateDifNonlinear" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_interpolateDifNonlinear" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Solver_interpolateDifNonlinear" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  ecode4 = SWIG_AsVal_int(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "Solver_interpolateDifNonlinear" "', argument " "4"" of type '" "int""'");
+  } 
+  arg4 = static_cast< int >(val4);
+  {
+    try {
+      (arg1)->interpolateDifNonlinear(arg2,arg3,arg4);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_computeDiffusionCoefficients(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  int arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "time", NULL 
+  };
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Solver_computeDiffusionCoefficients",kwnames,&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_computeDiffusionCoefficients" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_computeDiffusionCoefficients" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  {
+    try {
+      (arg1)->computeDiffusionCoefficients(arg2);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_reconstructFlux(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  int arg2 ;
+  int arg3 ;
+  int arg4 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  int val4 ;
+  int ecode4 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "time",(char *) "time_shape",(char *) "time_amp", NULL 
+  };
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOOO:Solver_reconstructFlux",kwnames,&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_reconstructFlux" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_reconstructFlux" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Solver_reconstructFlux" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  ecode4 = SWIG_AsVal_int(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "Solver_reconstructFlux" "', argument " "4"" of type '" "int""'");
+  } 
+  arg4 = static_cast< int >(val4);
+  {
+    try {
+      (arg1)->reconstructFlux(arg2,arg3,arg4);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_computeShape(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  int arg2 ;
+  int arg3 ;
+  int arg4 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  int val4 ;
+  int ecode4 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "time",(char *) "time_flux",(char *) "time_amp", NULL 
+  };
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOOO:Solver_computeShape",kwnames,&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_computeShape" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_computeShape" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Solver_computeShape" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  ecode4 = SWIG_AsVal_int(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "Solver_computeShape" "', argument " "4"" of type '" "int""'");
+  } 
+  arg4 = static_cast< int >(val4);
+  {
+    try {
+      (arg1)->computeShape(arg2,arg3,arg4);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_computeFrequency(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:Solver_computeFrequency",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_computeFrequency" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  {
+    try {
+      (arg1)->computeFrequency();
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_computeInitialPrecursorConcentrations(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:Solver_computeInitialPrecursorConcentrations",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_computeInitialPrecursorConcentrations" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  {
+    try {
+      (arg1)->computeInitialPrecursorConcentrations();
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_computePower(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  int arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "time", NULL 
+  };
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Solver_computePower",kwnames,&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_computePower" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_computePower" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  {
+    try {
+      (arg1)->computePower(arg2);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_computeAveragePower(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  int arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "time", NULL 
+  };
+  double result;
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Solver_computeAveragePower",kwnames,&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_computeAveragePower" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_computeAveragePower" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  {
+    try {
+      result = (double)(arg1)->computeAveragePower(arg2);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_From_double(static_cast< double >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_computePowerRMSError(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  int arg2 ;
+  int arg3 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "time_1",(char *) "time_2", NULL 
+  };
+  double result;
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOO:Solver_computePowerRMSError",kwnames,&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_computePowerRMSError" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_computePowerRMSError" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Solver_computePowerRMSError" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  {
+    try {
+      result = (double)(arg1)->computePowerRMSError(arg2,arg3);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_From_double(static_cast< double >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_normalizeFlux(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:Solver_normalizeFlux",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_normalizeFlux" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  {
+    try {
+      (arg1)->normalizeFlux();
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_takeInnerStep(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:Solver_takeInnerStep",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_takeInnerStep" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  {
+    try {
+      (arg1)->takeInnerStep();
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_takeOuterStep(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:Solver_takeOuterStep",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_takeOuterStep" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  {
+    try {
+      (arg1)->takeOuterStep();
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_takeOuterStepOnly(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:Solver_takeOuterStepOnly",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_takeOuterStepOnly" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  {
+    try {
+      (arg1)->takeOuterStepOnly();
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_computeInitialShape(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:Solver_computeInitialShape",&obj0)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_computeInitialShape" "', argument " "1"" of type '" "Solver *""'"); 
   }
   arg1 = reinterpret_cast< Solver * >(argp1);
-  ecode2 = SWIG_AsVal_double(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_computeInitialShape" "', argument " "2"" of type '" "double""'");
-  } 
-  arg2 = static_cast< double >(val2);
   {
     try {
-      (arg1)->computeInitialShape(arg2);
+      (arg1)->computeInitialShape();
     } catch (const std::exception &e) {
       SWIG_exception(SWIG_RuntimeError, e.what());
     }
@@ -16136,100 +13106,562 @@ fail:
 }
 
 
-SWIGINTERN PyObject *_wrap_Solver_makeAMAmp(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+SWIGINTERN PyObject *_wrap_Solver_copyTemperature(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
   PyObject *resultobj = 0;
   Solver *arg1 = (Solver *) 0 ;
-  double arg2 ;
+  int arg2 ;
+  int arg3 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
-  double val2 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "time_from",(char *) "time_to", NULL 
+  };
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOO:Solver_copyTemperature",kwnames,&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_copyTemperature" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_copyTemperature" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Solver_copyTemperature" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  {
+    try {
+      (arg1)->copyTemperature(arg2,arg3);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_copyFlux(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  int arg2 ;
+  int arg3 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "time_from",(char *) "time_to", NULL 
+  };
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOO:Solver_copyFlux",kwnames,&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_copyFlux" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_copyFlux" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Solver_copyFlux" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  {
+    try {
+      (arg1)->copyFlux(arg2,arg3);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_copyShape(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  int arg2 ;
+  int arg3 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "time_from",(char *) "time_to", NULL 
+  };
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOO:Solver_copyShape",kwnames,&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_copyShape" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_copyShape" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Solver_copyShape" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  {
+    try {
+      (arg1)->copyShape(arg2,arg3);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_copyAmplitude(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  int arg2 ;
+  int arg3 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "time_from",(char *) "time_to", NULL 
+  };
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOO:Solver_copyAmplitude",kwnames,&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_copyAmplitude" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_copyAmplitude" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Solver_copyAmplitude" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  {
+    try {
+      (arg1)->copyAmplitude(arg2,arg3);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_copyPower(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  int arg2 ;
+  int arg3 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "time_from",(char *) "time_to", NULL 
+  };
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOO:Solver_copyPower",kwnames,&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_copyPower" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_copyPower" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Solver_copyPower" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  {
+    try {
+      (arg1)->copyPower(arg2,arg3);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_copyCurrent(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  int arg2 ;
+  int arg3 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "time_from",(char *) "time_to", NULL 
+  };
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOO:Solver_copyCurrent",kwnames,&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_copyCurrent" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_copyCurrent" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Solver_copyCurrent" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  {
+    try {
+      (arg1)->copyCurrent(arg2,arg3);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_copyDifLinear(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  int arg2 ;
+  int arg3 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "time_from",(char *) "time_to", NULL 
+  };
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOO:Solver_copyDifLinear",kwnames,&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_copyDifLinear" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_copyDifLinear" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Solver_copyDifLinear" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  {
+    try {
+      (arg1)->copyDifLinear(arg2,arg3);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_copyDifNonlinear(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  int arg2 ;
+  int arg3 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "time_from",(char *) "time_to", NULL 
+  };
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOO:Solver_copyDifNonlinear",kwnames,&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_copyDifNonlinear" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_copyDifNonlinear" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Solver_copyDifNonlinear" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  {
+    try {
+      (arg1)->copyDifNonlinear(arg2,arg3);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_copyFrequency(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  int arg2 ;
+  int arg3 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "time_from",(char *) "time_to", NULL 
+  };
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOO:Solver_copyFrequency",kwnames,&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_copyFrequency" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_copyFrequency" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Solver_copyFrequency" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  {
+    try {
+      (arg1)->copyFrequency(arg2,arg3);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_copyPrecursors(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  int arg2 ;
+  int arg3 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "time_from",(char *) "time_to", NULL 
+  };
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOO:Solver_copyPrecursors",kwnames,&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_copyPrecursors" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_copyPrecursors" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Solver_copyPrecursors" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  {
+    try {
+      (arg1)->copyPrecursors(arg2,arg3);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_copyFieldVariables(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  int arg2 ;
+  int arg3 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "time_from",(char *) "time_to", NULL 
+  };
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOO:Solver_copyFieldVariables",kwnames,&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_copyFieldVariables" "', argument " "1"" of type '" "Solver *""'"); 
+  }
+  arg1 = reinterpret_cast< Solver * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_copyFieldVariables" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Solver_copyFieldVariables" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  {
+    try {
+      (arg1)->copyFieldVariables(arg2,arg3);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Solver_broadcastToAll(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Solver *arg1 = (Solver *) 0 ;
+  int arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
   int ecode2 = 0 ;
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
   char *  kwnames[] = {
-    (char *) "self",(char *) "wt", NULL 
+    (char *) "self",(char *) "time_from", NULL 
   };
   
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Solver_makeAMAmp",kwnames,&obj0,&obj1)) SWIG_fail;
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Solver_broadcastToAll",kwnames,&obj0,&obj1)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_makeAMAmp" "', argument " "1"" of type '" "Solver *""'"); 
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_broadcastToAll" "', argument " "1"" of type '" "Solver *""'"); 
   }
   arg1 = reinterpret_cast< Solver * >(argp1);
-  ecode2 = SWIG_AsVal_double(obj1, &val2);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
   if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_makeAMAmp" "', argument " "2"" of type '" "double""'");
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_broadcastToAll" "', argument " "2"" of type '" "int""'");
   } 
-  arg2 = static_cast< double >(val2);
+  arg2 = static_cast< int >(val2);
   {
     try {
-      (arg1)->makeAMAmp(arg2);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Solver_makeAMShape(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  Solver *arg1 = (Solver *) 0 ;
-  double arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  double val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "wt", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Solver_makeAMShape",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_makeAMShape" "', argument " "1"" of type '" "Solver *""'"); 
-  }
-  arg1 = reinterpret_cast< Solver * >(argp1);
-  ecode2 = SWIG_AsVal_double(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Solver_makeAMShape" "', argument " "2"" of type '" "double""'");
-  } 
-  arg2 = static_cast< double >(val2);
-  {
-    try {
-      (arg1)->makeAMShape(arg2);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Solver_computeAmpFrequency(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  Solver *arg1 = (Solver *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:Solver_computeAmpFrequency",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Solver, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Solver_computeAmpFrequency" "', argument " "1"" of type '" "Solver *""'"); 
-  }
-  arg1 = reinterpret_cast< Solver * >(argp1);
-  {
-    try {
-      (arg1)->computeAmpFrequency();
+      (arg1)->broadcastToAll(arg2);
     } catch (const std::exception &e) {
       SWIG_exception(SWIG_RuntimeError, e.what());
     }
@@ -16248,85 +13680,50 @@ SWIGINTERN PyObject *Solver_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObjec
   return SWIG_Py_Void();
 }
 
-SWIGINTERN PyObject *_wrap_new_Transient(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+SWIGINTERN PyObject *_wrap_new_SolverDiffusion(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
   PyObject *resultobj = 0;
-  transientMethod arg1 = (transientMethod) BACKWARD_EULER ;
-  transientMethod arg2 = (transientMethod) BACKWARD_EULER ;
-  double arg3 = (double) 1.0 ;
-  double arg4 = (double) 1.0 ;
-  int val1 ;
-  int ecode1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  double val3 ;
-  int ecode3 = 0 ;
-  double val4 ;
-  int ecode4 = 0 ;
+  Geometry *arg1 = (Geometry *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
   PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  PyObject * obj3 = 0 ;
   char *  kwnames[] = {
-    (char *) "inner_method",(char *) "outer_method",(char *) "wt_inner",(char *) "wt_outer", NULL 
+    (char *) "geometry", NULL 
   };
-  Transient *result = 0 ;
+  SolverDiffusion *result = 0 ;
   
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"|OOOO:new_Transient",kwnames,&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
-  if (obj0) {
-    ecode1 = SWIG_AsVal_int(obj0, &val1);
-    if (!SWIG_IsOK(ecode1)) {
-      SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "new_Transient" "', argument " "1"" of type '" "transientMethod""'");
-    } 
-    arg1 = static_cast< transientMethod >(val1);
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"O:new_SolverDiffusion",kwnames,&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Geometry, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "new_SolverDiffusion" "', argument " "1"" of type '" "Geometry *""'"); 
   }
-  if (obj1) {
-    ecode2 = SWIG_AsVal_int(obj1, &val2);
-    if (!SWIG_IsOK(ecode2)) {
-      SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "new_Transient" "', argument " "2"" of type '" "transientMethod""'");
-    } 
-    arg2 = static_cast< transientMethod >(val2);
-  }
-  if (obj2) {
-    ecode3 = SWIG_AsVal_double(obj2, &val3);
-    if (!SWIG_IsOK(ecode3)) {
-      SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "new_Transient" "', argument " "3"" of type '" "double""'");
-    } 
-    arg3 = static_cast< double >(val3);
-  }
-  if (obj3) {
-    ecode4 = SWIG_AsVal_double(obj3, &val4);
-    if (!SWIG_IsOK(ecode4)) {
-      SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "new_Transient" "', argument " "4"" of type '" "double""'");
-    } 
-    arg4 = static_cast< double >(val4);
-  }
+  arg1 = reinterpret_cast< Geometry * >(argp1);
   {
     try {
-      result = (Transient *)new Transient(arg1,arg2,arg3,arg4);
+      result = (SolverDiffusion *)new SolverDiffusion(arg1);
     } catch (const std::exception &e) {
       SWIG_exception(SWIG_RuntimeError, e.what());
     }
   }
-  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_Transient, SWIG_POINTER_NEW |  0 );
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_SolverDiffusion, SWIG_POINTER_NEW |  0 );
   return resultobj;
 fail:
   return NULL;
 }
 
 
-SWIGINTERN PyObject *_wrap_delete_Transient(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+SWIGINTERN PyObject *_wrap_delete_SolverDiffusion(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
-  Transient *arg1 = (Transient *) 0 ;
+  SolverDiffusion *arg1 = (SolverDiffusion *) 0 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
   PyObject * obj0 = 0 ;
   
-  if (!PyArg_ParseTuple(args,(char *)"O:delete_Transient",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Transient, SWIG_POINTER_DISOWN |  0 );
+  if (!PyArg_ParseTuple(args,(char *)"O:delete_SolverDiffusion",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_SolverDiffusion, SWIG_POINTER_DISOWN |  0 );
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_Transient" "', argument " "1"" of type '" "Transient *""'"); 
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_SolverDiffusion" "', argument " "1"" of type '" "SolverDiffusion *""'"); 
   }
-  arg1 = reinterpret_cast< Transient * >(argp1);
+  arg1 = reinterpret_cast< SolverDiffusion * >(argp1);
   {
     try {
       delete arg1;
@@ -16341,134 +13738,280 @@ fail:
 }
 
 
-SWIGINTERN PyObject *_wrap_Transient_setInnerMethod(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+SWIGINTERN PyObject *_wrap_SolverDiffusion_getShapeAMatrix(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
-  Transient *arg1 = (Transient *) 0 ;
-  transientMethod arg2 ;
-  double arg3 = (double) 0.0 ;
+  SolverDiffusion *arg1 = (SolverDiffusion *) 0 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  double val3 ;
-  int ecode3 = 0 ;
   PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "inner_method",(char *) "wt", NULL 
-  };
+  double **result = 0 ;
   
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO|O:Transient_setInnerMethod",kwnames,&obj0,&obj1,&obj2)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Transient, 0 |  0 );
+  if (!PyArg_ParseTuple(args,(char *)"O:SolverDiffusion_getShapeAMatrix",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_SolverDiffusion, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Transient_setInnerMethod" "', argument " "1"" of type '" "Transient *""'"); 
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "SolverDiffusion_getShapeAMatrix" "', argument " "1"" of type '" "SolverDiffusion *""'"); 
   }
-  arg1 = reinterpret_cast< Transient * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Transient_setInnerMethod" "', argument " "2"" of type '" "transientMethod""'");
-  } 
-  arg2 = static_cast< transientMethod >(val2);
-  if (obj2) {
-    ecode3 = SWIG_AsVal_double(obj2, &val3);
-    if (!SWIG_IsOK(ecode3)) {
-      SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Transient_setInnerMethod" "', argument " "3"" of type '" "double""'");
-    } 
-    arg3 = static_cast< double >(val3);
-  }
+  arg1 = reinterpret_cast< SolverDiffusion * >(argp1);
   {
     try {
-      (arg1)->setInnerMethod(arg2,arg3);
+      result = (double **)(arg1)->getShapeAMatrix();
     } catch (const std::exception &e) {
       SWIG_exception(SWIG_RuntimeError, e.what());
     }
   }
-  resultobj = SWIG_Py_Void();
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_p_double, 0 |  0 );
   return resultobj;
 fail:
   return NULL;
 }
 
 
-SWIGINTERN PyObject *_wrap_Transient_setOuterMethod(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+SWIGINTERN PyObject *_wrap_SolverDiffusion_getShapeMMatrix(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
-  Transient *arg1 = (Transient *) 0 ;
-  transientMethod arg2 ;
-  double arg3 = (double) 0.0 ;
+  SolverDiffusion *arg1 = (SolverDiffusion *) 0 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  double val3 ;
-  int ecode3 = 0 ;
   PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "outer_method",(char *) "wt", NULL 
-  };
+  double **result = 0 ;
   
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO|O:Transient_setOuterMethod",kwnames,&obj0,&obj1,&obj2)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Transient, 0 |  0 );
+  if (!PyArg_ParseTuple(args,(char *)"O:SolverDiffusion_getShapeMMatrix",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_SolverDiffusion, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Transient_setOuterMethod" "', argument " "1"" of type '" "Transient *""'"); 
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "SolverDiffusion_getShapeMMatrix" "', argument " "1"" of type '" "SolverDiffusion *""'"); 
   }
-  arg1 = reinterpret_cast< Transient * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Transient_setOuterMethod" "', argument " "2"" of type '" "transientMethod""'");
-  } 
-  arg2 = static_cast< transientMethod >(val2);
-  if (obj2) {
-    ecode3 = SWIG_AsVal_double(obj2, &val3);
-    if (!SWIG_IsOK(ecode3)) {
-      SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Transient_setOuterMethod" "', argument " "3"" of type '" "double""'");
-    } 
-    arg3 = static_cast< double >(val3);
-  }
+  arg1 = reinterpret_cast< SolverDiffusion * >(argp1);
   {
     try {
-      (arg1)->setOuterMethod(arg2,arg3);
+      result = (double **)(arg1)->getShapeMMatrix();
     } catch (const std::exception &e) {
       SWIG_exception(SWIG_RuntimeError, e.what());
     }
   }
-  resultobj = SWIG_Py_Void();
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_p_double, 0 |  0 );
   return resultobj;
 fail:
   return NULL;
 }
 
 
-SWIGINTERN PyObject *_wrap_Transient_setInitialPower(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+SWIGINTERN PyObject *_wrap_SolverDiffusion_getShapeAMMatrix(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
-  Transient *arg1 = (Transient *) 0 ;
+  SolverDiffusion *arg1 = (SolverDiffusion *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  double **result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:SolverDiffusion_getShapeAMMatrix",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_SolverDiffusion, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "SolverDiffusion_getShapeAMMatrix" "', argument " "1"" of type '" "SolverDiffusion *""'"); 
+  }
+  arg1 = reinterpret_cast< SolverDiffusion * >(argp1);
+  {
+    try {
+      result = (double **)(arg1)->getShapeAMMatrix();
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_p_double, 0 |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_SolverDiffusion_getShapeSource(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  SolverDiffusion *arg1 = (SolverDiffusion *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  double *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:SolverDiffusion_getShapeSource",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_SolverDiffusion, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "SolverDiffusion_getShapeSource" "', argument " "1"" of type '" "SolverDiffusion *""'"); 
+  }
+  arg1 = reinterpret_cast< SolverDiffusion * >(argp1);
+  {
+    try {
+      result = (double *)(arg1)->getShapeSource();
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_double, 0 |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_SolverDiffusion_getDifLinearFine(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  SolverDiffusion *arg1 = (SolverDiffusion *) 0 ;
+  int arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "time", NULL 
+  };
+  double *result = 0 ;
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:SolverDiffusion_getDifLinearFine",kwnames,&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_SolverDiffusion, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "SolverDiffusion_getDifLinearFine" "', argument " "1"" of type '" "SolverDiffusion *""'"); 
+  }
+  arg1 = reinterpret_cast< SolverDiffusion * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "SolverDiffusion_getDifLinearFine" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  {
+    try {
+      result = (double *)(arg1)->getDifLinearFine(arg2);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_double, 0 |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_SolverDiffusion_getDifLinearFineByValue(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  SolverDiffusion *arg1 = (SolverDiffusion *) 0 ;
+  int arg2 ;
+  int arg3 ;
+  int arg4 ;
+  int arg5 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  int val4 ;
+  int ecode4 = 0 ;
+  int val5 ;
+  int ecode5 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "cell",(char *) "group",(char *) "side",(char *) "time", NULL 
+  };
+  double result;
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOOOO:SolverDiffusion_getDifLinearFineByValue",kwnames,&obj0,&obj1,&obj2,&obj3,&obj4)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_SolverDiffusion, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "SolverDiffusion_getDifLinearFineByValue" "', argument " "1"" of type '" "SolverDiffusion *""'"); 
+  }
+  arg1 = reinterpret_cast< SolverDiffusion * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "SolverDiffusion_getDifLinearFineByValue" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "SolverDiffusion_getDifLinearFineByValue" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  ecode4 = SWIG_AsVal_int(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "SolverDiffusion_getDifLinearFineByValue" "', argument " "4"" of type '" "int""'");
+  } 
+  arg4 = static_cast< int >(val4);
+  ecode5 = SWIG_AsVal_int(obj4, &val5);
+  if (!SWIG_IsOK(ecode5)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "SolverDiffusion_getDifLinearFineByValue" "', argument " "5"" of type '" "int""'");
+  } 
+  arg5 = static_cast< int >(val5);
+  {
+    try {
+      result = (double)(arg1)->getDifLinearFineByValue(arg2,arg3,arg4,arg5);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_From_double(static_cast< double >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_SolverDiffusion_setDifLinearFineByValue(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  SolverDiffusion *arg1 = (SolverDiffusion *) 0 ;
   double arg2 ;
+  int arg3 ;
+  int arg4 ;
+  int arg5 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
   double val2 ;
   int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  int val4 ;
+  int ecode4 = 0 ;
+  int val5 ;
+  int ecode5 = 0 ;
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
   char *  kwnames[] = {
-    (char *) "self",(char *) "initial_power", NULL 
+    (char *) "self",(char *) "value",(char *) "cell",(char *) "group",(char *) "time", NULL 
   };
   
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Transient_setInitialPower",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Transient, 0 |  0 );
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOOOO:SolverDiffusion_setDifLinearFineByValue",kwnames,&obj0,&obj1,&obj2,&obj3,&obj4)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_SolverDiffusion, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Transient_setInitialPower" "', argument " "1"" of type '" "Transient *""'"); 
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "SolverDiffusion_setDifLinearFineByValue" "', argument " "1"" of type '" "SolverDiffusion *""'"); 
   }
-  arg1 = reinterpret_cast< Transient * >(argp1);
+  arg1 = reinterpret_cast< SolverDiffusion * >(argp1);
   ecode2 = SWIG_AsVal_double(obj1, &val2);
   if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Transient_setInitialPower" "', argument " "2"" of type '" "double""'");
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "SolverDiffusion_setDifLinearFineByValue" "', argument " "2"" of type '" "double""'");
   } 
   arg2 = static_cast< double >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "SolverDiffusion_setDifLinearFineByValue" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  ecode4 = SWIG_AsVal_int(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "SolverDiffusion_setDifLinearFineByValue" "', argument " "4"" of type '" "int""'");
+  } 
+  arg4 = static_cast< int >(val4);
+  ecode5 = SWIG_AsVal_int(obj4, &val5);
+  if (!SWIG_IsOK(ecode5)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "SolverDiffusion_setDifLinearFineByValue" "', argument " "5"" of type '" "int""'");
+  } 
+  arg5 = static_cast< int >(val5);
   {
     try {
-      (arg1)->setInitialPower(arg2);
+      (arg1)->setDifLinearFineByValue(arg2,arg3,arg4,arg5);
     } catch (const std::exception &e) {
       SWIG_exception(SWIG_RuntimeError, e.what());
     }
@@ -16480,202 +14023,19 @@ fail:
 }
 
 
-SWIGINTERN PyObject *_wrap_Transient_setClock(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+SWIGINTERN PyObject *_wrap_SolverDiffusion_takeInnerStep(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
-  Transient *arg1 = (Transient *) 0 ;
-  Clock *arg2 = (Clock *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  void *argp2 = 0 ;
-  int res2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "clock", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Transient_setClock",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Transient, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Transient_setClock" "', argument " "1"" of type '" "Transient *""'"); 
-  }
-  arg1 = reinterpret_cast< Transient * >(argp1);
-  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_Clock, 0 |  0 );
-  if (!SWIG_IsOK(res2)) {
-    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "Transient_setClock" "', argument " "2"" of type '" "Clock *""'"); 
-  }
-  arg2 = reinterpret_cast< Clock * >(argp2);
-  {
-    try {
-      (arg1)->setClock(arg2);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Transient_setSolver(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  Transient *arg1 = (Transient *) 0 ;
-  Solver *arg2 = (Solver *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  void *argp2 = 0 ;
-  int res2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "solver", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Transient_setSolver",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Transient, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Transient_setSolver" "', argument " "1"" of type '" "Transient *""'"); 
-  }
-  arg1 = reinterpret_cast< Transient * >(argp1);
-  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_Solver, 0 |  0 );
-  if (!SWIG_IsOK(res2)) {
-    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "Transient_setSolver" "', argument " "2"" of type '" "Solver *""'"); 
-  }
-  arg2 = reinterpret_cast< Solver * >(argp2);
-  {
-    try {
-      (arg1)->setSolver(arg2);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Transient_setShapeMesh(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  Transient *arg1 = (Transient *) 0 ;
-  StructuredShapeMesh *arg2 = (StructuredShapeMesh *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  void *argp2 = 0 ;
-  int res2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "mesh", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Transient_setShapeMesh",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Transient, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Transient_setShapeMesh" "', argument " "1"" of type '" "Transient *""'"); 
-  }
-  arg1 = reinterpret_cast< Transient * >(argp1);
-  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_StructuredShapeMesh, 0 |  0 );
-  if (!SWIG_IsOK(res2)) {
-    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "Transient_setShapeMesh" "', argument " "2"" of type '" "StructuredShapeMesh *""'"); 
-  }
-  arg2 = reinterpret_cast< StructuredShapeMesh * >(argp2);
-  {
-    try {
-      (arg1)->setShapeMesh(arg2);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Transient_setAmpMesh(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
-  PyObject *resultobj = 0;
-  Transient *arg1 = (Transient *) 0 ;
-  AmpMesh *arg2 = (AmpMesh *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  void *argp2 = 0 ;
-  int res2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "mesh", NULL 
-  };
-  
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Transient_setAmpMesh",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Transient, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Transient_setAmpMesh" "', argument " "1"" of type '" "Transient *""'"); 
-  }
-  arg1 = reinterpret_cast< Transient * >(argp1);
-  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_AmpMesh, 0 |  0 );
-  if (!SWIG_IsOK(res2)) {
-    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "Transient_setAmpMesh" "', argument " "2"" of type '" "AmpMesh *""'"); 
-  }
-  arg2 = reinterpret_cast< AmpMesh * >(argp2);
-  {
-    try {
-      (arg1)->setAmpMesh(arg2);
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Transient_computeInitialShape(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  Transient *arg1 = (Transient *) 0 ;
+  SolverDiffusion *arg1 = (SolverDiffusion *) 0 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
   PyObject * obj0 = 0 ;
   
-  if (!PyArg_ParseTuple(args,(char *)"O:Transient_computeInitialShape",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Transient, 0 |  0 );
+  if (!PyArg_ParseTuple(args,(char *)"O:SolverDiffusion_takeInnerStep",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_SolverDiffusion, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Transient_computeInitialShape" "', argument " "1"" of type '" "Transient *""'"); 
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "SolverDiffusion_takeInnerStep" "', argument " "1"" of type '" "SolverDiffusion *""'"); 
   }
-  arg1 = reinterpret_cast< Transient * >(argp1);
-  {
-    try {
-      (arg1)->computeInitialShape();
-    } catch (const std::exception &e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Transient_takeInnerStep(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  Transient *arg1 = (Transient *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:Transient_takeInnerStep",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Transient, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Transient_takeInnerStep" "', argument " "1"" of type '" "Transient *""'"); 
-  }
-  arg1 = reinterpret_cast< Transient * >(argp1);
+  arg1 = reinterpret_cast< SolverDiffusion * >(argp1);
   {
     try {
       (arg1)->takeInnerStep();
@@ -16690,36 +14050,22 @@ fail:
 }
 
 
-SWIGINTERN PyObject *_wrap_Transient_takeOuterStep(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+SWIGINTERN PyObject *_wrap_SolverDiffusion_takeOuterStep(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
-  Transient *arg1 = (Transient *) 0 ;
-  double arg2 = (double) 1.e-6 ;
+  SolverDiffusion *arg1 = (SolverDiffusion *) 0 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
-  double val2 ;
-  int ecode2 = 0 ;
   PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "tol", NULL 
-  };
   
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"O|O:Transient_takeOuterStep",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Transient, 0 |  0 );
+  if (!PyArg_ParseTuple(args,(char *)"O:SolverDiffusion_takeOuterStep",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_SolverDiffusion, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Transient_takeOuterStep" "', argument " "1"" of type '" "Transient *""'"); 
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "SolverDiffusion_takeOuterStep" "', argument " "1"" of type '" "SolverDiffusion *""'"); 
   }
-  arg1 = reinterpret_cast< Transient * >(argp1);
-  if (obj1) {
-    ecode2 = SWIG_AsVal_double(obj1, &val2);
-    if (!SWIG_IsOK(ecode2)) {
-      SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Transient_takeOuterStep" "', argument " "2"" of type '" "double""'");
-    } 
-    arg2 = static_cast< double >(val2);
-  }
+  arg1 = reinterpret_cast< SolverDiffusion * >(argp1);
   {
     try {
-      (arg1)->takeOuterStep(arg2);
+      (arg1)->takeOuterStep();
     } catch (const std::exception &e) {
       SWIG_exception(SWIG_RuntimeError, e.what());
     }
@@ -16731,36 +14077,22 @@ fail:
 }
 
 
-SWIGINTERN PyObject *_wrap_Transient_takeOuterStepOnly(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+SWIGINTERN PyObject *_wrap_SolverDiffusion_takeOuterStepOnly(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
-  Transient *arg1 = (Transient *) 0 ;
-  double arg2 = (double) 1.e-6 ;
+  SolverDiffusion *arg1 = (SolverDiffusion *) 0 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
-  double val2 ;
-  int ecode2 = 0 ;
   PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "tol", NULL 
-  };
   
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"O|O:Transient_takeOuterStepOnly",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Transient, 0 |  0 );
+  if (!PyArg_ParseTuple(args,(char *)"O:SolverDiffusion_takeOuterStepOnly",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_SolverDiffusion, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Transient_takeOuterStepOnly" "', argument " "1"" of type '" "Transient *""'"); 
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "SolverDiffusion_takeOuterStepOnly" "', argument " "1"" of type '" "SolverDiffusion *""'"); 
   }
-  arg1 = reinterpret_cast< Transient * >(argp1);
-  if (obj1) {
-    ecode2 = SWIG_AsVal_double(obj1, &val2);
-    if (!SWIG_IsOK(ecode2)) {
-      SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Transient_takeOuterStepOnly" "', argument " "2"" of type '" "double""'");
-    } 
-    arg2 = static_cast< double >(val2);
-  }
+  arg1 = reinterpret_cast< SolverDiffusion * >(argp1);
   {
     try {
-      (arg1)->takeOuterStepOnly(arg2);
+      (arg1)->takeOuterStepOnly();
     } catch (const std::exception &e) {
       SWIG_exception(SWIG_RuntimeError, e.what());
     }
@@ -16772,34 +14104,22 @@ fail:
 }
 
 
-SWIGINTERN PyObject *_wrap_Transient_broadcastToActive(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+SWIGINTERN PyObject *_wrap_SolverDiffusion_computeInitialShape(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
-  Transient *arg1 = (Transient *) 0 ;
-  clockPosition arg2 ;
+  SolverDiffusion *arg1 = (SolverDiffusion *) 0 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
   PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  char *  kwnames[] = {
-    (char *) "self",(char *) "position", NULL 
-  };
   
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Transient_broadcastToActive",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Transient, 0 |  0 );
+  if (!PyArg_ParseTuple(args,(char *)"O:SolverDiffusion_computeInitialShape",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_SolverDiffusion, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Transient_broadcastToActive" "', argument " "1"" of type '" "Transient *""'"); 
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "SolverDiffusion_computeInitialShape" "', argument " "1"" of type '" "SolverDiffusion *""'"); 
   }
-  arg1 = reinterpret_cast< Transient * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Transient_broadcastToActive" "', argument " "2"" of type '" "clockPosition""'");
-  } 
-  arg2 = static_cast< clockPosition >(val2);
+  arg1 = reinterpret_cast< SolverDiffusion * >(argp1);
   {
     try {
-      (arg1)->broadcastToActive(arg2);
+      (arg1)->computeInitialShape();
     } catch (const std::exception &e) {
       SWIG_exception(SWIG_RuntimeError, e.what());
     }
@@ -16811,10 +14131,37 @@ fail:
 }
 
 
-SWIGINTERN PyObject *_wrap_Transient_broadcastToAll(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+SWIGINTERN PyObject *_wrap_SolverDiffusion_generateShapeMatrices(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
-  Transient *arg1 = (Transient *) 0 ;
-  clockPosition arg2 ;
+  SolverDiffusion *arg1 = (SolverDiffusion *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:SolverDiffusion_generateShapeMatrices",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_SolverDiffusion, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "SolverDiffusion_generateShapeMatrices" "', argument " "1"" of type '" "SolverDiffusion *""'"); 
+  }
+  arg1 = reinterpret_cast< SolverDiffusion * >(argp1);
+  {
+    try {
+      (arg1)->generateShapeMatrices();
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_SolverDiffusion_computeDiffusionCoefficientsFine(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  SolverDiffusion *arg1 = (SolverDiffusion *) 0 ;
+  int arg2 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
   int val2 ;
@@ -16822,23 +14169,23 @@ SWIGINTERN PyObject *_wrap_Transient_broadcastToAll(PyObject *SWIGUNUSEDPARM(sel
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
   char *  kwnames[] = {
-    (char *) "self",(char *) "position", NULL 
+    (char *) "self",(char *) "time", NULL 
   };
   
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Transient_broadcastToAll",kwnames,&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Transient, 0 |  0 );
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:SolverDiffusion_computeDiffusionCoefficientsFine",kwnames,&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_SolverDiffusion, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Transient_broadcastToAll" "', argument " "1"" of type '" "Transient *""'"); 
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "SolverDiffusion_computeDiffusionCoefficientsFine" "', argument " "1"" of type '" "SolverDiffusion *""'"); 
   }
-  arg1 = reinterpret_cast< Transient * >(argp1);
+  arg1 = reinterpret_cast< SolverDiffusion * >(argp1);
   ecode2 = SWIG_AsVal_int(obj1, &val2);
   if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Transient_broadcastToAll" "', argument " "2"" of type '" "clockPosition""'");
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "SolverDiffusion_computeDiffusionCoefficientsFine" "', argument " "2"" of type '" "int""'");
   } 
-  arg2 = static_cast< clockPosition >(val2);
+  arg2 = static_cast< int >(val2);
   {
     try {
-      (arg1)->broadcastToAll(arg2);
+      (arg1)->computeDiffusionCoefficientsFine(arg2);
     } catch (const std::exception &e) {
       SWIG_exception(SWIG_RuntimeError, e.what());
     }
@@ -16850,11 +14197,463 @@ fail:
 }
 
 
-SWIGINTERN PyObject *_wrap_Transient_broadcastToOne(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+SWIGINTERN PyObject *_wrap_SolverDiffusion_generateInitialShapeMatrices(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
-  Transient *arg1 = (Transient *) 0 ;
-  clockPosition arg2 ;
-  clockPosition arg3 ;
+  SolverDiffusion *arg1 = (SolverDiffusion *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:SolverDiffusion_generateInitialShapeMatrices",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_SolverDiffusion, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "SolverDiffusion_generateInitialShapeMatrices" "', argument " "1"" of type '" "SolverDiffusion *""'"); 
+  }
+  arg1 = reinterpret_cast< SolverDiffusion * >(argp1);
+  {
+    try {
+      (arg1)->generateInitialShapeMatrices();
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_SolverDiffusion_generateAmpCurrent(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  SolverDiffusion *arg1 = (SolverDiffusion *) 0 ;
+  int arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "time", NULL 
+  };
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:SolverDiffusion_generateAmpCurrent",kwnames,&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_SolverDiffusion, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "SolverDiffusion_generateAmpCurrent" "', argument " "1"" of type '" "SolverDiffusion *""'"); 
+  }
+  arg1 = reinterpret_cast< SolverDiffusion * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "SolverDiffusion_generateAmpCurrent" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  {
+    try {
+      (arg1)->generateAmpCurrent(arg2);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *SolverDiffusion_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *obj;
+  if (!PyArg_ParseTuple(args,(char*)"O:swigregister", &obj)) return NULL;
+  SWIG_TypeNewClientData(SWIGTYPE_p_SolverDiffusion, SWIG_NewClientData(obj));
+  return SWIG_Py_Void();
+}
+
+SWIGINTERN PyObject *_wrap_new_Geometry(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  double arg1 = (double) 1.0 ;
+  double arg2 = (double) 1.0 ;
+  double arg3 = (double) 1.0 ;
+  double val1 ;
+  int ecode1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
+  double val3 ;
+  int ecode3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  char *  kwnames[] = {
+    (char *) "width",(char *) "height",(char *) "depth", NULL 
+  };
+  Geometry *result = 0 ;
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"|OOO:new_Geometry",kwnames,&obj0,&obj1,&obj2)) SWIG_fail;
+  if (obj0) {
+    ecode1 = SWIG_AsVal_double(obj0, &val1);
+    if (!SWIG_IsOK(ecode1)) {
+      SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "new_Geometry" "', argument " "1"" of type '" "double""'");
+    } 
+    arg1 = static_cast< double >(val1);
+  }
+  if (obj1) {
+    ecode2 = SWIG_AsVal_double(obj1, &val2);
+    if (!SWIG_IsOK(ecode2)) {
+      SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "new_Geometry" "', argument " "2"" of type '" "double""'");
+    } 
+    arg2 = static_cast< double >(val2);
+  }
+  if (obj2) {
+    ecode3 = SWIG_AsVal_double(obj2, &val3);
+    if (!SWIG_IsOK(ecode3)) {
+      SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "new_Geometry" "', argument " "3"" of type '" "double""'");
+    } 
+    arg3 = static_cast< double >(val3);
+  }
+  {
+    try {
+      result = (Geometry *)new Geometry(arg1,arg2,arg3);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_Geometry, SWIG_POINTER_NEW |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_delete_Geometry(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Geometry *arg1 = (Geometry *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:delete_Geometry",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Geometry, SWIG_POINTER_DISOWN |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_Geometry" "', argument " "1"" of type '" "Geometry *""'"); 
+  }
+  arg1 = reinterpret_cast< Geometry * >(argp1);
+  {
+    try {
+      delete arg1;
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Geometry_setAmpMeshDimensions(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Geometry *arg1 = (Geometry *) 0 ;
+  int arg2 = (int) 1 ;
+  int arg3 = (int) 1 ;
+  int arg4 = (int) 1 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  int val4 ;
+  int ecode4 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "num_x",(char *) "num_y",(char *) "num_z", NULL 
+  };
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"O|OOO:Geometry_setAmpMeshDimensions",kwnames,&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Geometry, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Geometry_setAmpMeshDimensions" "', argument " "1"" of type '" "Geometry *""'"); 
+  }
+  arg1 = reinterpret_cast< Geometry * >(argp1);
+  if (obj1) {
+    ecode2 = SWIG_AsVal_int(obj1, &val2);
+    if (!SWIG_IsOK(ecode2)) {
+      SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Geometry_setAmpMeshDimensions" "', argument " "2"" of type '" "int""'");
+    } 
+    arg2 = static_cast< int >(val2);
+  }
+  if (obj2) {
+    ecode3 = SWIG_AsVal_int(obj2, &val3);
+    if (!SWIG_IsOK(ecode3)) {
+      SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Geometry_setAmpMeshDimensions" "', argument " "3"" of type '" "int""'");
+    } 
+    arg3 = static_cast< int >(val3);
+  }
+  if (obj3) {
+    ecode4 = SWIG_AsVal_int(obj3, &val4);
+    if (!SWIG_IsOK(ecode4)) {
+      SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "Geometry_setAmpMeshDimensions" "', argument " "4"" of type '" "int""'");
+    } 
+    arg4 = static_cast< int >(val4);
+  }
+  {
+    try {
+      (arg1)->setAmpMeshDimensions(arg2,arg3,arg4);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Geometry_setXMin(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Geometry *arg1 = (Geometry *) 0 ;
+  double arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "x_min", NULL 
+  };
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Geometry_setXMin",kwnames,&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Geometry, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Geometry_setXMin" "', argument " "1"" of type '" "Geometry *""'"); 
+  }
+  arg1 = reinterpret_cast< Geometry * >(argp1);
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Geometry_setXMin" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = static_cast< double >(val2);
+  {
+    try {
+      (arg1)->setXMin(arg2);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Geometry_setXMax(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Geometry *arg1 = (Geometry *) 0 ;
+  double arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "x_max", NULL 
+  };
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Geometry_setXMax",kwnames,&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Geometry, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Geometry_setXMax" "', argument " "1"" of type '" "Geometry *""'"); 
+  }
+  arg1 = reinterpret_cast< Geometry * >(argp1);
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Geometry_setXMax" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = static_cast< double >(val2);
+  {
+    try {
+      (arg1)->setXMax(arg2);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Geometry_setYMin(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Geometry *arg1 = (Geometry *) 0 ;
+  double arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "y_min", NULL 
+  };
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Geometry_setYMin",kwnames,&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Geometry, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Geometry_setYMin" "', argument " "1"" of type '" "Geometry *""'"); 
+  }
+  arg1 = reinterpret_cast< Geometry * >(argp1);
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Geometry_setYMin" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = static_cast< double >(val2);
+  {
+    try {
+      (arg1)->setYMin(arg2);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Geometry_setYMax(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Geometry *arg1 = (Geometry *) 0 ;
+  double arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "y_max", NULL 
+  };
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Geometry_setYMax",kwnames,&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Geometry, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Geometry_setYMax" "', argument " "1"" of type '" "Geometry *""'"); 
+  }
+  arg1 = reinterpret_cast< Geometry * >(argp1);
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Geometry_setYMax" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = static_cast< double >(val2);
+  {
+    try {
+      (arg1)->setYMax(arg2);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Geometry_setZMin(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Geometry *arg1 = (Geometry *) 0 ;
+  double arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "z_min", NULL 
+  };
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Geometry_setZMin",kwnames,&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Geometry, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Geometry_setZMin" "', argument " "1"" of type '" "Geometry *""'"); 
+  }
+  arg1 = reinterpret_cast< Geometry * >(argp1);
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Geometry_setZMin" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = static_cast< double >(val2);
+  {
+    try {
+      (arg1)->setZMin(arg2);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Geometry_setZMax(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Geometry *arg1 = (Geometry *) 0 ;
+  double arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "z_max", NULL 
+  };
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Geometry_setZMax",kwnames,&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Geometry, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Geometry_setZMax" "', argument " "1"" of type '" "Geometry *""'"); 
+  }
+  arg1 = reinterpret_cast< Geometry * >(argp1);
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Geometry_setZMax" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = static_cast< double >(val2);
+  {
+    try {
+      (arg1)->setZMax(arg2);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Geometry_setBoundary(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Geometry *arg1 = (Geometry *) 0 ;
+  int arg2 ;
+  boundaryType arg3 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
   int val2 ;
@@ -16865,28 +14664,28 @@ SWIGINTERN PyObject *_wrap_Transient_broadcastToOne(PyObject *SWIGUNUSEDPARM(sel
   PyObject * obj1 = 0 ;
   PyObject * obj2 = 0 ;
   char *  kwnames[] = {
-    (char *) "self",(char *) "position_from",(char *) "position_to", NULL 
+    (char *) "self",(char *) "side",(char *) "boundary", NULL 
   };
   
-  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOO:Transient_broadcastToOne",kwnames,&obj0,&obj1,&obj2)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Transient, 0 |  0 );
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOO:Geometry_setBoundary",kwnames,&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Geometry, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Transient_broadcastToOne" "', argument " "1"" of type '" "Transient *""'"); 
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Geometry_setBoundary" "', argument " "1"" of type '" "Geometry *""'"); 
   }
-  arg1 = reinterpret_cast< Transient * >(argp1);
+  arg1 = reinterpret_cast< Geometry * >(argp1);
   ecode2 = SWIG_AsVal_int(obj1, &val2);
   if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Transient_broadcastToOne" "', argument " "2"" of type '" "clockPosition""'");
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Geometry_setBoundary" "', argument " "2"" of type '" "int""'");
   } 
-  arg2 = static_cast< clockPosition >(val2);
+  arg2 = static_cast< int >(val2);
   ecode3 = SWIG_AsVal_int(obj2, &val3);
   if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Transient_broadcastToOne" "', argument " "3"" of type '" "clockPosition""'");
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Geometry_setBoundary" "', argument " "3"" of type '" "boundaryType""'");
   } 
-  arg3 = static_cast< clockPosition >(val3);
+  arg3 = static_cast< boundaryType >(val3);
   {
     try {
-      (arg1)->broadcastToOne(arg2,arg3);
+      (arg1)->setBoundary(arg2,arg3);
     } catch (const std::exception &e) {
       SWIG_exception(SWIG_RuntimeError, e.what());
     }
@@ -16898,10 +14697,1347 @@ fail:
 }
 
 
-SWIGINTERN PyObject *Transient_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+SWIGINTERN PyObject *_wrap_Geometry_setMaterial(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Geometry *arg1 = (Geometry *) 0 ;
+  Material *arg2 = (Material *) 0 ;
+  int arg3 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "material",(char *) "cell", NULL 
+  };
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOO:Geometry_setMaterial",kwnames,&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Geometry, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Geometry_setMaterial" "', argument " "1"" of type '" "Geometry *""'"); 
+  }
+  arg1 = reinterpret_cast< Geometry * >(argp1);
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_Material, 0 |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "Geometry_setMaterial" "', argument " "2"" of type '" "Material *""'"); 
+  }
+  arg2 = reinterpret_cast< Material * >(argp2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Geometry_setMaterial" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  {
+    try {
+      (arg1)->setMaterial(arg2,arg3);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Geometry_setNumShapeCells(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Geometry *arg1 = (Geometry *) 0 ;
+  int arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "num_shape_cells", NULL 
+  };
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Geometry_setNumShapeCells",kwnames,&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Geometry, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Geometry_setNumShapeCells" "', argument " "1"" of type '" "Geometry *""'"); 
+  }
+  arg1 = reinterpret_cast< Geometry * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Geometry_setNumShapeCells" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  {
+    try {
+      (arg1)->setNumShapeCells(arg2);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Geometry_getWidth(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Geometry *arg1 = (Geometry *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  double result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:Geometry_getWidth",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Geometry, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Geometry_getWidth" "', argument " "1"" of type '" "Geometry *""'"); 
+  }
+  arg1 = reinterpret_cast< Geometry * >(argp1);
+  {
+    try {
+      result = (double)(arg1)->getWidth();
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_From_double(static_cast< double >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Geometry_getHeight(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Geometry *arg1 = (Geometry *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  double result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:Geometry_getHeight",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Geometry, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Geometry_getHeight" "', argument " "1"" of type '" "Geometry *""'"); 
+  }
+  arg1 = reinterpret_cast< Geometry * >(argp1);
+  {
+    try {
+      result = (double)(arg1)->getHeight();
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_From_double(static_cast< double >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Geometry_getDepth(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Geometry *arg1 = (Geometry *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  double result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:Geometry_getDepth",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Geometry, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Geometry_getDepth" "', argument " "1"" of type '" "Geometry *""'"); 
+  }
+  arg1 = reinterpret_cast< Geometry * >(argp1);
+  {
+    try {
+      result = (double)(arg1)->getDepth();
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_From_double(static_cast< double >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Geometry_getBoundary(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Geometry *arg1 = (Geometry *) 0 ;
+  int arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "side", NULL 
+  };
+  boundaryType result;
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Geometry_getBoundary",kwnames,&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Geometry, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Geometry_getBoundary" "', argument " "1"" of type '" "Geometry *""'"); 
+  }
+  arg1 = reinterpret_cast< Geometry * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Geometry_getBoundary" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  {
+    try {
+      result = (boundaryType)(arg1)->getBoundary(arg2);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Geometry_getXMin(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Geometry *arg1 = (Geometry *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  double result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:Geometry_getXMin",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Geometry, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Geometry_getXMin" "', argument " "1"" of type '" "Geometry *""'"); 
+  }
+  arg1 = reinterpret_cast< Geometry * >(argp1);
+  {
+    try {
+      result = (double)(arg1)->getXMin();
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_From_double(static_cast< double >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Geometry_getXMax(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Geometry *arg1 = (Geometry *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  double result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:Geometry_getXMax",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Geometry, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Geometry_getXMax" "', argument " "1"" of type '" "Geometry *""'"); 
+  }
+  arg1 = reinterpret_cast< Geometry * >(argp1);
+  {
+    try {
+      result = (double)(arg1)->getXMax();
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_From_double(static_cast< double >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Geometry_getYMin(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Geometry *arg1 = (Geometry *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  double result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:Geometry_getYMin",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Geometry, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Geometry_getYMin" "', argument " "1"" of type '" "Geometry *""'"); 
+  }
+  arg1 = reinterpret_cast< Geometry * >(argp1);
+  {
+    try {
+      result = (double)(arg1)->getYMin();
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_From_double(static_cast< double >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Geometry_getYMax(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Geometry *arg1 = (Geometry *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  double result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:Geometry_getYMax",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Geometry, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Geometry_getYMax" "', argument " "1"" of type '" "Geometry *""'"); 
+  }
+  arg1 = reinterpret_cast< Geometry * >(argp1);
+  {
+    try {
+      result = (double)(arg1)->getYMax();
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_From_double(static_cast< double >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Geometry_getZMin(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Geometry *arg1 = (Geometry *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  double result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:Geometry_getZMin",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Geometry, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Geometry_getZMin" "', argument " "1"" of type '" "Geometry *""'"); 
+  }
+  arg1 = reinterpret_cast< Geometry * >(argp1);
+  {
+    try {
+      result = (double)(arg1)->getZMin();
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_From_double(static_cast< double >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Geometry_getZMax(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Geometry *arg1 = (Geometry *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  double result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:Geometry_getZMax",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Geometry, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Geometry_getZMax" "', argument " "1"" of type '" "Geometry *""'"); 
+  }
+  arg1 = reinterpret_cast< Geometry * >(argp1);
+  {
+    try {
+      result = (double)(arg1)->getZMax();
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_From_double(static_cast< double >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Geometry_getNumXAmp(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Geometry *arg1 = (Geometry *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  int result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:Geometry_getNumXAmp",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Geometry, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Geometry_getNumXAmp" "', argument " "1"" of type '" "Geometry *""'"); 
+  }
+  arg1 = reinterpret_cast< Geometry * >(argp1);
+  {
+    try {
+      result = (int)(arg1)->getNumXAmp();
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Geometry_getNumYAmp(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Geometry *arg1 = (Geometry *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  int result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:Geometry_getNumYAmp",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Geometry, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Geometry_getNumYAmp" "', argument " "1"" of type '" "Geometry *""'"); 
+  }
+  arg1 = reinterpret_cast< Geometry * >(argp1);
+  {
+    try {
+      result = (int)(arg1)->getNumYAmp();
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Geometry_getNumZAmp(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Geometry *arg1 = (Geometry *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  int result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:Geometry_getNumZAmp",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Geometry, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Geometry_getNumZAmp" "', argument " "1"" of type '" "Geometry *""'"); 
+  }
+  arg1 = reinterpret_cast< Geometry * >(argp1);
+  {
+    try {
+      result = (int)(arg1)->getNumZAmp();
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Geometry_getMaterial(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Geometry *arg1 = (Geometry *) 0 ;
+  int arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "cell", NULL 
+  };
+  Material *result = 0 ;
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Geometry_getMaterial",kwnames,&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Geometry, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Geometry_getMaterial" "', argument " "1"" of type '" "Geometry *""'"); 
+  }
+  arg1 = reinterpret_cast< Geometry * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Geometry_getMaterial" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  {
+    try {
+      result = (Material *)(arg1)->getMaterial(arg2);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_Material, 0 |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Geometry_getAmpToShapeMap(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Geometry *arg1 = (Geometry *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  std::vector< std::vector< int > > result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:Geometry_getAmpToShapeMap",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Geometry, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Geometry_getAmpToShapeMap" "', argument " "1"" of type '" "Geometry *""'"); 
+  }
+  arg1 = reinterpret_cast< Geometry * >(argp1);
+  {
+    try {
+      result = (arg1)->getAmpToShapeMap();
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_NewPointerObj((new std::vector< std::vector< int > >(static_cast< const std::vector< std::vector< int > >& >(result))), SWIGTYPE_p_std__vectorT_std__vectorT_int_t_t, SWIG_POINTER_OWN |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Geometry_getShapeToAmpMap(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Geometry *arg1 = (Geometry *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  int *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:Geometry_getShapeToAmpMap",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Geometry, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Geometry_getShapeToAmpMap" "', argument " "1"" of type '" "Geometry *""'"); 
+  }
+  arg1 = reinterpret_cast< Geometry * >(argp1);
+  {
+    try {
+      result = (int *)(arg1)->getShapeToAmpMap();
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_int, 0 |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Geometry_getNumEnergyGroups(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Geometry *arg1 = (Geometry *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  int result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:Geometry_getNumEnergyGroups",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Geometry, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Geometry_getNumEnergyGroups" "', argument " "1"" of type '" "Geometry *""'"); 
+  }
+  arg1 = reinterpret_cast< Geometry * >(argp1);
+  {
+    try {
+      result = (int)(arg1)->getNumEnergyGroups();
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Geometry_getNumDelayedGroups(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Geometry *arg1 = (Geometry *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  int result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:Geometry_getNumDelayedGroups",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Geometry, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Geometry_getNumDelayedGroups" "', argument " "1"" of type '" "Geometry *""'"); 
+  }
+  arg1 = reinterpret_cast< Geometry * >(argp1);
+  {
+    try {
+      result = (int)(arg1)->getNumDelayedGroups();
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Geometry_getNeighborAmpCell(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Geometry *arg1 = (Geometry *) 0 ;
+  int arg2 ;
+  int arg3 ;
+  int arg4 ;
+  int arg5 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  int val4 ;
+  int ecode4 = 0 ;
+  int val5 ;
+  int ecode5 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "x",(char *) "y",(char *) "z",(char *) "side", NULL 
+  };
+  int result;
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOOOO:Geometry_getNeighborAmpCell",kwnames,&obj0,&obj1,&obj2,&obj3,&obj4)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Geometry, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Geometry_getNeighborAmpCell" "', argument " "1"" of type '" "Geometry *""'"); 
+  }
+  arg1 = reinterpret_cast< Geometry * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Geometry_getNeighborAmpCell" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Geometry_getNeighborAmpCell" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  ecode4 = SWIG_AsVal_int(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "Geometry_getNeighborAmpCell" "', argument " "4"" of type '" "int""'");
+  } 
+  arg4 = static_cast< int >(val4);
+  ecode5 = SWIG_AsVal_int(obj4, &val5);
+  if (!SWIG_IsOK(ecode5)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "Geometry_getNeighborAmpCell" "', argument " "5"" of type '" "int""'");
+  } 
+  arg5 = static_cast< int >(val5);
+  {
+    try {
+      result = (int)(arg1)->getNeighborAmpCell(arg2,arg3,arg4,arg5);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Geometry_getVolume(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Geometry *arg1 = (Geometry *) 0 ;
+  int arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "cell", NULL 
+  };
+  double result;
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Geometry_getVolume",kwnames,&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Geometry, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Geometry_getVolume" "', argument " "1"" of type '" "Geometry *""'"); 
+  }
+  arg1 = reinterpret_cast< Geometry * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Geometry_getVolume" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  {
+    try {
+      result = (double)(arg1)->getVolume(arg2);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_From_double(static_cast< double >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Geometry_getNumShapeCells(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Geometry *arg1 = (Geometry *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  int result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:Geometry_getNumShapeCells",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Geometry, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Geometry_getNumShapeCells" "', argument " "1"" of type '" "Geometry *""'"); 
+  }
+  arg1 = reinterpret_cast< Geometry * >(argp1);
+  {
+    try {
+      result = (int)(arg1)->getNumShapeCells();
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Geometry_getNumAmpCells(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Geometry *arg1 = (Geometry *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  int result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:Geometry_getNumAmpCells",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Geometry, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Geometry_getNumAmpCells" "', argument " "1"" of type '" "Geometry *""'"); 
+  }
+  arg1 = reinterpret_cast< Geometry * >(argp1);
+  {
+    try {
+      result = (int)(arg1)->getNumAmpCells();
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Geometry_addShapeCellToAmpCell(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Geometry *arg1 = (Geometry *) 0 ;
+  int arg2 ;
+  int arg3 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "shape_cell",(char *) "amp_cell", NULL 
+  };
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOO:Geometry_addShapeCellToAmpCell",kwnames,&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Geometry, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Geometry_addShapeCellToAmpCell" "', argument " "1"" of type '" "Geometry *""'"); 
+  }
+  arg1 = reinterpret_cast< Geometry * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Geometry_addShapeCellToAmpCell" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Geometry_addShapeCellToAmpCell" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  {
+    try {
+      (arg1)->addShapeCellToAmpCell(arg2,arg3);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Geometry_findAmpCellContainingShapeCell(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  Geometry *arg1 = (Geometry *) 0 ;
+  int arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "shape_cell", NULL 
+  };
+  int result;
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OO:Geometry_findAmpCellContainingShapeCell",kwnames,&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Geometry, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Geometry_findAmpCellContainingShapeCell" "', argument " "1"" of type '" "Geometry *""'"); 
+  }
+  arg1 = reinterpret_cast< Geometry * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Geometry_findAmpCellContainingShapeCell" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  {
+    try {
+      result = (int)(arg1)->findAmpCellContainingShapeCell(arg2);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Geometry_uniquifyMaterials(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Geometry *arg1 = (Geometry *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:Geometry_uniquifyMaterials",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Geometry, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Geometry_uniquifyMaterials" "', argument " "1"" of type '" "Geometry *""'"); 
+  }
+  arg1 = reinterpret_cast< Geometry * >(argp1);
+  {
+    try {
+      (arg1)->uniquifyMaterials();
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Geometry_clone(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Geometry *arg1 = (Geometry *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  Geometry *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:Geometry_clone",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Geometry, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Geometry_clone" "', argument " "1"" of type '" "Geometry *""'"); 
+  }
+  arg1 = reinterpret_cast< Geometry * >(argp1);
+  {
+    try {
+      result = (Geometry *)(arg1)->clone();
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_Geometry, 0 |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *Geometry_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *obj;
   if (!PyArg_ParseTuple(args,(char*)"O:swigregister", &obj)) return NULL;
-  SWIG_TypeNewClientData(SWIGTYPE_p_Transient, SWIG_NewClientData(obj));
+  SWIG_TypeNewClientData(SWIGTYPE_p_Geometry, SWIG_NewClientData(obj));
+  return SWIG_Py_Void();
+}
+
+SWIGINTERN PyObject *_wrap_new_GeometryDiffusion(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  double arg1 = (double) 1.0 ;
+  double arg2 = (double) 1.0 ;
+  double arg3 = (double) 1.0 ;
+  double val1 ;
+  int ecode1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
+  double val3 ;
+  int ecode3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  char *  kwnames[] = {
+    (char *) "width",(char *) "height",(char *) "depth", NULL 
+  };
+  GeometryDiffusion *result = 0 ;
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"|OOO:new_GeometryDiffusion",kwnames,&obj0,&obj1,&obj2)) SWIG_fail;
+  if (obj0) {
+    ecode1 = SWIG_AsVal_double(obj0, &val1);
+    if (!SWIG_IsOK(ecode1)) {
+      SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "new_GeometryDiffusion" "', argument " "1"" of type '" "double""'");
+    } 
+    arg1 = static_cast< double >(val1);
+  }
+  if (obj1) {
+    ecode2 = SWIG_AsVal_double(obj1, &val2);
+    if (!SWIG_IsOK(ecode2)) {
+      SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "new_GeometryDiffusion" "', argument " "2"" of type '" "double""'");
+    } 
+    arg2 = static_cast< double >(val2);
+  }
+  if (obj2) {
+    ecode3 = SWIG_AsVal_double(obj2, &val3);
+    if (!SWIG_IsOK(ecode3)) {
+      SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "new_GeometryDiffusion" "', argument " "3"" of type '" "double""'");
+    } 
+    arg3 = static_cast< double >(val3);
+  }
+  {
+    try {
+      result = (GeometryDiffusion *)new GeometryDiffusion(arg1,arg2,arg3);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_GeometryDiffusion, SWIG_POINTER_NEW |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_delete_GeometryDiffusion(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  GeometryDiffusion *arg1 = (GeometryDiffusion *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:delete_GeometryDiffusion",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_GeometryDiffusion, SWIG_POINTER_DISOWN |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_GeometryDiffusion" "', argument " "1"" of type '" "GeometryDiffusion *""'"); 
+  }
+  arg1 = reinterpret_cast< GeometryDiffusion * >(argp1);
+  {
+    try {
+      delete arg1;
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_GeometryDiffusion_setShapeMeshDimensions(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  GeometryDiffusion *arg1 = (GeometryDiffusion *) 0 ;
+  int arg2 = (int) 1 ;
+  int arg3 = (int) 1 ;
+  int arg4 = (int) 1 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  int val4 ;
+  int ecode4 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "num_x",(char *) "num_y",(char *) "num_z", NULL 
+  };
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"O|OOO:GeometryDiffusion_setShapeMeshDimensions",kwnames,&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_GeometryDiffusion, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "GeometryDiffusion_setShapeMeshDimensions" "', argument " "1"" of type '" "GeometryDiffusion *""'"); 
+  }
+  arg1 = reinterpret_cast< GeometryDiffusion * >(argp1);
+  if (obj1) {
+    ecode2 = SWIG_AsVal_int(obj1, &val2);
+    if (!SWIG_IsOK(ecode2)) {
+      SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "GeometryDiffusion_setShapeMeshDimensions" "', argument " "2"" of type '" "int""'");
+    } 
+    arg2 = static_cast< int >(val2);
+  }
+  if (obj2) {
+    ecode3 = SWIG_AsVal_int(obj2, &val3);
+    if (!SWIG_IsOK(ecode3)) {
+      SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "GeometryDiffusion_setShapeMeshDimensions" "', argument " "3"" of type '" "int""'");
+    } 
+    arg3 = static_cast< int >(val3);
+  }
+  if (obj3) {
+    ecode4 = SWIG_AsVal_int(obj3, &val4);
+    if (!SWIG_IsOK(ecode4)) {
+      SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "GeometryDiffusion_setShapeMeshDimensions" "', argument " "4"" of type '" "int""'");
+    } 
+    arg4 = static_cast< int >(val4);
+  }
+  {
+    try {
+      (arg1)->setShapeMeshDimensions(arg2,arg3,arg4);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_GeometryDiffusion_getNumXShape(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  GeometryDiffusion *arg1 = (GeometryDiffusion *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  int result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:GeometryDiffusion_getNumXShape",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_GeometryDiffusion, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "GeometryDiffusion_getNumXShape" "', argument " "1"" of type '" "GeometryDiffusion *""'"); 
+  }
+  arg1 = reinterpret_cast< GeometryDiffusion * >(argp1);
+  {
+    try {
+      result = (int)(arg1)->getNumXShape();
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_GeometryDiffusion_getNumYShape(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  GeometryDiffusion *arg1 = (GeometryDiffusion *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  int result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:GeometryDiffusion_getNumYShape",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_GeometryDiffusion, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "GeometryDiffusion_getNumYShape" "', argument " "1"" of type '" "GeometryDiffusion *""'"); 
+  }
+  arg1 = reinterpret_cast< GeometryDiffusion * >(argp1);
+  {
+    try {
+      result = (int)(arg1)->getNumYShape();
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_GeometryDiffusion_getNumZShape(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  GeometryDiffusion *arg1 = (GeometryDiffusion *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  int result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:GeometryDiffusion_getNumZShape",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_GeometryDiffusion, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "GeometryDiffusion_getNumZShape" "', argument " "1"" of type '" "GeometryDiffusion *""'"); 
+  }
+  arg1 = reinterpret_cast< GeometryDiffusion * >(argp1);
+  {
+    try {
+      result = (int)(arg1)->getNumZShape();
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_GeometryDiffusion_getNeighborShapeCell(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  GeometryDiffusion *arg1 = (GeometryDiffusion *) 0 ;
+  int arg2 ;
+  int arg3 ;
+  int arg4 ;
+  int arg5 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  int val4 ;
+  int ecode4 = 0 ;
+  int val5 ;
+  int ecode5 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "x",(char *) "y",(char *) "z",(char *) "side", NULL 
+  };
+  int result;
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOOOO:GeometryDiffusion_getNeighborShapeCell",kwnames,&obj0,&obj1,&obj2,&obj3,&obj4)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_GeometryDiffusion, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "GeometryDiffusion_getNeighborShapeCell" "', argument " "1"" of type '" "GeometryDiffusion *""'"); 
+  }
+  arg1 = reinterpret_cast< GeometryDiffusion * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "GeometryDiffusion_getNeighborShapeCell" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "GeometryDiffusion_getNeighborShapeCell" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  ecode4 = SWIG_AsVal_int(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "GeometryDiffusion_getNeighborShapeCell" "', argument " "4"" of type '" "int""'");
+  } 
+  arg4 = static_cast< int >(val4);
+  ecode5 = SWIG_AsVal_int(obj4, &val5);
+  if (!SWIG_IsOK(ecode5)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "GeometryDiffusion_getNeighborShapeCell" "', argument " "5"" of type '" "int""'");
+  } 
+  arg5 = static_cast< int >(val5);
+  {
+    try {
+      result = (int)(arg1)->getNeighborShapeCell(arg2,arg3,arg4,arg5);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_GeometryDiffusion_uniformRefine(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
+  PyObject *resultobj = 0;
+  GeometryDiffusion *arg1 = (GeometryDiffusion *) 0 ;
+  int arg2 ;
+  int arg3 ;
+  int arg4 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  int val4 ;
+  int ecode4 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  char *  kwnames[] = {
+    (char *) "self",(char *) "refine_x",(char *) "refine_y",(char *) "refine_z", NULL 
+  };
+  GeometryDiffusion *result = 0 ;
+  
+  if (!PyArg_ParseTupleAndKeywords(args,kwargs,(char *)"OOOO:GeometryDiffusion_uniformRefine",kwnames,&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_GeometryDiffusion, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "GeometryDiffusion_uniformRefine" "', argument " "1"" of type '" "GeometryDiffusion *""'"); 
+  }
+  arg1 = reinterpret_cast< GeometryDiffusion * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "GeometryDiffusion_uniformRefine" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "GeometryDiffusion_uniformRefine" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  ecode4 = SWIG_AsVal_int(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "GeometryDiffusion_uniformRefine" "', argument " "4"" of type '" "int""'");
+  } 
+  arg4 = static_cast< int >(val4);
+  {
+    try {
+      result = (GeometryDiffusion *)(arg1)->uniformRefine(arg2,arg3,arg4);
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_GeometryDiffusion, 0 |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_GeometryDiffusion_clone(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  GeometryDiffusion *arg1 = (GeometryDiffusion *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  GeometryDiffusion *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:GeometryDiffusion_clone",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_GeometryDiffusion, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "GeometryDiffusion_clone" "', argument " "1"" of type '" "GeometryDiffusion *""'"); 
+  }
+  arg1 = reinterpret_cast< GeometryDiffusion * >(argp1);
+  {
+    try {
+      result = (GeometryDiffusion *)(arg1)->clone();
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_GeometryDiffusion, 0 |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_GeometryDiffusion_generateCellMap(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  GeometryDiffusion *arg1 = (GeometryDiffusion *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:GeometryDiffusion_generateCellMap",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_GeometryDiffusion, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "GeometryDiffusion_generateCellMap" "', argument " "1"" of type '" "GeometryDiffusion *""'"); 
+  }
+  arg1 = reinterpret_cast< GeometryDiffusion * >(argp1);
+  {
+    try {
+      (arg1)->generateCellMap();
+    } catch (const std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *GeometryDiffusion_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *obj;
+  if (!PyArg_ParseTuple(args,(char*)"O:swigregister", &obj)) return NULL;
+  SWIG_TypeNewClientData(SWIGTYPE_p_GeometryDiffusion, SWIG_NewClientData(obj));
   return SWIG_Py_Void();
 }
 
@@ -16957,6 +16093,8 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"Material_setVelocityByGroup", (PyCFunction) _wrap_Material_setVelocityByGroup, METH_VARARGS | METH_KEYWORDS, NULL},
 	 { (char *)"Material_setPrecursorConcByGroup", (PyCFunction) _wrap_Material_setPrecursorConcByGroup, METH_VARARGS | METH_KEYWORDS, NULL},
 	 { (char *)"Material_setTemperatureConversionFactor", (PyCFunction) _wrap_Material_setTemperatureConversionFactor, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Material_setDecayConstantByGroup", (PyCFunction) _wrap_Material_setDecayConstantByGroup, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Material_setDelayedFractionByGroup", (PyCFunction) _wrap_Material_setDelayedFractionByGroup, METH_VARARGS | METH_KEYWORDS, NULL},
 	 { (char *)"Material_setClock", (PyCFunction) _wrap_Material_setClock, METH_VARARGS | METH_KEYWORDS, NULL},
 	 { (char *)"Material_getId", _wrap_Material_getId, METH_VARARGS, NULL},
 	 { (char *)"Material_getNumEnergyGroups", _wrap_Material_getNumEnergyGroups, METH_VARARGS, NULL},
@@ -16971,6 +16109,8 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"Material_getDifCoef", _wrap_Material_getDifCoef, METH_VARARGS, NULL},
 	 { (char *)"Material_getVelocity", _wrap_Material_getVelocity, METH_VARARGS, NULL},
 	 { (char *)"Material_getPrecursorConc", _wrap_Material_getPrecursorConc, METH_VARARGS, NULL},
+	 { (char *)"Material_getDecayConstant", _wrap_Material_getDecayConstant, METH_VARARGS, NULL},
+	 { (char *)"Material_getDelayedFraction", _wrap_Material_getDelayedFraction, METH_VARARGS, NULL},
 	 { (char *)"Material_getSigmaTByGroup", (PyCFunction) _wrap_Material_getSigmaTByGroup, METH_VARARGS | METH_KEYWORDS, NULL},
 	 { (char *)"Material_getSigmaAByGroup", (PyCFunction) _wrap_Material_getSigmaAByGroup, METH_VARARGS | METH_KEYWORDS, NULL},
 	 { (char *)"Material_getSigmaSByGroup", (PyCFunction) _wrap_Material_getSigmaSByGroup, METH_VARARGS | METH_KEYWORDS, NULL},
@@ -16980,6 +16120,9 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"Material_getDifCoefByGroup", (PyCFunction) _wrap_Material_getDifCoefByGroup, METH_VARARGS | METH_KEYWORDS, NULL},
 	 { (char *)"Material_getVelocityByGroup", (PyCFunction) _wrap_Material_getVelocityByGroup, METH_VARARGS | METH_KEYWORDS, NULL},
 	 { (char *)"Material_getPrecursorConcByGroup", (PyCFunction) _wrap_Material_getPrecursorConcByGroup, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Material_getDecayConstantByGroup", (PyCFunction) _wrap_Material_getDecayConstantByGroup, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Material_getDelayedFractionByGroup", (PyCFunction) _wrap_Material_getDelayedFractionByGroup, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Material_getDelayedFractionTotal", (PyCFunction) _wrap_Material_getDelayedFractionTotal, METH_VARARGS | METH_KEYWORDS, NULL},
 	 { (char *)"Material_getTemperatureConversionFactor", _wrap_Material_getTemperatureConversionFactor, METH_VARARGS, NULL},
 	 { (char *)"Material_isFissionable", _wrap_Material_isFissionable, METH_VARARGS, NULL},
 	 { (char *)"Material_toString", _wrap_Material_toString, METH_VARARGS, NULL},
@@ -17039,256 +16182,222 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"Clock_toString", _wrap_Clock_toString, METH_VARARGS, NULL},
 	 { (char *)"Clock_printString", _wrap_Clock_printString, METH_VARARGS, NULL},
 	 { (char *)"Clock_swigregister", Clock_swigregister, METH_VARARGS, NULL},
-	 { (char *)"new_Mesh", (PyCFunction) _wrap_new_Mesh, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"delete_Mesh", _wrap_delete_Mesh, METH_VARARGS, NULL},
-	 { (char *)"Mesh_setNumShapeEnergyGroups", (PyCFunction) _wrap_Mesh_setNumShapeEnergyGroups, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"Mesh_setNumAmpEnergyGroups", (PyCFunction) _wrap_Mesh_setNumAmpEnergyGroups, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"Mesh_setNumDelayedGroups", (PyCFunction) _wrap_Mesh_setNumDelayedGroups, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"Mesh_setXMin", (PyCFunction) _wrap_Mesh_setXMin, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"Mesh_setXMax", (PyCFunction) _wrap_Mesh_setXMax, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"Mesh_setYMin", (PyCFunction) _wrap_Mesh_setYMin, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"Mesh_setYMax", (PyCFunction) _wrap_Mesh_setYMax, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"Mesh_setZMin", (PyCFunction) _wrap_Mesh_setZMin, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"Mesh_setZMax", (PyCFunction) _wrap_Mesh_setZMax, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"Mesh_setKeff0", (PyCFunction) _wrap_Mesh_setKeff0, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"Mesh_setBoundary", (PyCFunction) _wrap_Mesh_setBoundary, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"Mesh_setMaterial", (PyCFunction) _wrap_Mesh_setMaterial, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"Mesh_setBuckling", (PyCFunction) _wrap_Mesh_setBuckling, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"Mesh_setDecayConstants", (PyCFunction) _wrap_Mesh_setDecayConstants, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"Mesh_setDelayedFractions", (PyCFunction) _wrap_Mesh_setDelayedFractions, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"Mesh_getKeff0", _wrap_Mesh_getKeff0, METH_VARARGS, NULL},
-	 { (char *)"Mesh_getClock", _wrap_Mesh_getClock, METH_VARARGS, NULL},
-	 { (char *)"Mesh_getWidth", _wrap_Mesh_getWidth, METH_VARARGS, NULL},
-	 { (char *)"Mesh_getHeight", _wrap_Mesh_getHeight, METH_VARARGS, NULL},
-	 { (char *)"Mesh_getDepth", _wrap_Mesh_getDepth, METH_VARARGS, NULL},
-	 { (char *)"Mesh_getBoundary", (PyCFunction) _wrap_Mesh_getBoundary, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"Mesh_getNumShapeEnergyGroups", _wrap_Mesh_getNumShapeEnergyGroups, METH_VARARGS, NULL},
-	 { (char *)"Mesh_getNumAmpEnergyGroups", _wrap_Mesh_getNumAmpEnergyGroups, METH_VARARGS, NULL},
-	 { (char *)"Mesh_getNumDelayedGroups", _wrap_Mesh_getNumDelayedGroups, METH_VARARGS, NULL},
-	 { (char *)"Mesh_getBuckling", _wrap_Mesh_getBuckling, METH_VARARGS, NULL},
-	 { (char *)"Mesh_getDecayConstants", _wrap_Mesh_getDecayConstants, METH_VARARGS, NULL},
-	 { (char *)"Mesh_getDelayedFractions", _wrap_Mesh_getDelayedFractions, METH_VARARGS, NULL},
-	 { (char *)"Mesh_getDecayConstantByGroup", (PyCFunction) _wrap_Mesh_getDecayConstantByGroup, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"Mesh_getDelayedFractionByGroup", (PyCFunction) _wrap_Mesh_getDelayedFractionByGroup, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"Mesh_getXMin", _wrap_Mesh_getXMin, METH_VARARGS, NULL},
-	 { (char *)"Mesh_getXMax", _wrap_Mesh_getXMax, METH_VARARGS, NULL},
-	 { (char *)"Mesh_getYMin", _wrap_Mesh_getYMin, METH_VARARGS, NULL},
-	 { (char *)"Mesh_getYMax", _wrap_Mesh_getYMax, METH_VARARGS, NULL},
-	 { (char *)"Mesh_getZMin", _wrap_Mesh_getZMin, METH_VARARGS, NULL},
-	 { (char *)"Mesh_getZMax", _wrap_Mesh_getZMax, METH_VARARGS, NULL},
-	 { (char *)"Mesh_getFlux", (PyCFunction) _wrap_Mesh_getFlux, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"Mesh_getPower", (PyCFunction) _wrap_Mesh_getPower, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"Mesh_getTemperature", (PyCFunction) _wrap_Mesh_getTemperature, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"Mesh_getPowerByValue", (PyCFunction) _wrap_Mesh_getPowerByValue, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"Mesh_getTemperatureByValue", (PyCFunction) _wrap_Mesh_getTemperatureByValue, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"Mesh_getMaterial", (PyCFunction) _wrap_Mesh_getMaterial, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"Mesh_swigregister", Mesh_swigregister, METH_VARARGS, NULL},
-	 { (char *)"new_StructuredMesh", (PyCFunction) _wrap_new_StructuredMesh, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"delete_StructuredMesh", _wrap_delete_StructuredMesh, METH_VARARGS, NULL},
-	 { (char *)"StructuredMesh_setNumX", (PyCFunction) _wrap_StructuredMesh_setNumX, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"StructuredMesh_setNumY", (PyCFunction) _wrap_StructuredMesh_setNumY, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"StructuredMesh_setNumZ", (PyCFunction) _wrap_StructuredMesh_setNumZ, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"StructuredMesh_setClock", (PyCFunction) _wrap_StructuredMesh_setClock, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"StructuredMesh_getCurrent", (PyCFunction) _wrap_StructuredMesh_getCurrent, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"StructuredMesh_getDifLinear", (PyCFunction) _wrap_StructuredMesh_getDifLinear, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"StructuredMesh_getDifNonlinear", (PyCFunction) _wrap_StructuredMesh_getDifNonlinear, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"StructuredMesh_getNeighborCell", (PyCFunction) _wrap_StructuredMesh_getNeighborCell, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"StructuredMesh_getNeighborMaterial", (PyCFunction) _wrap_StructuredMesh_getNeighborMaterial, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"StructuredMesh_getNumX", _wrap_StructuredMesh_getNumX, METH_VARARGS, NULL},
-	 { (char *)"StructuredMesh_getNumY", _wrap_StructuredMesh_getNumY, METH_VARARGS, NULL},
-	 { (char *)"StructuredMesh_getNumZ", _wrap_StructuredMesh_getNumZ, METH_VARARGS, NULL},
-	 { (char *)"StructuredMesh_getCellWidth", _wrap_StructuredMesh_getCellWidth, METH_VARARGS, NULL},
-	 { (char *)"StructuredMesh_getCellHeight", _wrap_StructuredMesh_getCellHeight, METH_VARARGS, NULL},
-	 { (char *)"StructuredMesh_getCellDepth", _wrap_StructuredMesh_getCellDepth, METH_VARARGS, NULL},
-	 { (char *)"StructuredMesh_getCellVolume", _wrap_StructuredMesh_getCellVolume, METH_VARARGS, NULL},
-	 { (char *)"StructuredMesh_findCell", (PyCFunction) _wrap_StructuredMesh_findCell, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"StructuredMesh_computeFuelVolume", _wrap_StructuredMesh_computeFuelVolume, METH_VARARGS, NULL},
-	 { (char *)"StructuredMesh_uniquifyMaterials", _wrap_StructuredMesh_uniquifyMaterials, METH_VARARGS, NULL},
-	 { (char *)"StructuredMesh_getMaxTemperature", (PyCFunction) _wrap_StructuredMesh_getMaxTemperature, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"StructuredMesh_copyPower", (PyCFunction) _wrap_StructuredMesh_copyPower, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"StructuredMesh_copyTemperature", (PyCFunction) _wrap_StructuredMesh_copyTemperature, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"StructuredMesh_setTemperature", (PyCFunction) _wrap_StructuredMesh_setTemperature, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"StructuredMesh_swigregister", StructuredMesh_swigregister, METH_VARARGS, NULL},
-	 { (char *)"new_StructuredShapeMesh", (PyCFunction) _wrap_new_StructuredShapeMesh, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"delete_StructuredShapeMesh", _wrap_delete_StructuredShapeMesh, METH_VARARGS, NULL},
-	 { (char *)"StructuredShapeMesh_setAmpMesh", (PyCFunction) _wrap_StructuredShapeMesh_setAmpMesh, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"StructuredShapeMesh_setFluxByValue", (PyCFunction) _wrap_StructuredShapeMesh_setFluxByValue, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"StructuredShapeMesh_setCurrentByValue", (PyCFunction) _wrap_StructuredShapeMesh_setCurrentByValue, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"StructuredShapeMesh_setDifLinearByValue", (PyCFunction) _wrap_StructuredShapeMesh_setDifLinearByValue, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"StructuredShapeMesh_setDifNonlinearByValue", (PyCFunction) _wrap_StructuredShapeMesh_setDifNonlinearByValue, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"StructuredShapeMesh_setGroupStructure", (PyCFunction) _wrap_StructuredShapeMesh_setGroupStructure, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"StructuredShapeMesh_getFluxByValue", (PyCFunction) _wrap_StructuredShapeMesh_getFluxByValue, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"StructuredShapeMesh_getCurrentByValue", (PyCFunction) _wrap_StructuredShapeMesh_getCurrentByValue, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"StructuredShapeMesh_getDifLinearByValue", (PyCFunction) _wrap_StructuredShapeMesh_getDifLinearByValue, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"StructuredShapeMesh_getDifNonlinearByValue", (PyCFunction) _wrap_StructuredShapeMesh_getDifNonlinearByValue, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"StructuredShapeMesh_getAmpGroup", (PyCFunction) _wrap_StructuredShapeMesh_getAmpGroup, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"StructuredShapeMesh_clone", _wrap_StructuredShapeMesh_clone, METH_VARARGS, NULL},
-	 { (char *)"StructuredShapeMesh_uniformRefine", (PyCFunction) _wrap_StructuredShapeMesh_uniformRefine, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"StructuredShapeMesh_initialize", _wrap_StructuredShapeMesh_initialize, METH_VARARGS, NULL},
-	 { (char *)"StructuredShapeMesh_synthesizeFlux", (PyCFunction) _wrap_StructuredShapeMesh_synthesizeFlux, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"StructuredShapeMesh_reconstructFlux", (PyCFunction) _wrap_StructuredShapeMesh_reconstructFlux, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"StructuredShapeMesh_computePower", (PyCFunction) _wrap_StructuredShapeMesh_computePower, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"StructuredShapeMesh_computeInitialPrecursorConc", (PyCFunction) _wrap_StructuredShapeMesh_computeInitialPrecursorConc, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"StructuredShapeMesh_integratePrecursorConc", (PyCFunction) _wrap_StructuredShapeMesh_integratePrecursorConc, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"StructuredShapeMesh_integrateTemperature", (PyCFunction) _wrap_StructuredShapeMesh_integrateTemperature, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"StructuredShapeMesh_computeDifCoefs", (PyCFunction) _wrap_StructuredShapeMesh_computeDifCoefs, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"StructuredShapeMesh_copyFlux", (PyCFunction) _wrap_StructuredShapeMesh_copyFlux, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"StructuredShapeMesh_copyCurrent", (PyCFunction) _wrap_StructuredShapeMesh_copyCurrent, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"StructuredShapeMesh_copyDifLinear", (PyCFunction) _wrap_StructuredShapeMesh_copyDifLinear, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"StructuredShapeMesh_copyDifNonlinear", (PyCFunction) _wrap_StructuredShapeMesh_copyDifNonlinear, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"StructuredShapeMesh_scaleFlux", (PyCFunction) _wrap_StructuredShapeMesh_scaleFlux, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"StructuredShapeMesh_computeAveragePower", (PyCFunction) _wrap_StructuredShapeMesh_computeAveragePower, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"StructuredShapeMesh_computePowerL2Norm", (PyCFunction) _wrap_StructuredShapeMesh_computePowerL2Norm, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"StructuredShapeMesh_findAmpCell", (PyCFunction) _wrap_StructuredShapeMesh_findAmpCell, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"StructuredShapeMesh_saveShape", _wrap_StructuredShapeMesh_saveShape, METH_VARARGS, NULL},
-	 { (char *)"StructuredShapeMesh_swigregister", StructuredShapeMesh_swigregister, METH_VARARGS, NULL},
-	 { (char *)"new_AmpMesh", (PyCFunction) _wrap_new_AmpMesh, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"delete_AmpMesh", _wrap_delete_AmpMesh, METH_VARARGS, NULL},
-	 { (char *)"AmpMesh_setOpticallyThick", (PyCFunction) _wrap_AmpMesh_setOpticallyThick, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"AmpMesh_setShapeMesh", (PyCFunction) _wrap_AmpMesh_setShapeMesh, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"AmpMesh_setFluxByValue", (PyCFunction) _wrap_AmpMesh_setFluxByValue, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"AmpMesh_setCurrentByValue", (PyCFunction) _wrap_AmpMesh_setCurrentByValue, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"AmpMesh_setDifLinearByValue", (PyCFunction) _wrap_AmpMesh_setDifLinearByValue, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"AmpMesh_setDifNonlinearByValue", (PyCFunction) _wrap_AmpMesh_setDifNonlinearByValue, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"AmpMesh_setGroupStructure", (PyCFunction) _wrap_AmpMesh_setGroupStructure, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"AmpMesh_getFluxByValue", (PyCFunction) _wrap_AmpMesh_getFluxByValue, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"AmpMesh_getCurrentByValue", (PyCFunction) _wrap_AmpMesh_getCurrentByValue, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"AmpMesh_getDifLinearByValue", (PyCFunction) _wrap_AmpMesh_getDifLinearByValue, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"AmpMesh_getDifNonlinearByValue", (PyCFunction) _wrap_AmpMesh_getDifNonlinearByValue, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"AmpMesh_clone", _wrap_AmpMesh_clone, METH_VARARGS, NULL},
-	 { (char *)"AmpMesh_initialize", _wrap_AmpMesh_initialize, METH_VARARGS, NULL},
-	 { (char *)"AmpMesh_condenseMaterials", (PyCFunction) _wrap_AmpMesh_condenseMaterials, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"AmpMesh_computePower", (PyCFunction) _wrap_AmpMesh_computePower, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"AmpMesh_computeCurrent", (PyCFunction) _wrap_AmpMesh_computeCurrent, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"AmpMesh_computeDifCorrect", (PyCFunction) _wrap_AmpMesh_computeDifCorrect, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"AmpMesh_computeDifCoefs", (PyCFunction) _wrap_AmpMesh_computeDifCoefs, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"AmpMesh_copyFlux", (PyCFunction) _wrap_AmpMesh_copyFlux, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"AmpMesh_copyCurrent", (PyCFunction) _wrap_AmpMesh_copyCurrent, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"AmpMesh_copyDifLinear", (PyCFunction) _wrap_AmpMesh_copyDifLinear, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"AmpMesh_copyDifNonlinear", (PyCFunction) _wrap_AmpMesh_copyDifNonlinear, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"AmpMesh_computeAveragePower", (PyCFunction) _wrap_AmpMesh_computeAveragePower, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"AmpMesh_computePowerL2Norm", (PyCFunction) _wrap_AmpMesh_computePowerL2Norm, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"AmpMesh_interpolateDifNonlinear", (PyCFunction) _wrap_AmpMesh_interpolateDifNonlinear, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"AmpMesh_swigregister", AmpMesh_swigregister, METH_VARARGS, NULL},
-	 { (char *)"new_Solver", (PyCFunction) _wrap_new_Solver, METH_VARARGS | METH_KEYWORDS, NULL},
 	 { (char *)"delete_Solver", _wrap_delete_Solver, METH_VARARGS, NULL},
-	 { (char *)"Solver_getAMShape", _wrap_Solver_getAMShape, METH_VARARGS, NULL},
-	 { (char *)"Solver_getAShape", _wrap_Solver_getAShape, METH_VARARGS, NULL},
-	 { (char *)"Solver_getMShape", _wrap_Solver_getMShape, METH_VARARGS, NULL},
-	 { (char *)"Solver_getBShape", _wrap_Solver_getBShape, METH_VARARGS, NULL},
-	 { (char *)"Solver_getAMAmp", _wrap_Solver_getAMAmp, METH_VARARGS, NULL},
-	 { (char *)"Solver_getAAmp", _wrap_Solver_getAAmp, METH_VARARGS, NULL},
-	 { (char *)"Solver_getMAmp", _wrap_Solver_getMAmp, METH_VARARGS, NULL},
-	 { (char *)"Solver_getBAmp", _wrap_Solver_getBAmp, METH_VARARGS, NULL},
-	 { (char *)"Solver_makeAMShapeInitial", (PyCFunction) _wrap_Solver_makeAMShapeInitial, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"Solver_computeInitialShape", (PyCFunction) _wrap_Solver_computeInitialShape, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"Solver_makeAMAmp", (PyCFunction) _wrap_Solver_makeAMAmp, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"Solver_makeAMShape", (PyCFunction) _wrap_Solver_makeAMShape, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"Solver_computeAmpFrequency", _wrap_Solver_computeAmpFrequency, METH_VARARGS, NULL},
+	 { (char *)"Solver_getAmpMatrix", _wrap_Solver_getAmpMatrix, METH_VARARGS, NULL},
+	 { (char *)"Solver_getAmpSource", _wrap_Solver_getAmpSource, METH_VARARGS, NULL},
+	 { (char *)"Solver_getKeff0", _wrap_Solver_getKeff0, METH_VARARGS, NULL},
+	 { (char *)"Solver_getMethod", _wrap_Solver_getMethod, METH_VARARGS, NULL},
+	 { (char *)"Solver_getBuckling", _wrap_Solver_getBuckling, METH_VARARGS, NULL},
+	 { (char *)"Solver_getTemperature", (PyCFunction) _wrap_Solver_getTemperature, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_getFlux", (PyCFunction) _wrap_Solver_getFlux, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_getShape", (PyCFunction) _wrap_Solver_getShape, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_getAmplitude", (PyCFunction) _wrap_Solver_getAmplitude, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_getPower", (PyCFunction) _wrap_Solver_getPower, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_getCurrent", (PyCFunction) _wrap_Solver_getCurrent, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_getDifLinear", (PyCFunction) _wrap_Solver_getDifLinear, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_getDifNonlinear", (PyCFunction) _wrap_Solver_getDifNonlinear, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_getDifFrequency", (PyCFunction) _wrap_Solver_getDifFrequency, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_getFrequency", (PyCFunction) _wrap_Solver_getFrequency, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_getTemperatureByValue", (PyCFunction) _wrap_Solver_getTemperatureByValue, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_getFluxByValue", (PyCFunction) _wrap_Solver_getFluxByValue, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_getShapeByValue", (PyCFunction) _wrap_Solver_getShapeByValue, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_getAmplitudeByValue", (PyCFunction) _wrap_Solver_getAmplitudeByValue, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_getPowerByValue", (PyCFunction) _wrap_Solver_getPowerByValue, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_getCurrentByValue", (PyCFunction) _wrap_Solver_getCurrentByValue, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_getDifLinearByValue", (PyCFunction) _wrap_Solver_getDifLinearByValue, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_getDifNonlinearByValue", (PyCFunction) _wrap_Solver_getDifNonlinearByValue, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_getFrequencyByValue", (PyCFunction) _wrap_Solver_getFrequencyByValue, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_setMethod", (PyCFunction) _wrap_Solver_setMethod, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_setEndTime", (PyCFunction) _wrap_Solver_setEndTime, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_setInnerTimeStepSize", (PyCFunction) _wrap_Solver_setInnerTimeStepSize, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_setOuterTimeStepSize", (PyCFunction) _wrap_Solver_setOuterTimeStepSize, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_setBuckling", (PyCFunction) _wrap_Solver_setBuckling, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_setInitialPower", (PyCFunction) _wrap_Solver_setInitialPower, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_setTemperatureByValue", (PyCFunction) _wrap_Solver_setTemperatureByValue, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_setShapeByValue", (PyCFunction) _wrap_Solver_setShapeByValue, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_setAmplitudeByValue", (PyCFunction) _wrap_Solver_setAmplitudeByValue, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_setPowerByValue", (PyCFunction) _wrap_Solver_setPowerByValue, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_setFrequencyByValue", (PyCFunction) _wrap_Solver_setFrequencyByValue, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_setCurrentByValue", (PyCFunction) _wrap_Solver_setCurrentByValue, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_setFluxByValue", (PyCFunction) _wrap_Solver_setFluxByValue, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_setDifLinearByValue", (PyCFunction) _wrap_Solver_setDifLinearByValue, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_setDifNonlinearByValue", (PyCFunction) _wrap_Solver_setDifNonlinearByValue, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_generateAmplitudeMatrix", (PyCFunction) _wrap_Solver_generateAmplitudeMatrix, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_integratePrecursorConcentrations", (PyCFunction) _wrap_Solver_integratePrecursorConcentrations, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_integrateTemperature", (PyCFunction) _wrap_Solver_integrateTemperature, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_interpolateShape", (PyCFunction) _wrap_Solver_interpolateShape, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_interpolateDifNonlinear", (PyCFunction) _wrap_Solver_interpolateDifNonlinear, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_computeDiffusionCoefficients", (PyCFunction) _wrap_Solver_computeDiffusionCoefficients, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_reconstructFlux", (PyCFunction) _wrap_Solver_reconstructFlux, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_computeShape", (PyCFunction) _wrap_Solver_computeShape, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_computeFrequency", _wrap_Solver_computeFrequency, METH_VARARGS, NULL},
+	 { (char *)"Solver_computeInitialPrecursorConcentrations", _wrap_Solver_computeInitialPrecursorConcentrations, METH_VARARGS, NULL},
+	 { (char *)"Solver_computePower", (PyCFunction) _wrap_Solver_computePower, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_computeAveragePower", (PyCFunction) _wrap_Solver_computeAveragePower, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_computePowerRMSError", (PyCFunction) _wrap_Solver_computePowerRMSError, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_normalizeFlux", _wrap_Solver_normalizeFlux, METH_VARARGS, NULL},
+	 { (char *)"Solver_takeInnerStep", _wrap_Solver_takeInnerStep, METH_VARARGS, NULL},
+	 { (char *)"Solver_takeOuterStep", _wrap_Solver_takeOuterStep, METH_VARARGS, NULL},
+	 { (char *)"Solver_takeOuterStepOnly", _wrap_Solver_takeOuterStepOnly, METH_VARARGS, NULL},
+	 { (char *)"Solver_computeInitialShape", _wrap_Solver_computeInitialShape, METH_VARARGS, NULL},
+	 { (char *)"Solver_copyTemperature", (PyCFunction) _wrap_Solver_copyTemperature, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_copyFlux", (PyCFunction) _wrap_Solver_copyFlux, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_copyShape", (PyCFunction) _wrap_Solver_copyShape, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_copyAmplitude", (PyCFunction) _wrap_Solver_copyAmplitude, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_copyPower", (PyCFunction) _wrap_Solver_copyPower, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_copyCurrent", (PyCFunction) _wrap_Solver_copyCurrent, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_copyDifLinear", (PyCFunction) _wrap_Solver_copyDifLinear, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_copyDifNonlinear", (PyCFunction) _wrap_Solver_copyDifNonlinear, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_copyFrequency", (PyCFunction) _wrap_Solver_copyFrequency, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_copyPrecursors", (PyCFunction) _wrap_Solver_copyPrecursors, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_copyFieldVariables", (PyCFunction) _wrap_Solver_copyFieldVariables, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Solver_broadcastToAll", (PyCFunction) _wrap_Solver_broadcastToAll, METH_VARARGS | METH_KEYWORDS, NULL},
 	 { (char *)"Solver_swigregister", Solver_swigregister, METH_VARARGS, NULL},
-	 { (char *)"new_Transient", (PyCFunction) _wrap_new_Transient, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"delete_Transient", _wrap_delete_Transient, METH_VARARGS, NULL},
-	 { (char *)"Transient_setInnerMethod", (PyCFunction) _wrap_Transient_setInnerMethod, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"Transient_setOuterMethod", (PyCFunction) _wrap_Transient_setOuterMethod, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"Transient_setInitialPower", (PyCFunction) _wrap_Transient_setInitialPower, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"Transient_setClock", (PyCFunction) _wrap_Transient_setClock, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"Transient_setSolver", (PyCFunction) _wrap_Transient_setSolver, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"Transient_setShapeMesh", (PyCFunction) _wrap_Transient_setShapeMesh, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"Transient_setAmpMesh", (PyCFunction) _wrap_Transient_setAmpMesh, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"Transient_computeInitialShape", _wrap_Transient_computeInitialShape, METH_VARARGS, NULL},
-	 { (char *)"Transient_takeInnerStep", _wrap_Transient_takeInnerStep, METH_VARARGS, NULL},
-	 { (char *)"Transient_takeOuterStep", (PyCFunction) _wrap_Transient_takeOuterStep, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"Transient_takeOuterStepOnly", (PyCFunction) _wrap_Transient_takeOuterStepOnly, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"Transient_broadcastToActive", (PyCFunction) _wrap_Transient_broadcastToActive, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"Transient_broadcastToAll", (PyCFunction) _wrap_Transient_broadcastToAll, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"Transient_broadcastToOne", (PyCFunction) _wrap_Transient_broadcastToOne, METH_VARARGS | METH_KEYWORDS, NULL},
-	 { (char *)"Transient_swigregister", Transient_swigregister, METH_VARARGS, NULL},
+	 { (char *)"new_SolverDiffusion", (PyCFunction) _wrap_new_SolverDiffusion, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"delete_SolverDiffusion", _wrap_delete_SolverDiffusion, METH_VARARGS, NULL},
+	 { (char *)"SolverDiffusion_getShapeAMatrix", _wrap_SolverDiffusion_getShapeAMatrix, METH_VARARGS, NULL},
+	 { (char *)"SolverDiffusion_getShapeMMatrix", _wrap_SolverDiffusion_getShapeMMatrix, METH_VARARGS, NULL},
+	 { (char *)"SolverDiffusion_getShapeAMMatrix", _wrap_SolverDiffusion_getShapeAMMatrix, METH_VARARGS, NULL},
+	 { (char *)"SolverDiffusion_getShapeSource", _wrap_SolverDiffusion_getShapeSource, METH_VARARGS, NULL},
+	 { (char *)"SolverDiffusion_getDifLinearFine", (PyCFunction) _wrap_SolverDiffusion_getDifLinearFine, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"SolverDiffusion_getDifLinearFineByValue", (PyCFunction) _wrap_SolverDiffusion_getDifLinearFineByValue, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"SolverDiffusion_setDifLinearFineByValue", (PyCFunction) _wrap_SolverDiffusion_setDifLinearFineByValue, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"SolverDiffusion_takeInnerStep", _wrap_SolverDiffusion_takeInnerStep, METH_VARARGS, NULL},
+	 { (char *)"SolverDiffusion_takeOuterStep", _wrap_SolverDiffusion_takeOuterStep, METH_VARARGS, NULL},
+	 { (char *)"SolverDiffusion_takeOuterStepOnly", _wrap_SolverDiffusion_takeOuterStepOnly, METH_VARARGS, NULL},
+	 { (char *)"SolverDiffusion_computeInitialShape", _wrap_SolverDiffusion_computeInitialShape, METH_VARARGS, NULL},
+	 { (char *)"SolverDiffusion_generateShapeMatrices", _wrap_SolverDiffusion_generateShapeMatrices, METH_VARARGS, NULL},
+	 { (char *)"SolverDiffusion_computeDiffusionCoefficientsFine", (PyCFunction) _wrap_SolverDiffusion_computeDiffusionCoefficientsFine, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"SolverDiffusion_generateInitialShapeMatrices", _wrap_SolverDiffusion_generateInitialShapeMatrices, METH_VARARGS, NULL},
+	 { (char *)"SolverDiffusion_generateAmpCurrent", (PyCFunction) _wrap_SolverDiffusion_generateAmpCurrent, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"SolverDiffusion_swigregister", SolverDiffusion_swigregister, METH_VARARGS, NULL},
+	 { (char *)"new_Geometry", (PyCFunction) _wrap_new_Geometry, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"delete_Geometry", _wrap_delete_Geometry, METH_VARARGS, NULL},
+	 { (char *)"Geometry_setAmpMeshDimensions", (PyCFunction) _wrap_Geometry_setAmpMeshDimensions, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Geometry_setXMin", (PyCFunction) _wrap_Geometry_setXMin, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Geometry_setXMax", (PyCFunction) _wrap_Geometry_setXMax, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Geometry_setYMin", (PyCFunction) _wrap_Geometry_setYMin, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Geometry_setYMax", (PyCFunction) _wrap_Geometry_setYMax, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Geometry_setZMin", (PyCFunction) _wrap_Geometry_setZMin, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Geometry_setZMax", (PyCFunction) _wrap_Geometry_setZMax, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Geometry_setBoundary", (PyCFunction) _wrap_Geometry_setBoundary, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Geometry_setMaterial", (PyCFunction) _wrap_Geometry_setMaterial, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Geometry_setNumShapeCells", (PyCFunction) _wrap_Geometry_setNumShapeCells, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Geometry_getWidth", _wrap_Geometry_getWidth, METH_VARARGS, NULL},
+	 { (char *)"Geometry_getHeight", _wrap_Geometry_getHeight, METH_VARARGS, NULL},
+	 { (char *)"Geometry_getDepth", _wrap_Geometry_getDepth, METH_VARARGS, NULL},
+	 { (char *)"Geometry_getBoundary", (PyCFunction) _wrap_Geometry_getBoundary, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Geometry_getXMin", _wrap_Geometry_getXMin, METH_VARARGS, NULL},
+	 { (char *)"Geometry_getXMax", _wrap_Geometry_getXMax, METH_VARARGS, NULL},
+	 { (char *)"Geometry_getYMin", _wrap_Geometry_getYMin, METH_VARARGS, NULL},
+	 { (char *)"Geometry_getYMax", _wrap_Geometry_getYMax, METH_VARARGS, NULL},
+	 { (char *)"Geometry_getZMin", _wrap_Geometry_getZMin, METH_VARARGS, NULL},
+	 { (char *)"Geometry_getZMax", _wrap_Geometry_getZMax, METH_VARARGS, NULL},
+	 { (char *)"Geometry_getNumXAmp", _wrap_Geometry_getNumXAmp, METH_VARARGS, NULL},
+	 { (char *)"Geometry_getNumYAmp", _wrap_Geometry_getNumYAmp, METH_VARARGS, NULL},
+	 { (char *)"Geometry_getNumZAmp", _wrap_Geometry_getNumZAmp, METH_VARARGS, NULL},
+	 { (char *)"Geometry_getMaterial", (PyCFunction) _wrap_Geometry_getMaterial, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Geometry_getAmpToShapeMap", _wrap_Geometry_getAmpToShapeMap, METH_VARARGS, NULL},
+	 { (char *)"Geometry_getShapeToAmpMap", _wrap_Geometry_getShapeToAmpMap, METH_VARARGS, NULL},
+	 { (char *)"Geometry_getNumEnergyGroups", _wrap_Geometry_getNumEnergyGroups, METH_VARARGS, NULL},
+	 { (char *)"Geometry_getNumDelayedGroups", _wrap_Geometry_getNumDelayedGroups, METH_VARARGS, NULL},
+	 { (char *)"Geometry_getNeighborAmpCell", (PyCFunction) _wrap_Geometry_getNeighborAmpCell, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Geometry_getVolume", (PyCFunction) _wrap_Geometry_getVolume, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Geometry_getNumShapeCells", _wrap_Geometry_getNumShapeCells, METH_VARARGS, NULL},
+	 { (char *)"Geometry_getNumAmpCells", _wrap_Geometry_getNumAmpCells, METH_VARARGS, NULL},
+	 { (char *)"Geometry_addShapeCellToAmpCell", (PyCFunction) _wrap_Geometry_addShapeCellToAmpCell, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Geometry_findAmpCellContainingShapeCell", (PyCFunction) _wrap_Geometry_findAmpCellContainingShapeCell, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"Geometry_uniquifyMaterials", _wrap_Geometry_uniquifyMaterials, METH_VARARGS, NULL},
+	 { (char *)"Geometry_clone", _wrap_Geometry_clone, METH_VARARGS, NULL},
+	 { (char *)"Geometry_swigregister", Geometry_swigregister, METH_VARARGS, NULL},
+	 { (char *)"new_GeometryDiffusion", (PyCFunction) _wrap_new_GeometryDiffusion, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"delete_GeometryDiffusion", _wrap_delete_GeometryDiffusion, METH_VARARGS, NULL},
+	 { (char *)"GeometryDiffusion_setShapeMeshDimensions", (PyCFunction) _wrap_GeometryDiffusion_setShapeMeshDimensions, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"GeometryDiffusion_getNumXShape", _wrap_GeometryDiffusion_getNumXShape, METH_VARARGS, NULL},
+	 { (char *)"GeometryDiffusion_getNumYShape", _wrap_GeometryDiffusion_getNumYShape, METH_VARARGS, NULL},
+	 { (char *)"GeometryDiffusion_getNumZShape", _wrap_GeometryDiffusion_getNumZShape, METH_VARARGS, NULL},
+	 { (char *)"GeometryDiffusion_getNeighborShapeCell", (PyCFunction) _wrap_GeometryDiffusion_getNeighborShapeCell, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"GeometryDiffusion_uniformRefine", (PyCFunction) _wrap_GeometryDiffusion_uniformRefine, METH_VARARGS | METH_KEYWORDS, NULL},
+	 { (char *)"GeometryDiffusion_clone", _wrap_GeometryDiffusion_clone, METH_VARARGS, NULL},
+	 { (char *)"GeometryDiffusion_generateCellMap", _wrap_GeometryDiffusion_generateCellMap, METH_VARARGS, NULL},
+	 { (char *)"GeometryDiffusion_swigregister", GeometryDiffusion_swigregister, METH_VARARGS, NULL},
 	 { NULL, NULL, 0, NULL }
 };
 
 
 /* -------- TYPE CONVERSION AND EQUIVALENCE RULES (BEGIN) -------- */
 
-static void *_p_StructuredMeshTo_p_Mesh(void *x, int *SWIGUNUSEDPARM(newmemory)) {
-    return (void *)((Mesh *)  ((StructuredMesh *) x));
-}
-static void *_p_AmpMeshTo_p_Mesh(void *x, int *SWIGUNUSEDPARM(newmemory)) {
-    return (void *)((Mesh *) (StructuredMesh *) ((AmpMesh *) x));
-}
-static void *_p_StructuredShapeMeshTo_p_Mesh(void *x, int *SWIGUNUSEDPARM(newmemory)) {
-    return (void *)((Mesh *) (StructuredMesh *) ((StructuredShapeMesh *) x));
-}
 static void *_p_FunctionalMaterialTo_p_Material(void *x, int *SWIGUNUSEDPARM(newmemory)) {
     return (void *)((Material *)  ((FunctionalMaterial *) x));
 }
-static void *_p_AmpMeshTo_p_StructuredMesh(void *x, int *SWIGUNUSEDPARM(newmemory)) {
-    return (void *)((StructuredMesh *)  ((AmpMesh *) x));
+static void *_p_SolverDiffusionTo_p_Solver(void *x, int *SWIGUNUSEDPARM(newmemory)) {
+    return (void *)((Solver *)  ((SolverDiffusion *) x));
 }
-static void *_p_StructuredShapeMeshTo_p_StructuredMesh(void *x, int *SWIGUNUSEDPARM(newmemory)) {
-    return (void *)((StructuredMesh *)  ((StructuredShapeMesh *) x));
+static void *_p_GeometryDiffusionTo_p_Geometry(void *x, int *SWIGUNUSEDPARM(newmemory)) {
+    return (void *)((Geometry *)  ((GeometryDiffusion *) x));
 }
-static swig_type_info _swigt__p_AmpMesh = {"_p_AmpMesh", "AmpMesh *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_Clock = {"_p_Clock", "Clock *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_FunctionalMaterial = {"_p_FunctionalMaterial", "FunctionalMaterial *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_Geometry = {"_p_Geometry", "Geometry *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_GeometryDiffusion = {"_p_GeometryDiffusion", "GeometryDiffusion *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_Material = {"_p_Material", "Material *", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_Mesh = {"_p_Mesh", "Mesh *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_Solver = {"_p_Solver", "Solver *", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_StructuredMesh = {"_p_StructuredMesh", "StructuredMesh *", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_StructuredShapeMesh = {"_p_StructuredShapeMesh", "StructuredShapeMesh *", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_Transient = {"_p_Transient", "Transient *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_SolverDiffusion = {"_p_SolverDiffusion", "SolverDiffusion *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_char = {"_p_char", "char *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_double = {"_p_double", "double *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_int = {"_p_int", "int *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_logLevels = {"_p_logLevels", "enum logLevels *|logLevel *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_p_double = {"_p_p_double", "double **", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_std__string = {"_p_std__string", "std::string *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_std__vectorT_std__vectorT_int_t_t = {"_p_std__vectorT_std__vectorT_int_t_t", "std::vector< std::vector< int > > *", 0, 0, (void*)0, 0};
 
 static swig_type_info *swig_type_initial[] = {
-  &_swigt__p_AmpMesh,
   &_swigt__p_Clock,
   &_swigt__p_FunctionalMaterial,
+  &_swigt__p_Geometry,
+  &_swigt__p_GeometryDiffusion,
   &_swigt__p_Material,
-  &_swigt__p_Mesh,
   &_swigt__p_Solver,
-  &_swigt__p_StructuredMesh,
-  &_swigt__p_StructuredShapeMesh,
-  &_swigt__p_Transient,
+  &_swigt__p_SolverDiffusion,
   &_swigt__p_char,
   &_swigt__p_double,
+  &_swigt__p_int,
   &_swigt__p_logLevels,
   &_swigt__p_p_double,
   &_swigt__p_std__string,
+  &_swigt__p_std__vectorT_std__vectorT_int_t_t,
 };
 
-static swig_cast_info _swigc__p_AmpMesh[] = {  {&_swigt__p_AmpMesh, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_Clock[] = {  {&_swigt__p_Clock, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_FunctionalMaterial[] = {  {&_swigt__p_FunctionalMaterial, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_Geometry[] = {  {&_swigt__p_GeometryDiffusion, _p_GeometryDiffusionTo_p_Geometry, 0, 0},  {&_swigt__p_Geometry, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_GeometryDiffusion[] = {  {&_swigt__p_GeometryDiffusion, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_Material[] = {  {&_swigt__p_Material, 0, 0, 0},  {&_swigt__p_FunctionalMaterial, _p_FunctionalMaterialTo_p_Material, 0, 0},{0, 0, 0, 0}};
-static swig_cast_info _swigc__p_Mesh[] = {  {&_swigt__p_StructuredMesh, _p_StructuredMeshTo_p_Mesh, 0, 0},  {&_swigt__p_AmpMesh, _p_AmpMeshTo_p_Mesh, 0, 0},  {&_swigt__p_Mesh, 0, 0, 0},  {&_swigt__p_StructuredShapeMesh, _p_StructuredShapeMeshTo_p_Mesh, 0, 0},{0, 0, 0, 0}};
-static swig_cast_info _swigc__p_Solver[] = {  {&_swigt__p_Solver, 0, 0, 0},{0, 0, 0, 0}};
-static swig_cast_info _swigc__p_StructuredMesh[] = {  {&_swigt__p_StructuredMesh, 0, 0, 0},  {&_swigt__p_AmpMesh, _p_AmpMeshTo_p_StructuredMesh, 0, 0},  {&_swigt__p_StructuredShapeMesh, _p_StructuredShapeMeshTo_p_StructuredMesh, 0, 0},{0, 0, 0, 0}};
-static swig_cast_info _swigc__p_StructuredShapeMesh[] = {  {&_swigt__p_StructuredShapeMesh, 0, 0, 0},{0, 0, 0, 0}};
-static swig_cast_info _swigc__p_Transient[] = {  {&_swigt__p_Transient, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_Solver[] = {  {&_swigt__p_Solver, 0, 0, 0},  {&_swigt__p_SolverDiffusion, _p_SolverDiffusionTo_p_Solver, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_SolverDiffusion[] = {  {&_swigt__p_SolverDiffusion, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_char[] = {  {&_swigt__p_char, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_double[] = {  {&_swigt__p_double, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_int[] = {  {&_swigt__p_int, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_logLevels[] = {  {&_swigt__p_logLevels, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_p_double[] = {  {&_swigt__p_p_double, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_std__string[] = {  {&_swigt__p_std__string, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_std__vectorT_std__vectorT_int_t_t[] = {  {&_swigt__p_std__vectorT_std__vectorT_int_t_t, 0, 0, 0},{0, 0, 0, 0}};
 
 static swig_cast_info *swig_cast_initial[] = {
-  _swigc__p_AmpMesh,
   _swigc__p_Clock,
   _swigc__p_FunctionalMaterial,
+  _swigc__p_Geometry,
+  _swigc__p_GeometryDiffusion,
   _swigc__p_Material,
-  _swigc__p_Mesh,
   _swigc__p_Solver,
-  _swigc__p_StructuredMesh,
-  _swigc__p_StructuredShapeMesh,
-  _swigc__p_Transient,
+  _swigc__p_SolverDiffusion,
   _swigc__p_char,
   _swigc__p_double,
+  _swigc__p_int,
   _swigc__p_logLevels,
   _swigc__p_p_double,
   _swigc__p_std__string,
+  _swigc__p_std__vectorT_std__vectorT_int_t_t,
 };
 
 
@@ -17995,12 +17104,10 @@ SWIG_init(void) {
   SWIG_Python_SetConstant(d, "FORWARD_OUT",SWIG_From_int(static_cast< int >(FORWARD_OUT)));
   SWIG_Python_SetConstant(d, "FORWARD_OUT_OLD",SWIG_From_int(static_cast< int >(FORWARD_OUT_OLD)));
   SWIG_Python_SetConstant(d, "END",SWIG_From_int(static_cast< int >(END)));
+  SWIG_Python_SetConstant(d, "IQS",SWIG_From_int(static_cast< int >(IQS)));
+  SWIG_Python_SetConstant(d, "THETA",SWIG_From_int(static_cast< int >(THETA)));
   SWIG_Python_SetConstant(d, "REFLECTIVE",SWIG_From_int(static_cast< int >(REFLECTIVE)));
   SWIG_Python_SetConstant(d, "VACUUM",SWIG_From_int(static_cast< int >(VACUUM)));
-  SWIG_Python_SetConstant(d, "FORWARD_EULER",SWIG_From_int(static_cast< int >(FORWARD_EULER)));
-  SWIG_Python_SetConstant(d, "BACKWARD_EULER",SWIG_From_int(static_cast< int >(BACKWARD_EULER)));
-  SWIG_Python_SetConstant(d, "CRANK_NICOLSON",SWIG_From_int(static_cast< int >(CRANK_NICOLSON)));
-  SWIG_Python_SetConstant(d, "CUSTOM",SWIG_From_int(static_cast< int >(CUSTOM)));
 #if PY_VERSION_HEX >= 0x03000000
   return m;
 #else

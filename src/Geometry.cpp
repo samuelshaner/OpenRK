@@ -11,6 +11,7 @@ Geometry::Geometry(double width, double height, double depth) {
   _shape_to_amp = NULL;
   _volumes = NULL;
   _num_energy_groups = 0;
+  _num_delayed_groups = 0;
   
   /* Set amp mesh properties */
   setAmpMeshDimensions();
@@ -172,28 +173,47 @@ boundaryType Geometry::getBoundary(int side){
 
 
 Material* Geometry::getMaterial(int cell){
+
+  if (_materials == NULL)
+    log_printf(ERROR, "Cannot get material since the materials "
+               "array has not been initialized");
+
   return _materials[cell];
 }
 
 
 void Geometry::setMaterial(Material* material, int cell){
-  _material[cell] = material;
+
+  if (_materials == NULL)
+    log_printf(ERROR, "Cannot set material since the materials "
+               "array has not been initialized");
+
+  _materials[cell] = material;
   _num_energy_groups = material->getNumEnergyGroups();
 }
 
 
 void Geometry::uniquifyMaterials(){
 
+  if (_materials == NULL)
+    log_printf(ERROR, "Cannot uniquify materials since the materials "
+               "array has not been initialized");
+
   Material* material;
   
   for (int i=0; i < _num_shape_cells; i++){
-    material = _materials[cell]->clone();
-    setMaterial(material, cell);
+    material = _materials[i]->clone();
+    setMaterial(material, i);
   }
 }
 
 
-void Goemetry::setNumShapeCells(int num_shape_cells){
+void Geometry::setNumShapeCells(int num_shape_cells){
+
+  if (_num_shape_cells <= 0)
+    log_printf(ERROR, "Unable to set num shape cells to non-positive "
+               "number: %i", num_shape_cells);
+
   _num_shape_cells = num_shape_cells;
 
   if (_shape_to_amp != NULL)
@@ -211,12 +231,12 @@ void Goemetry::setNumShapeCells(int num_shape_cells){
 }
 
 
-int Goemetry::getNumShapeCells(){
+int Geometry::getNumShapeCells(){
   return _num_shape_cells;
 }
 
 
-int Goemetry::getNumAmpCells(){
+int Geometry::getNumAmpCells(){
   return _num_amp_cells;
 }
 
@@ -289,7 +309,17 @@ Geometry* Geometry::clone(){
     geometry->setBoundary(i, _boundaries[i]);
 
   for (int i=0; i < _num_shape_cells; i++)
-    geometry->setMaterial(_materials[i]->clone());
+    geometry->setMaterial(_materials[i]->clone(), i);
 
   return geometry;
+}
+
+
+int Geometry::getNumEnergyGroups(){
+  return _num_energy_groups;
+}
+
+
+int Geometry::getNumDelayedGroups(){
+  return _num_delayed_groups;
 }

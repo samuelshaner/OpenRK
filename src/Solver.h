@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <map>
+#include <vector>
 #include "Geometry.h"
 #include "omp.h"
 #include "linalg.h"
@@ -48,10 +49,10 @@ protected:
   double _initial_power;
 
   /* Fine mesh field variables */
-  std::vector<int, double*> _temperature;
-  std::vector<int, double*> _flux;
-  std::vector<int, double*> _shape;
-  std::vector<int, double*> _power;
+  std::map<int, double*> _temperature;
+  std::map<int, double*> _flux;
+  std::map<int, double*> _shape;
+  std::map<int, double*> _power;
 
   /* Coarse mesh field variables */
   std::map<int, double*> _amplitude;
@@ -66,7 +67,7 @@ public:
 
   /* Getter functions */
   double** getAmpMatrix();
-  double** getAmpSource();
+  double* getAmpSource();
   double getKeff0();
   transientMethod getMethod();
   double getBuckling();
@@ -80,6 +81,7 @@ public:
   double* getDifLinear(int time);
   double* getDifNonlinear(int time);
   double* getDifFrequency(int time);
+  double* getFrequency(int time);
 
   double getTemperatureByValue(int cell, int time);
   double getFluxByValue(int cell, int group, int time);
@@ -100,15 +102,15 @@ public:
   void setBuckling(double buckling);
   void setInitialPower(double power);
 
-  void setTemperatureByValue(int value, int cell, int time);
-  void setShapeByValue(int value, int cell, int group, int time);
-  void setAmplitudeByValue(int value, int cell, int group, int time);
-  void setPowerByValue(int value, int cell, int time);
-  void setFrequencyByValue(int value, int cell, int group, int time);
+  void setTemperatureByValue(double value, int cell, int time);
+  void setShapeByValue(double value, int cell, int group, int time);
+  void setAmplitudeByValue(double value, int cell, int group, int time);
+  void setPowerByValue(double value, int cell, int time);
+  void setFrequencyByValue(double value, int cell, int group, int time);
   void setCurrentByValue(double value, int cell, int group, int side, int time);
   void setFluxByValue(double value, int cell, int group, int time);
-  void setDifLinearByValue(double value, int cell, int group, int time);
-  void setDifNonlinearByValue(double value, int cell, int group, int time);
+  void setDifLinearByValue(double value, int cell, int group, int side, int time);
+  void setDifNonlinearByValue(double value, int cell, int group, int side, int time);
 
   /* Worker functions */
   void generateAmplitudeMatrix(double wt);
@@ -122,7 +124,8 @@ public:
   void computeFrequency();
   void computeInitialPrecursorConcentrations();
   void computePower(int time);
-  void computePowerRMSError(int time_1, int time_2);
+  double computeAveragePower(int time);
+  double computePowerRMSError(int time_1, int time_2);
   void normalizeFlux();
 
   virtual void takeInnerStep()=0;
