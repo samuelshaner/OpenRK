@@ -14,4 +14,3 @@ else:
 # when this is passed in from the keyboard
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
-from plotter import *

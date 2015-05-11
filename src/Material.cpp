@@ -42,6 +42,8 @@ Material::Material(int id) {
   _dif_coef = NULL;
   _velocity = NULL;
   _precursor_conc = NULL;
+  _decay_constant = NULL;
+  _delayed_fraction = NULL;
   _energy_per_fission = 0.0;
   _clock = NULL;
   _temperature_conversion_factor = 0.0;
@@ -85,6 +87,12 @@ Material::~Material() {
 
   if (_precursor_conc != NULL)
     delete [] _precursor_conc;
+
+  if (_decay_constant != NULL)
+    delete [] _decay_constant;
+
+  if (_delayed_fraction != NULL)
+    delete [] _delayed_fraction;
 }
 
 
@@ -238,6 +246,34 @@ double* Material::getPrecursorConc() {
 
 
 /**
+ * @brief Return the array of the Material's decay constants.
+ * @return the pointer to the Material's array of decay constants
+ */
+double* Material::getDecayConstant() {
+
+  if (_decay_constant == NULL)
+    log_printf(ERROR, "Unable to return Material %d's decay constants "
+               "since it has not yet been set", _id);
+
+  return _decay_constant;
+}
+
+
+/**
+ * @brief Return the array of the Material's delayed fractions.
+ * @return the pointer to the Material's array of delayed fractions
+ */
+double* Material::getDelayedFraction() {
+
+  if (_delayed_fraction == NULL)
+    log_printf(ERROR, "Unable to return Material %d's delayed fractions "
+               "since it has not yet been set", _id);
+
+  return _delayed_fraction;
+}
+
+
+/**
  * @brief Returns whether or not the Material contains a fissionable (non-zero)
  *        fission cross-section.
  * @return true if fissionable, false otherwise
@@ -322,11 +358,23 @@ void Material::setNumDelayedGroups(const int num_groups) {
   if (_precursor_conc != NULL)
     delete [] _precursor_conc;
 
+  /* Free old data arrays if they were allocated for a previous simulation */
+  if (_decay_constant != NULL)
+    delete [] _decay_constant;
+
+  /* Free old data arrays if they were allocated for a previous simulation */
+  if (_delayed_fraction != NULL)
+    delete [] _delayed_fraction;
+
   /* Allocate memory for data arrays */
   _precursor_conc = new double[8*_num_delayed_groups];
+  _decay_constant = new double[8*_num_delayed_groups];
+  _delayed_fraction = new double[8*_num_delayed_groups];
   
   /* Assign the null vector to each data array */
   memset(_precursor_conc, 0.0, 8 * sizeof(double) * _num_delayed_groups);
+  memset(_decay_constant, 0.0, 8 * sizeof(double) * _num_delayed_groups);
+  memset(_delayed_fraction, 0.0, 8 * sizeof(double) * _num_delayed_groups);
 }
 
 
@@ -953,6 +1001,152 @@ double Material::getPrecursorConcByGroup(int group, int position, double temp) {
                group, _id, _num_delayed_groups);
 
   return _precursor_conc[position*_num_delayed_groups+group];
+}
+
+
+/**
+ * @brief Set the Material's array of diffusion coefficients.
+ * @details This method is a helper function to allow OpenMOC users to assign
+ *          the Material's nuclear data in Python. A user must initialize a
+ *          NumPy array of the correct size (i.e., a float64 array the length
+ *          of the number of energy groups) as input to this function. This
+ *          function then fills the NumPy array with the data values for the
+ *          Material's buckling coefficients. An example of how this function
+ *          might be called in Python is as follows:
+ *
+ * @code
+ *          buckling = numpy.array([0.05, 0.1, 0.15, ... ])
+ *          material = openmoc.Material(openmoc.material_id())
+ *          material.setBuckling(buckling)
+ * @endcode
+ *
+ * @param xs the array of diffusion coefficents
+ * @param num_groups the number of energy groups
+ */
+void Material::setDecayConstant(double* decay_constant, int num_groups) {
+
+  if (_num_delayed_groups != num_groups)
+    log_printf(ERROR, "Unable to set decay constant with %d groups for "
+               "Material %d which contains %d delayed groups", num_groups,
+               _num_delayed_groups);
+
+  for (int c=0; c < 8; c++){
+    for (int i=0; i < _num_delayed_groups; i++)
+      _decay_constant[c*_num_delayed_groups+i] = decay_constant[i];
+  }
+}
+
+
+/**
+ * @brief Set the Material's diffusion coefficient for some energy group.
+ * @param xs the diffusion coefficient
+ * @param group the energy group
+ */
+void Material::setDecayConstantByGroup(double decay_constant, int group, int position) {
+
+  if (group < 0 || group >= _num_delayed_groups)
+    log_printf(ERROR, "Unable to set decay constant for group %d for "
+               "Material %d which contains %d delayed groups",
+               group, _id, _num_delayed_groups);
+
+  _decay_constant[position*_num_delayed_groups+group] = decay_constant;
+}
+
+
+/**
+ * @brief Set the Material's diffusion coefficient for some energy group.
+ * @param xs the diffusion coefficient
+ * @param group the energy group
+ */
+double Material::getDecayConstantByGroup(int group, int position, double temp) {
+
+  if (group < 0 || group >= _num_delayed_groups)
+    log_printf(ERROR, "Unable to get decay constant for group %d for "
+               "Material %d which contains %d delayed groups",
+               group, _id, _num_delayed_groups);
+
+  return _decay_constant[position*_num_delayed_groups+group];
+}
+
+
+/**
+ * @brief Set the Material's array of diffusion coefficients.
+ * @details This method is a helper function to allow OpenMOC users to assign
+ *          the Material's nuclear data in Python. A user must initialize a
+ *          NumPy array of the correct size (i.e., a float64 array the length
+ *          of the number of energy groups) as input to this function. This
+ *          function then fills the NumPy array with the data values for the
+ *          Material's buckling coefficients. An example of how this function
+ *          might be called in Python is as follows:
+ *
+ * @code
+ *          buckling = numpy.array([0.05, 0.1, 0.15, ... ])
+ *          material = openmoc.Material(openmoc.material_id())
+ *          material.setBuckling(buckling)
+ * @endcode
+ *
+ * @param xs the array of diffusion coefficents
+ * @param num_groups the number of energy groups
+ */
+void Material::setDelayedFraction(double* delayed_fraction, int num_groups) {
+
+  if (_num_delayed_groups != num_groups)
+    log_printf(ERROR, "Unable to set delayed fractions with %d groups for "
+               "Material %d which contains %d delayed groups", num_groups,
+               _num_delayed_groups);
+
+  for (int c=0; c < 8; c++){
+    for (int i=0; i < _num_delayed_groups; i++)
+      _delayed_fraction[c*_num_delayed_groups+i] = delayed_fraction[i];
+  }
+}
+
+
+/**
+ * @brief Set the Material's diffusion coefficient for some energy group.
+ * @param xs the diffusion coefficient
+ * @param group the energy group
+ */
+void Material::setDelayedFractionByGroup(double delayed_fraction, int group, int position) {
+
+  if (group < 0 || group >= _num_delayed_groups)
+    log_printf(ERROR, "Unable to set delayed fraction for group %d for "
+               "Material %d which contains %d delayed groups",
+               group, _id, _num_delayed_groups);
+
+  _delayed_fraction[position*_num_delayed_groups+group] = delayed_fraction;
+}
+
+
+/**
+ * @brief Set the Material's diffusion coefficient for some energy group.
+ * @param xs the diffusion coefficient
+ * @param group the energy group
+ */
+double Material::getDelayedFractionByGroup(int group, int position, double temp) {
+
+  if (group < 0 || group >= _num_delayed_groups)
+    log_printf(ERROR, "Unable to get delayed fraction for group %d for "
+               "Material %d which contains %d delayed groups",
+               group, _id, _num_delayed_groups);
+
+  return _delayed_fraction[position*_num_delayed_groups+group];
+}
+
+
+/**
+ * @brief Set the Material's diffusion coefficient for some energy group.
+ * @param xs the diffusion coefficient
+ * @param group the energy group
+ */
+double Material::getDelayedFractionTotal(int position, double temp) {
+
+  double delayed_fraction = 0.0;
+
+  for (int i=0; i < _num_delayed_groups; i++)
+    delayed_fraction = _delayed_fraction[position*_num_delayed_groups+i];
+  
+  return delayed_fraction;
 }
 
 

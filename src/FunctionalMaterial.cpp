@@ -272,7 +272,7 @@ double FunctionalMaterial::getSigmaAByGroup(int group, int position, double temp
 
   if (temp == 0.0)
     log_printf(ERROR, "Unable to get sigma_a by group for FunctionalMaterial %d"
-               " with no input temperature", _id);
+               " with temperature %.6f", _id, temp);
   
   if (_doppler_coefficients == NULL)
     log_printf(ERROR, "Unable to get sigma_a by group for FunctionalMaterial %d"
@@ -281,10 +281,12 @@ double FunctionalMaterial::getSigmaAByGroup(int group, int position, double temp
   int time_step = getTimeStep(position);
   int ng = _num_energy_groups;
 
-  double sigma_a_left = _sigma_a[time_step*ng + group] * (1.0 + _doppler_coefficients[group] *
-                                                          (sqrt(temp) - sqrt(300.0)));
-  double sigma_a_right = _sigma_a[(time_step+1)*ng + group]  * (1.0 + _doppler_coefficients[group] *
-                                                                (sqrt(temp) - sqrt(300.0)));
+  double sigma_a_left = _sigma_a[time_step*ng + group] *
+    (1.0 + _doppler_coefficients[group] *
+     (sqrt(temp) - sqrt(300.0)));
+  double sigma_a_right = _sigma_a[(time_step+1)*ng + group]  *
+    (1.0 + _doppler_coefficients[group] *
+     (sqrt(temp) - sqrt(300.0)));
   double time = _clock->getTime(position);
   double time_left = _time_steps[time_step];
   double time_right = _time_steps[time_step+1];

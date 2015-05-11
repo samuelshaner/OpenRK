@@ -1,17 +1,8 @@
 import openrk as rk
-import random
 
-mesh = rk.StructuredShapeMesh(width=165.0, height=165.0, num_x=11, num_y=11)
-mesh.setBoundary(3, 1)
-mesh.setBoundary(4, 1)
-mesh.setNumAmpEnergyGroups(2)
-mesh.setNumShapeEnergyGroups(2)
-mesh.setNumDelayedGroups(2)
-mesh.setBuckling(1.e-4)
-mesh.setDelayedFractions([0.0054, 0.001087])
-mesh.setDecayConstants([0.00654, 1.35])
-mesh.initialize()
-mesh.setTemperature(300)
+#################################################
+###############  Create Materials ###############
+#################################################
 
 # create fuel 1 blade in
 fuel1bin = rk.FunctionalMaterial()
@@ -110,97 +101,72 @@ reflector.setChi([1.0, 0.0])
 reflector.setSigmaS([0.0, 0.04754, 0.0, 0.0])
 reflector.setVelocity([3.e7, 3.e5])
 
-nx = mesh.getNumX()
+#################################################
+###############  Create Geometry  ###############
+#################################################
+
+geometry = rk.GeometryDiffusion(165.0, 165.0)
+geometry.setBoundary(0, 1)
+geometry.setBoundary(3, 1)
+geometry.setBoundary(1, 1)
+geometry.setBoundary(4, 1)
+geometry.setAmpMeshDimensions(11,11)
+geometry.setShapeMeshDimensions(11,11)
+
+nx = 11
 
 for i in xrange(9, 11):
     for cell_id in xrange(i*nx, (i+1)*nx):
-        mesh.setMaterial(reflector, cell_id)
+        geometry.setMaterial(reflector, cell_id)
 
 for i in xrange(9):
     for cell_id in xrange(i*nx+7, (i+1)*nx):
-        mesh.setMaterial(reflector, cell_id)
+        geometry.setMaterial(reflector, cell_id)
 
 for i in xrange(7, 9):
     for cell_id in xrange(i*nx, i*nx+7):
-        mesh.setMaterial(fuel2bin, cell_id)
+        geometry.setMaterial(fuel2bin, cell_id)
 
 for i in xrange(5, 7):
     for cell_id in xrange(i*nx+7, i*nx+9):
-        mesh.setMaterial(fuel2bino, cell_id)
+        geometry.setMaterial(fuel2bino, cell_id)
 
 for i in xrange(5):
     for cell_id in xrange(i*nx+7, i*nx+9):
-        mesh.setMaterial(fuel2bin, cell_id)
+        geometry.setMaterial(fuel2bin, cell_id)
 
-mesh.setMaterial(fuel1bo, 6*nx)
-mesh.setMaterial(fuel1bo, 5*nx)
+geometry.setMaterial(fuel1bo, 6*nx)
+geometry.setMaterial(fuel1bo, 5*nx)
 
 for i in xrange(5, 7):
     for cell_id in xrange(i*nx+5, i*nx+7):
-        mesh.setMaterial(fuel1bo, cell_id)
+        geometry.setMaterial(fuel1bo, cell_id)
 
-mesh.setMaterial(fuel1bo, 0)
+geometry.setMaterial(fuel1bo, 0)
 for cell_id in xrange(5, 7):
-    mesh.setMaterial(fuel1bo, cell_id)
+    geometry.setMaterial(fuel1bo, cell_id)
 
-mesh.setMaterial(fuel2bo, 7*nx+7)
+geometry.setMaterial(fuel2bo, 7*nx+7)
 
 for i in xrange(5, 7):
     for cell_id in xrange(i*nx+1, i*nx+5):
-        mesh.setMaterial(fuel1bin, cell_id)
+        geometry.setMaterial(fuel1bin, cell_id)
 
 for i in xrange(1, 5):
     for cell_id in xrange(i*nx, i*nx+7):
-        mesh.setMaterial(fuel1bin, cell_id)
+        geometry.setMaterial(fuel1bin, cell_id)
 
 for cell_id in xrange(1, 5):
-    mesh.setMaterial(fuel1bin, cell_id)
+    geometry.setMaterial(fuel1bin, cell_id)
 
-# refine mesh and uniquify materials
-mesh = mesh.uniformRefine(3)
-mesh.uniquifyMaterials()
+geometry.generateCellMap()
+geometry = geometry.uniformRefine(1,1,1)
 
-# Create and initialize the amplitude mesh
-ampMesh = rk.AmpMesh(width=165.0, height=165.0, num_x=11, num_y=11)
-ampMesh.setNumAmpEnergyGroups(2)
-ampMesh.setNumShapeEnergyGroups(2)
-ampMesh.setNumDelayedGroups(2)
-ampMesh.setOpticallyThick(True)
-ampMesh.setBoundary(3, 1)
-ampMesh.setBoundary(4, 1)
-ampMesh.setBuckling(1.e-4)
-ampMesh.setDelayedFractions([0.0054, 0.001087])
-ampMesh.setDecayConstants([0.00654, 1.35])
-ampMesh.initialize()
-ampMesh.setShapeMesh(mesh)
-ampMesh.setGroupStructure([0,1,2])
-mesh.setAmpMesh(ampMesh)
-mesh.setGroupStructure([0, 1])
+#################################################
+###############   Create Solver   ###############
+#################################################
 
-# Solve diffusion problem
-solver = rk.Solver(mesh, ampMesh)
-rk.setNumThreads(1)
-
-transient = rk.Transient()
-clock = rk.Clock(dt_inner=2.5e-2, dt_outer=1.e-1)
-transient.setClock(clock)
-transient.setShapeMesh(mesh)
-transient.setAmpMesh(ampMesh)
-transient.setSolver(solver)
-transient.setInitialPower(1.e-6)
-transient.computeInitialShape()
-
-for i in xrange(30):
-    transient.takeOuterStep()
-    rk.plotPower(mesh, name='mesh-power-{:.4f}s'.format(mesh.getClock().getTime('CURRENT')))
-    rk.plotTemperature(mesh, name='mesh-temp-{:.4f}s'.format(mesh.getClock().getTime('CURRENT')))
-
-#rk.plotter.plotPrecursorConc(ampMesh, name='amp-precursor-conc')
-#rk.plotter.plotFlux(ampMesh, name='amp-flux')
-#rk.plotter.plotFlux(mesh)
-#rk.plotter.plotPower(mesh)
-#rk.plotter.plotTemperature(mesh)
-#rk.plotter.plotMaterials(mesh)
-#rk.plotter.plotPrecursorConc(mesh)
-#k.plotter.plotSigmaA(mesh)
-
+solver = rk.SolverDiffusion(geometry)
+rk.setNumThreads(4)
+solver.setBuckling(1.e-4)
+solver.computeInitialShape(1.e-6)

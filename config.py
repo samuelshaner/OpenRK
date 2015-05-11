@@ -84,12 +84,12 @@ class configuration:
                     'src/Material.cpp',
                     'src/FunctionalMaterial.cpp',
                     'src/Clock.cpp',
-                    'src/Mesh.cpp',
-                    'src/StructuredMesh.cpp',
-                    'src/StructuredShapeMesh.cpp',
-                    'src/AmpMesh.cpp',
+                    'src/Geometry.cpp',
+                    'src/GeometryDiffusion.cpp',
+                    'src/Matrix.cpp',
+                    'src/Vector.cpp',
                     'src/Solver.cpp',
-                    'src/Transient.cpp',
+                    'src/SolverDiffusion.cpp',
                     'src/log.cpp' ]
 
 

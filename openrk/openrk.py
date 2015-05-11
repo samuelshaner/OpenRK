@@ -91,33 +91,17 @@ except AttributeError:
 
 
 
-def eigenvalueSolve(A, M, flux, old_source, new_source, flux_temp, ng, cx, cy, tol):
-    return _openrk.eigenvalueSolve(A, M, flux, old_source, new_source, flux_temp, ng, cx, cy, tol)
+def eigenvalueSolve(A, M, X, tol):
+    return _openrk.eigenvalueSolve(A, M, X, tol)
 eigenvalueSolve = _openrk.eigenvalueSolve
 
-def eigenvalueSolve2d(A, A1, A2, M, M1, M2, flux, old_source, new_source, flux_temp, ng, cx, cy, cz, tol):
-    return _openrk.eigenvalueSolve2d(A, A1, A2, M, M1, M2, flux, old_source, new_source, flux_temp, ng, cx, cy, cz, tol)
-eigenvalueSolve2d = _openrk.eigenvalueSolve2d
-
-def linearSolve(A, flux, source, flux_temp, cx, cy, ng, tol):
-    return _openrk.linearSolve(A, flux, source, flux_temp, cx, cy, ng, tol)
+def linearSolve(A, X, B, tol):
+    return _openrk.linearSolve(A, X, B, tol)
 linearSolve = _openrk.linearSolve
 
-def linearSolve2d(A, A1, A2, flux, source, flux_temp, cx, cy, cz, ng, tol):
-    return _openrk.linearSolve2d(A, A1, A2, flux, source, flux_temp, cx, cy, cz, ng, tol)
-linearSolve2d = _openrk.linearSolve2d
-
-def matrix_multiplication(matrix, vector_x, vector_y, num_blocks, block_width):
-    return _openrk.matrix_multiplication(matrix, vector_x, vector_y, num_blocks, block_width)
-matrix_multiplication = _openrk.matrix_multiplication
-
-def matrix_multiplication2d(matrix, vector_x, vector_y, num_blocks, block_width):
-    return _openrk.matrix_multiplication2d(matrix, vector_x, vector_y, num_blocks, block_width)
-matrix_multiplication2d = _openrk.matrix_multiplication2d
-
-def vector_scale(vector, scale_value, length):
-    return _openrk.vector_scale(vector, scale_value, length)
-vector_scale = _openrk.vector_scale
+def matrixMultiplication(A, X, B):
+    return _openrk.matrixMultiplication(A, X, B)
+matrixMultiplication = _openrk.matrixMultiplication
 
 def setNumThreads(num_threads):
     return _openrk.setNumThreads(num_threads)
@@ -219,30 +203,6 @@ log_printf = _openrk.log_printf
 def create_multiline_msg(level, message):
     return _openrk.create_multiline_msg(level, message)
 create_multiline_msg = _openrk.create_multiline_msg
-
-_openrk.START_swigconstant(_openrk)
-START = _openrk.START
-
-_openrk.PREVIOUS_OUT_swigconstant(_openrk)
-PREVIOUS_OUT = _openrk.PREVIOUS_OUT
-
-_openrk.PREVIOUS_IN_swigconstant(_openrk)
-PREVIOUS_IN = _openrk.PREVIOUS_IN
-
-_openrk.CURRENT_swigconstant(_openrk)
-CURRENT = _openrk.CURRENT
-
-_openrk.FORWARD_IN_OLD_swigconstant(_openrk)
-FORWARD_IN_OLD = _openrk.FORWARD_IN_OLD
-
-_openrk.FORWARD_OUT_swigconstant(_openrk)
-FORWARD_OUT = _openrk.FORWARD_OUT
-
-_openrk.FORWARD_OUT_OLD_swigconstant(_openrk)
-FORWARD_OUT_OLD = _openrk.FORWARD_OUT_OLD
-
-_openrk.END_swigconstant(_openrk)
-END = _openrk.END
 class Clock(_object):
     __swig_setmethods__ = {}
     __setattr__ = lambda self, name, value: _swig_setattr(self, Clock, name, value)
@@ -359,35 +319,47 @@ class Material(_object):
     def setPrecursorConc(self, xs):
         return _openrk.Material_setPrecursorConc(self, xs)
 
-    def setSigmaTByGroup(self, xs, group, position=CURRENT):
-        return _openrk.Material_setSigmaTByGroup(self, xs, group, position)
+    def setDecayConstant(self, decay_constant, num_groups):
+        return _openrk.Material_setDecayConstant(self, decay_constant, num_groups)
 
-    def setSigmaAByGroup(self, xs, group, position=CURRENT):
-        return _openrk.Material_setSigmaAByGroup(self, xs, group, position)
+    def setDelayedFraction(self, delayed_fraction, num_groups):
+        return _openrk.Material_setDelayedFraction(self, delayed_fraction, num_groups)
 
-    def setSigmaFByGroup(self, xs, group, position=CURRENT):
-        return _openrk.Material_setSigmaFByGroup(self, xs, group, position)
+    def setSigmaTByGroup(self, *args, **kwargs):
+        return _openrk.Material_setSigmaTByGroup(self, *args, **kwargs)
 
-    def setNuSigmaFByGroup(self, xs, group, position=CURRENT):
-        return _openrk.Material_setNuSigmaFByGroup(self, xs, group, position)
+    def setSigmaAByGroup(self, *args, **kwargs):
+        return _openrk.Material_setSigmaAByGroup(self, *args, **kwargs)
 
-    def setSigmaSByGroup(self, xs, group_from, group_to, position=CURRENT):
-        return _openrk.Material_setSigmaSByGroup(self, xs, group_from, group_to, position)
+    def setSigmaFByGroup(self, *args, **kwargs):
+        return _openrk.Material_setSigmaFByGroup(self, *args, **kwargs)
 
-    def setChiByGroup(self, xs, group, position=CURRENT):
-        return _openrk.Material_setChiByGroup(self, xs, group, position)
+    def setNuSigmaFByGroup(self, *args, **kwargs):
+        return _openrk.Material_setNuSigmaFByGroup(self, *args, **kwargs)
 
-    def setDifCoefByGroup(self, xs, group, position=CURRENT):
-        return _openrk.Material_setDifCoefByGroup(self, xs, group, position)
+    def setSigmaSByGroup(self, *args, **kwargs):
+        return _openrk.Material_setSigmaSByGroup(self, *args, **kwargs)
 
-    def setVelocityByGroup(self, xs, group, position=CURRENT):
-        return _openrk.Material_setVelocityByGroup(self, xs, group, position)
+    def setChiByGroup(self, *args, **kwargs):
+        return _openrk.Material_setChiByGroup(self, *args, **kwargs)
 
-    def setPrecursorConcByGroup(self, xs, group, position=CURRENT):
-        return _openrk.Material_setPrecursorConcByGroup(self, xs, group, position)
+    def setDifCoefByGroup(self, *args, **kwargs):
+        return _openrk.Material_setDifCoefByGroup(self, *args, **kwargs)
+
+    def setVelocityByGroup(self, *args, **kwargs):
+        return _openrk.Material_setVelocityByGroup(self, *args, **kwargs)
+
+    def setPrecursorConcByGroup(self, *args, **kwargs):
+        return _openrk.Material_setPrecursorConcByGroup(self, *args, **kwargs)
 
     def setTemperatureConversionFactor(self, conversion_factor):
         return _openrk.Material_setTemperatureConversionFactor(self, conversion_factor)
+
+    def setDecayConstantByGroup(self, *args, **kwargs):
+        return _openrk.Material_setDecayConstantByGroup(self, *args, **kwargs)
+
+    def setDelayedFractionByGroup(self, *args, **kwargs):
+        return _openrk.Material_setDelayedFractionByGroup(self, *args, **kwargs)
 
     def setClock(self, clock):
         return _openrk.Material_setClock(self, clock)
@@ -431,32 +403,47 @@ class Material(_object):
     def getPrecursorConc(self):
         return _openrk.Material_getPrecursorConc(self)
 
-    def getSigmaTByGroup(self, group, position=CURRENT, temp=0.0):
-        return _openrk.Material_getSigmaTByGroup(self, group, position, temp)
+    def getDecayConstant(self):
+        return _openrk.Material_getDecayConstant(self)
 
-    def getSigmaAByGroup(self, group, position=CURRENT, temp=0.0):
-        return _openrk.Material_getSigmaAByGroup(self, group, position, temp)
+    def getDelayedFraction(self):
+        return _openrk.Material_getDelayedFraction(self)
 
-    def getSigmaSByGroup(self, group_from, group_to, position=CURRENT, temp=0.0):
-        return _openrk.Material_getSigmaSByGroup(self, group_from, group_to, position, temp)
+    def getSigmaTByGroup(self, *args, **kwargs):
+        return _openrk.Material_getSigmaTByGroup(self, *args, **kwargs)
 
-    def getSigmaFByGroup(self, group, position=CURRENT, temp=0.0):
-        return _openrk.Material_getSigmaFByGroup(self, group, position, temp)
+    def getSigmaAByGroup(self, *args, **kwargs):
+        return _openrk.Material_getSigmaAByGroup(self, *args, **kwargs)
 
-    def getNuSigmaFByGroup(self, group, position=CURRENT, temp=0.0):
-        return _openrk.Material_getNuSigmaFByGroup(self, group, position, temp)
+    def getSigmaSByGroup(self, *args, **kwargs):
+        return _openrk.Material_getSigmaSByGroup(self, *args, **kwargs)
 
-    def getChiByGroup(self, group, position=CURRENT, temp=0.0):
-        return _openrk.Material_getChiByGroup(self, group, position, temp)
+    def getSigmaFByGroup(self, *args, **kwargs):
+        return _openrk.Material_getSigmaFByGroup(self, *args, **kwargs)
 
-    def getDifCoefByGroup(self, group, position=CURRENT, temp=0.0):
-        return _openrk.Material_getDifCoefByGroup(self, group, position, temp)
+    def getNuSigmaFByGroup(self, *args, **kwargs):
+        return _openrk.Material_getNuSigmaFByGroup(self, *args, **kwargs)
 
-    def getVelocityByGroup(self, group, position=CURRENT, temp=0.0):
-        return _openrk.Material_getVelocityByGroup(self, group, position, temp)
+    def getChiByGroup(self, *args, **kwargs):
+        return _openrk.Material_getChiByGroup(self, *args, **kwargs)
 
-    def getPrecursorConcByGroup(self, group, position=CURRENT, temp=0.0):
-        return _openrk.Material_getPrecursorConcByGroup(self, group, position, temp)
+    def getDifCoefByGroup(self, *args, **kwargs):
+        return _openrk.Material_getDifCoefByGroup(self, *args, **kwargs)
+
+    def getVelocityByGroup(self, *args, **kwargs):
+        return _openrk.Material_getVelocityByGroup(self, *args, **kwargs)
+
+    def getPrecursorConcByGroup(self, *args, **kwargs):
+        return _openrk.Material_getPrecursorConcByGroup(self, *args, **kwargs)
+
+    def getDecayConstantByGroup(self, *args, **kwargs):
+        return _openrk.Material_getDecayConstantByGroup(self, *args, **kwargs)
+
+    def getDelayedFractionByGroup(self, *args, **kwargs):
+        return _openrk.Material_getDelayedFractionByGroup(self, *args, **kwargs)
+
+    def getDelayedFractionTotal(self, *args, **kwargs):
+        return _openrk.Material_getDelayedFractionTotal(self, *args, **kwargs)
 
     def getTemperatureConversionFactor(self):
         return _openrk.Material_getTemperatureConversionFactor(self)
@@ -477,6 +464,177 @@ class Material(_object):
         return _openrk.Material_copy(self, position_from, position_to)
 Material_swigregister = _openrk.Material_swigregister
 Material_swigregister(Material)
+
+class Matrix(_object):
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, Matrix, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, Matrix, name)
+    __repr__ = _swig_repr
+
+    def __init__(self, num_x=1, num_y=1, num_z=1, num_groups=1):
+        this = _openrk.new_Matrix(num_x, num_y, num_z, num_groups)
+        try:
+            self.this.append(this)
+        except:
+            self.this = this
+    __swig_destroy__ = _openrk.delete_Matrix
+    __del__ = lambda self: None
+
+    def incrementValue(self, row, col, val):
+        return _openrk.Matrix_incrementValue(self, row, col, val)
+
+    def incrementValueByCoords(self, x_from, y_from, z_from, g_from, x_to, y_to, z_to, g_to, val):
+        return _openrk.Matrix_incrementValueByCoords(self, x_from, y_from, z_from, g_from, x_to, y_to, z_to, g_to, val)
+
+    def incrementValueByCell(self, cell_from, g_from, cell_to, g_to, val):
+        return _openrk.Matrix_incrementValueByCell(self, cell_from, g_from, cell_to, g_to, val)
+
+    def setValue(self, row, col, val):
+        return _openrk.Matrix_setValue(self, row, col, val)
+
+    def setValueByCoords(self, x_from, y_from, z_from, g_from, x_to, y_to, z_to, g_to, val):
+        return _openrk.Matrix_setValueByCoords(self, x_from, y_from, z_from, g_from, x_to, y_to, z_to, g_to, val)
+
+    def setValueByCell(self, cell_from, g_from, cell_to, g_to, val):
+        return _openrk.Matrix_setValueByCell(self, cell_from, g_from, cell_to, g_to, val)
+
+    def clear(self):
+        return _openrk.Matrix_clear(self)
+
+    def convertToCSR(self):
+        return _openrk.Matrix_convertToCSR(self)
+
+    def printString(self):
+        return _openrk.Matrix_printString(self)
+
+    def random(self):
+        return _openrk.Matrix_random(self)
+
+    def getValue(self, row, col):
+        return _openrk.Matrix_getValue(self, row, col)
+
+    def getValueByCoords(self, x_from, y_from, z_from, g_from, x_to, y_to, z_to, g_to):
+        return _openrk.Matrix_getValueByCoords(self, x_from, y_from, z_from, g_from, x_to, y_to, z_to, g_to)
+
+    def getValueByCell(self, cell_from, g_from, cell_to, g_to):
+        return _openrk.Matrix_getValueByCell(self, cell_from, g_from, cell_to, g_to)
+
+    def getA(self):
+        return _openrk.Matrix_getA(self)
+
+    def getIA(self):
+        return _openrk.Matrix_getIA(self)
+
+    def getJA(self):
+        return _openrk.Matrix_getJA(self)
+
+    def getDIAG(self):
+        return _openrk.Matrix_getDIAG(self)
+
+    def getNumX(self):
+        return _openrk.Matrix_getNumX(self)
+
+    def getNumY(self):
+        return _openrk.Matrix_getNumY(self)
+
+    def getNumZ(self):
+        return _openrk.Matrix_getNumZ(self)
+
+    def getNumGroups(self):
+        return _openrk.Matrix_getNumGroups(self)
+
+    def getNumRows(self):
+        return _openrk.Matrix_getNumRows(self)
+
+    def getNNZ(self):
+        return _openrk.Matrix_getNNZ(self)
+Matrix_swigregister = _openrk.Matrix_swigregister
+Matrix_swigregister(Matrix)
+
+class Vector(_object):
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, Vector, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, Vector, name)
+    __repr__ = _swig_repr
+
+    def __init__(self, num_x=1, num_y=1, num_z=1, num_groups=1):
+        this = _openrk.new_Vector(num_x, num_y, num_z, num_groups)
+        try:
+            self.this.append(this)
+        except:
+            self.this = this
+    __swig_destroy__ = _openrk.delete_Vector
+    __del__ = lambda self: None
+
+    def incrementValue(self, row, val):
+        return _openrk.Vector_incrementValue(self, row, val)
+
+    def incrementValueByCell(self, cell, g, val):
+        return _openrk.Vector_incrementValueByCell(self, cell, g, val)
+
+    def incrementValueByCoords(self, x, y, z, g, val):
+        return _openrk.Vector_incrementValueByCoords(self, x, y, z, g, val)
+
+    def setValue(self, row, val):
+        return _openrk.Vector_setValue(self, row, val)
+
+    def setValueByCoords(self, x, y, z, g, val):
+        return _openrk.Vector_setValueByCoords(self, x, y, z, g, val)
+
+    def setValueByCell(self, cell, g, val):
+        return _openrk.Vector_setValueByCell(self, cell, g, val)
+
+    def setAll(self, val):
+        return _openrk.Vector_setAll(self, val)
+
+    def zero(self):
+        return _openrk.Vector_zero(self)
+
+    def scaleByValue(self, val):
+        return _openrk.Vector_scaleByValue(self, val)
+
+    def toString(self):
+        return _openrk.Vector_toString(self)
+
+    def printString(self):
+        return _openrk.Vector_printString(self)
+
+    def copyTo(self, vector):
+        return _openrk.Vector_copyTo(self, vector)
+
+    def random(self):
+        return _openrk.Vector_random(self)
+
+    def getValue(self, row):
+        return _openrk.Vector_getValue(self, row)
+
+    def getValueByCoords(self, x, y, z, g):
+        return _openrk.Vector_getValueByCoords(self, x, y, z, g)
+
+    def getValueByCell(self, cell, g=0):
+        return _openrk.Vector_getValueByCell(self, cell, g)
+
+    def getArray(self):
+        return _openrk.Vector_getArray(self)
+
+    def getNumX(self):
+        return _openrk.Vector_getNumX(self)
+
+    def getNumY(self):
+        return _openrk.Vector_getNumY(self)
+
+    def getNumZ(self):
+        return _openrk.Vector_getNumZ(self)
+
+    def getNumGroups(self):
+        return _openrk.Vector_getNumGroups(self)
+
+    def getNumRows(self):
+        return _openrk.Vector_getNumRows(self)
+Vector_swigregister = _openrk.Vector_swigregister
+Vector_swigregister(Vector)
 
 class FunctionalMaterial(Material):
     __swig_setmethods__ = {}
@@ -531,53 +689,53 @@ class FunctionalMaterial(Material):
     def setDopplerCoefficients(self, xs):
         return _openrk.FunctionalMaterial_setDopplerCoefficients(self, xs)
 
-    def setSigmaTByGroup(self, xs, group, position=CURRENT):
-        return _openrk.FunctionalMaterial_setSigmaTByGroup(self, xs, group, position)
+    def setSigmaTByGroup(self, *args, **kwargs):
+        return _openrk.FunctionalMaterial_setSigmaTByGroup(self, *args, **kwargs)
 
-    def setSigmaAByGroup(self, xs, group, position=CURRENT):
-        return _openrk.FunctionalMaterial_setSigmaAByGroup(self, xs, group, position)
+    def setSigmaAByGroup(self, *args, **kwargs):
+        return _openrk.FunctionalMaterial_setSigmaAByGroup(self, *args, **kwargs)
 
-    def setSigmaFByGroup(self, xs, group, position=CURRENT):
-        return _openrk.FunctionalMaterial_setSigmaFByGroup(self, xs, group, position)
+    def setSigmaFByGroup(self, *args, **kwargs):
+        return _openrk.FunctionalMaterial_setSigmaFByGroup(self, *args, **kwargs)
 
-    def setNuSigmaFByGroup(self, xs, group, position=CURRENT):
-        return _openrk.FunctionalMaterial_setNuSigmaFByGroup(self, xs, group, position)
+    def setNuSigmaFByGroup(self, *args, **kwargs):
+        return _openrk.FunctionalMaterial_setNuSigmaFByGroup(self, *args, **kwargs)
 
-    def setSigmaSByGroup(self, xs, group_from, group_to, position=CURRENT):
-        return _openrk.FunctionalMaterial_setSigmaSByGroup(self, xs, group_from, group_to, position)
+    def setSigmaSByGroup(self, *args, **kwargs):
+        return _openrk.FunctionalMaterial_setSigmaSByGroup(self, *args, **kwargs)
 
-    def setChiByGroup(self, xs, group, position=CURRENT):
-        return _openrk.FunctionalMaterial_setChiByGroup(self, xs, group, position)
+    def setChiByGroup(self, *args, **kwargs):
+        return _openrk.FunctionalMaterial_setChiByGroup(self, *args, **kwargs)
 
-    def setDifCoefByGroup(self, xs, group, position=CURRENT):
-        return _openrk.FunctionalMaterial_setDifCoefByGroup(self, xs, group, position)
+    def setDifCoefByGroup(self, *args, **kwargs):
+        return _openrk.FunctionalMaterial_setDifCoefByGroup(self, *args, **kwargs)
 
-    def setVelocityByGroup(self, xs, group, position=CURRENT):
-        return _openrk.FunctionalMaterial_setVelocityByGroup(self, xs, group, position)
+    def setVelocityByGroup(self, *args, **kwargs):
+        return _openrk.FunctionalMaterial_setVelocityByGroup(self, *args, **kwargs)
 
-    def getSigmaTByGroup(self, group, position=CURRENT, temp=0.0):
-        return _openrk.FunctionalMaterial_getSigmaTByGroup(self, group, position, temp)
+    def getSigmaTByGroup(self, *args, **kwargs):
+        return _openrk.FunctionalMaterial_getSigmaTByGroup(self, *args, **kwargs)
 
-    def getSigmaAByGroup(self, group, position=CURRENT, temp=0.0):
-        return _openrk.FunctionalMaterial_getSigmaAByGroup(self, group, position, temp)
+    def getSigmaAByGroup(self, *args, **kwargs):
+        return _openrk.FunctionalMaterial_getSigmaAByGroup(self, *args, **kwargs)
 
-    def getSigmaSByGroup(self, group_from, group_to, position=CURRENT, temp=0.0):
-        return _openrk.FunctionalMaterial_getSigmaSByGroup(self, group_from, group_to, position, temp)
+    def getSigmaSByGroup(self, *args, **kwargs):
+        return _openrk.FunctionalMaterial_getSigmaSByGroup(self, *args, **kwargs)
 
-    def getSigmaFByGroup(self, group, position=CURRENT, temp=0.0):
-        return _openrk.FunctionalMaterial_getSigmaFByGroup(self, group, position, temp)
+    def getSigmaFByGroup(self, *args, **kwargs):
+        return _openrk.FunctionalMaterial_getSigmaFByGroup(self, *args, **kwargs)
 
-    def getNuSigmaFByGroup(self, group, position=CURRENT, temp=0.0):
-        return _openrk.FunctionalMaterial_getNuSigmaFByGroup(self, group, position, temp)
+    def getNuSigmaFByGroup(self, *args, **kwargs):
+        return _openrk.FunctionalMaterial_getNuSigmaFByGroup(self, *args, **kwargs)
 
-    def getChiByGroup(self, group, position=CURRENT, temp=0.0):
-        return _openrk.FunctionalMaterial_getChiByGroup(self, group, position, temp)
+    def getChiByGroup(self, *args, **kwargs):
+        return _openrk.FunctionalMaterial_getChiByGroup(self, *args, **kwargs)
 
-    def getDifCoefByGroup(self, group, position=CURRENT, temp=0.0):
-        return _openrk.FunctionalMaterial_getDifCoefByGroup(self, group, position, temp)
+    def getDifCoefByGroup(self, *args, **kwargs):
+        return _openrk.FunctionalMaterial_getDifCoefByGroup(self, *args, **kwargs)
 
-    def getVelocityByGroup(self, group, position=CURRENT, temp=0.0):
-        return _openrk.FunctionalMaterial_getVelocityByGroup(self, group, position, temp)
+    def getVelocityByGroup(self, *args, **kwargs):
+        return _openrk.FunctionalMaterial_getVelocityByGroup(self, *args, **kwargs)
 
     def getDopplerCoefficientByGroup(self, group):
         return _openrk.FunctionalMaterial_getDopplerCoefficientByGroup(self, group)
@@ -597,571 +755,449 @@ FunctionalMaterial_swigregister = _openrk.FunctionalMaterial_swigregister
 FunctionalMaterial_swigregister(FunctionalMaterial)
 
 
-_openrk.REFLECTIVE_swigconstant(_openrk)
-REFLECTIVE = _openrk.REFLECTIVE
-
 _openrk.VACUUM_swigconstant(_openrk)
 VACUUM = _openrk.VACUUM
-class Mesh(_object):
+
+_openrk.REFLECTIVE_swigconstant(_openrk)
+REFLECTIVE = _openrk.REFLECTIVE
+class Geometry(_object):
     __swig_setmethods__ = {}
-    __setattr__ = lambda self, name, value: _swig_setattr(self, Mesh, name, value)
+    __setattr__ = lambda self, name, value: _swig_setattr(self, Geometry, name, value)
     __swig_getmethods__ = {}
-    __getattr__ = lambda self, name: _swig_getattr(self, Mesh, name)
+    __getattr__ = lambda self, name: _swig_getattr(self, Geometry, name)
     __repr__ = _swig_repr
 
     def __init__(self, width=1.0, height=1.0, depth=1.0):
-        this = _openrk.new_Mesh(width, height, depth)
+        this = _openrk.new_Geometry(width, height, depth)
         try:
             self.this.append(this)
         except:
             self.this = this
-    __swig_destroy__ = _openrk.delete_Mesh
+    __swig_destroy__ = _openrk.delete_Geometry
     __del__ = lambda self: None
 
-    def setNumShapeEnergyGroups(self, num_groups):
-        return _openrk.Mesh_setNumShapeEnergyGroups(self, num_groups)
-
-    def setNumAmpEnergyGroups(self, num_groups):
-        return _openrk.Mesh_setNumAmpEnergyGroups(self, num_groups)
-
-    def setNumDelayedGroups(self, num_groups):
-        return _openrk.Mesh_setNumDelayedGroups(self, num_groups)
+    def setAmpMeshDimensions(self, num_x=1, num_y=1, num_z=1):
+        return _openrk.Geometry_setAmpMeshDimensions(self, num_x, num_y, num_z)
 
     def setXMin(self, x_min):
-        return _openrk.Mesh_setXMin(self, x_min)
+        return _openrk.Geometry_setXMin(self, x_min)
 
     def setXMax(self, x_max):
-        return _openrk.Mesh_setXMax(self, x_max)
+        return _openrk.Geometry_setXMax(self, x_max)
 
     def setYMin(self, y_min):
-        return _openrk.Mesh_setYMin(self, y_min)
+        return _openrk.Geometry_setYMin(self, y_min)
 
     def setYMax(self, y_max):
-        return _openrk.Mesh_setYMax(self, y_max)
+        return _openrk.Geometry_setYMax(self, y_max)
 
     def setZMin(self, z_min):
-        return _openrk.Mesh_setZMin(self, z_min)
+        return _openrk.Geometry_setZMin(self, z_min)
 
     def setZMax(self, z_max):
-        return _openrk.Mesh_setZMax(self, z_max)
-
-    def setKeff0(self, k_eff_0):
-        return _openrk.Mesh_setKeff0(self, k_eff_0)
+        return _openrk.Geometry_setZMax(self, z_max)
 
     def setBoundary(self, side, boundary):
-        return _openrk.Mesh_setBoundary(self, side, boundary)
+        return _openrk.Geometry_setBoundary(self, side, boundary)
 
     def setMaterial(self, material, cell):
-        return _openrk.Mesh_setMaterial(self, material, cell)
+        return _openrk.Geometry_setMaterial(self, material, cell)
 
-    def setBuckling(self, buckling):
-        return _openrk.Mesh_setBuckling(self, buckling)
-
-    def setDecayConstants(self, xs):
-        return _openrk.Mesh_setDecayConstants(self, xs)
-
-    def setDelayedFractions(self, xs):
-        return _openrk.Mesh_setDelayedFractions(self, xs)
-
-    def getKeff0(self):
-        return _openrk.Mesh_getKeff0(self)
-
-    def getClock(self):
-        return _openrk.Mesh_getClock(self)
+    def setNumShapeCells(self, num_shape_cells):
+        return _openrk.Geometry_setNumShapeCells(self, num_shape_cells)
 
     def getWidth(self):
-        return _openrk.Mesh_getWidth(self)
+        return _openrk.Geometry_getWidth(self)
 
     def getHeight(self):
-        return _openrk.Mesh_getHeight(self)
+        return _openrk.Geometry_getHeight(self)
 
     def getDepth(self):
-        return _openrk.Mesh_getDepth(self)
+        return _openrk.Geometry_getDepth(self)
 
     def getBoundary(self, side):
-        return _openrk.Mesh_getBoundary(self, side)
-
-    def getNumShapeEnergyGroups(self):
-        return _openrk.Mesh_getNumShapeEnergyGroups(self)
-
-    def getNumAmpEnergyGroups(self):
-        return _openrk.Mesh_getNumAmpEnergyGroups(self)
-
-    def getNumDelayedGroups(self):
-        return _openrk.Mesh_getNumDelayedGroups(self)
-
-    def getBuckling(self):
-        return _openrk.Mesh_getBuckling(self)
-
-    def getDecayConstants(self):
-        return _openrk.Mesh_getDecayConstants(self)
-
-    def getDelayedFractions(self):
-        return _openrk.Mesh_getDelayedFractions(self)
-
-    def getDecayConstantByGroup(self, group):
-        return _openrk.Mesh_getDecayConstantByGroup(self, group)
-
-    def getDelayedFractionByGroup(self, group):
-        return _openrk.Mesh_getDelayedFractionByGroup(self, group)
+        return _openrk.Geometry_getBoundary(self, side)
 
     def getXMin(self):
-        return _openrk.Mesh_getXMin(self)
+        return _openrk.Geometry_getXMin(self)
 
     def getXMax(self):
-        return _openrk.Mesh_getXMax(self)
+        return _openrk.Geometry_getXMax(self)
 
     def getYMin(self):
-        return _openrk.Mesh_getYMin(self)
+        return _openrk.Geometry_getYMin(self)
 
     def getYMax(self):
-        return _openrk.Mesh_getYMax(self)
+        return _openrk.Geometry_getYMax(self)
 
     def getZMin(self):
-        return _openrk.Mesh_getZMin(self)
+        return _openrk.Geometry_getZMin(self)
 
     def getZMax(self):
-        return _openrk.Mesh_getZMax(self)
+        return _openrk.Geometry_getZMax(self)
 
-    def getFlux(self, position):
-        return _openrk.Mesh_getFlux(self, position)
+    def getNumXAmp(self):
+        return _openrk.Geometry_getNumXAmp(self)
 
-    def getPower(self, position):
-        return _openrk.Mesh_getPower(self, position)
+    def getNumYAmp(self):
+        return _openrk.Geometry_getNumYAmp(self)
 
-    def getTemperature(self, position):
-        return _openrk.Mesh_getTemperature(self, position)
-
-    def getPowerByValue(self, cell, position):
-        return _openrk.Mesh_getPowerByValue(self, cell, position)
-
-    def getTemperatureByValue(self, cell, position):
-        return _openrk.Mesh_getTemperatureByValue(self, cell, position)
+    def getNumZAmp(self):
+        return _openrk.Geometry_getNumZAmp(self)
 
     def getMaterial(self, cell):
-        return _openrk.Mesh_getMaterial(self, cell)
-Mesh_swigregister = _openrk.Mesh_swigregister
-Mesh_swigregister(Mesh)
+        return _openrk.Geometry_getMaterial(self, cell)
 
-class StructuredMesh(Mesh):
-    __swig_setmethods__ = {}
-    for _s in [Mesh]:
-        __swig_setmethods__.update(getattr(_s, '__swig_setmethods__', {}))
-    __setattr__ = lambda self, name, value: _swig_setattr(self, StructuredMesh, name, value)
-    __swig_getmethods__ = {}
-    for _s in [Mesh]:
-        __swig_getmethods__.update(getattr(_s, '__swig_getmethods__', {}))
-    __getattr__ = lambda self, name: _swig_getattr(self, StructuredMesh, name)
-    __repr__ = _swig_repr
+    def getAmpToShapeMap(self):
+        return _openrk.Geometry_getAmpToShapeMap(self)
 
-    def __init__(self, width=1.0, height=1.0, depth=1.0, num_x=1, num_y=1, num_z=1):
-        this = _openrk.new_StructuredMesh(width, height, depth, num_x, num_y, num_z)
-        try:
-            self.this.append(this)
-        except:
-            self.this = this
-    __swig_destroy__ = _openrk.delete_StructuredMesh
-    __del__ = lambda self: None
+    def getShapeToAmpMap(self):
+        return _openrk.Geometry_getShapeToAmpMap(self)
 
-    def setNumX(self, num_x):
-        return _openrk.StructuredMesh_setNumX(self, num_x)
+    def getNumEnergyGroups(self):
+        return _openrk.Geometry_getNumEnergyGroups(self)
 
-    def setNumY(self, num_y):
-        return _openrk.StructuredMesh_setNumY(self, num_y)
+    def getNumDelayedGroups(self):
+        return _openrk.Geometry_getNumDelayedGroups(self)
 
-    def setNumZ(self, num_z):
-        return _openrk.StructuredMesh_setNumZ(self, num_z)
+    def getNeighborAmpCell(self, x, y, z, side):
+        return _openrk.Geometry_getNeighborAmpCell(self, x, y, z, side)
 
-    def setClock(self, clock):
-        return _openrk.StructuredMesh_setClock(self, clock)
+    def getVolume(self, cell):
+        return _openrk.Geometry_getVolume(self, cell)
 
-    def getCurrent(self, position):
-        return _openrk.StructuredMesh_getCurrent(self, position)
+    def getNumShapeCells(self):
+        return _openrk.Geometry_getNumShapeCells(self)
 
-    def getDifLinear(self, position):
-        return _openrk.StructuredMesh_getDifLinear(self, position)
+    def getNumAmpCells(self):
+        return _openrk.Geometry_getNumAmpCells(self)
 
-    def getDifNonlinear(self, position):
-        return _openrk.StructuredMesh_getDifNonlinear(self, position)
+    def addShapeCellToAmpCell(self, shape_cell, amp_cell):
+        return _openrk.Geometry_addShapeCellToAmpCell(self, shape_cell, amp_cell)
 
-    def getNeighborCell(self, x, y, z, side):
-        return _openrk.StructuredMesh_getNeighborCell(self, x, y, z, side)
-
-    def getNeighborMaterial(self, x, y, z, side):
-        return _openrk.StructuredMesh_getNeighborMaterial(self, x, y, z, side)
-
-    def getNumX(self):
-        return _openrk.StructuredMesh_getNumX(self)
-
-    def getNumY(self):
-        return _openrk.StructuredMesh_getNumY(self)
-
-    def getNumZ(self):
-        return _openrk.StructuredMesh_getNumZ(self)
-
-    def getCellWidth(self):
-        return _openrk.StructuredMesh_getCellWidth(self)
-
-    def getCellHeight(self):
-        return _openrk.StructuredMesh_getCellHeight(self)
-
-    def getCellDepth(self):
-        return _openrk.StructuredMesh_getCellDepth(self)
-
-    def getCellVolume(self):
-        return _openrk.StructuredMesh_getCellVolume(self)
-
-    def findCell(self, x, y, z):
-        return _openrk.StructuredMesh_findCell(self, x, y, z)
-
-    def computeFuelVolume(self):
-        return _openrk.StructuredMesh_computeFuelVolume(self)
+    def findAmpCellContainingShapeCell(self, shape_cell):
+        return _openrk.Geometry_findAmpCellContainingShapeCell(self, shape_cell)
 
     def uniquifyMaterials(self):
-        return _openrk.StructuredMesh_uniquifyMaterials(self)
+        return _openrk.Geometry_uniquifyMaterials(self)
 
-    def getMaxTemperature(self, position):
-        return _openrk.StructuredMesh_getMaxTemperature(self, position)
+    def clone(self):
+        return _openrk.Geometry_clone(self)
+Geometry_swigregister = _openrk.Geometry_swigregister
+Geometry_swigregister(Geometry)
 
-    def copyPower(self, position_from, position_to):
-        return _openrk.StructuredMesh_copyPower(self, position_from, position_to)
-
-    def copyTemperature(self, position_from, position_to):
-        return _openrk.StructuredMesh_copyTemperature(self, position_from, position_to)
-
-    def setTemperature(self, temperature):
-        return _openrk.StructuredMesh_setTemperature(self, temperature)
-StructuredMesh_swigregister = _openrk.StructuredMesh_swigregister
-StructuredMesh_swigregister(StructuredMesh)
-
-class StructuredShapeMesh(StructuredMesh):
+class GeometryDiffusion(Geometry):
     __swig_setmethods__ = {}
-    for _s in [StructuredMesh]:
+    for _s in [Geometry]:
         __swig_setmethods__.update(getattr(_s, '__swig_setmethods__', {}))
-    __setattr__ = lambda self, name, value: _swig_setattr(self, StructuredShapeMesh, name, value)
+    __setattr__ = lambda self, name, value: _swig_setattr(self, GeometryDiffusion, name, value)
     __swig_getmethods__ = {}
-    for _s in [StructuredMesh]:
+    for _s in [Geometry]:
         __swig_getmethods__.update(getattr(_s, '__swig_getmethods__', {}))
-    __getattr__ = lambda self, name: _swig_getattr(self, StructuredShapeMesh, name)
+    __getattr__ = lambda self, name: _swig_getattr(self, GeometryDiffusion, name)
     __repr__ = _swig_repr
 
-    def __init__(self, width=1.0, height=1.0, depth=1.0, num_x=1, num_y=1, num_z=1):
-        this = _openrk.new_StructuredShapeMesh(width, height, depth, num_x, num_y, num_z)
+    def __init__(self, width=1.0, height=1.0, depth=1.0):
+        this = _openrk.new_GeometryDiffusion(width, height, depth)
         try:
             self.this.append(this)
         except:
             self.this = this
-    __swig_destroy__ = _openrk.delete_StructuredShapeMesh
+    __swig_destroy__ = _openrk.delete_GeometryDiffusion
     __del__ = lambda self: None
 
-    def setAmpMesh(self, mesh):
-        return _openrk.StructuredShapeMesh_setAmpMesh(self, mesh)
+    def setShapeMeshDimensions(self, num_x=1, num_y=1, num_z=1):
+        return _openrk.GeometryDiffusion_setShapeMeshDimensions(self, num_x, num_y, num_z)
 
-    def setFluxByValue(self, flux, cell, group, position):
-        return _openrk.StructuredShapeMesh_setFluxByValue(self, flux, cell, group, position)
+    def getNumXShape(self):
+        return _openrk.GeometryDiffusion_getNumXShape(self)
 
-    def setCurrentByValue(self, current, cell, group, side, position):
-        return _openrk.StructuredShapeMesh_setCurrentByValue(self, current, cell, group, side, position)
+    def getNumYShape(self):
+        return _openrk.GeometryDiffusion_getNumYShape(self)
 
-    def setDifLinearByValue(self, dif_linear, cell, group, side, position):
-        return _openrk.StructuredShapeMesh_setDifLinearByValue(self, dif_linear, cell, group, side, position)
+    def getNumZShape(self):
+        return _openrk.GeometryDiffusion_getNumZShape(self)
 
-    def setDifNonlinearByValue(self, dif_nonlinear, cell, group, side, position):
-        return _openrk.StructuredShapeMesh_setDifNonlinearByValue(self, dif_nonlinear, cell, group, side, position)
-
-    def setGroupStructure(self, group_indices):
-        return _openrk.StructuredShapeMesh_setGroupStructure(self, group_indices)
-
-    def getFluxByValue(self, cell, group, position):
-        return _openrk.StructuredShapeMesh_getFluxByValue(self, cell, group, position)
-
-    def getCurrentByValue(self, cell, group, side, position):
-        return _openrk.StructuredShapeMesh_getCurrentByValue(self, cell, group, side, position)
-
-    def getDifLinearByValue(self, cell, group, side, position):
-        return _openrk.StructuredShapeMesh_getDifLinearByValue(self, cell, group, side, position)
-
-    def getDifNonlinearByValue(self, cell, group, side, position):
-        return _openrk.StructuredShapeMesh_getDifNonlinearByValue(self, cell, group, side, position)
-
-    def getAmpGroup(self, shape_group):
-        return _openrk.StructuredShapeMesh_getAmpGroup(self, shape_group)
-
-    def clone(self):
-        return _openrk.StructuredShapeMesh_clone(self)
+    def getNeighborShapeCell(self, x, y, z, side):
+        return _openrk.GeometryDiffusion_getNeighborShapeCell(self, x, y, z, side)
 
     def uniformRefine(self, refine_x=1, refine_y=1, refine_z=1):
-        return _openrk.StructuredShapeMesh_uniformRefine(self, refine_x, refine_y, refine_z)
-
-    def initialize(self):
-        return _openrk.StructuredShapeMesh_initialize(self)
-
-    def synthesizeFlux(self, position):
-        return _openrk.StructuredShapeMesh_synthesizeFlux(self, position)
-
-    def reconstructFlux(self, position, position_shape, position_amp):
-        return _openrk.StructuredShapeMesh_reconstructFlux(self, position, position_shape, position_amp)
-
-    def computePower(self, position):
-        return _openrk.StructuredShapeMesh_computePower(self, position)
-
-    def computeInitialPrecursorConc(self, position):
-        return _openrk.StructuredShapeMesh_computeInitialPrecursorConc(self, position)
-
-    def integratePrecursorConc(self, position_from, position_to):
-        return _openrk.StructuredShapeMesh_integratePrecursorConc(self, position_from, position_to)
-
-    def integrateTemperature(self, position_from, position_to):
-        return _openrk.StructuredShapeMesh_integrateTemperature(self, position_from, position_to)
-
-    def computeDifCoefs(self, position):
-        return _openrk.StructuredShapeMesh_computeDifCoefs(self, position)
-
-    def copyFlux(self, position_from, position_to):
-        return _openrk.StructuredShapeMesh_copyFlux(self, position_from, position_to)
-
-    def copyCurrent(self, position_from, position_to):
-        return _openrk.StructuredShapeMesh_copyCurrent(self, position_from, position_to)
-
-    def copyDifLinear(self, position_from, position_to):
-        return _openrk.StructuredShapeMesh_copyDifLinear(self, position_from, position_to)
-
-    def copyDifNonlinear(self, position_from, position_to):
-        return _openrk.StructuredShapeMesh_copyDifNonlinear(self, position_from, position_to)
-
-    def scaleFlux(self, position, scale_val):
-        return _openrk.StructuredShapeMesh_scaleFlux(self, position, scale_val)
-
-    def computeAveragePower(self, position):
-        return _openrk.StructuredShapeMesh_computeAveragePower(self, position)
-
-    def computePowerL2Norm(self, position_1, position_2):
-        return _openrk.StructuredShapeMesh_computePowerL2Norm(self, position_1, position_2)
-StructuredShapeMesh_swigregister = _openrk.StructuredShapeMesh_swigregister
-StructuredShapeMesh_swigregister(StructuredShapeMesh)
-
-class AmpMesh(StructuredMesh):
-    __swig_setmethods__ = {}
-    for _s in [StructuredMesh]:
-        __swig_setmethods__.update(getattr(_s, '__swig_setmethods__', {}))
-    __setattr__ = lambda self, name, value: _swig_setattr(self, AmpMesh, name, value)
-    __swig_getmethods__ = {}
-    for _s in [StructuredMesh]:
-        __swig_getmethods__.update(getattr(_s, '__swig_getmethods__', {}))
-    __getattr__ = lambda self, name: _swig_getattr(self, AmpMesh, name)
-    __repr__ = _swig_repr
-
-    def __init__(self, width=1.0, height=1.0, depth=1.0, num_x=1, num_y=1, num_z=1):
-        this = _openrk.new_AmpMesh(width, height, depth, num_x, num_y, num_z)
-        try:
-            self.this.append(this)
-        except:
-            self.this = this
-    __swig_destroy__ = _openrk.delete_AmpMesh
-    __del__ = lambda self: None
-
-    def setOpticallyThick(self, optically_thick):
-        return _openrk.AmpMesh_setOpticallyThick(self, optically_thick)
-
-    def setShapeMesh(self, mesh):
-        return _openrk.AmpMesh_setShapeMesh(self, mesh)
-
-    def setFluxByValue(self, flux, cell, group, position):
-        return _openrk.AmpMesh_setFluxByValue(self, flux, cell, group, position)
-
-    def setCurrentByValue(self, current, cell, group, side, position):
-        return _openrk.AmpMesh_setCurrentByValue(self, current, cell, group, side, position)
-
-    def setDifLinearByValue(self, dif_linear, cell, group, side, position):
-        return _openrk.AmpMesh_setDifLinearByValue(self, dif_linear, cell, group, side, position)
-
-    def setDifNonlinearByValue(self, dif_nonlinear, cell, group, side, position):
-        return _openrk.AmpMesh_setDifNonlinearByValue(self, dif_nonlinear, cell, group, side, position)
-
-    def setGroupStructure(self, group_indices):
-        return _openrk.AmpMesh_setGroupStructure(self, group_indices)
-
-    def getFluxByValue(self, cell, group, position):
-        return _openrk.AmpMesh_getFluxByValue(self, cell, group, position)
-
-    def getCurrentByValue(self, cell, group, side, position):
-        return _openrk.AmpMesh_getCurrentByValue(self, cell, group, side, position)
-
-    def getDifLinearByValue(self, cell, group, side, position):
-        return _openrk.AmpMesh_getDifLinearByValue(self, cell, group, side, position)
-
-    def getDifNonlinearByValue(self, cell, group, side, position):
-        return _openrk.AmpMesh_getDifNonlinearByValue(self, cell, group, side, position)
+        return _openrk.GeometryDiffusion_uniformRefine(self, refine_x, refine_y, refine_z)
 
     def clone(self):
-        return _openrk.AmpMesh_clone(self)
+        return _openrk.GeometryDiffusion_clone(self)
 
-    def initialize(self):
-        return _openrk.AmpMesh_initialize(self)
+    def generateCellMap(self):
+        return _openrk.GeometryDiffusion_generateCellMap(self)
+GeometryDiffusion_swigregister = _openrk.GeometryDiffusion_swigregister
+GeometryDiffusion_swigregister(GeometryDiffusion)
 
-    def condenseMaterials(self, position, save_flux=False):
-        return _openrk.AmpMesh_condenseMaterials(self, position, save_flux)
 
-    def computePower(self, position):
-        return _openrk.AmpMesh_computePower(self, position)
+_openrk.IQS_swigconstant(_openrk)
+IQS = _openrk.IQS
 
-    def computeCurrent(self, position):
-        return _openrk.AmpMesh_computeCurrent(self, position)
-
-    def computeDifCorrect(self, dif_coef, length):
-        return _openrk.AmpMesh_computeDifCorrect(self, dif_coef, length)
-
-    def computeDifCoefs(self, position):
-        return _openrk.AmpMesh_computeDifCoefs(self, position)
-
-    def copyFlux(self, position_from, position_to):
-        return _openrk.AmpMesh_copyFlux(self, position_from, position_to)
-
-    def copyCurrent(self, position_from, position_to):
-        return _openrk.AmpMesh_copyCurrent(self, position_from, position_to)
-
-    def copyDifLinear(self, position_from, position_to):
-        return _openrk.AmpMesh_copyDifLinear(self, position_from, position_to)
-
-    def copyDifNonlinear(self, position_from, position_to):
-        return _openrk.AmpMesh_copyDifNonlinear(self, position_from, position_to)
-
-    def computeAveragePower(self, position):
-        return _openrk.AmpMesh_computeAveragePower(self, position)
-
-    def computePowerL2Norm(self, position_1, position_2):
-        return _openrk.AmpMesh_computePowerL2Norm(self, position_1, position_2)
-
-    def interpolateDifNonlinear(self, position_begin, position_end, position):
-        return _openrk.AmpMesh_interpolateDifNonlinear(self, position_begin, position_end, position)
-AmpMesh_swigregister = _openrk.AmpMesh_swigregister
-AmpMesh_swigregister(AmpMesh)
-
+_openrk.THETA_swigconstant(_openrk)
+THETA = _openrk.THETA
 class Solver(_object):
     __swig_setmethods__ = {}
     __setattr__ = lambda self, name, value: _swig_setattr(self, Solver, name, value)
     __swig_getmethods__ = {}
     __getattr__ = lambda self, name: _swig_getattr(self, Solver, name)
-    __repr__ = _swig_repr
 
-    def __init__(self, shape_mesh, amp_mesh):
-        this = _openrk.new_Solver(shape_mesh, amp_mesh)
-        try:
-            self.this.append(this)
-        except:
-            self.this = this
+    def __init__(self, *args, **kwargs):
+        raise AttributeError("No constructor defined - class is abstract")
+    __repr__ = _swig_repr
     __swig_destroy__ = _openrk.delete_Solver
     __del__ = lambda self: None
 
-    def getAMShape(self):
-        return _openrk.Solver_getAMShape(self)
+    def getAmpMatrix(self):
+        return _openrk.Solver_getAmpMatrix(self)
 
-    def getAShape(self):
-        return _openrk.Solver_getAShape(self)
+    def getAmpSource(self):
+        return _openrk.Solver_getAmpSource(self)
 
-    def getMShape(self):
-        return _openrk.Solver_getMShape(self)
+    def getKeff0(self):
+        return _openrk.Solver_getKeff0(self)
 
-    def getBShape(self):
-        return _openrk.Solver_getBShape(self)
+    def getMethod(self):
+        return _openrk.Solver_getMethod(self)
 
-    def getAMAmp(self):
-        return _openrk.Solver_getAMAmp(self)
+    def getBuckling(self):
+        return _openrk.Solver_getBuckling(self)
 
-    def getAAmp(self):
-        return _openrk.Solver_getAAmp(self)
+    def getTemperature(self, time):
+        return _openrk.Solver_getTemperature(self, time)
 
-    def getMAmp(self):
-        return _openrk.Solver_getMAmp(self)
+    def getFlux(self, time):
+        return _openrk.Solver_getFlux(self, time)
 
-    def getBAmp(self):
-        return _openrk.Solver_getBAmp(self)
+    def getShape(self, time):
+        return _openrk.Solver_getShape(self, time)
 
-    def makeAMShapeInitial(self, position):
-        return _openrk.Solver_makeAMShapeInitial(self, position)
+    def getAmplitude(self, time):
+        return _openrk.Solver_getAmplitude(self, time)
+
+    def getPower(self, time):
+        return _openrk.Solver_getPower(self, time)
+
+    def getCurrent(self, time):
+        return _openrk.Solver_getCurrent(self, time)
+
+    def getDifLinear(self, time):
+        return _openrk.Solver_getDifLinear(self, time)
+
+    def getDifNonlinear(self, time):
+        return _openrk.Solver_getDifNonlinear(self, time)
+
+    def getFrequency(self, time):
+        return _openrk.Solver_getFrequency(self, time)
+
+    def getTemperatureByValue(self, cell, time):
+        return _openrk.Solver_getTemperatureByValue(self, cell, time)
+
+    def getFluxByValue(self, cell, group, time):
+        return _openrk.Solver_getFluxByValue(self, cell, group, time)
+
+    def getShapeByValue(self, cell, group, time):
+        return _openrk.Solver_getShapeByValue(self, cell, group, time)
+
+    def getAmplitudeByValue(self, cell, group, time):
+        return _openrk.Solver_getAmplitudeByValue(self, cell, group, time)
+
+    def getPowerByValue(self, cell, time):
+        return _openrk.Solver_getPowerByValue(self, cell, time)
+
+    def getCurrentByValue(self, cell, group, side, time):
+        return _openrk.Solver_getCurrentByValue(self, cell, group, side, time)
+
+    def getDifLinearByValue(self, cell, group, side, time):
+        return _openrk.Solver_getDifLinearByValue(self, cell, group, side, time)
+
+    def getDifNonlinearByValue(self, cell, group, side, time):
+        return _openrk.Solver_getDifNonlinearByValue(self, cell, group, side, time)
+
+    def getFrequencyByValue(self, cell, group, time):
+        return _openrk.Solver_getFrequencyByValue(self, cell, group, time)
+
+    def setMethod(self, method):
+        return _openrk.Solver_setMethod(self, method)
+
+    def setEndTime(self, time):
+        return _openrk.Solver_setEndTime(self, time)
+
+    def setInnerTimeStepSize(self, time):
+        return _openrk.Solver_setInnerTimeStepSize(self, time)
+
+    def setOuterTimeStepSize(self, time):
+        return _openrk.Solver_setOuterTimeStepSize(self, time)
+
+    def setBuckling(self, buckling):
+        return _openrk.Solver_setBuckling(self, buckling)
+
+    def setInitialPower(self, power):
+        return _openrk.Solver_setInitialPower(self, power)
+
+    def setTemperatureByValue(self, value, cell, time):
+        return _openrk.Solver_setTemperatureByValue(self, value, cell, time)
+
+    def setShapeByValue(self, value, cell, group, time):
+        return _openrk.Solver_setShapeByValue(self, value, cell, group, time)
+
+    def setAmplitudeByValue(self, value, cell, group, time):
+        return _openrk.Solver_setAmplitudeByValue(self, value, cell, group, time)
+
+    def setPowerByValue(self, value, cell, time):
+        return _openrk.Solver_setPowerByValue(self, value, cell, time)
+
+    def setFrequencyByValue(self, value, cell, group, time):
+        return _openrk.Solver_setFrequencyByValue(self, value, cell, group, time)
+
+    def setCurrentByValue(self, value, cell, group, side, time):
+        return _openrk.Solver_setCurrentByValue(self, value, cell, group, side, time)
+
+    def setFluxByValue(self, value, cell, group, time):
+        return _openrk.Solver_setFluxByValue(self, value, cell, group, time)
+
+    def setDifLinearByValue(self, value, cell, group, side, time):
+        return _openrk.Solver_setDifLinearByValue(self, value, cell, group, side, time)
+
+    def setDifNonlinearByValue(self, value, cell, group, side, time):
+        return _openrk.Solver_setDifNonlinearByValue(self, value, cell, group, side, time)
+
+    def generateAmplitudeMatrix(self, wt):
+        return _openrk.Solver_generateAmplitudeMatrix(self, wt)
+
+    def integratePrecursorConcentrations(self, time_from, time_to):
+        return _openrk.Solver_integratePrecursorConcentrations(self, time_from, time_to)
+
+    def integrateTemperature(self, time_from, time_to):
+        return _openrk.Solver_integrateTemperature(self, time_from, time_to)
+
+    def interpolateShape(self, time, time_forward, time_backward):
+        return _openrk.Solver_interpolateShape(self, time, time_forward, time_backward)
+
+    def interpolateDifNonlinear(self, time, time_forward, time_backward):
+        return _openrk.Solver_interpolateDifNonlinear(self, time, time_forward, time_backward)
+
+    def computeDiffusionCoefficients(self, time):
+        return _openrk.Solver_computeDiffusionCoefficients(self, time)
+
+    def reconstructFlux(self, time, time_shape, time_amp):
+        return _openrk.Solver_reconstructFlux(self, time, time_shape, time_amp)
+
+    def computeShape(self, time, time_flux, time_amp):
+        return _openrk.Solver_computeShape(self, time, time_flux, time_amp)
+
+    def computeFrequency(self):
+        return _openrk.Solver_computeFrequency(self)
+
+    def computeInitialPrecursorConcentrations(self):
+        return _openrk.Solver_computeInitialPrecursorConcentrations(self)
+
+    def computePower(self, time):
+        return _openrk.Solver_computePower(self, time)
+
+    def computeAveragePower(self, time):
+        return _openrk.Solver_computeAveragePower(self, time)
+
+    def computePowerRMSError(self, time_1, time_2):
+        return _openrk.Solver_computePowerRMSError(self, time_1, time_2)
+
+    def normalizeFlux(self):
+        return _openrk.Solver_normalizeFlux(self)
+
+    def initializeClock(self):
+        return _openrk.Solver_initializeClock(self)
+
+    def takeInnerStep(self):
+        return _openrk.Solver_takeInnerStep(self)
+
+    def takeOuterStep(self):
+        return _openrk.Solver_takeOuterStep(self)
+
+    def takeOuterStepOnly(self):
+        return _openrk.Solver_takeOuterStepOnly(self)
 
     def computeInitialShape(self, tol):
         return _openrk.Solver_computeInitialShape(self, tol)
 
-    def makeAMAmp(self, wt):
-        return _openrk.Solver_makeAMAmp(self, wt)
+    def copyPrecursors(self, time_from, time_to):
+        return _openrk.Solver_copyPrecursors(self, time_from, time_to)
 
-    def makeAMShape(self, wt):
-        return _openrk.Solver_makeAMShape(self, wt)
+    def copyFieldVariables(self, time_from, time_to):
+        return _openrk.Solver_copyFieldVariables(self, time_from, time_to)
+
+    def broadcastToAll(self, time_from):
+        return _openrk.Solver_broadcastToAll(self, time_from)
 Solver_swigregister = _openrk.Solver_swigregister
 Solver_swigregister(Solver)
 
-
-_openrk.FORWARD_EULER_swigconstant(_openrk)
-FORWARD_EULER = _openrk.FORWARD_EULER
-
-_openrk.BACKWARD_EULER_swigconstant(_openrk)
-BACKWARD_EULER = _openrk.BACKWARD_EULER
-
-_openrk.CRANK_NICOLSON_swigconstant(_openrk)
-CRANK_NICOLSON = _openrk.CRANK_NICOLSON
-
-_openrk.CUSTOM_swigconstant(_openrk)
-CUSTOM = _openrk.CUSTOM
-class Transient(_object):
+class SolverDiffusion(Solver):
     __swig_setmethods__ = {}
-    __setattr__ = lambda self, name, value: _swig_setattr(self, Transient, name, value)
+    for _s in [Solver]:
+        __swig_setmethods__.update(getattr(_s, '__swig_setmethods__', {}))
+    __setattr__ = lambda self, name, value: _swig_setattr(self, SolverDiffusion, name, value)
     __swig_getmethods__ = {}
-    __getattr__ = lambda self, name: _swig_getattr(self, Transient, name)
+    for _s in [Solver]:
+        __swig_getmethods__.update(getattr(_s, '__swig_getmethods__', {}))
+    __getattr__ = lambda self, name: _swig_getattr(self, SolverDiffusion, name)
     __repr__ = _swig_repr
 
-    def __init__(self, inner_method=BACKWARD_EULER, outer_method=BACKWARD_EULER, wt_inner=1.0, wt_outer=1.0):
-        this = _openrk.new_Transient(inner_method, outer_method, wt_inner, wt_outer)
+    def __init__(self, geometry):
+        this = _openrk.new_SolverDiffusion(geometry)
         try:
             self.this.append(this)
         except:
             self.this = this
-    __swig_destroy__ = _openrk.delete_Transient
+    __swig_destroy__ = _openrk.delete_SolverDiffusion
     __del__ = lambda self: None
 
-    def setInnerMethod(self, inner_method, wt=0.0):
-        return _openrk.Transient_setInnerMethod(self, inner_method, wt)
+    def getShapeAMatrix(self):
+        return _openrk.SolverDiffusion_getShapeAMatrix(self)
 
-    def setOuterMethod(self, outer_method, wt=0.0):
-        return _openrk.Transient_setOuterMethod(self, outer_method, wt)
+    def getShapeMMatrix(self):
+        return _openrk.SolverDiffusion_getShapeMMatrix(self)
 
-    def setInitialPower(self, initial_power):
-        return _openrk.Transient_setInitialPower(self, initial_power)
+    def getShapeAMMatrix(self):
+        return _openrk.SolverDiffusion_getShapeAMMatrix(self)
 
-    def setClock(self, clock):
-        return _openrk.Transient_setClock(self, clock)
+    def getShapeSource(self):
+        return _openrk.SolverDiffusion_getShapeSource(self)
 
-    def setSolver(self, solver):
-        return _openrk.Transient_setSolver(self, solver)
+    def getDifLinearFine(self, time):
+        return _openrk.SolverDiffusion_getDifLinearFine(self, time)
 
-    def setShapeMesh(self, mesh):
-        return _openrk.Transient_setShapeMesh(self, mesh)
+    def getDifLinearFineByValue(self, cell, group, side, time):
+        return _openrk.SolverDiffusion_getDifLinearFineByValue(self, cell, group, side, time)
 
-    def setAmpMesh(self, mesh):
-        return _openrk.Transient_setAmpMesh(self, mesh)
-
-    def computeInitialShape(self):
-        return _openrk.Transient_computeInitialShape(self)
+    def setDifLinearFineByValue(self, value, cell, group, side, time):
+        return _openrk.SolverDiffusion_setDifLinearFineByValue(self, value, cell, group, side, time)
 
     def takeInnerStep(self):
-        return _openrk.Transient_takeInnerStep(self)
+        return _openrk.SolverDiffusion_takeInnerStep(self)
 
     def takeOuterStep(self):
-        return _openrk.Transient_takeOuterStep(self)
+        return _openrk.SolverDiffusion_takeOuterStep(self)
 
     def takeOuterStepOnly(self):
-        return _openrk.Transient_takeOuterStepOnly(self)
+        return _openrk.SolverDiffusion_takeOuterStepOnly(self)
 
-    def broadcastToActive(self, position):
-        return _openrk.Transient_broadcastToActive(self, position)
+    def computeInitialShape(self, tol):
+        return _openrk.SolverDiffusion_computeInitialShape(self, tol)
 
-    def broadcastToAll(self, position):
-        return _openrk.Transient_broadcastToAll(self, position)
+    def generateShapeMatrices(self, wt):
+        return _openrk.SolverDiffusion_generateShapeMatrices(self, wt)
 
-    def broadcastToOne(self, position_from, position_to):
-        return _openrk.Transient_broadcastToOne(self, position_from, position_to)
-Transient_swigregister = _openrk.Transient_swigregister
-Transient_swigregister(Transient)
+    def computeDiffusionCoefficientsFine(self, time):
+        return _openrk.SolverDiffusion_computeDiffusionCoefficientsFine(self, time)
+
+    def generateInitialShapeMatrices(self):
+        return _openrk.SolverDiffusion_generateInitialShapeMatrices(self)
+
+    def generateAmpCurrent(self, time):
+        return _openrk.SolverDiffusion_generateAmpCurrent(self, time)
+SolverDiffusion_swigregister = _openrk.SolverDiffusion_swigregister
+SolverDiffusion_swigregister(SolverDiffusion)
 
 # This file is compatible with both classic and new-style classes.
 
