@@ -26,7 +26,7 @@ Geometry::Geometry(double width, double height, double depth) {
   setZMin(-depth/2.0);
   setZMax(depth/2.0);
 
-  _boundaries = new boundaryCondition[6];
+  _boundaries = new int[6];
   for (int i=0; i < 6; i++)
     _boundaries[i] = REFLECTIVE;
   
@@ -152,21 +152,21 @@ double Geometry::getDepth(){
 }
 
 
-void Geometry::setBoundary(int side, boundaryCondition boundary){
+void Geometry::setBoundary(int side, int boundary){
 
-  if (side < 0 || side > 5)
+  if (side < 0 || side >= NUM_SURFACES)
     log_printf(ERROR, "Unable to set boundary for side %d as there are only"
-               " 6 geometry sides", side);
+               " %d geometry sides", side, NUM_SURFACES);
 
   _boundaries[side] = boundary;
 }
 
 
-boundaryCondition Geometry::getBoundary(int side){
+int Geometry::getBoundary(int side){
 
-  if (side < 0 || side > 5)
+  if (side < 0 || side >= NUM_SURFACES)
     log_printf(ERROR, "Unable to get boundary for side %d as there are only"
-               " 6 geometry sides", side);
+               " %d geometry sides", side, NUM_SURFACES);
   
   return _boundaries[side];
 }
@@ -190,6 +190,9 @@ void Geometry::setMaterial(Material* material, int cell){
 
   _materials[cell] = material;
   _num_energy_groups = material->getNumEnergyGroups();
+
+  if (_num_delayed_groups == 0)
+    _num_delayed_groups = material->getNumDelayedGroups();
 }
 
 
@@ -252,8 +255,8 @@ int Geometry::findAmpCellContainingShapeCell(int shape_cell){
 }
 
 
-std::vector< std::vector<int> > Geometry::getAmpToShapeMap(){
-  return _amp_to_shape;
+std::vector< std::vector<int> >* Geometry::getAmpToShapeMap(){
+  return &_amp_to_shape;
 }
 
 
@@ -264,9 +267,9 @@ int* Geometry::getShapeToAmpMap(){
 
 int Geometry::getNeighborAmpCell(int x, int y, int z, int side){
 
-  if (side < 0 || side > 5)
+  if (side < 0 || side >= NUM_SURFACES)
     log_printf(ERROR, "Unable to get neighbor cell for side %d as there are only"
-               " 6 geometry sides", side);
+               " %d geometry sides", side, NUM_SURFACES);
 
   int neighbor_cell = -1;
 
@@ -305,7 +308,7 @@ Geometry* Geometry::clone(){
   geometry->setAmpMeshDimensions(_num_x_amp, _num_y_amp, _num_z_amp);
   geometry->setNumShapeCells(_num_shape_cells);
 
-  for (int i=0; i < 6; i++)
+  for (int i=0; i < NUM_SURFACES; i++)
     geometry->setBoundary(i, _boundaries[i]);
 
   for (int i=0; i < _num_shape_cells; i++)

@@ -7,9 +7,7 @@ Clock::Clock(double start_time, double end_time, double dt_outer, double dt_inne
   _times[PREVIOUS_OUT] = 0.0;
   _times[PREVIOUS_IN] = 0.0;
   _times[CURRENT] = 0.0;
-  _times[FORWARD_IN_OLD] = 0.0;
   _times[FORWARD_OUT] = 0.0;
-  _times[FORWARD_OUT_OLD] = 0.0;
   _times[END] = 0.0;
 
   /* Set time step sizes */
@@ -26,8 +24,14 @@ Clock::~Clock(){
 }
 
 
-double Clock::getTime(int position){
-  return _times[position];
+double Clock::getTime(int state){
+
+  if (state == FORWARD_IN_OLD)
+    return _times[CURRENT];
+  else if (state == FORWARD_OUT_OLD)
+    return _times[FORWARD_OUT];
+  else
+    return _times[state];
 }
 
 
@@ -51,8 +55,8 @@ void Clock::setDtOuter(double dt_outer){
 }
 
 
-void Clock::setTime(int position, double time){
-  _times[position] = time;
+void Clock::setTime(int state, double time){
+  _times[state] = time;
 }
 
 
@@ -101,9 +105,7 @@ std::string Clock::toString(){
   string << " PREVIOUS_OUT\t = " << _times[PREVIOUS_OUT] << std::endl;
   string << " PREVIOUS_IN\t = " << _times[PREVIOUS_IN] << std::endl;
   string << " CURRENT\t\t = " << _times[CURRENT] << std::endl;
-  string << " FORWARD_IN_OLD\t = " << _times[FORWARD_IN_OLD] << std::endl;
   string << " FORWARD_OUT\t = " << _times[FORWARD_OUT] << std::endl;
-  string << " FORWARD_OUT_OLD\t = " << _times[FORWARD_OUT_OLD] << std::endl;  
   string << " END\t\t\t\t = " << _times[END] << std::endl;
 
   return string.str();
@@ -115,29 +117,29 @@ void Clock::printString(){
 }
 
 
-std::string Clock::getPositionName(int position){
+std::string Clock::getStateName(int state){
 
   std::string name;
 
-  if (position == START)
+  if (state == START)
     name = "START";
-  else if (position == PREVIOUS_OUT)
+  else if (state == PREVIOUS_OUT)
     name = "PREVIOUS_OUT";
-  else if (position == PREVIOUS_IN)
+  else if (state == PREVIOUS_IN)
     name = "PREVIOUS_IN";
-  else if (position == CURRENT)
+  else if (state == CURRENT)
     name = "CURRENT";
-  else if (position == FORWARD_IN_OLD)
-    name = "FORWARD_IN_OLD";
-  else if (position == FORWARD_OUT)
+  else if (state == FORWARD_OUT)
     name = "FORWARD_OUT";
-  else if (position == FORWARD_OUT_OLD)
+  else if (state == FORWARD_OUT_OLD)
     name = "FORWARD_OUT_OLD";
-  else if (position == END)
+  else if (state == FORWARD_IN_OLD)
+    name = "FORWARD_IN_OLD";
+  else if (state == END)
     name = "END";
   else
-    log_printf(ERROR, "Unable to get clock position name with position %d",
-               position);
+    log_printf(ERROR, "Unable to get clock state name with state %d",
+               state);
 
   return name;
 }

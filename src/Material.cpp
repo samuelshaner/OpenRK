@@ -321,24 +321,24 @@ void Material::setNumEnergyGroups(const int num_groups) {
     delete [] _velocity;
 
   /* Allocate memory for data arrays */
-  _sigma_t = new double[8*_num_energy_groups];
-  _sigma_a = new double[8*_num_energy_groups];
-  _sigma_f = new double[8*_num_energy_groups];
-  _nu_sigma_f = new double[8*_num_energy_groups];
-  _chi = new double[8*_num_energy_groups];
-  _sigma_s = new double[8*_num_energy_groups*_num_energy_groups];
-  _velocity = new double[8*_num_energy_groups];
-  _dif_coef = new double[8*_num_energy_groups];
+  _sigma_t = new double[NUM_STATES*_num_energy_groups];
+  _sigma_a = new double[NUM_STATES*_num_energy_groups];
+  _sigma_f = new double[NUM_STATES*_num_energy_groups];
+  _nu_sigma_f = new double[NUM_STATES*_num_energy_groups];
+  _chi = new double[NUM_STATES*_num_energy_groups];
+  _sigma_s = new double[NUM_STATES*_num_energy_groups*_num_energy_groups];
+  _velocity = new double[NUM_STATES*_num_energy_groups];
+  _dif_coef = new double[NUM_STATES*_num_energy_groups];
   
   /* Assign the null vector to each data array */
-  memset(_sigma_t, 0.0, 8 * sizeof(double) * _num_energy_groups);
-  memset(_sigma_a, 0.0, 8 * sizeof(double) * _num_energy_groups);
-  memset(_sigma_f, 0.0, 8 * sizeof(double) * _num_energy_groups);
-  memset(_nu_sigma_f, 0.0, 8 * sizeof(double) * _num_energy_groups);
-  memset(_chi, 0.0, 8 * sizeof(double) * _num_energy_groups);
-  memset(_sigma_s, 0.0, 8 * sizeof(double) * _num_energy_groups * _num_energy_groups);
-  memset(_velocity, 0.0, 8 * sizeof(double) * _num_energy_groups);
-  memset(_dif_coef, 0.0, 8 * sizeof(double) * _num_energy_groups);
+  memset(_sigma_t, 0.0, NUM_STATES * sizeof(double) * _num_energy_groups);
+  memset(_sigma_a, 0.0, NUM_STATES * sizeof(double) * _num_energy_groups);
+  memset(_sigma_f, 0.0, NUM_STATES * sizeof(double) * _num_energy_groups);
+  memset(_nu_sigma_f, 0.0, NUM_STATES * sizeof(double) * _num_energy_groups);
+  memset(_chi, 0.0, NUM_STATES * sizeof(double) * _num_energy_groups);
+  memset(_sigma_s, 0.0, NUM_STATES * sizeof(double) * _num_energy_groups * _num_energy_groups);
+  memset(_velocity, 0.0, NUM_STATES * sizeof(double) * _num_energy_groups);
+  memset(_dif_coef, 0.0, NUM_STATES * sizeof(double) * _num_energy_groups);
 }
 
 
@@ -367,14 +367,14 @@ void Material::setNumDelayedGroups(const int num_groups) {
     delete [] _delayed_fraction;
 
   /* Allocate memory for data arrays */
-  _precursor_conc = new double[8*_num_delayed_groups];
-  _decay_constant = new double[8*_num_delayed_groups];
-  _delayed_fraction = new double[8*_num_delayed_groups];
+  _precursor_conc = new double[NUM_STATES*_num_delayed_groups];
+  _decay_constant = new double[_num_delayed_groups];
+  _delayed_fraction = new double[NUM_STATES*_num_delayed_groups];
   
   /* Assign the null vector to each data array */
-  memset(_precursor_conc, 0.0, 8 * sizeof(double) * _num_delayed_groups);
-  memset(_decay_constant, 0.0, 8 * sizeof(double) * _num_delayed_groups);
-  memset(_delayed_fraction, 0.0, 8 * sizeof(double) * _num_delayed_groups);
+  memset(_precursor_conc, 0.0, NUM_STATES * sizeof(double) * _num_delayed_groups);
+  memset(_decay_constant, 0.0, sizeof(double) * _num_delayed_groups);
+  memset(_delayed_fraction, 0.0, NUM_STATES * sizeof(double) * _num_delayed_groups);
 }
 
 
@@ -403,7 +403,7 @@ void Material::setSigmaT(double* xs, int num_groups) {
     log_printf(ERROR, "Unable to set sigma_t with %d groups for Material "
                "%d which contains %d energy groups", num_groups,  _num_energy_groups);
 
-  for (int c=0; c < 8; c++){
+  for (int c=0; c < NUM_STATES; c++){
     for (int i=0; i < _num_energy_groups; i++)
       _sigma_t[c*_num_energy_groups+i] = double(xs[i]);
   }
@@ -415,13 +415,13 @@ void Material::setSigmaT(double* xs, int num_groups) {
  * @param xs the total cross-section
  * @param group the energy group
  */
-void Material::setSigmaTByGroup(double xs, int group, int position) {
+void Material::setSigmaTByGroup(double xs, int group, int state) {
 
   if (group < 0 || group >= _num_energy_groups)
     log_printf(ERROR, "Unable to set sigma_t for group %d for Material "
                "%d which contains %d energy groups", group, _id, _num_energy_groups);
 
-  _sigma_t[position*_num_energy_groups+group] = xs;
+  _sigma_t[state*_num_energy_groups+group] = xs;
 }
 
 
@@ -430,13 +430,13 @@ void Material::setSigmaTByGroup(double xs, int group, int position) {
  * @param xs the total cross-section
  * @param group the energy group
  */
-double Material::getSigmaTByGroup(int group, int position, double temp) {
+double Material::getSigmaTByGroup(int group, int state, double temp) {
 
   if (group < 0 || group >= _num_energy_groups)
     log_printf(ERROR, "Unable to get sigma_t for group %d for Material "
                "%d which contains %d energy groups", group, _id, _num_energy_groups);
 
-  return _sigma_t[position*_num_energy_groups+group];
+  return _sigma_t[state*_num_energy_groups+group];
 }
 
 
@@ -465,7 +465,7 @@ void Material::setSigmaA(double* xs, int num_groups) {
     log_printf(ERROR, "Unable to set sigma_a with %d groups for Material "
                "%d which contains %d energy groups", num_groups, _num_energy_groups);
 
-  for (int c=0; c < 8; c++){
+  for (int c=0; c < NUM_STATES; c++){
     for (int i=0; i < _num_energy_groups; i++)
       _sigma_a[c*_num_energy_groups+i] = double(xs[i]);
   }
@@ -477,13 +477,13 @@ void Material::setSigmaA(double* xs, int num_groups) {
  * @param xs the absorption cross-section
  * @param group the energy group
  */
-void Material::setSigmaAByGroup(double xs, int group, int position) {
+void Material::setSigmaAByGroup(double xs, int group, int state) {
 
   if (group < 0 || group >= _num_energy_groups)
     log_printf(ERROR, "Unable to set sigma_a for group %d for material "
                "%d which contains %d energy groups", group, _id, _num_energy_groups);
 
-  _sigma_a[position*_num_energy_groups+group] = xs;
+  _sigma_a[state*_num_energy_groups+group] = xs;
 }
 
 
@@ -492,13 +492,13 @@ void Material::setSigmaAByGroup(double xs, int group, int position) {
  * @param xs the absorption cross-section
  * @param group the energy group
  */
-double Material::getSigmaAByGroup(int group, int position, double temp) {
+double Material::getSigmaAByGroup(int group, int state, double temp) {
 
   if (group < 0 || group >= _num_energy_groups)
     log_printf(ERROR, "Unable to get sigma_a for group %d for material "
                "%d which contains %d energy groups", group, _id, _num_energy_groups);
 
-  return _sigma_a[position*_num_energy_groups+group];
+  return _sigma_a[state*_num_energy_groups+group];
 }
 
 
@@ -539,7 +539,7 @@ void Material::setSigmaS(double* xs, int num_groups_squared) {
 
   int ng = _num_energy_groups;
   
-  for (int c=0; c < 8; c++){
+  for (int c=0; c < NUM_STATES; c++){
     for (int i=0; i < ng; i++) {
       for (int j=0; j < ng; j++)
         _sigma_s[c*ng*ng+j*ng+i] = xs[j*ng+i];
@@ -554,7 +554,7 @@ void Material::setSigmaS(double* xs, int num_groups_squared) {
  * @param group1 the row index in the scattering matrix
  * @param group2 the column index in the scattering matrix
  */
-void Material::setSigmaSByGroup(double xs, int group_from, int group_to, int position) {
+void Material::setSigmaSByGroup(double xs, int group_from, int group_to, int state) {
 
   if (group_from < 0 || group_to < 0 || group_from >= _num_energy_groups || group_to >= _num_energy_groups)
     log_printf(ERROR, "Unable to set sigma_s for group %d to %d for Material %d "
@@ -562,7 +562,7 @@ void Material::setSigmaSByGroup(double xs, int group_from, int group_to, int pos
                group_from, group_to, _id, _num_energy_groups);
 
   int ng = _num_energy_groups;
-  _sigma_s[position*ng*ng + ng*(group_from) + (group_to)] = xs;
+  _sigma_s[state*ng*ng + ng*(group_from) + (group_to)] = xs;
 }
 
 
@@ -572,7 +572,7 @@ void Material::setSigmaSByGroup(double xs, int group_from, int group_to, int pos
  * @param group1 the row index in the scattering matrix
  * @param group2 the column index in the scattering matrix
  */
-double Material::getSigmaSByGroup(int group_from, int group_to, int position, double temp) {
+double Material::getSigmaSByGroup(int group_from, int group_to, int state, double temp) {
 
   if (group_from < 0 || group_to < 0 || group_from >= _num_energy_groups || group_to >= _num_energy_groups)
     log_printf(ERROR, "Unable to get sigma_s for group %d to %d for Material %d "
@@ -580,7 +580,7 @@ double Material::getSigmaSByGroup(int group_from, int group_to, int position, do
                group_from, group_to, _id, _num_energy_groups);
 
   int ng = _num_energy_groups;
-  return _sigma_s[position*ng*ng + ng*(group_from) + (group_to)];
+  return _sigma_s[state*ng*ng + ng*(group_from) + (group_to)];
 }
 
 
@@ -609,7 +609,7 @@ void Material::setSigmaF(double* xs, int num_groups) {
     log_printf(ERROR, "Unable to set sigma_f with %d groups for Material "
                "%d which contains %d energy groups", num_groups, _num_energy_groups);
 
-  for (int c=0; c < 8; c++){
+  for (int c=0; c < NUM_STATES; c++){
     for (int i=0; i < _num_energy_groups; i++)
       _sigma_f[c*_num_energy_groups+i] = xs[i];
   }
@@ -631,19 +631,19 @@ void Material::setSigmaF(double* xs, int num_groups) {
  * @param xs the fission cross-section
  * @param group the energy group
  */
-void Material::setSigmaFByGroup(double xs, int group, int position) {
+void Material::setSigmaFByGroup(double xs, int group, int state) {
 
   if (group < 0 || group >= _num_energy_groups)
     log_printf(ERROR, "Unable to set sigma_f for group %d for Material "
                "%d which contains %d energy groups", group, _id, _num_energy_groups);
 
-  _sigma_f[position*_num_energy_groups+group] = xs;
+  _sigma_f[state*_num_energy_groups+group] = xs;
 
   /* Determine whether or not this Material is fissionable */
   _fissionable = false;
 
   for (int i=0; i < _num_energy_groups; i++) {
-    if (_sigma_f[position*_num_energy_groups+i] > 0.0) {
+    if (_sigma_f[state*_num_energy_groups+i] > 0.0) {
       _fissionable = true;
       return;
     }
@@ -656,13 +656,13 @@ void Material::setSigmaFByGroup(double xs, int group, int position) {
  * @param xs the fission cross-section
  * @param group the energy group
  */
-double Material::getSigmaFByGroup(int group, int position, double temp) {
+double Material::getSigmaFByGroup(int group, int state, double temp) {
 
   if (group < 0 || group >= _num_energy_groups)
     log_printf(ERROR, "Unable to get sigma_f for group %d for Material "
                "%d which contains %d energy groups", group, _id, _num_energy_groups);
 
-  return _sigma_f[position*_num_energy_groups+group];
+  return _sigma_f[state*_num_energy_groups+group];
 }
 
 
@@ -679,7 +679,7 @@ void Material::setNuSigmaF(double* xs, int num_groups) {
     log_printf(ERROR, "Unable to set nu_sigma_f with %d groups for Material %d "
               "which contains %d energy groups", num_groups, _id, _num_energy_groups);
 
-  for (int c=0; c < 8; c++){
+  for (int c=0; c < NUM_STATES; c++){
     for (int i=0; i < _num_energy_groups; i++)
       _nu_sigma_f[c*_num_energy_groups+i] = xs[i];
   }
@@ -706,13 +706,13 @@ void Material::setNuSigmaF(double* xs, int num_groups) {
  * @param xs the fission cross-section multiplied by nu \f$ \nu \f$
  * @param group the energy group
  */
-void Material::setNuSigmaFByGroup(double xs, int group, int position) {
+void Material::setNuSigmaFByGroup(double xs, int group, int state) {
 
   if (group < 0 || group >= _num_energy_groups)
     log_printf(ERROR, "Unable to set nu_sigma_f for group %d for Material "
                "%d which contains %d energy groups", group, _id, _num_energy_groups);
 
-  _nu_sigma_f[position*_num_energy_groups+group] = xs;
+  _nu_sigma_f[state*_num_energy_groups+group] = xs;
 }
 
 
@@ -736,13 +736,13 @@ void Material::setNuSigmaFByGroup(double xs, int group, int position) {
  * @param xs the fission cross-section multiplied by nu \f$ \nu \f$
  * @param group the energy group
  */
-double Material::getNuSigmaFByGroup(int group, int position, double temp) {
+double Material::getNuSigmaFByGroup(int group, int state, double temp) {
 
   if (group < 0 || group >= _num_energy_groups)
     log_printf(ERROR, "Unable to get nu_sigma_f for group %d for Material "
                "%d which contains %d energy groups", group, _id, _num_energy_groups);
 
-  return _nu_sigma_f[position*_num_energy_groups+group];
+  return _nu_sigma_f[state*_num_energy_groups+group];
 }
 
 
@@ -772,7 +772,7 @@ void Material::setChi(double* xs, int num_groups) {
     log_printf(ERROR, "Unable to set chi with %d groups for Material "
                "%d which contains %d energy groups", num_groups, _num_energy_groups);
 
-  for (int c=0; c < 8; c++){
+  for (int c=0; c < NUM_STATES; c++){
     for (int i=0; i < _num_energy_groups; i++)
       _chi[c*_num_energy_groups+i] = xs[i];
   }
@@ -784,13 +784,13 @@ void Material::setChi(double* xs, int num_groups) {
  * @param xs the chi value (\f$ \Chi \f$)
  * @param group the energy group
  */
-void Material::setChiByGroup(double xs, int group, int position) {
+void Material::setChiByGroup(double xs, int group, int state) {
 
   if (group < 0 || group >= _num_energy_groups)
     log_printf(ERROR, "Unable to set chi for group %d for Material "
               "%d which contains %d energy groups", group, _num_energy_groups, _id);
 
-  _chi[position*_num_energy_groups+group] = xs;
+  _chi[state*_num_energy_groups+group] = xs;
 }
 
 
@@ -799,13 +799,13 @@ void Material::setChiByGroup(double xs, int group, int position) {
  * @param xs the chi value (\f$ \Chi \f$)
  * @param group the energy group
  */
-double Material::getChiByGroup(int group, int position, double temp) {
+double Material::getChiByGroup(int group, int state, double temp) {
 
   if (group < 0 || group >= _num_energy_groups)
     log_printf(ERROR, "Unable to get chi for group %d for Material "
                "%d which contains %d energy groups", group, _id, _num_energy_groups);
 
-  return _chi[position*_num_energy_groups+group];
+  return _chi[state*_num_energy_groups+group];
 }
 
 
@@ -835,7 +835,7 @@ void Material::setDifCoef(double* xs, int num_groups) {
                "Material %d which contains %d energy groups", num_groups,
                _num_energy_groups);
 
-  for (int c=0; c < 8; c++){
+  for (int c=0; c < NUM_STATES; c++){
     for (int i=0; i < _num_energy_groups; i++)
       _dif_coef[c*_num_energy_groups+i] = xs[i];
   }
@@ -847,14 +847,14 @@ void Material::setDifCoef(double* xs, int num_groups) {
  * @param xs the diffusion coefficient
  * @param group the energy group
  */
-void Material::setDifCoefByGroup(double xs, int group, int position) {
+void Material::setDifCoefByGroup(double xs, int group, int state) {
 
   if (group < 0 || group >= _num_energy_groups)
     log_printf(ERROR, "Unable to set diffusion coefficient for group %d for "
                "Material %d which contains %d energy groups",
                group, _id, _num_energy_groups);
 
-  _dif_coef[position*_num_energy_groups+group] = xs;
+  _dif_coef[state*_num_energy_groups+group] = xs;
 }
 
 
@@ -863,14 +863,14 @@ void Material::setDifCoefByGroup(double xs, int group, int position) {
  * @param xs the diffusion coefficient
  * @param group the energy group
  */
-double Material::getDifCoefByGroup(int group, int position, double temp) {
+double Material::getDifCoefByGroup(int group, int state, double temp) {
 
   if (group < 0 || group >= _num_energy_groups)
     log_printf(ERROR, "Unable to get diffusion coefficient for group %d for "
                "Material %d which contains %d energy groups",
                group, _id, _num_energy_groups);
 
-  return _dif_coef[position*_num_energy_groups+group];
+  return _dif_coef[state*_num_energy_groups+group];
 }
 
 
@@ -900,7 +900,7 @@ void Material::setVelocity(double* velocity, int num_groups) {
                "Material %d which contains %d energy groups", num_groups,
                _num_energy_groups);
 
-  for (int c=0; c < 8; c++){
+  for (int c=0; c < NUM_STATES; c++){
     for (int i=0; i < _num_energy_groups; i++)
       _velocity[c*_num_energy_groups+i] = velocity[i];
   }
@@ -912,14 +912,14 @@ void Material::setVelocity(double* velocity, int num_groups) {
  * @param xs the diffusion coefficient
  * @param group the energy group
  */
-void Material::setVelocityByGroup(double velocity, int group, int position) {
+void Material::setVelocityByGroup(double velocity, int group, int state) {
 
   if (group < 0 || group >= _num_energy_groups)
     log_printf(ERROR, "Unable to set velocity for group %d for "
                "Material %d which contains %d energy groups",
                group, _id, _num_energy_groups);
 
-  _velocity[position*_num_energy_groups+group] = velocity;
+  _velocity[state*_num_energy_groups+group] = velocity;
 }
 
 
@@ -928,14 +928,14 @@ void Material::setVelocityByGroup(double velocity, int group, int position) {
  * @param xs the diffusion coefficient
  * @param group the energy group
  */
-double Material::getVelocityByGroup(int group, int position, double temp) {
+double Material::getVelocityByGroup(int group, int state, double temp) {
 
   if (group < 0 || group >= _num_energy_groups)
     log_printf(ERROR, "Unable to set velocity for group %d for "
                "Material %d which contains %d energy groups",
                group, _id, _num_energy_groups);
 
-  return _velocity[position*_num_energy_groups+group];
+  return _velocity[state*_num_energy_groups+group];
 }
 
 
@@ -965,7 +965,7 @@ void Material::setPrecursorConc(double* precursor_conc, int num_groups) {
                "Material %d which contains %d delayed groups", num_groups,
                _num_delayed_groups);
 
-  for (int c=0; c < 8; c++){
+  for (int c=0; c < NUM_STATES; c++){
     for (int i=0; i < _num_delayed_groups; i++)
       _precursor_conc[c*_num_delayed_groups+i] = precursor_conc[i];
   }
@@ -977,14 +977,14 @@ void Material::setPrecursorConc(double* precursor_conc, int num_groups) {
  * @param xs the diffusion coefficient
  * @param group the energy group
  */
-void Material::setPrecursorConcByGroup(double conc, int group, int position) {
+void Material::setPrecursorConcByGroup(double conc, int group, int state) {
 
   if (group < 0 || group >= _num_delayed_groups)
     log_printf(ERROR, "Unable to set precursor conc for group %d for "
                "Material %d which contains %d delayed groups",
                group, _id, _num_delayed_groups);
 
-  _precursor_conc[position*_num_delayed_groups+group] = conc;
+  _precursor_conc[state*_num_delayed_groups+group] = conc;
 }
 
 
@@ -993,14 +993,14 @@ void Material::setPrecursorConcByGroup(double conc, int group, int position) {
  * @param xs the diffusion coefficient
  * @param group the energy group
  */
-double Material::getPrecursorConcByGroup(int group, int position, double temp) {
+double Material::getPrecursorConcByGroup(int group, int state, double temp) {
 
   if (group < 0 || group >= _num_delayed_groups)
     log_printf(ERROR, "Unable to get precursor conc for group %d for "
                "Material %d which contains %d delayed groups",
                group, _id, _num_delayed_groups);
 
-  return _precursor_conc[position*_num_delayed_groups+group];
+  return _precursor_conc[state*_num_delayed_groups+group];
 }
 
 
@@ -1023,17 +1023,15 @@ double Material::getPrecursorConcByGroup(int group, int position, double temp) {
  * @param xs the array of diffusion coefficents
  * @param num_groups the number of energy groups
  */
-void Material::setDecayConstant(double* decay_constant, int num_groups) {
+void Material::setDecayConstant(double* xs, int num_groups) {
 
   if (_num_delayed_groups != num_groups)
     log_printf(ERROR, "Unable to set decay constant with %d groups for "
                "Material %d which contains %d delayed groups", num_groups,
                _num_delayed_groups);
 
-  for (int c=0; c < 8; c++){
-    for (int i=0; i < _num_delayed_groups; i++)
-      _decay_constant[c*_num_delayed_groups+i] = decay_constant[i];
-  }
+  for (int i=0; i < _num_delayed_groups; i++)
+    _decay_constant[i] = xs[i];
 }
 
 
@@ -1042,14 +1040,14 @@ void Material::setDecayConstant(double* decay_constant, int num_groups) {
  * @param xs the diffusion coefficient
  * @param group the energy group
  */
-void Material::setDecayConstantByGroup(double decay_constant, int group, int position) {
+void Material::setDecayConstantByGroup(double decay_constant, int group) {
 
   if (group < 0 || group >= _num_delayed_groups)
     log_printf(ERROR, "Unable to set decay constant for group %d for "
                "Material %d which contains %d delayed groups",
                group, _id, _num_delayed_groups);
 
-  _decay_constant[position*_num_delayed_groups+group] = decay_constant;
+  _decay_constant[group] = decay_constant;
 }
 
 
@@ -1058,14 +1056,14 @@ void Material::setDecayConstantByGroup(double decay_constant, int group, int pos
  * @param xs the diffusion coefficient
  * @param group the energy group
  */
-double Material::getDecayConstantByGroup(int group, int position, double temp) {
+double Material::getDecayConstantByGroup(int group) {
 
   if (group < 0 || group >= _num_delayed_groups)
     log_printf(ERROR, "Unable to get decay constant for group %d for "
                "Material %d which contains %d delayed groups",
                group, _id, _num_delayed_groups);
 
-  return _decay_constant[position*_num_delayed_groups+group];
+  return _decay_constant[group];
 }
 
 
@@ -1088,16 +1086,16 @@ double Material::getDecayConstantByGroup(int group, int position, double temp) {
  * @param xs the array of diffusion coefficents
  * @param num_groups the number of energy groups
  */
-void Material::setDelayedFraction(double* delayed_fraction, int num_groups) {
+void Material::setDelayedFraction(double* xs, int num_groups) {
 
   if (_num_delayed_groups != num_groups)
     log_printf(ERROR, "Unable to set delayed fractions with %d groups for "
                "Material %d which contains %d delayed groups", num_groups,
                _num_delayed_groups);
 
-  for (int c=0; c < 8; c++){
+  for (int c=0; c < NUM_STATES; c++){
     for (int i=0; i < _num_delayed_groups; i++)
-      _delayed_fraction[c*_num_delayed_groups+i] = delayed_fraction[i];
+      _delayed_fraction[c*_num_delayed_groups+i] = xs[i];
   }
 }
 
@@ -1107,14 +1105,14 @@ void Material::setDelayedFraction(double* delayed_fraction, int num_groups) {
  * @param xs the diffusion coefficient
  * @param group the energy group
  */
-void Material::setDelayedFractionByGroup(double delayed_fraction, int group, int position) {
+void Material::setDelayedFractionByGroup(double delayed_fraction, int group, int state) {
 
   if (group < 0 || group >= _num_delayed_groups)
     log_printf(ERROR, "Unable to set delayed fraction for group %d for "
                "Material %d which contains %d delayed groups",
                group, _id, _num_delayed_groups);
 
-  _delayed_fraction[position*_num_delayed_groups+group] = delayed_fraction;
+  _delayed_fraction[state*_num_delayed_groups+group] = delayed_fraction;
 }
 
 
@@ -1123,14 +1121,14 @@ void Material::setDelayedFractionByGroup(double delayed_fraction, int group, int
  * @param xs the diffusion coefficient
  * @param group the energy group
  */
-double Material::getDelayedFractionByGroup(int group, int position, double temp) {
+double Material::getDelayedFractionByGroup(int group, int state, double temp) {
 
   if (group < 0 || group >= _num_delayed_groups)
     log_printf(ERROR, "Unable to get delayed fraction for group %d for "
                "Material %d which contains %d delayed groups",
                group, _id, _num_delayed_groups);
 
-  return _delayed_fraction[position*_num_delayed_groups+group];
+  return _delayed_fraction[state*_num_delayed_groups+group];
 }
 
 
@@ -1139,12 +1137,12 @@ double Material::getDelayedFractionByGroup(int group, int position, double temp)
  * @param xs the diffusion coefficient
  * @param group the energy group
  */
-double Material::getDelayedFractionTotal(int position, double temp) {
+double Material::getDelayedFractionTotal(int state, double temp) {
 
   double delayed_fraction = 0.0;
 
   for (int i=0; i < _num_delayed_groups; i++)
-    delayed_fraction = _delayed_fraction[position*_num_delayed_groups+i];
+    delayed_fraction += _delayed_fraction[state*_num_delayed_groups+i];
   
   return delayed_fraction;
 }
@@ -1167,39 +1165,39 @@ std::string Material::toString() {
   string << "\n\t Energy per fission = " << _energy_per_fission;
   string << "\n\t Temperature Conversion Factor = " << _temperature_conversion_factor;
   
-  for (int position=0; position < 8; position++){
+  for (int state=0; state < NUM_STATES; state++){
 
-    string << "\n\t Clock Position = " << _clock->getPositionName(position);
+    string << "\n\t Clock State = " << _clock->getStateName(state);
     
     if (_sigma_a != NULL) {
       string << "\n\t\tSigma_a = ";
       for (int e = 0; e < _num_energy_groups; e++)
-        string << _sigma_a[position*ng+e] << ", ";
+        string << _sigma_a[state*ng+e] << ", ";
     }
     
     if (_sigma_t != NULL) {
       string << "\n\t\tSigma_t = ";
       for (int e = 0; e < _num_energy_groups; e++)
-        string << _sigma_t[position*ng+e] << ", ";
+        string << _sigma_t[state*ng+e] << ", ";
     }
     
     if (_sigma_f != NULL) {
       string << "\n\t\tSigma_f = ";
       for (int e = 0; e < _num_energy_groups; e++)
-        string << _sigma_f[position*ng+e] << ", ";
+        string << _sigma_f[state*ng+e] << ", ";
     }
     
     if (_nu_sigma_f != NULL) {
       string << "\n\t\tnu_sigma_f = ";
       for (int e = 0; e < _num_energy_groups; e++)
-        string << _nu_sigma_f[position*ng+e] << ", ";
+        string << _nu_sigma_f[state*ng+e] << ", ";
     }
     
     if (_sigma_s != NULL) {
       string << "\n\t\tSigma_s = \n\t\t";
       for (int G = 0; G < _num_energy_groups; G++) {
         for (int g = 0; g < _num_energy_groups; g++)
-          string << _sigma_s[position*ng*ng+G*ng+g] << "\t\t ";
+          string << _sigma_s[state*ng*ng+G*ng+g] << "\t\t ";
         string << "\n\t\t";
       }
     }
@@ -1207,25 +1205,25 @@ std::string Material::toString() {
     if (_chi != NULL) {
       string << "\n\t\tChi = ";
       for (int e = 0; e < _num_energy_groups; e++)
-        string << _chi[position*ng+e] << ", ";
+        string << _chi[state*ng+e] << ", ";
     }
     
     if (_dif_coef != NULL) {
       string << "\n\t\tDiffusion Coefficient = ";
       for (int e = 0; e < _num_energy_groups; e++)
-        string << _dif_coef[position*ng+e] << ", ";
+        string << _dif_coef[state*ng+e] << ", ";
     }
     
     if (_velocity != NULL) {
       string << "\n\t\tVelocity = ";
       for (int e = 0; e < _num_energy_groups; e++)
-        string << _velocity[position*ng+e] << ", ";
+        string << _velocity[state*ng+e] << ", ";
     }
     
     if (_precursor_conc != NULL) {
       string << "\n\t\tPrecursor Conc = ";
       for (int e = 0; e < _num_delayed_groups; e++)
-        string << _precursor_conc[position*_num_delayed_groups+e] << ", ";
+        string << _precursor_conc[state*_num_delayed_groups+e] << ", ";
     }
   }
 
@@ -1258,8 +1256,11 @@ Material* Material::clone(){
   clone->setTemperatureConversionFactor(_temperature_conversion_factor);
   
   int ng = _num_energy_groups;
+
+  for (int d=0; d < _num_delayed_groups; d++)
+    clone->setDecayConstantByGroup(_decay_constant[d], d);
   
-  for (int c=0; c < 8; c++){
+  for (int c=0; c < NUM_STATES; c++){
     for (int i=0; i < ng; i++) {
       clone->setSigmaTByGroup(_sigma_t[c*ng+i], i, c);
       clone->setSigmaAByGroup(_sigma_a[c*ng+i], i, c);
@@ -1273,33 +1274,38 @@ Material* Material::clone(){
         clone->setSigmaSByGroup(_sigma_s[c*ng*ng + i*ng + j], i, j, c);
     }
 
-    for (int d=0; d < _num_delayed_groups; d++)
+    for (int d=0; d < _num_delayed_groups; d++){
       clone->setPrecursorConcByGroup(_precursor_conc[c*_num_delayed_groups+d], d, c);
+      clone->setDelayedFractionByGroup(_delayed_fraction[c*_num_delayed_groups+d], d, c);
+    }
   }
 
   return clone;
 }
 
 
-void Material::copy(int position_from, int position_to){
+void Material::copy(int state_from, int state_to){
 
   int ng = _num_energy_groups;
+  int nd = _num_delayed_groups;
   
   for (int i=0; i < ng; i++) {
-    setSigmaTByGroup(_sigma_t[position_from*ng+i], i, position_to);
-    setSigmaAByGroup(_sigma_a[position_from*ng+i], i, position_to);
-    setSigmaFByGroup(_sigma_f[position_from*ng+i], i, position_to);
-    setNuSigmaFByGroup(_nu_sigma_f[position_from*ng+i], i, position_to);
-    setChiByGroup(_chi[position_from*ng+i], i, position_to);
-    setDifCoefByGroup(_dif_coef[position_from*ng+i], i, position_to);
-    setVelocityByGroup(_velocity[position_from*ng+i], i, position_to);
+    setSigmaTByGroup(_sigma_t[state_from*ng+i], i, state_to);
+    setSigmaAByGroup(_sigma_a[state_from*ng+i], i, state_to);
+    setSigmaFByGroup(_sigma_f[state_from*ng+i], i, state_to);
+    setNuSigmaFByGroup(_nu_sigma_f[state_from*ng+i], i, state_to);
+    setChiByGroup(_chi[state_from*ng+i], i, state_to);
+    setDifCoefByGroup(_dif_coef[state_from*ng+i], i, state_to);
+    setVelocityByGroup(_velocity[state_from*ng+i], i, state_to);
     
     for (int j=0; j < _num_energy_groups; j++)
-      setSigmaSByGroup(_sigma_s[position_from*ng*ng + i*ng + j], i, j, position_to);
+      setSigmaSByGroup(_sigma_s[state_from*ng*ng + i*ng + j], i, j, state_to);
   }
   
-  for (int d=0; d < _num_delayed_groups; d++)
-    setPrecursorConcByGroup(_precursor_conc[position_from*_num_delayed_groups+d], d, position_to);
+  for (int d=0; d < nd; d++){
+    setPrecursorConcByGroup(_precursor_conc[state_from*nd+d], d, state_to);
+    setDelayedFractionByGroup(_delayed_fraction[state_from*nd+d], d, state_to);
+  }
 }
 
 

@@ -102,21 +102,21 @@ public:
   virtual void setDifCoef(double* xs, int num_groups);
   virtual void setVelocity(double* xs, int num_groups);
   virtual void setPrecursorConc(double* xs, int num_groups);
-  virtual void setDecayConstant(double* decay_constant, int num_groups);
-  virtual void setDelayedFraction(double* delayed_fraction, int num_groups);
+  virtual void setDecayConstant(double* xs, int num_groups);
+  virtual void setDelayedFraction(double* xs, int num_groups);
 
-  virtual void setSigmaTByGroup(double xs, int group, int position=CURRENT);
-  virtual void setSigmaAByGroup(double xs, int group, int position=CURRENT);
-  virtual void setSigmaFByGroup(double xs, int group, int position=CURRENT);
-  virtual void setNuSigmaFByGroup(double xs, int group, int position=CURRENT);
-  virtual void setSigmaSByGroup(double xs, int group_from, int group_to, int position=CURRENT);
-  virtual void setChiByGroup(double xs, int group, int position=CURRENT);
-  virtual void setDifCoefByGroup(double xs, int group, int position=CURRENT);
-  virtual void setVelocityByGroup(double xs, int group, int position=CURRENT);
-  virtual void setPrecursorConcByGroup(double xs, int group, int position=CURRENT);
+  virtual void setSigmaTByGroup(double xs, int group, int state=CURRENT);
+  virtual void setSigmaAByGroup(double xs, int group, int state=CURRENT);
+  virtual void setSigmaFByGroup(double xs, int group, int state=CURRENT);
+  virtual void setNuSigmaFByGroup(double xs, int group, int state=CURRENT);
+  virtual void setSigmaSByGroup(double xs, int group_from, int group_to, int state=CURRENT);
+  virtual void setChiByGroup(double xs, int group, int state=CURRENT);
+  virtual void setDifCoefByGroup(double xs, int group, int state=CURRENT);
+  virtual void setVelocityByGroup(double xs, int group, int state=CURRENT);
+  virtual void setPrecursorConcByGroup(double xs, int group, int state=CURRENT);
   void setTemperatureConversionFactor(double conversion_factor);
-  virtual void setDecayConstantByGroup(double xs, int group, int position=CURRENT);
-  virtual void setDelayedFractionByGroup(double xs, int group, int position=CURRENT);
+  virtual void setDecayConstantByGroup(double xs, int group);
+  virtual void setDelayedFractionByGroup(double xs, int group, int state=CURRENT);
   
   void setClock(Clock* clock);
 
@@ -139,18 +139,18 @@ public:
   double* getDecayConstant();
   double* getDelayedFraction();
 
-  virtual double getSigmaTByGroup(int group, int position=CURRENT, double temp=0.0);
-  virtual double getSigmaAByGroup(int group, int position=CURRENT, double temp=0.0);
-  virtual double getSigmaSByGroup(int group_from, int group_to, int position=CURRENT, double temp=0.0);
-  virtual double getSigmaFByGroup(int group, int position=CURRENT, double temp=0.0);
-  virtual double getNuSigmaFByGroup(int group, int position=CURRENT, double temp=0.0);
-  virtual double getChiByGroup(int group, int position=CURRENT, double temp=0.0);
-  virtual double getDifCoefByGroup(int group, int position=CURRENT, double temp=0.0);
-  virtual double getVelocityByGroup(int group, int position=CURRENT, double temp=0.0);
-  virtual double getPrecursorConcByGroup(int group, int position=CURRENT, double temp=0.0);
-  virtual double getDecayConstantByGroup(int group, int position=CURRENT, double temp=0.0);
-  virtual double getDelayedFractionByGroup(int group, int position=CURRENT, double temp=0.0);
-  virtual double getDelayedFractionTotal(int position=CURRENT, double temp=0.0);
+  virtual double getSigmaTByGroup(int group, int state=CURRENT, double temp=0.0);
+  virtual double getSigmaAByGroup(int group, int state=CURRENT, double temp=0.0);
+  virtual double getSigmaSByGroup(int group_from, int group_to, int state=CURRENT, double temp=0.0);
+  virtual double getSigmaFByGroup(int group, int state=CURRENT, double temp=0.0);
+  virtual double getNuSigmaFByGroup(int group, int state=CURRENT, double temp=0.0);
+  virtual double getChiByGroup(int group, int state=CURRENT, double temp=0.0);
+  virtual double getDifCoefByGroup(int group, int state=CURRENT, double temp=0.0);
+  virtual double getVelocityByGroup(int group, int state=CURRENT, double temp=0.0);
+  virtual double getPrecursorConcByGroup(int group, int state=CURRENT, double temp=0.0);
+  virtual double getDecayConstantByGroup(int group);
+  virtual double getDelayedFractionByGroup(int group, int state=CURRENT, double temp=0.0);
+  virtual double getDelayedFractionTotal(int state=CURRENT, double temp=0.0);
   double getTemperatureConversionFactor();
   
   bool isFissionable();
@@ -159,7 +159,7 @@ public:
   virtual std::string toString();
   void printString();
   virtual Material* clone();
-  virtual void copy(int position_from, int position_to);
+  virtual void copy(int state_from, int state_to);
 };
 
 #endif /* MATERIAL_H_ */

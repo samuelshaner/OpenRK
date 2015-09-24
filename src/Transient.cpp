@@ -1,20 +1,10 @@
 #include "Transient.h"
 
-Transient::Transient(transientMethod inner_method, transientMethod outer_method, double wt_inner, double wt_outer){
+Transient::Transient(){
 
   /* Initialize variables */
-  _inner_method = BACKWARD_EULER;
-  _outer_method = BACKWARD_EULER;
-  _inner_wt = 1.0;
-  _outer_wt = 1.0;
   _clock = NULL;
-  _shape_mesh = NULL;
-  _amp_mesh = NULL;
   _solver = NULL;
-    
-  /* Set solver parameters */
-  setInnerMethod(inner_method, wt_inner);
-  setOuterMethod(outer_method, wt_outer);
 }
 
 
@@ -22,56 +12,6 @@ Transient::~Transient(){
 }
 
 
-void Transient::setInnerMethod(transientMethod inner_method, double wt){
-
-  if (inner_method == CUSTOM){
-    if (wt < 0.0 || wt > 1.0)
-      log_printf(ERROR, "Unable to use CUSTOM inner method with wt ouside "
-                 "range of [0,1]. wt: %d", wt);
-    else{
-      _inner_method = inner_method;
-      _inner_wt = wt;
-    }
-  }
-  else if (inner_method == FORWARD_EULER){
-    _inner_method = inner_method;
-    _inner_wt = 0.0;
-  }
-  else if (inner_method == BACKWARD_EULER){
-    _inner_method = inner_method;
-    _inner_wt = 1.0;
-  }
-  else if (inner_method == CRANK_NICOLSON){
-    _inner_method = inner_method;
-    _inner_wt = 0.5;
-  }  
-}
-
-
-void Transient::setOuterMethod(transientMethod outer_method, double wt){
-
-  if (outer_method == CUSTOM){
-    if (wt < 0.0 || wt > 1.0)
-      log_printf(ERROR, "Unable to use CUSTOM outer method with wt ouside "
-                 "range of [0,1]. wt: %d", wt);
-    else{
-      _outer_method = outer_method;
-      _outer_wt = wt;
-    }
-  }
-  else if (outer_method == FORWARD_EULER){
-    _outer_method = outer_method;
-    _outer_wt = 0.0;
-  }
-  else if (outer_method == BACKWARD_EULER){
-    _outer_method = outer_method;
-    _outer_wt = 1.0;
-  }
-  else if (outer_method == CRANK_NICOLSON){
-    _outer_method = outer_method;
-    _outer_wt = 0.5;
-  }  
-}
 
 
 void Transient::setInitialPower(double initial_power){
@@ -137,13 +77,16 @@ void Transient::takeInnerStep(){
   int nz = _amp_mesh->getNumZ();
   double* flux_temp = new double[nx*ny*nz*ng];
   double tol = 1.e-4;
+  Matrix* amp_AM_matrix = _solver->getAMAmp();
+  Matrix* amp_M_matrix = _solver->getMAmp();
 
+  
   while (true){
 
     broadcastToOne(CURRENT, FORWARD_IN_OLD);
 
     _solver->makeAMAmp(_inner_wt);
-    linearSolve2d(_solver->getAMAmp(), nx*ny*nz, ng*(ng+6), _amp_mesh->getFlux(CURRENT), nx*ny*nz*ng,
+    linearSolve2d(_solver->getAMAmp(), _amp_mesh->getFlux(CURRENT), nx*ny*nz*ng,
                   _solver->getBAmp(), nx*ny*nz*ng, flux_temp, nx*ny*nz*ng, nx, ny, nz, ng, 1.e-8);
 
     _shape_mesh->synthesizeFlux(CURRENT);

@@ -19,7 +19,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <iomanip>
+#include <omp.h>
 #include "log.h"
+#include "pairwise_sum.h"
 #endif
 
 
@@ -34,37 +36,41 @@ private:
   int _num_y;
   int _num_z;
   int _num_groups;
+
+  /** OpenMP mutual exclusion locks for atomic cell updates */
+  omp_lock_t* _cell_locks;
+
+  void setNumX(int num_x);
+  void setNumY(int num_y);
+  void setNumZ(int num_z);
+  void setNumGroups(int num_groups);
   
 public:
   Vector(int num_x=1, int num_y=1, int num_z=1, int num_groups=1);
   virtual ~Vector();
 
   /* Worker functions */
-  void incrementValue(int row, double val);
-  void incrementValueByCell(int cell, int g, double val);
-  void incrementValueByCoords(int x, int y, int z, int g, double val);
-  void setValue(int row, double val);
-  void setValueByCoords(int x, int y, int z, int g, double val);
-  void setValueByCell(int cell, int g, double val);
-  void setAll(double val);
-  void zero();
+  void incrementValue(int cell, int group, double val);
+  void incrementValues(int cell, int group_start, int group_end, double* vals);
+  void clear();
   void scaleByValue(double val);  
-  std::string toString();
   void printString();
   void copyTo(Vector* vector);
-  void random();
   
   /* Getter functions */
-  double getValue(int row);
-  double getValueByCoords(int x, int y, int z, int g);
-  double getValueByCell(int cell, int g=0);
+  double getValue(int cell, int group);
   double* getArray();
   int getNumX();
   int getNumY();
   int getNumZ();
   int getNumGroups();
   int getNumRows();
-
+  double getSum();
+  
+  /* Setter functions */
+  void setValue(int cell, int group, double val);
+  void setValues(int cell, int group_start, int group_end, double* vals);
+  void setAll(double val);
 };
 
 #endif /* VECTOR_H_ */

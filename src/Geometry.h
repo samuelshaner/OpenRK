@@ -15,15 +15,6 @@
 #include <vector>
 #endif
 
-/**
- * @enum boundaryType
- * @brief The boundary types
- */
-enum boundaryCondition {
-  VACUUM,
-  REFLECTIVE
-};
-
 
 /**
  * @class Geometry Geometry.h "src/Geometry.h"
@@ -51,7 +42,7 @@ protected:
   int _num_shape_cells;
   int _num_amp_cells;
   Material** _materials;
-  boundaryCondition* _boundaries;
+  int* _boundaries;
   int _num_energy_groups;
   int _num_delayed_groups;
   double* _volumes;
@@ -72,7 +63,7 @@ public:
   void setYMax(double y_max);
   void setZMin(double z_min);
   void setZMax(double z_max);
-  void setBoundary(int side, boundaryCondition boundary);
+  void setBoundary(int side, int boundary);
   void setMaterial(Material* material, int cell);
   void setNumShapeCells(int num_shape_cells);
   
@@ -80,7 +71,7 @@ public:
   double getWidth();
   double getHeight();
   double getDepth();
-  boundaryCondition getBoundary(int side);
+  int getBoundary(int side);
   double getXMin();
   double getXMax();
   double getYMin();
@@ -91,7 +82,7 @@ public:
   int getNumYAmp();
   int getNumZAmp();
   Material* getMaterial(int cell);
-  std::vector< std::vector<int> > getAmpToShapeMap();
+  std::vector< std::vector<int> >* getAmpToShapeMap();
   int* getShapeToAmpMap();
   int getNumEnergyGroups();
   int getNumDelayedGroups();

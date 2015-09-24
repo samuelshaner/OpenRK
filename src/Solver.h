@@ -23,15 +23,6 @@
 #include "constants.h"
 #endif
 
-/**
- * @enum boundaryType
- * @brief The boundary types
- */
-enum transientMethod {
-  IQS,
-  THETA
-};
-
 
 class Solver {
 
@@ -43,7 +34,7 @@ protected:
   double _k_eff_0;
   Geometry* _geometry;
   Clock* _clock;
-  transientMethod _method;
+  int _method;
   int _num_energy_groups;
   int _num_delayed_groups;
   int _num_shape_cells;
@@ -56,7 +47,8 @@ protected:
   std::map<int, Vector*> _flux;
   std::map<int, Vector*> _shape;
   std::map<int, Vector*> _power;
-
+  std::map<int, Vector*> _weight;
+  
   /* Coarse mesh field variables */
   std::map<int, Vector*> _amplitude;
   std::map<int, Vector*> _current;
@@ -72,61 +64,62 @@ public:
   Matrix* getAmpMatrix();
   Vector* getAmpSource();
   double getKeff0();
-  transientMethod getMethod();
+  int getMethod();
   double getBuckling();
+  Geometry* getGeometry();
+  
+  Vector* getTemperature(int state);
+  Vector* getFlux(int state);
+  Vector* getShape(int state);
+  Vector* getAmplitude(int state);
+  Vector* getPower(int state);
+  Vector* getCurrent(int state);
+  Vector* getDifLinear(int state);
+  Vector* getDifNonlinear(int state);
+  Vector* getFrequency(int state);
 
-  Vector* getTemperature(int time);
-  Vector* getFlux(int time);
-  Vector* getShape(int time);
-  Vector* getAmplitude(int time);
-  Vector* getPower(int time);
-  Vector* getCurrent(int time);
-  Vector* getDifLinear(int time);
-  Vector* getDifNonlinear(int time);
-  Vector* getFrequency(int time);
-
-  double getTemperatureByValue(int cell, int time);
-  double getFluxByValue(int cell, int group, int time);
-  double getShapeByValue(int cell, int group, int time);
-  double getAmplitudeByValue(int cell, int group, int time);
-  double getPowerByValue(int cell, int time);
-  double getCurrentByValue(int cell, int group, int side, int time);
-  double getDifLinearByValue(int cell, int group, int side, int time);
-  double getDifNonlinearByValue(int cell, int group, int side, int time);
-  double getFrequencyByValue(int cell, int group, int time);
+  double getTemperatureByValue(int cell, int state);
+  double getFluxByValue(int cell, int group, int state);
+  double getShapeByValue(int cell, int group, int state);
+  double getAmplitudeByValue(int cell, int group, int state);
+  double getPowerByValue(int cell, int state);
+  double getCurrentByValue(int cell, int group, int side, int state);
+  double getDifLinearByValue(int cell, int group, int side, int state);
+  double getDifNonlinearByValue(int cell, int group, int side, int state);
+  double getFrequencyByValue(int cell, int group, int state);
 
   /* Setter functions */
-  void setMethod(transientMethod method);  
+  void setMethod(int method);
   void setEndTime(double time);
   void setInnerTimeStepSize(double time);
   void setOuterTimeStepSize(double time);
   void setBuckling(double buckling);
   void setInitialPower(double power);
-
-  void setTemperatureByValue(double value, int cell, int time);
-  void setShapeByValue(double value, int cell, int group, int time);
-  void setAmplitudeByValue(double value, int cell, int group, int time);
-  void setPowerByValue(double value, int cell, int time);
-  void setFrequencyByValue(double value, int cell, int group, int time);
-  void setCurrentByValue(double value, int cell, int group, int side, int time);
-  void setFluxByValue(double value, int cell, int group, int time);
-  void setDifLinearByValue(double value, int cell, int group, int side, int time);
-  void setDifNonlinearByValue(double value, int cell, int group, int side, int time);
+  
+  void setTemperatureByValue(double value, int cell, int state);
+  void setShapeByValue(double value, int cell, int group, int state);
+  void setAmplitudeByValue(double value, int cell, int group, int state);
+  void setPowerByValue(double value, int cell, int state);
+  void setFrequencyByValue(double value, int cell, int group, int state);
+  void setCurrentByValue(double value, int cell, int group, int side, int state);
+  void setFluxByValue(double value, int cell, int group, int state);
+  void setDifLinearByValue(double value, int cell, int group, int side, int state);
+  void setDifNonlinearByValue(double value, int cell, int group, int side, int state);
 
   /* Worker functions */
-  void generateAmplitudeMatrix(double wt);
-  void integratePrecursorConcentrations(int time_from, int time_to);
-  void integrateTemperature(int time_from, int time_to);
-  void interpolateShape(int time, int time_forward, int time_backward);
-  void interpolateDifNonlinear(int time, int time_forward, int time_backward);
-  void computeDiffusionCoefficients(int time);
-  void reconstructFlux(int time, int time_shape, int time_amp);
-  void computeShape(int time, int time_flux, int time_amp);
+  void generateAmplitudeMatrix();
+  void integratePrecursorConcentrations(int state_from, int state_to);
+  void integrateTemperature(int state_from, int state_to);
+  void interpolateShape(int state, int state_forward, int state_backward);
+  void interpolateDifNonlinear(int state, int state_forward, int state_backward);
+  void computeDiffusionCoefficients(int state);
+  void reconstructFlux(int state, int state_shape, int state_amp);
+  void computeShape(int state, int state_flux, int state_amp);
   void computeFrequency();
   void computeInitialPrecursorConcentrations();
-  void computePower(int time);
-  double computeAveragePower(int time);
-  double computePowerRMSError(int time_1, int time_2);
+  void computePower(int state);
+  double computeAveragePower(int state);
+  double computePowerRMSError(int state_1, int state_2);
   void normalizeFlux();
   void initializeClock();
   
@@ -136,9 +129,9 @@ public:
   virtual void computeInitialShape(double tol)=0;
 
   /* Copy functions */
-  void copyPrecursors(int time_from, int time_to);
-  virtual void copyFieldVariables(int time_from, int time_to);
-  void broadcastToAll(int time_from);
+  void copyPrecursors(int state_from, int state_to);
+  virtual void copyFieldVariables(int state_from, int state_to);
+  void broadcastToAll(int state_from);
   
 };
 

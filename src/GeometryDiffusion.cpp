@@ -52,9 +52,9 @@ int GeometryDiffusion::getNumZShape(){
 
 int GeometryDiffusion::getNeighborShapeCell(int x, int y, int z, int side){
 
-  if (side < 0 || side > 5)
+  if (side < 0 || side >= NUM_SURFACES)
     log_printf(ERROR, "Unable to get neighbor cell for side %d as there are only"
-               " 6 geometry sides", side);
+               " %d geometry sides", side, NUM_SURFACES);
 
   int neighbor_cell = -1;
 
@@ -118,7 +118,7 @@ GeometryDiffusion* GeometryDiffusion::clone(){
   geometry->setShapeMeshDimensions(_num_x_shape, _num_y_shape, _num_z_shape);
   geometry->setNumShapeCells(_num_shape_cells);
 
-  for (int i=0; i < 6; i++)
+  for (int i=0; i < NUM_SURFACES; i++)
     geometry->setBoundary(i, _boundaries[i]);
 
   for (int i=0; i < _num_shape_cells; i++)
@@ -146,4 +146,18 @@ void GeometryDiffusion::generateCellMap(){
       }
     }
   }  
+}
+
+
+int GeometryDiffusion::findCell(double x, double y, double z){
+  
+  double width = getWidth() / _num_x_shape;
+  double height = getHeight() / _num_y_shape;
+  double depth = getDepth() / _num_z_shape;
+  
+  int xc = floor( (x - getXMin()) / width);
+  int yc = floor( (y - getYMin()) / height);
+  int zc = floor( (z - getZMin()) / depth);
+
+  return zc*(_num_x_shape*_num_y_shape) + yc*_num_x_shape + xc;
 }

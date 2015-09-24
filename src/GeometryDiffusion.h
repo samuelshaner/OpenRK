@@ -44,6 +44,7 @@ public:
   GeometryDiffusion* uniformRefine(int refine_x=1, int refine_y=1, int refine_z=1);
   virtual GeometryDiffusion* clone();
   void generateCellMap();
+  int findCell(double x, double y, double z);
 };
 
 #endif /* GEOMETRYDIFFUSION_H_ */

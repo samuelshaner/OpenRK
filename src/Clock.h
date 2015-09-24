@@ -40,15 +40,15 @@ public:
   virtual ~Clock();
 
   /* Getter functions */
-  double getTime(int position);
+  double getTime(int state);
   double getDtInner();
   double getDtOuter();
-  std::string getPositionName(int position);
+  std::string getStateName(int state);
   
   /* Setter functions */
   void setDtOuter(double dt_outer);
   void setDtInner(double dt_inner);
-  void setTime(int position, double time);
+  void setTime(int state, double time);
   void setStartTime(double time);
   void setEndTime(double time);
   

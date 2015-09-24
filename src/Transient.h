@@ -17,10 +17,6 @@ class Transient {
 
 private:
 
-  transientMethod _inner_method;
-  transientMethod _outer_method;
-  double _inner_wt;
-  double _outer_wt;
   double _initial_power;
   Clock* _clock;
   StructuredShapeMesh* _shape_mesh;
@@ -30,14 +26,12 @@ private:
 
   
 public:
-  Transient(transientMethod inner_method=BACKWARD_EULER, transientMethod outer_method=BACKWARD_EULER, double wt_inner=1.0, double wt_outer=1.0);
+  Transient();
   virtual ~Transient();
 
   /* Getter functions */
   
   /* Setter functions */
-  void setInnerMethod(transientMethod inner_method, double wt=0.0);
-  void setOuterMethod(transientMethod outer_method, double wt=0.0);
   void setInitialPower(double initial_power);
   void setClock(Clock* clock);
   void setSolver(Solver* solver);

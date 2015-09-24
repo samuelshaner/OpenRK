@@ -13,4 +13,3 @@ else:
 # Tell Python to recognize CTRL+C and stop the C++ extension module
 # when this is passed in from the keyboard
 signal.signal(signal.SIGINT, signal.SIG_DFL)
-

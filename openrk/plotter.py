@@ -24,8 +24,8 @@ import os
 SUBDIRECTORY = "plots/"
 TINY_MOVE = 1.0e-8
 
-def plot_flux(mesh, plane='xy', offset=0., time=rk.CURRENT, energy_groups=[0], 
-              gridsize=250, name='mesh-flux', xlim=None, ylim=None, zlim=None):
+def plot_flux(solver, plane='xy', offset=0., time=3, energy_groups=[0], 
+              gridsize=250, name='flux', xlim=None, ylim=None, zlim=None):
     
     global SUBDIRECTORY
 
@@ -34,9 +34,9 @@ def plot_flux(mesh, plane='xy', offset=0., time=rk.CURRENT, energy_groups=[0],
         os.makedirs(SUBDIRECTORY)
 
     # Error checking
-    if not isinstance(mesh, rk.Mesh):
+    if not isinstance(solver, rk.SolverDiffusion):
         msg = 'Unable to plot the flux since input was not ' \
-              'a Mesh class object'
+              'a SolverDiffusion class object'
         raise ValueError(msg)
 
     if not cv.is_integer(gridsize):
@@ -67,20 +67,21 @@ def plot_flux(mesh, plane='xy', offset=0., time=rk.CURRENT, energy_groups=[0],
     # Initialize a numpy array for the groupwise scalar fluxes
     fluxes = numpy.zeros((len(energy_groups), gridsize, gridsize))
 
-    coords = get_pixel_coords(mesh, plane, offset, gridsize, xlim, ylim, zlim)
+    geometry = solver.getGeometryDiffusion()
+    coords = get_pixel_coords(geometry, plane, offset, gridsize, xlim, ylim, zlim)
 
     for i in range(gridsize):
         for j in range(gridsize):
 
             if plane == 'xy':
-                cell = mesh.findCell(x=coords['x'][i], y=coords['y'][j], z=offset)
+                cell = geometry.findCell(x=coords['x'][i], y=coords['y'][j], z=offset)
             elif plane == 'xz':
-                cell = mesh.findCell(x=coords['x'][i], y=offset, z=coords['z'][j])
+                cell = geometry.findCell(x=coords['x'][i], y=offset, z=coords['z'][j])
             else:
-                cell = mesh.findCell(x=offset, y=coords['y'][i], z=coords['z'][j])
+                cell = geometry.findCell(x=offset, y=coords['y'][i], z=coords['z'][j])
 
             for index, group in enumerate(energy_groups):
-                fluxes[index][j][i] = mesh.getFluxByValue(cell, group, time)
+                fluxes[index][j][i] = solver.getFluxByValue(cell, group, time)
 
     # Loop over all energy group and create a plot
     for index, group in enumerate(energy_groups):
@@ -93,8 +94,9 @@ def plot_flux(mesh, plane='xy', offset=0., time=rk.CURRENT, energy_groups=[0],
         fig.savefig(filename, bbox_inches='tight')
 
 
-def plot_power(mesh, plane='xy', offset=0., time=rk.CURRENT, gridsize=250, name='mesh-power',
-               xlim=None, ylim=None, zlim=None):
+def plot_precursors(solver, plane='xy', offset=0., time=3, energy_groups=[0], 
+                    gridsize=250, name='precursors', xlim=None, ylim=None, zlim=None):
+    
     global SUBDIRECTORY
 
     # Make directory if it does not exist
@@ -102,267 +104,71 @@ def plot_power(mesh, plane='xy', offset=0., time=rk.CURRENT, gridsize=250, name=
         os.makedirs(SUBDIRECTORY)
 
     # Error checking
-    if not isinstance(mesh, rk.Mesh):
-        msg = 'Unable to plot the power since input was not ' \
-              'a Mesh class object'
+    if not isinstance(solver, rk.SolverDiffusion):
+        msg = 'Unable to plot the precursors since input was not ' \
+              'a SolverDiffusion class object'
         raise ValueError(msg)
 
     if not cv.is_integer(gridsize):
-        msg = 'Unable to plot the power since the gridsize {0} ' \
+        msg = 'Unable to plot the precursors since the gridsize {0} ' \
               'is not an integer'.format(gridsize)
         raise ValueError(msg)
 
     if plane not in ['xy', 'xz', 'yz']:
-        msg = 'Unable to plot the power with an invalid ' \
+        msg = 'Unable to plot the precursors with an invalid ' \
             'plane {0}. Plane options xy, xz, yz'.format(plane)
         raise ValueError(msg)
 
     if gridsize <= 0:
-        msg = 'Unable to plot the power with a negative ' \
+        msg = 'Unable to plot the precursors with a negative ' \
               'gridsize {0}'.format(gridsize)
         raise ValueError(msg)
 
+    if not isinstance(energy_groups, list):
+        energy_groups = [energy_groups]
+
     if not cv.is_float(offset):
-        msg = 'Unable to plot the power since the offset {0} ' \
+        msg = 'Unable to plot the precursors since the offset {0} ' \
             'is not a float'.format(offset)
         raise ValueError(msg)
 
-    print('Plotting the power...')
-
-    # Compute the power
-    mesh.computePower(time)
+    print('Plotting the precursors...')
 
     # Initialize a numpy array for the groupwise scalar fluxes
-    power = numpy.zeros((gridsize, gridsize))
+    precursors = numpy.zeros((len(energy_groups), gridsize, gridsize))
 
-    coords = get_pixel_coords(mesh, plane, offset, gridsize, xlim, ylim, zlim)
+    geometry = solver.getGeometryDiffusion()
+    coords = get_pixel_coords(geometry, plane, offset, gridsize, xlim, ylim, zlim)
 
     for i in range(gridsize):
         for j in range(gridsize):
 
             if plane == 'xy':
-                cell = mesh.findCell(x=coords['x'][i], y=coords['y'][j], z=offset)
+                cell = geometry.findCell(x=coords['x'][i], y=coords['y'][j], z=offset)
             elif plane == 'xz':
-                cell = mesh.findCell(x=coords['x'][i], y=offset, z=coords['z'][j])
+                cell = geometry.findCell(x=coords['x'][i], y=offset, z=coords['z'][j])
             else:
-                cell = mesh.findCell(x=offset, y=coords['y'][i], z=coords['z'][j])
-
-            power[j][i] = mesh.getPowerByValue(cell, time)
-
-    # Plot a 2D color map of the flat source regions
-    fig = plt.figure()
-    plt.imshow(np.flipud(power[:, :]), extent=coords['bounds'])
-    plt.colorbar()
-    plt.title('Mesh Cell Power')
-    filename = SUBDIRECTORY + name + '-plane-' + plane + '.png'
-    fig.savefig(filename, bbox_inches='tight')
-
-
-def plot_temperature(mesh, plane='xy', offset=0., time=rk.CURRENT, gridsize=250, 
-                     name='mesh-temperature', xlim=None, ylim=None, zlim=None):
-
-    global SUBDIRECTORY
-
-    # Make directory if it does not exist
-    if not os.path.exists(SUBDIRECTORY):
-        os.makedirs(SUBDIRECTORY)
-
-    # Error checking
-    if not isinstance(mesh, rk.Mesh):
-        msg = 'Unable to plot the temperature since input was not ' \
-              'a Mesh class object'
-        raise ValueError(msg)
-
-    if not cv.is_integer(gridsize):
-        msg = 'Unable to plot the temperature since the gridsize {0} ' \
-              'is not an integer'.format(gridsize)
-        raise ValueError(msg)
-
-    if plane not in ['xy', 'xz', 'yz']:
-        msg = 'Unable to plot the temperature with an invalid ' \
-            'plane {0}. Plane options xy, xz, yz'.format(plane)
-        raise ValueError(msg)
-
-    if gridsize <= 0:
-        msg = 'Unable to plot the temperature with a negative ' \
-              'gridsize {0}'.format(gridsize)
-        raise ValueError(msg)
-
-    if not cv.is_float(offset):
-        msg = 'Unable to plot the temperature since the offset {0} ' \
-            'is not a float'.format(offset)
-        raise ValueError(msg)
-
-    print('Plotting the temperature...')
-
-    # Initialize a numpy array for the groupwise scalar fluxes
-    power = numpy.zeros((gridsize, gridsize))
-
-    coords = get_pixel_coords(mesh, plane, offset, gridsize, xlim, ylim, zlim)
-
-    for i in range(gridsize):
-        for j in range(gridsize):
-
-            if plane == 'xy':
-                cell = mesh.findCell(x=coords['x'][i], y=coords['y'][j], z=offset)
-            elif plane == 'xz':
-                cell = mesh.findCell(x=coords['x'][i], y=offset, z=coords['z'][j])
-            else:
-                cell = mesh.findCell(x=offset, y=coords['y'][i], z=coords['z'][j])
-
-            power[j][i] = mesh.getTemperatureByValue(cell, time)
-
-    # Plot a 2D color map of the flat source regions
-    fig = plt.figure()
-    plt.imshow(np.flipud(power[:, :]), extent=coords['bounds'])
-    plt.colorbar()
-    plt.title('Mesh Cell Temperature')
-    filename = SUBDIRECTORY + name + '-plane-' + plane + '.png'
-    fig.savefig(filename, bbox_inches='tight')
-
-
-def plot_materials(mesh, plane='xy', offset=0., gridsize=250, name='mesh-materials',
-                   xlim=None, ylim=None, zlim=None):
-
-    global SUBDIRECTORY
-
-    # Make directory if it does not exist
-    if not os.path.exists(SUBDIRECTORY):
-        os.makedirs(SUBDIRECTORY)
-
-    # Error checking
-    if not isinstance(mesh, rk.Mesh):
-        msg = 'Unable to plot the materials since input was not ' \
-              'a Mesh class object'
-        raise ValueError(msg)
-
-    if not cv.is_integer(gridsize):
-        msg = 'Unable to plot the materials since the gridsize {0} ' \
-              'is not an integer'.format(gridsize)
-        raise ValueError(msg)
-
-    if plane not in ['xy', 'xz', 'yz']:
-        msg = 'Unable to plot the materials with an invalid ' \
-            'plane {0}. Plane options xy, xz, yz'.format(plane)
-        raise ValueError(msg)
-
-    if gridsize <= 0:
-        msg = 'Unable to plot the materials with a negative ' \
-              'gridsize {0}'.format(gridsize)
-        raise ValueError(msg)
-
-    if not cv.is_float(offset):
-        msg = 'Unable to plot the materials since the offset {0} ' \
-            'is not a float'.format(offset)
-        raise ValueError(msg)
-
-    print('Plotting the materials...')
-
-    # Initialize a numpy array for the groupwise scalar fluxes
-    materials = numpy.zeros((gridsize, gridsize))
-
-    coords = get_pixel_coords(mesh, plane, offset, gridsize, xlim, ylim, zlim)
-
-    unique_materials = []
-
-    for i in range(gridsize):
-        for j in range(gridsize):
-
-            if plane == 'xy':
-                cell = mesh.findCell(x=coords['x'][i], y=coords['y'][j], z=offset)
-            elif plane == 'xz':
-                cell = mesh.findCell(x=coords['x'][i], y=offset, z=coords['z'][j])
-            else:
-                cell = mesh.findCell(x=offset, y=coords['y'][i], z=coords['z'][j])
-
-            mat_name = mesh.getMaterial(cell).getId()
-
-            if mat_name in unique_materials:
-                materials[j][i] = unique_materials.index(mat_name)
-            else:
-                materials[j][i] = len(unique_materials)
-                unique_materials.append(mat_name)
-
-    # Plot a 2D color map of the flat source regions
-    fig = plt.figure()
-    plt.imshow(np.flipud(materials[:, :]), extent=coords['bounds'])
-    plt.title('Mesh Cell Materials')
-    filename = SUBDIRECTORY + name + '-plane-' + plane + '.png'
-    fig.savefig(filename, bbox_inches='tight')
-
-
-def plot_sigma_a(mesh, plane='xy', offset=0., energy_groups=[0], gridsize=250, time=rk.CURRENT, 
-                 name='mesh-sigma-a', xlim=None, ylim=None, zlim=None):
-
-    global SUBDIRECTORY
-
-    # Make directory if it does not exist
-    if not os.path.exists(SUBDIRECTORY):
-        os.makedirs(SUBDIRECTORY)
-
-    # Error checking
-    if not isinstance(mesh, rk.Mesh):
-        msg = 'Unable to plot sigma a since input was not ' \
-              'a Mesh class object'
-        raise ValueError(msg)
-
-    if not cv.is_integer(gridsize):
-        msg = 'Unable to plot the sigma a since the gridsize {0} ' \
-              'is not an integer'.format(gridsize)
-        raise ValueError(msg)
-
-    if plane not in ['xy', 'xz', 'yz']:
-        msg = 'Unable to plot the sigma a with an invalid ' \
-            'plane {0}. Plane options xy, xz, yz'.format(plane)
-        raise ValueError(msg)
-
-    if gridsize <= 0:
-        msg = 'Unable to plot the sigma a with a negative ' \
-              'gridsize {0}'.format(gridsize)
-        raise ValueError(msg)
-
-    if not cv.is_float(offset):
-        msg = 'Unable to plot the sigma a since the offset {0} ' \
-            'is not a float'.format(offset)
-        raise ValueError(msg)
-
-    print('Plotting the material absorption xs...')
-
-    # Initialize a numpy array for the groupwise scalar fluxes
-    sigma_a = numpy.zeros((len(energy_groups), gridsize, gridsize))
-
-    coords = get_pixel_coords(mesh, plane, offset, gridsize, xlim, ylim, zlim)
-
-    for i in range(gridsize):
-        for j in range(gridsize):
-
-            if plane == 'xy':
-                cell = mesh.findCell(x=coords['x'][i], y=coords['y'][j], z=offset)
-            elif plane == 'xz':
-                cell = mesh.findCell(x=coords['x'][i], y=offset, z=coords['z'][j])
-            else:
-                cell = mesh.findCell(x=offset, y=coords['y'][i], z=coords['z'][j])
-
-            mat = mesh.getMaterial(cell)
-            temp = mesh.getTemperatureByValue(cell, time)
+                cell = geometry.findCell(x=offset, y=coords['y'][i], z=coords['z'][j])
 
             for index, group in enumerate(energy_groups):
-                sigma_a[index][j][i] = mat.getSigmaAByGroup(group, time, temp)
+              if geometry.getMaterial(cell).isFissionable() is True:
+                precursors[index][j][i] = geometry.getMaterial(cell)\
+                                                  .getPrecursorConcByGroup(group, time)
 
     # Loop over all energy group and create a plot
     for index, group in enumerate(energy_groups):
         # Plot a 2D color map of the flat source regions
         fig = plt.figure()
-        plt.imshow(np.flipud(sigma_a[index, :, :]), extent=coords['bounds'])
+        plt.imshow(np.flipud(precursors[index, :, :]), extent=coords['bounds'])
         plt.colorbar()
-        plt.title('Mesh Cell Sigma A in Group ' + str(group))
+        plt.title('Mesh Cell Precursor Conc in Group ' + str(group))
         filename = SUBDIRECTORY + name + '-plane-' + plane + '-group-' + str(group) + '.png'
         fig.savefig(filename, bbox_inches='tight')
 
-
-def plot_precursor_conc(mesh, plane='xy', offset=0., time=rk.CURRENT, delayed_groups=[0], 
-                        gridsize=250, name='mesh-precursor-conc', xlim=None, ylim=None, zlim=None):
-
+        
+def plot_frequency(solver, plane='xy', offset=0., time=3, energy_groups=[0], 
+                   gridsize=250, name='frequency', xlim=None, ylim=None, zlim=None):
+    
     global SUBDIRECTORY
 
     # Make directory if it does not exist
@@ -370,69 +176,71 @@ def plot_precursor_conc(mesh, plane='xy', offset=0., time=rk.CURRENT, delayed_gr
         os.makedirs(SUBDIRECTORY)
 
     # Error checking
-    if not isinstance(mesh, rk.Mesh):
-        msg = 'Unable to plot the delayed precursors since input was not ' \
-              'a Mesh class object'
+    if not isinstance(solver, rk.SolverDiffusion):
+        msg = 'Unable to plot the frequency since input was not ' \
+              'a SolverDiffusion class object'
         raise ValueError(msg)
 
     if not cv.is_integer(gridsize):
-        msg = 'Unable to plot the delayed precursors since the gridsize {0} ' \
+        msg = 'Unable to plot the frequency since the gridsize {0} ' \
               'is not an integer'.format(gridsize)
         raise ValueError(msg)
 
     if plane not in ['xy', 'xz', 'yz']:
-        msg = 'Unable to plot the delayed precursors with an invalid ' \
+        msg = 'Unable to plot the frequency with an invalid ' \
             'plane {0}. Plane options xy, xz, yz'.format(plane)
         raise ValueError(msg)
 
     if gridsize <= 0:
-        msg = 'Unable to plot the delayed precursors with a negative ' \
+        msg = 'Unable to plot the frequency with a negative ' \
               'gridsize {0}'.format(gridsize)
         raise ValueError(msg)
 
+    if not isinstance(energy_groups, list):
+        energy_groups = [energy_groups]
+
     if not cv.is_float(offset):
-        msg = 'Unable to plot the delayed precursors since the offset {0} ' \
+        msg = 'Unable to plot the frequency since the offset {0} ' \
             'is not a float'.format(offset)
         raise ValueError(msg)
 
-    if not isinstance(delayed_groups, list):
-        delayed_groups = [delayed_groups]
+    print('Plotting the frequencies...')
 
-    print('Plotting the precursor conc...')
+    # Initialize a numpy array for the groupwise scalar frequencyes
+    frequencies = numpy.zeros((len(energy_groups), gridsize, gridsize))
 
-    # Initialize a numpy array for the groupwise precursor conc
-    precursor_conc = numpy.zeros((len(delayed_groups), gridsize, gridsize))
-
-    coords = get_pixel_coords(mesh, plane, offset, gridsize, xlim, ylim, zlim)
+    geometry = solver.getGeometryDiffusion()
+    coords = get_pixel_coords(geometry, plane, offset, gridsize, xlim, ylim, zlim)
 
     for i in range(gridsize):
         for j in range(gridsize):
 
             if plane == 'xy':
-                cell = mesh.findCell(x=coords['x'][i], y=coords['y'][j], z=offset)
+                cell = geometry.findCell(x=coords['x'][i], y=coords['y'][j], z=offset)
             elif plane == 'xz':
-                cell = mesh.findCell(x=coords['x'][i], y=offset, z=coords['z'][j])
+                cell = geometry.findCell(x=coords['x'][i], y=offset, z=coords['z'][j])
             else:
-                cell = mesh.findCell(x=offset, y=coords['y'][i], z=coords['z'][j])
+                cell = geometry.findCell(x=offset, y=coords['y'][i], z=coords['z'][j])
 
-            for index, group in enumerate(delayed_groups):
-                precursor_conc[index][j][i] = mesh.getMaterial(cell).getPrecursorConcByGroup(group, time)
+            for index, group in enumerate(energy_groups):
+                frequencies[index][j][i] = solver.getFrequencyByValue(cell, group, time)
 
     # Loop over all energy group and create a plot
-    for index, group in enumerate(delayed_groups):
+    for index, group in enumerate(energy_groups):
         # Plot a 2D color map of the flat source regions
         fig = plt.figure()
-        plt.imshow(np.flipud(precursor_conc[index, :, :]), extent=coords['bounds'])
+        plt.imshow(np.flipud(frequencies[index, :, :]), extent=coords['bounds'])
         plt.colorbar()
-        plt.title('Mesh Cell Precursor Conc in Group ' + str(group))
+        plt.title('Mesh Cell Frequency in Group ' + str(group))
         filename = SUBDIRECTORY + name + '-plane-' + plane + '-group-' + str(group) + '.png'
         fig.savefig(filename, bbox_inches='tight')
 
-
-def get_pixel_coords(mesh, plane, offset, gridsize, xlim, ylim, zlim):
+        
+        
+def get_pixel_coords(geometry, plane, offset, gridsize, xlim, ylim, zlim):
 
   # initialize variables to be returned
-  bounds = [mesh.getXMin(), mesh.getXMax(), mesh.getYMin(), mesh.getYMax(), mesh.getZMin(), mesh.getZMax()] 
+  bounds = [geometry.getXMin(), geometry.getXMax(), geometry.getYMin(), geometry.getYMax(), geometry.getZMin(), geometry.getZMax()] 
   xcoords = None
   ycoords = None
   zcoords = None

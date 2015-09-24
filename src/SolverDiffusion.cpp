@@ -16,8 +16,8 @@ SolverDiffusion::SolverDiffusion(GeometryDiffusion* geometry) : Solver(geometry)
   _shape_source    = new Vector(num_x, num_y, num_z, _num_energy_groups);
 
   /* Allocate memory for field variables */
-  for (int t=0; t < NUM_TIME_POINTS; t++){
-    Vector* dif_linear  = new Vector(num_x, num_y, num_z, _num_energy_groups*6);
+  for (int t=0; t < NUM_STATES; t++){
+    Vector* dif_linear  = new Vector(num_x, num_y, num_z, _num_energy_groups*NUM_SURFACES);
     Vector* temperature = new Vector(num_x, num_y, num_z, 1);
     Vector* flux        = new Vector(num_x, num_y, num_z, _num_energy_groups);
     Vector* shape       = new Vector(num_x, num_y, num_z, _num_energy_groups);
@@ -89,113 +89,123 @@ void SolverDiffusion::generateInitialShapeMatrices(){
           double sig_a      = material->getSigmaAByGroup(e, CURRENT, temp);
           double dif_coef   = material->getDifCoefByGroup(e, CURRENT, temp);
           double chi        = material->getChiByGroup(e, CURRENT, temp);
+          double sig_s, nu_sig_f;
           
           /* Absorption term on the diagonal */
           val = sig_a * volume;
-          _shape_A_matrix->incrementValueByCell(cell, e, cell, e, val);
+          _shape_A_matrix->incrementValue(cell, e, cell, e, val);
           
           /* Buckling term on the diagonal */
           val = dif_coef * volume * _buckling;
-          _shape_A_matrix->incrementValueByCell(cell, e, cell, e, val);
+          _shape_A_matrix->incrementValue(cell, e, cell, e, val);
           
           /* Outscattering term on diagonal */
           for (int g=0; g < ng; g++){
             if (e != g){
-              val = material->getSigmaSByGroup(e, g, CURRENT, temp) * volume;
-              _shape_A_matrix->incrementValueByCell(cell, e, cell, e, val);
+              sig_s = material->getSigmaSByGroup(e, g, CURRENT, temp);
+              val = sig_s * volume;
+              _shape_A_matrix->incrementValue(cell, e, cell, e, val);
             }
           }
 
           /* Fission terms */
           for (int g=0; g < ng; g++){
-            val = chi * material->getNuSigmaFByGroup(g, CURRENT, temp) * volume;
-            _shape_M_matrix->incrementValueByCell(cell, g, cell, e, val);
+            nu_sig_f = material->getNuSigmaFByGroup(g, CURRENT, temp);
+            val = chi * nu_sig_f * volume;
+            _shape_M_matrix->incrementValue(cell, g, cell, e, val);
           }
           
           /* Inscattering term on off diagonals */
           for (int g=0; g < ng; g++){
             if (e != g){
-              val = -material->getSigmaSByGroup(g, e, CURRENT, temp) * volume;
-              _shape_A_matrix->incrementValueByCell(cell, g, cell, e, val);
+              sig_s = material->getSigmaSByGroup(g, e, CURRENT, temp);
+              val = - sig_s * volume;
+              _shape_A_matrix->incrementValue(cell, g, cell, e, val);
             }
           }
-                    
+
           /* X_MIN SURFACE */
           
           /* Transport term on diagonal */
-          val = getDifLinearFineByValue(cell, e, SURFACE_X_MIN, CURRENT) * height * depth;
-          _shape_A_matrix->incrementValueByCell(cell, e, cell, e, val);
+          dif_coef = getDifLinearFineByValue(cell, e, SURFACE_X_MIN, CURRENT);
+          val = dif_coef * height * depth;
+          _shape_A_matrix->incrementValue(cell, e, cell, e, val);
           
           /* Transport term on off diagonals */
           if (x != 0){
-            val = - getDifLinearFineByValue(cell, e, SURFACE_X_MIN, CURRENT)
-              * height * depth;
-            _shape_A_matrix->incrementValueByCell(cell-1, e, cell, e, val);
+            dif_coef = getDifLinearFineByValue(cell, e, SURFACE_X_MIN, CURRENT);
+            val = - dif_coef * height * depth;
+            _shape_A_matrix->incrementValue(cell-1, e, cell, e, val);
           }          
 
           /* X_MAX SURFACE */
           
           /* Transport term on diagonal */
-          val = getDifLinearFineByValue(cell, e, SURFACE_X_MAX, CURRENT) * height * depth;
-          _shape_A_matrix->incrementValueByCell(cell, e, cell, e, val);
+          dif_coef = getDifLinearFineByValue(cell, e, SURFACE_X_MAX, CURRENT);
+          val = dif_coef * height * depth;
+          _shape_A_matrix->incrementValue(cell, e, cell, e, val);
           
           /* Transport term on off diagonals */
           if (x != nx - 1){
-            val = - getDifLinearFineByValue(cell, e, SURFACE_X_MAX, CURRENT)
-              * height * depth;
-            _shape_A_matrix->incrementValueByCell(cell+1, e, cell, e, val);
+            dif_coef = getDifLinearFineByValue(cell, e, SURFACE_X_MAX, CURRENT);
+            val = - dif_coef * height * depth;
+            _shape_A_matrix->incrementValue(cell+1, e, cell, e, val);
           }
           
           /* Y_MIN SURFACE */
           
           /* Transport term on diagonal */
-          val = getDifLinearFineByValue(cell, e, SURFACE_Y_MIN, CURRENT) * width * depth;
-          _shape_A_matrix->incrementValueByCell(cell, e, cell, e, val);
+          dif_coef = getDifLinearFineByValue(cell, e, SURFACE_Y_MIN, CURRENT);
+          val = dif_coef * width * depth;
+          _shape_A_matrix->incrementValue(cell, e, cell, e, val);
 
           /* Transport term on off diagonals */
           if (y != 0){
-            val = - getDifLinearFineByValue(cell, e, SURFACE_Y_MIN, CURRENT)
-              * width * depth;
-            _shape_A_matrix->incrementValueByCell(cell-nx, e, cell, e, val);
+            dif_coef = getDifLinearFineByValue(cell, e, SURFACE_Y_MIN, CURRENT);
+            val = - dif_coef * width * depth;
+            _shape_A_matrix->incrementValue(cell-nx, e, cell, e, val);
           }          
           
           /* Y_MAX SURFACE */
           
           /* Transport term on diagonal */
-          val = getDifLinearFineByValue(cell, e, SURFACE_Y_MAX, CURRENT) * width * depth;
-          _shape_A_matrix->incrementValueByCell(cell, e, cell, e, val);
+          dif_coef = getDifLinearFineByValue(cell, e, SURFACE_Y_MAX, CURRENT);
+          val = dif_coef * width * depth;
+          _shape_A_matrix->incrementValue(cell, e, cell, e, val);
           
           /* Transport term on off diagonals */
           if (y != ny - 1){
-            val = - getDifLinearFineByValue(cell, e, SURFACE_Y_MAX, CURRENT)
-              * width * depth;
-            _shape_A_matrix->incrementValueByCell(cell+nx, e, cell, e, val);
+            dif_coef = getDifLinearFineByValue(cell, e, SURFACE_Y_MAX, CURRENT);
+            val = - dif_coef * width * depth;
+            _shape_A_matrix->incrementValue(cell+nx, e, cell, e, val);
           }          
 
           /* Z_MIN SURFACE */
           
           /* Transport term on diagonal */
-          val = getDifLinearFineByValue(cell, e, SURFACE_Z_MIN, CURRENT) * width * height;
-          _shape_A_matrix->incrementValueByCell(cell, e, cell, e, val);
+          dif_coef = getDifLinearFineByValue(cell, e, SURFACE_Z_MIN, CURRENT);
+          val = dif_coef * width * height;
+          _shape_A_matrix->incrementValue(cell, e, cell, e, val);
           
           /* Transport term on off diagonals */
           if (z != 0){
-            val = - getDifLinearFineByValue(cell, e, SURFACE_Z_MIN, CURRENT)
-              * width * height;
-            _shape_A_matrix->incrementValueByCell(cell-nx*ny, e, cell, e, val);
+            dif_coef = getDifLinearFineByValue(cell, e, SURFACE_Z_MIN, CURRENT);
+            val = - dif_coef * width * height;
+            _shape_A_matrix->incrementValue(cell-nx*ny, e, cell, e, val);
           } 
           
           /* Z_MAX SURFACE */
           
           /* Transport term on diagonal */
-          val = getDifLinearFineByValue(cell, e, SURFACE_Z_MAX, CURRENT) * width * height;
-          _shape_A_matrix->incrementValueByCell(cell, e, cell, e, val);
+          dif_coef = getDifLinearFineByValue(cell, e, SURFACE_Z_MAX, CURRENT);
+          val = dif_coef * width * height;
+          _shape_A_matrix->incrementValue(cell, e, cell, e, val);
           
           /* Transport term on off diagonals */
           if (z != nz - 1){
-            val = - getDifLinearFineByValue(cell, e, SURFACE_Z_MAX, CURRENT)
-              * width * height;
-            _shape_A_matrix->incrementValueByCell(cell+nx*ny, e, cell, e, val);
+            dif_coef = getDifLinearFineByValue(cell, e, SURFACE_Z_MAX, CURRENT);
+            val = - dif_coef * width * height;
+            _shape_A_matrix->incrementValue(cell+nx*ny, e, cell, e, val);
           }
         }
       }
@@ -204,7 +214,7 @@ void SolverDiffusion::generateInitialShapeMatrices(){
 }
 
 
-void SolverDiffusion::computeDiffusionCoefficientsFine(int time){
+void SolverDiffusion::computeDiffusionCoefficientsFine(int state){
 
   int nx = _geometry_diffusion->getNumXShape();
   int ny = _geometry_diffusion->getNumYShape();
@@ -212,11 +222,10 @@ void SolverDiffusion::computeDiffusionCoefficientsFine(int time){
   double width  = _geometry->getWidth()  / nx;
   double height = _geometry->getHeight() / ny;
   double depth  = _geometry->getDepth()  / nz;
-  std::vector< std::vector<int> > amp_to_shape = _geometry->getAmpToShapeMap();
 
   /* Compute the linear and nonlinear diffusion coefficients */
+  #pragma omp parallel for collapse(3)
   for (int z=0; z < nz; z++){
-    #pragma omp parallel for
     for (int y=0; y < ny; y++){
       for (int x=0; x < nx; x++){
         
@@ -227,7 +236,7 @@ void SolverDiffusion::computeDiffusionCoefficientsFine(int time){
         Material* material = _geometry->getMaterial(cell);
         Material* material_next;
         
-        for (int s=0; s < 6; s++){
+        for (int s=0; s < NUM_SURFACES; s++){
           
           int cell_next = _geometry_diffusion->getNeighborShapeCell(x, y, z, s);
           
@@ -246,7 +255,7 @@ void SolverDiffusion::computeDiffusionCoefficientsFine(int time){
           
           for (int g=0; g < _num_energy_groups; g++){
             
-            dif_coef = material->getDifCoefByGroup(g, time);
+            dif_coef = material->getDifCoefByGroup(g, state);
             
             if (cell_next == -1){
               dif_linear = 2 * dif_coef / length_perpen / 
@@ -255,12 +264,12 @@ void SolverDiffusion::computeDiffusionCoefficientsFine(int time){
             }
             else{
               material_next = _geometry->getMaterial(cell_next);
-              dif_coef_next = material_next->getDifCoefByGroup(g, time);
+              dif_coef_next = material_next->getDifCoefByGroup(g, state);
               dif_linear = 2 * dif_coef * dif_coef_next / (length_perpen * dif_coef +
                                                            length_perpen * dif_coef_next);
             }
             
-            setDifLinearFineByValue(dif_linear, cell, g, s, time);
+            setDifLinearFineByValue(dif_linear, cell, g, s, state);
           }
         }
       }
@@ -269,292 +278,208 @@ void SolverDiffusion::computeDiffusionCoefficientsFine(int time){
 }
 
 
-Vector* SolverDiffusion::getDifLinearFine(int time){
-  return _dif_linear_fine[time];
+Vector* SolverDiffusion::getDifLinearFine(int state){
+  return _dif_linear_fine[state];
 }
 
 
-double SolverDiffusion::getDifLinearFineByValue(int cell, int group, int side, int time){
-  return _dif_linear_fine[time]->getValueByCell(cell, side*_num_energy_groups+group);
+double SolverDiffusion::getDifLinearFineByValue(int cell, int group, int side, int state){
+  return _dif_linear_fine[state]->getValue(cell, side*_num_energy_groups+group);
 }
 
 
 void SolverDiffusion::setDifLinearFineByValue(double value, int cell, int group, 
-                                              int side, int time){
-  _dif_linear_fine[time]->setValueByCell(cell, side*_num_energy_groups+group, value);
+                                              int side, int state){
+  _dif_linear_fine[state]->setValue(cell, side*_num_energy_groups+group, value);
 }
 
 
-void SolverDiffusion::generateShapeMatrices(double wt){
+void SolverDiffusion::generateShapeMatrices(int state, int state_prev){
 
   int nx = _geometry_diffusion->getNumXShape();
   int ny = _geometry_diffusion->getNumYShape();
   int nz = _geometry_diffusion->getNumZShape();
   int ng = _num_energy_groups;
-  double width  = _geometry->getWidth()  / nx;
+    double width  = _geometry->getWidth()  / nx;
   double height = _geometry->getHeight() / ny;
   double depth  = _geometry->getDepth()  / nz;
   double val;
-  double dt = _clock->getDtOuter();
+  double dt = _clock->getTime(state) - _clock->getTime(state_prev);
   int* shape_to_amp = _geometry->getShapeToAmpMap();
   double volume = width * height * depth;
   
-  _shape_source->zero();
+  _shape_source->clear();
   _shape_AM_matrix->clear();
+  _shape_M_matrix->clear();
 
   for (int z=0; z < nz; z++){
-    #pragma omp parallel for private(val)
     for (int y=0; y < ny; y++){
       for (int x=0; x < nx; x++){
 
         int cell_shape     = z*nx*ny + y*nx + x;
         int cell_amp       = shape_to_amp[cell_shape];
         Material* material = _geometry->getMaterial(cell_shape);
-        double temp        = getTemperatureByValue(cell_shape, FORWARD_OUT);
-        double temp_prev   = getTemperatureByValue(cell_shape, PREVIOUS_OUT);
+        double temp        = getTemperatureByValue(cell_shape, state);
         double volume      = _geometry->getVolume(cell_shape);
-        
+
         for (int e=0; e < ng; e++){
 
-          double v           = material->getVelocityByGroup(e, FORWARD_OUT, temp);
-          double v_prev      = material->getVelocityByGroup(e, PREVIOUS_OUT, temp);
-          double flux        = getFluxByValue(cell_shape, e, FORWARD_OUT);
-          double flux_prev   = getFluxByValue(cell_shape, e, PREVIOUS_OUT);
-          double amp         = getAmplitudeByValue(cell_amp, e, FORWARD_OUT);
-          double amp_prev    = getAmplitudeByValue(cell_amp, e, PREVIOUS_OUT);
-          double freq        = getFrequencyByValue(cell_amp, e, FORWARD_OUT);          
-          double chi         = material->getChiByGroup(e, FORWARD_OUT, temp);
-          double chi_prev    = material->getChiByGroup(e, PREVIOUS_OUT, temp);          
-          double sig_a       = material->getSigmaAByGroup(e, FORWARD_OUT, temp); 
-          double sig_a_prev  = material->getSigmaAByGroup(e, PREVIOUS_OUT, temp);
-          double dif_coef    = material->getDifCoefByGroup(e, FORWARD_OUT, temp);
-          double dif_coef_prev = material->getDifCoefByGroup(e, PREVIOUS_OUT, temp);
-          double delay       = material->getDelayedFractionTotal(FORWARD_OUT);
-          double delay_prev  = material->getDelayedFractionTotal(PREVIOUS_OUT);
-          double sig_s, sig_s_prev;
-          double flux_prev_g;
-          double nu_sig_f, nu_sig_f_prev;
-          
-          /* Time absorption term on the diagonal */
-          if (_method == IQS){
-            val = 1.0 / dt / v * volume * flux;
-            _shape_AM_matrix->incrementValueByCell(cell_shape, e, cell_shape, e, val);
-            
-            val = 1.0 / v / amp * volume * freq;
-            _shape_AM_matrix->incrementValueByCell(cell_shape, e, cell_shape, e, val);
+          double v           = material->getVelocityByGroup(e, state, temp);
+          double amp         = getAmplitudeByValue(cell_amp, e, state);
+          double amp_prev    = getAmplitudeByValue(cell_amp, e, state_prev);
+          double freq        = getFrequencyByValue(cell_amp, e, state);
+          double flux        = getFluxByValue(cell_shape, e, state);
 
-            val = flux_prev / dt / v_prev * volume * amp / amp_prev;
-            _shape_source->incrementValueByCell(cell_shape, e, val);
-          }
-          else if (_method == THETA){
-            val = 1.0 / dt / v * volume;
-            _shape_AM_matrix->incrementValueByCell(cell_shape, e, cell_shape, e, val);
-            
-            val = flux_prev / dt / v_prev * volume;
-            _shape_source->incrementValueByCell(cell_shape, e, val);
-          }
+          double chi         = material->getChiByGroup(e, state, temp);
+          double sig_a       = material->getSigmaAByGroup(e, state, temp); 
+          double dif_coef    = material->getDifCoefByGroup(e, state, temp);
+          double delay_tot   = material->getDelayedFractionTotal(state);
+          double sig_s;
+          double nu_sig_f;
+
+          /* Time absorption term on the diagonal */
+          val = amp / v * volume / dt;
+          _shape_AM_matrix->incrementValue(cell_shape, e, cell_shape, e, val);
           
+          val = flux / v * volume / dt;
+          _shape_source->incrementValue(cell_shape, e, val);
+
+          if (_method == IQS){
+            val = freq / v * volume;
+            _shape_AM_matrix->incrementValue(cell_shape, e, cell_shape, e, val);
+          }
+            
           /* Delayed neutron precursors */
-          for (int d=0; d < _num_delayed_groups; d++){
-            double decay     = material->getDecayConstantByGroup(d);
-            double conc      = material->getPrecursorConcByGroup(d, FORWARD_OUT);
-            double conc_prev = material->getPrecursorConcByGroup(d, PREVIOUS_OUT);
-            
-            val = wt * chi * decay * conc * volume;
-            _shape_source->incrementValueByCell(cell_shape, e, val);
-            
-            val = (1-wt) * chi_prev * decay * conc_prev * volume;
-            _shape_source->incrementValueByCell(cell_shape, e, val);
+          if (material->isFissionable()){
+            for (int d=0; d < _num_delayed_groups; d++){
+              double decay     = material->getDecayConstantByGroup(d);
+              double conc      = material->getPrecursorConcByGroup(d, state);
+              
+              val = chi * decay * conc * volume;
+              _shape_source->incrementValue(cell_shape, e, val);
+            }
           }
           
           /* Absorption term on the diagonal */
-          val = wt * sig_a * volume;
-          _shape_AM_matrix->incrementValueByCell(cell_shape, e, cell_shape, e, val);
-          
-          val = - (1-wt) * sig_a_prev * flux_prev * volume;
-          _shape_source->incrementValueByCell(cell_shape, e, val);
-          
+          val = sig_a * volume * amp;
+          _shape_AM_matrix->incrementValue(cell_shape, e, cell_shape, e, val);
+
           /* Buckling term on the diagonal */
-          val = wt * dif_coef * volume * _buckling;
-          _shape_AM_matrix->incrementValueByCell(cell_shape, e, cell_shape, e, val);
-          
-          val = - (1-wt) * dif_coef_prev * volume * _buckling;
-          _shape_source->incrementValueByCell(cell_shape, e, val);
+          val = dif_coef * volume * _buckling * amp;
+          _shape_AM_matrix->incrementValue(cell_shape, e, cell_shape, e, val);
           
           /* Outscattering term on diagonal */
           for (int g=0; g < ng; g++){
             if (e != g){
-              sig_s      = material->getSigmaSByGroup(e, g, FORWARD_OUT, temp);
-              sig_s_prev = material->getSigmaSByGroup(e, g, PREVIOUS_OUT, temp);
+              sig_s      = material->getSigmaSByGroup(e, g, state, temp);
               
-              val = wt * sig_s * volume;
-              _shape_AM_matrix->incrementValueByCell(cell_shape, e, cell_shape, e, val);
-              
-              val = - (1-wt) * sig_s_prev * volume;
-              _shape_source->incrementValueByCell(cell_shape, e, val);
+              val = sig_s * volume * amp;
+              _shape_AM_matrix->incrementValue(cell_shape, e, cell_shape, e, val);
             }
           }
-          
+
           /* Fission terms */
           for (int g=0; g < ng; g++){
-            nu_sig_f      = material->getNuSigmaFByGroup(g, FORWARD_OUT, temp_prev);
-            nu_sig_f_prev = material->getNuSigmaFByGroup(g, PREVIOUS_OUT, temp_prev);
-            flux_prev_g = getFluxByValue(cell_shape, g, PREVIOUS_OUT);
+            nu_sig_f      = material->getNuSigmaFByGroup(g, state, temp);
             
-            val = - wt * (1-delay) * chi * nu_sig_f / _k_eff_0 * volume;
-            _shape_AM_matrix->incrementValueByCell(cell_shape, g, cell_shape, e, val);
-            
-            val = (1-wt) * (1-delay_prev) * chi_prev * nu_sig_f_prev / _k_eff_0
-              * flux_prev_g * volume;
-            _shape_source->incrementValueByCell(cell_shape, e, val);
+            val = - (1-delay_tot) * chi * nu_sig_f / _k_eff_0 * volume *
+              getAmplitudeByValue(cell_amp, g, state);
+            _shape_AM_matrix->incrementValue(cell_shape, g, cell_shape, e, val);
+            _shape_M_matrix->incrementValue(cell_shape, g, cell_shape, e, val);
           }
-          
+
           /* Inscattering term on off diagonals */
           for (int g=0; g < ng; g++){
             if (e != g){
-              sig_s      = material->getSigmaSByGroup(g, e, FORWARD_OUT, temp);
-              sig_s_prev = material->getSigmaSByGroup(g, e, PREVIOUS_OUT, temp);
-              flux_prev_g = getFluxByValue(cell_shape, g, PREVIOUS_OUT);
+              sig_s      = material->getSigmaSByGroup(g, e, state, temp);
               
-              val = - wt * sig_s * volume;
-              _shape_AM_matrix->incrementValueByCell(cell_shape, g, cell_shape, e, val);
-              
-              val = (1-wt) * sig_s_prev * flux_prev_g * volume;
-                _shape_source->incrementValueByCell(cell_shape, e, val);
+              val = - sig_s * volume * getAmplitudeByValue(cell_amp, g, state);
+              _shape_AM_matrix->incrementValue(cell_shape, g, cell_shape, e, val);
             }
           }
-        
+
           /* X_MIN SURFACE */
           
           /* Transport term on diagonal */
-          val = wt * getDifLinearFineByValue(cell_shape, e, SURFACE_X_MIN, FORWARD_OUT)
+          val = getDifLinearFineByValue(cell_shape, e, SURFACE_X_MIN, state)
             * height * depth;
-          _shape_AM_matrix->incrementValueByCell(cell_shape, e, cell_shape, e, val);
-
-          val = - (1-wt) * flux_prev * height * depth * 
-            getDifLinearFineByValue(cell_shape, e, SURFACE_X_MIN, PREVIOUS_OUT);
-          _shape_source->incrementValueByCell(cell_shape, e, val);
+          _shape_AM_matrix->incrementValue(cell_shape, e, cell_shape, e, val);
           
           /* Transport term on off diagonals */
           if (x != 0){
-            val = -wt * getDifLinearFineByValue(cell_shape, e, SURFACE_X_MIN, FORWARD_OUT)
+            val = - getDifLinearFineByValue(cell_shape, e, SURFACE_X_MIN, state)
               * height * depth;
-            _shape_AM_matrix->incrementValueByCell(cell_shape-1, e, cell_shape, e, val);
-            
-            val = (1-wt) * getFluxByValue(cell_shape - 1, e, PREVIOUS_OUT) * height * depth
-              * getDifLinearFineByValue(cell_shape, e, SURFACE_X_MIN, PREVIOUS_OUT);
-            _shape_source->incrementValueByCell(cell_shape, e, val);
+            _shape_AM_matrix->incrementValue(cell_shape-1, e, cell_shape, e, val);
           }
 
           /* X_MAX SURFACE */
           
           /* Transport term on diagonal */
-          val = wt * getDifLinearFineByValue(cell_shape, e, SURFACE_X_MAX, FORWARD_OUT)
+          val = getDifLinearFineByValue(cell_shape, e, SURFACE_X_MAX, state)
             * height * depth;
-          _shape_AM_matrix->incrementValueByCell(cell_shape, e, cell_shape, e, val);
-
-          val = - (1-wt) * flux_prev * height * depth * 
-            getDifLinearFineByValue(cell_shape, e, SURFACE_X_MAX, PREVIOUS_OUT);
-          _shape_source->incrementValueByCell(cell_shape, e, val);
+          _shape_AM_matrix->incrementValue(cell_shape, e, cell_shape, e, val);
           
           /* Transport term on off diagonals */
           if (x != nx - 1){
-            val = -wt * getDifLinearFineByValue(cell_shape, e, SURFACE_X_MAX, FORWARD_OUT)
+            val = - getDifLinearFineByValue(cell_shape, e, SURFACE_X_MAX, state)
               * height * depth;
-            _shape_AM_matrix->incrementValueByCell(cell_shape+1, e, cell_shape, e, val);
-            
-            val = (1-wt) * getFluxByValue(cell_shape+1, e, PREVIOUS_OUT) * height * depth
-              * getDifLinearFineByValue(cell_shape, e, SURFACE_X_MAX, PREVIOUS_OUT);
-            _shape_source->incrementValueByCell(cell_shape, e, val);
+            _shape_AM_matrix->incrementValue(cell_shape+1, e, cell_shape, e, val);
           }
           
           /* Y_MIN SURFACE */
           
           /* Transport term on diagonal */
-          val = wt * getDifLinearFineByValue(cell_shape, e, SURFACE_Y_MIN, FORWARD_OUT)
+          val = getDifLinearFineByValue(cell_shape, e, SURFACE_Y_MIN, state)
             * width * depth;
-          _shape_AM_matrix->incrementValueByCell(cell_shape, e, cell_shape, e, val);
-
-          val = - (1-wt) * flux_prev * width * depth * 
-            getDifLinearFineByValue(cell_shape, e, SURFACE_Y_MIN, PREVIOUS_OUT);
-          _shape_source->incrementValueByCell(cell_shape, e, val);
+          _shape_AM_matrix->incrementValue(cell_shape, e, cell_shape, e, val);
                     
           /* Transport term on off diagonals */
           if (y != 0){
-            val = -wt * getDifLinearFineByValue(cell_shape, e, SURFACE_Y_MIN, FORWARD_OUT)
+            val = - getDifLinearFineByValue(cell_shape, e, SURFACE_Y_MIN, state)
               * width * depth;
-            _shape_AM_matrix->incrementValueByCell(cell_shape-nx, e, cell_shape, e, val);
-            
-            val = (1-wt) * getFluxByValue(cell_shape-nx, e, PREVIOUS_OUT) * width * depth
-              * getDifLinearFineByValue(cell_shape, e, SURFACE_Y_MIN, PREVIOUS_OUT);
-            _shape_source->incrementValueByCell(cell_shape, e, val);
+            _shape_AM_matrix->incrementValue(cell_shape-nx, e, cell_shape, e, val);
           }
           
           /* Y_MAX SURFACE */
           
           /* Transport term on diagonal */
-          val = wt * getDifLinearFineByValue(cell_shape, e, SURFACE_Y_MAX, FORWARD_OUT)
+          val = getDifLinearFineByValue(cell_shape, e, SURFACE_Y_MAX, state)
             * width * depth;
-          _shape_AM_matrix->incrementValueByCell(cell_shape, e, cell_shape, e, val);
-
-          val = - (1-wt) * flux_prev * width * depth * 
-            getDifLinearFineByValue(cell_shape, e, SURFACE_Y_MAX, PREVIOUS_OUT);
-          _shape_source->incrementValueByCell(cell_shape, e, val);
+          _shape_AM_matrix->incrementValue(cell_shape, e, cell_shape, e, val);
           
           /* Transport term on off diagonals */
           if (y != ny - 1){
-            val = -wt * getDifLinearFineByValue(cell_shape, e, SURFACE_Y_MAX, FORWARD_OUT)
+            val = - getDifLinearFineByValue(cell_shape, e, SURFACE_Y_MAX, state)
               * width * depth;
-            _shape_AM_matrix->incrementValueByCell(cell_shape+nx, e, cell_shape, e, val);
-            
-            val = (1-wt) * getFluxByValue(cell_shape+nx, e, PREVIOUS_OUT) * width * depth
-              * getDifLinearFineByValue(cell_shape, e, SURFACE_Y_MAX, PREVIOUS_OUT);
-            _shape_source->incrementValueByCell(cell_shape, e, val);
+            _shape_AM_matrix->incrementValue(cell_shape+nx, e, cell_shape, e, val);
           }
 
           /* Z_MIN SURFACE */
           
           /* Transport term on diagonal */
-          val = wt * getDifLinearFineByValue(cell_shape, e, SURFACE_Z_MIN, FORWARD_OUT)
+          val = getDifLinearFineByValue(cell_shape, e, SURFACE_Z_MIN, state)
             * width * height;
-          _shape_AM_matrix->incrementValueByCell(cell_shape, e, cell_shape, e, val);
-
-          val = - (1-wt) * flux_prev * width * height * 
-            getDifLinearFineByValue(cell_shape, e, SURFACE_Z_MIN, PREVIOUS_OUT);
-          _shape_source->incrementValueByCell(cell_shape, e, val);
-          
+          _shape_AM_matrix->incrementValue(cell_shape, e, cell_shape, e, val);
           
           /* Transport term on off diagonals */
           if (z != 0){
-            val = -wt * getDifLinearFineByValue(cell_shape, e, SURFACE_Z_MIN, FORWARD_OUT)
+            val = - getDifLinearFineByValue(cell_shape, e, SURFACE_Z_MIN, state)
               * width * height;
-            _shape_AM_matrix->incrementValueByCell(cell_shape-nx*ny, e, cell_shape, e, val);
-            
-            val = (1-wt) * getFluxByValue(cell_shape-nx*ny, e, PREVIOUS_OUT) * width * height
-              * getDifLinearFineByValue(cell_shape, e, SURFACE_Z_MIN, PREVIOUS_OUT);
-            _shape_source->incrementValueByCell(cell_shape, e, val);
+            _shape_AM_matrix->incrementValue(cell_shape-nx*ny, e, cell_shape, e, val);
           }
           
           /* Z_MAX SURFACE */
           
           /* Transport term on diagonal */
-          val = wt * getDifLinearFineByValue(cell_shape, e, SURFACE_Z_MAX, FORWARD_OUT)
+          val = getDifLinearFineByValue(cell_shape, e, SURFACE_Z_MAX, state)
             * width * height;
-          _shape_AM_matrix->incrementValueByCell(cell_shape, e, cell_shape, e, val);
-
-          val = - (1-wt) * flux_prev * width * height * 
-            getDifLinearFineByValue(cell_shape, e, SURFACE_Z_MAX, PREVIOUS_OUT);
-          _shape_source->incrementValueByCell(cell_shape, e, val);
+          _shape_AM_matrix->incrementValue(cell_shape, e, cell_shape, e, val);
           
           /* Transport term on off diagonals */
           if (z != nz - 1){
-            val = -wt * getDifLinearFineByValue(cell_shape, e, SURFACE_Z_MAX, FORWARD_OUT)
+            val = - getDifLinearFineByValue(cell_shape, e, SURFACE_Z_MAX, state)
               * width * height;
-            _shape_AM_matrix->incrementValueByCell(cell_shape+nx*ny, e, cell_shape, e, val);
-            
-            val = (1-wt) * getFluxByValue(cell_shape+nx*ny, e, PREVIOUS_OUT) * width * height
-              * getDifLinearFineByValue(cell_shape, e, SURFACE_Z_MAX, PREVIOUS_OUT);
-            _shape_source->incrementValueByCell(cell_shape, e, val);
+            _shape_AM_matrix->incrementValue(cell_shape+nx*ny, e, cell_shape, e, val);
           }
         }
       }
@@ -563,7 +488,7 @@ void SolverDiffusion::generateShapeMatrices(double wt){
 }
 
 
-void SolverDiffusion::generateAmpCurrent(int time){
+void SolverDiffusion::generateAmpCurrent(int state){
 
   int nxa = _geometry->getNumXAmp();
   int nya = _geometry->getNumYAmp();
@@ -571,11 +496,12 @@ void SolverDiffusion::generateAmpCurrent(int time){
   int nxs = _geometry_diffusion->getNumXShape();
   int nys = _geometry_diffusion->getNumYShape();
   int nzs = _geometry_diffusion->getNumZShape();
-  double width  = _geometry->getWidth()  / nxa;
-  double height = _geometry->getHeight() / nya;
-  double depth  = _geometry->getDepth()  / nza;
-
-  std::vector< std::vector<int> > amp_to_shape = _geometry->getAmpToShapeMap();
+  double width  = _geometry->getWidth()  / nxs;
+  double height = _geometry->getHeight() / nys;
+  double depth  = _geometry->getDepth()  / nzs;
+  double area;
+  
+  std::vector< std::vector<int> >* amp_to_shape = _geometry->getAmpToShapeMap();
   
   for (int z=0; z < nza; z++){
     for (int y=0; y < nya; y++){
@@ -587,8 +513,8 @@ void SolverDiffusion::generateAmpCurrent(int time){
             double current = 0.0;
 
             std::vector<int>::iterator iter;
-            for (iter = amp_to_shape[cell_amp].begin(); 
-                 iter != amp_to_shape[cell_amp].end(); ++iter){
+            for (iter = amp_to_shape->at(cell_amp).begin(); 
+                 iter != amp_to_shape->at(cell_amp).end(); ++iter){
 
               int zs = (*iter)  / (nxs*nys);
               int ys = ((*iter) - zs*nxs*nys) / nxs;
@@ -603,6 +529,13 @@ void SolverDiffusion::generateAmpCurrent(int time){
                 sense = -1.0;
               else
                 sense = 1.0;
+
+              if (s == SURFACE_X_MIN || s == SURFACE_X_MAX)
+                area = height * depth;
+              else if (s == SURFACE_Y_MIN || s == SURFACE_Y_MAX)
+                area = width * depth;
+              else
+                area = width * height;
               
               /* Check if shape surface coincides with amp surface */
               if ((s == SURFACE_X_MIN && xs % (nxs/nxa) == 0) || 
@@ -612,17 +545,17 @@ void SolverDiffusion::generateAmpCurrent(int time){
                   (s == SURFACE_Y_MAX && ys % (nys/nya) == nys/nya - 1) ||
                   (s == SURFACE_Z_MAX && zs % (nzs/nza) == nzs/nza - 1)){
                 if (neighbor_cell == -1)
-                  current += sense * getDifLinearFineByValue(*iter, e, s, time) * 
-                    height * depth * getFluxByValue(*iter, e, time);
+                  current += sense * getDifLinearFineByValue(*iter, e, s, state) * 
+                    area * getFluxByValue(*iter, e, state);
                 else{
-                  current += sense * getDifLinearFineByValue(*iter, e, s, time) * 
-                    height * depth * (getFluxByValue(*iter, e, time) -
-                                      getFluxByValue(neighbor_cell, e, time));
+                  current += sense * getDifLinearFineByValue(*iter, e, s, state) * 
+                    area * (getFluxByValue(*iter, e, state) -
+                                      getFluxByValue(neighbor_cell, e, state));
                 }
               }
             }
 
-            setCurrentByValue(current, cell_amp, e, s, CURRENT);
+            setCurrentByValue(current, cell_amp, e, s, state);
           }
         }
       }
@@ -648,23 +581,34 @@ void SolverDiffusion::computeInitialShape(double tol){
   /* Normalize flux to initial power level */
   normalizeFlux();
 
+  log_printf(NORMAL, "1");
+  
   /* Generate the amp mesh currents */
   generateAmpCurrent(CURRENT);
 
+  log_printf(NORMAL, "2");
+  
   /* Compute initial shape */
   computeShape(CURRENT, CURRENT, CURRENT);
+
+  log_printf(NORMAL, "3");
   
   /* Compute the initial precursor concentrations */
   computeInitialPrecursorConcentrations();
 
+  log_printf(NORMAL, "4");
+  
   /* Broadcast all field variables to all time steps */
   broadcastToAll(CURRENT);
+
+  log_printf(NORMAL, "5");
 }
 
 
 void SolverDiffusion::takeOuterStepOnly(){
 
   double tolerance = 1.e-4;
+  double lin_solve_tol = 1.e-6;
   double residual = 1.e10;
 
   /* Take step forward with clock */
@@ -675,35 +619,40 @@ void SolverDiffusion::takeOuterStepOnly(){
 
   /* Integrate the temperature to the forward time step */
   integrateTemperature(CURRENT, FORWARD_OUT);
+  
+  computeDiffusionCoefficientsFine(PREVIOUS_OUT);
 
   while(true){
 
     /* Generate the shape matrices */
-    computeDiffusionCoefficientsFine(CURRENT);
     computeDiffusionCoefficientsFine(FORWARD_OUT);
-    generateShapeMatrices(0.0);
+    generateShapeMatrices(FORWARD_OUT, PREVIOUS_OUT);
 
     /* Solve the linear problem to get the flux at the forward time step */
-    linearSolve(_shape_AM_matrix, _flux[CURRENT], _shape_source, tolerance);
+    linearSolve(_shape_AM_matrix, _shape_M_matrix, _flux[FORWARD_OUT],
+                _shape_source, lin_solve_tol);
     
     /* Reintegrate precursor concentrations */
-    integratePrecursorConcentrations(CURRENT, FORWARD_OUT);
+    integratePrecursorConcentrations(PREVIOUS_OUT, FORWARD_OUT);
     
     /* Reintegrate the temperature to the forward time step */
-    integrateTemperature(CURRENT, FORWARD_OUT);
+    integrateTemperature(PREVIOUS_OUT, FORWARD_OUT);
 
     /* Check for convergence of the forward power */
     residual = computePowerRMSError(FORWARD_OUT, FORWARD_OUT_OLD);
 
+    log_printf(NORMAL, "TIME = %1.4f, POWER = %.6e, RESIDUAL = %.6e",
+               _clock->getTime(FORWARD_OUT), computeAveragePower(FORWARD_OUT), residual);
+    
     if (residual < tolerance)
       break;
     else{
       _flux[FORWARD_OUT]->copyTo(_flux[FORWARD_OUT_OLD]);
     }
   }
-  
+
   /* Broadcast all field variables to all time steps */
-  broadcastToAll(CURRENT);
+  broadcastToAll(FORWARD_OUT);
 }
 
 
@@ -714,4 +663,9 @@ void SolverDiffusion::takeInnerStep(){
 
 void SolverDiffusion::takeOuterStep(){
   return;
+}
+
+
+GeometryDiffusion* SolverDiffusion::getGeometryDiffusion(){
+  return _geometry_diffusion;
 }

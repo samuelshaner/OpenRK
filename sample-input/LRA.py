@@ -1,4 +1,5 @@
 import openrk as rk
+import openrk.plotter as plotter
 
 #################################################
 ###############  Create Materials ###############
@@ -20,6 +21,8 @@ fuel1bin.setDopplerCoefficients([3.034e-3, 0.0])
 fuel1bin.setEnergyPerFission(3.204e-11)
 fuel1bin.setVelocity([[3.e7, 3.e5], [3.e7, 3.e5], [3.e7, 3.e5]])
 fuel1bin.setTemperatureConversionFactor(3.83e-11)
+fuel1bin.setDecayConstant([0.00654, 1.35])
+fuel1bin.setDelayedFraction([[0.0054, 0.001087], [0.0054, 0.001087], [0.0054, 0.001087]])
 
 # create fuel 1 blade out
 fuel1bo = rk.FunctionalMaterial()
@@ -37,6 +40,8 @@ fuel1bo.setDopplerCoefficients([3.034e-3, 0.0])
 fuel1bo.setEnergyPerFission(3.204e-11)
 fuel1bo.setVelocity([[3.e7, 3.e5], [3.e7, 3.e5], [3.e7, 3.e5]])
 fuel1bo.setTemperatureConversionFactor(3.83e-11)
+fuel1bo.setDecayConstant([0.00654, 1.35])
+fuel1bo.setDelayedFraction([[0.0054, 0.001087], [0.0054, 0.001087], [0.0054, 0.001087]])
 
 # create fuel 2 blade in
 fuel2bin = rk.FunctionalMaterial()
@@ -54,6 +59,8 @@ fuel2bin.setDopplerCoefficients([3.034e-3, 0.0])
 fuel2bin.setEnergyPerFission(3.204e-11)
 fuel2bin.setVelocity([[3.e7, 3.e5], [3.e7, 3.e5], [3.e7, 3.e5]])
 fuel2bin.setTemperatureConversionFactor(3.83e-11)
+fuel2bin.setDecayConstant([0.00654, 1.35])
+fuel2bin.setDelayedFraction([[0.0054, 0.001087], [0.0054, 0.001087], [0.0054, 0.001087]])
 
 # create fuel 2 blade out
 fuel2bo = rk.FunctionalMaterial()
@@ -71,12 +78,15 @@ fuel2bo.setDopplerCoefficients([3.034e-3, 0.0])
 fuel2bo.setEnergyPerFission(3.204e-11)
 fuel2bo.setVelocity([[3.e7, 3.e5], [3.e7, 3.e5], [3.e7, 3.e5]])
 fuel2bo.setTemperatureConversionFactor(3.83e-11)
+fuel2bo.setDecayConstant([0.00654, 1.35])
+fuel2bo.setDelayedFraction([[0.0054, 0.001087], [0.0054, 0.001087], [0.0054, 0.001087]])
 
 # create fuel 2 blade in then out
 fuel2bino = rk.FunctionalMaterial()
 fuel2bino.setTimeSteps([0.0, 2.0, 3.0])
 fuel2bino.setNumEnergyGroups(2)
 fuel2bino.setNumDelayedGroups(2)
+#fuel2bino.setSigmaA([[0.008002, 0.08344], [0.008002, 0.08344], [0.008002, 0.08344]])
 fuel2bino.setSigmaA([[0.008002, 0.08344], [0.008002, 0.073324], [0.008002, 0.073324]])
 fuel2bino.setDifCoef([[1.259, 0.2091], [1.259, 0.2091], [1.259, 0.2091]])
 fuel2bino.setSigmaT([[1.0/(3.0*1.259), 1.0/(3.0*0.2091)], [1.0/(3.0*1.259), 1.0/(3.0*0.2091)], [1.0/(3.0*1.259), 1.0/(3.0*0.2091)]])
@@ -88,6 +98,9 @@ fuel2bino.setDopplerCoefficients([3.034e-3, 0.0])
 fuel2bino.setEnergyPerFission(3.204e-11)
 fuel2bino.setVelocity([[3.e7, 3.e5], [3.e7, 3.e5], [3.e7, 3.e5]])
 fuel2bino.setTemperatureConversionFactor(3.83e-11)
+fuel2bino.setDecayConstant([0.00654, 1.35])
+fuel2bino.setDelayedFraction([[0.0054, 0.001087], [0.0054, 0.001087], [0.0054, 0.001087]])
+
 
 # create reflector
 reflector = rk.Material()
@@ -107,9 +120,9 @@ reflector.setVelocity([3.e7, 3.e5])
 
 geometry = rk.GeometryDiffusion(165.0, 165.0)
 geometry.setBoundary(0, 1)
-geometry.setBoundary(3, 1)
-geometry.setBoundary(1, 1)
-geometry.setBoundary(4, 1)
+geometry.setBoundary(1, 0)
+geometry.setBoundary(2, 1)
+geometry.setBoundary(3, 0)
 geometry.setAmpMeshDimensions(11,11)
 geometry.setShapeMeshDimensions(11,11)
 
@@ -159,14 +172,25 @@ for i in xrange(1, 5):
 for cell_id in xrange(1, 5):
     geometry.setMaterial(fuel1bin, cell_id)
 
+geometry = geometry.uniformRefine(5,5,1)
+geometry.uniquifyMaterials()
 geometry.generateCellMap()
-geometry = geometry.uniformRefine(1,1,1)
 
 #################################################
 ###############   Create Solver   ###############
 #################################################
 
 solver = rk.SolverDiffusion(geometry)
-rk.setNumThreads(4)
 solver.setBuckling(1.e-4)
-solver.computeInitialShape(1.e-6)
+rk.setNumThreads(4)
+solver.setOuterTimeStepSize(1.e-2)
+solver.computeInitialShape(1.e-8)
+
+for i in range(300):
+  solver.takeOuterStepOnly()
+
+solver.computeFrequency()
+  
+#plotter.plot_flux(solver)
+#plotter.plot_precursors(solver)
+plotter.plot_frequency(solver)

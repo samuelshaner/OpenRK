@@ -37,21 +37,22 @@ public:
   Matrix* getShapeMMatrix();
   Matrix* getShapeAMMatrix();
   Vector* getShapeSource();
-  Vector* getDifLinearFine(int time);
-  double getDifLinearFineByValue(int cell, int group, int side, int time);
-
+  Vector* getDifLinearFine(int state);
+  double getDifLinearFineByValue(int cell, int group, int side, int state);
+  GeometryDiffusion* getGeometryDiffusion();
+  
   /* Setter functions */
-  void setDifLinearFineByValue(double value, int cell, int group, int side, int time);  
+  void setDifLinearFineByValue(double value, int cell, int group, int side, int state);  
 
   /* Worker functions */
   virtual void takeInnerStep();
   virtual void takeOuterStep();
   virtual void takeOuterStepOnly();
   virtual void computeInitialShape(double tol);
-  void generateShapeMatrices(double wt);
-  void computeDiffusionCoefficientsFine(int time);
+  void generateShapeMatrices(int state, int state_prev);
+  void computeDiffusionCoefficientsFine(int state);
   void generateInitialShapeMatrices();
-  void generateAmpCurrent(int time);
+  void generateAmpCurrent(int state);
 
 };
 

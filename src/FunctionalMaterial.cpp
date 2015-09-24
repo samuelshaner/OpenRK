@@ -160,10 +160,10 @@ void FunctionalMaterial::setSigmaT(double* xs, int num_time_steps, int num_group
  * @param xs the total cross-section
  * @param group the energy group
  */
-void FunctionalMaterial::setSigmaTByGroup(double xs, int group, int position) {
+void FunctionalMaterial::setSigmaTByGroup(double xs, int group, int state) {
 
   log_printf(ERROR, "Unable to set the sigma t by group for FunctionalMaterial %d"
-             " since this Material subclass doesn't support settig xs by group", _id);
+             " since this Material subclass doesn't support setting xs by group", _id);
 }
 
 
@@ -172,7 +172,7 @@ void FunctionalMaterial::setSigmaTByGroup(double xs, int group, int position) {
  * @param xs the total cross-section
  * @param group the energy group
  */
-double FunctionalMaterial::getSigmaTByGroup(int group, int position, double temp) {
+double FunctionalMaterial::getSigmaTByGroup(int group, int state, double temp) {
 
   if (_num_time_steps == 0)
     log_printf(ERROR, "Unable to get the sigma t for material %d and "
@@ -183,12 +183,12 @@ double FunctionalMaterial::getSigmaTByGroup(int group, int position, double temp
     log_printf(ERROR, "Unable to get sigma_t for group %d for Material "
                "%d which contains %d energy groups", group, _id, _num_energy_groups);
 
-  int time_step = getTimeStep(position);
+  int time_step = getTimeStep(state);
   int ng = _num_energy_groups;
   
   double sigma_t_left = _sigma_t[time_step*ng + group];
   double sigma_t_right = _sigma_t[(time_step+1)*ng + group];
-  double time = _clock->getTime(position);
+  double time = _clock->getTime(state);
   double time_left = _time_steps[time_step];
   double time_right = _time_steps[time_step+1];
 
@@ -247,10 +247,10 @@ void FunctionalMaterial::setSigmaA(double* xs, int num_time_steps, int num_group
  * @param xs the absorption cross-section
  * @param group the energy group
  */
-void FunctionalMaterial::setSigmaAByGroup(double xs, int group, int position) {
+void FunctionalMaterial::setSigmaAByGroup(double xs, int group, int state) {
 
-  log_printf(ERROR, "Unable to set the sigma t by group for FunctionalMaterial %d"
-             " since this Material subclass doesn't support settig xs by group", _id);
+  log_printf(ERROR, "Unable to set the sigma a by group for FunctionalMaterial %d"
+             " since this Material subclass doesn't support setting xs by group", _id);
 }
 
 
@@ -259,7 +259,7 @@ void FunctionalMaterial::setSigmaAByGroup(double xs, int group, int position) {
  * @param xs the absorption cross-section
  * @param group the energy group
  */
-double FunctionalMaterial::getSigmaAByGroup(int group, int position, double temp) {
+double FunctionalMaterial::getSigmaAByGroup(int group, int state, double temp) {
 
   if (_num_time_steps == 0)
     log_printf(ERROR, "Unable to get the sigma a for material %d and "
@@ -278,7 +278,7 @@ double FunctionalMaterial::getSigmaAByGroup(int group, int position, double temp
     log_printf(ERROR, "Unable to get sigma_a by group for FunctionalMaterial %d"
                " since the doppler coefficients have not been set", _id);
 
-  int time_step = getTimeStep(position);
+  int time_step = getTimeStep(state);
   int ng = _num_energy_groups;
 
   double sigma_a_left = _sigma_a[time_step*ng + group] *
@@ -287,7 +287,7 @@ double FunctionalMaterial::getSigmaAByGroup(int group, int position, double temp
   double sigma_a_right = _sigma_a[(time_step+1)*ng + group]  *
     (1.0 + _doppler_coefficients[group] *
      (sqrt(temp) - sqrt(300.0)));
-  double time = _clock->getTime(position);
+  double time = _clock->getTime(state);
   double time_left = _time_steps[time_step];
   double time_right = _time_steps[time_step+1];
   
@@ -363,10 +363,10 @@ void FunctionalMaterial::setSigmaS(double* xs, int num_time_steps, int num_group
  * @param group1 the row index in the scattering matrix
  * @param group2 the column index in the scattering matrix
  */
-void FunctionalMaterial::setSigmaSByGroup(double xs, int group_from, int group_to, int position) {
+void FunctionalMaterial::setSigmaSByGroup(double xs, int group_from, int group_to, int state) {
 
-  log_printf(ERROR, "Unable to set the sigma t by group for FunctionalMaterial %d"
-             " since this Material subclass doesn't support settig xs by group", _id);
+  log_printf(ERROR, "Unable to set the sigma s by group for FunctionalMaterial %d"
+             " since this Material subclass doesn't support setting xs by group", _id);
 }
 
 
@@ -376,7 +376,7 @@ void FunctionalMaterial::setSigmaSByGroup(double xs, int group_from, int group_t
  * @param group1 the row index in the scattering matrix
  * @param group2 the column index in the scattering matrix
  */
-double FunctionalMaterial::getSigmaSByGroup(int group_from, int group_to, int position, double temp) {
+double FunctionalMaterial::getSigmaSByGroup(int group_from, int group_to, int state, double temp) {
 
   if (_num_time_steps == 0)
     log_printf(ERROR, "Unable to get the sigma s for material %d and "
@@ -388,12 +388,12 @@ double FunctionalMaterial::getSigmaSByGroup(int group_from, int group_to, int po
                "which contains %d energy groups",
                group_from, group_to, _id, _num_energy_groups);
 
-  int time_step = getTimeStep(position);
+  int time_step = getTimeStep(state);
   int ng = _num_energy_groups;
   
   double sigma_s_left = _sigma_s[time_step*ng*ng + group_from*ng + group_to];
   double sigma_s_right = _sigma_s[(time_step+1)*ng*ng + group_from*ng + group_to];
-  double time = _clock->getTime(position);
+  double time = _clock->getTime(state);
   double time_left = _time_steps[time_step];
   double time_right = _time_steps[time_step+1];
 
@@ -462,10 +462,10 @@ void FunctionalMaterial::setSigmaF(double* xs, int num_time_steps, int num_group
  * @param xs the fission cross-section
  * @param group the energy group
  */
-void FunctionalMaterial::setSigmaFByGroup(double xs, int group, int position) {
+void FunctionalMaterial::setSigmaFByGroup(double xs, int group, int state) {
 
-  log_printf(ERROR, "Unable to set the sigma t by group for FunctionalMaterial %d"
-             " since this Material subclass doesn't support settig xs by group", _id);
+  log_printf(ERROR, "Unable to set the sigma f by group for FunctionalMaterial %d"
+             " since this Material subclass doesn't support setting xs by group", _id);
 }
 
 
@@ -474,7 +474,7 @@ void FunctionalMaterial::setSigmaFByGroup(double xs, int group, int position) {
  * @param xs the fission cross-section
  * @param group the energy group
  */
-double FunctionalMaterial::getSigmaFByGroup(int group, int position, double temp) {
+double FunctionalMaterial::getSigmaFByGroup(int group, int state, double temp) {
   
   if (_num_time_steps == 0)
     log_printf(ERROR, "Unable to get the sigma f for material %d and "
@@ -485,12 +485,12 @@ double FunctionalMaterial::getSigmaFByGroup(int group, int position, double temp
     log_printf(ERROR, "Unable to get sigma_f for group %d for Material "
                "%d which contains %d energy groups", group, _id, _num_energy_groups);
 
-  int time_step = getTimeStep(position);
+  int time_step = getTimeStep(state);
   int ng = _num_energy_groups;
 
   double sigma_f_left = _sigma_f[time_step*ng + group];
   double sigma_f_right = _sigma_f[(time_step+1)*ng + group];
-  double time = _clock->getTime(position);
+  double time = _clock->getTime(state);
   double time_left = _time_steps[time_step];
   double time_right = _time_steps[time_step+1];
 
@@ -552,10 +552,10 @@ void FunctionalMaterial::setNuSigmaF(double* xs, int num_time_steps, int num_gro
  * @param xs the fission cross-section multiplied by nu \f$ \nu \f$
  * @param group the energy group
  */
-void FunctionalMaterial::setNuSigmaFByGroup(double xs, int group, int position) {
+void FunctionalMaterial::setNuSigmaFByGroup(double xs, int group, int state) {
 
-  log_printf(ERROR, "Unable to set the sigma t by group for FunctionalMaterial %d"
-             " since this Material subclass doesn't support settig xs by group", _id);
+  log_printf(ERROR, "Unable to set the nu sigma f by group for FunctionalMaterial %d"
+             " since this Material subclass doesn't support setting xs by group", _id);
 }
 
 
@@ -579,7 +579,7 @@ void FunctionalMaterial::setNuSigmaFByGroup(double xs, int group, int position) 
  * @param xs the fission cross-section multiplied by nu \f$ \nu \f$
  * @param group the energy group
  */
-double FunctionalMaterial::getNuSigmaFByGroup(int group, int position, double temp) {
+double FunctionalMaterial::getNuSigmaFByGroup(int group, int state, double temp) {
 
   if (_num_time_steps == 0)
     log_printf(ERROR, "Unable to get the nu sigma f for material %d and "
@@ -590,12 +590,12 @@ double FunctionalMaterial::getNuSigmaFByGroup(int group, int position, double te
     log_printf(ERROR, "Unable to get nu_sigma_f for group %d for Material "
                "%d which contains %d energy groups", group, _id, _num_energy_groups);
 
-  int time_step = getTimeStep(position);
+  int time_step = getTimeStep(state);
   int ng = _num_energy_groups;
 
   double nu_sigma_f_left = _nu_sigma_f[time_step*ng + group];
   double nu_sigma_f_right = _nu_sigma_f[(time_step+1)*ng + group];
-  double time = _clock->getTime(position);
+  double time = _clock->getTime(state);
 
   double time_left = _time_steps[time_step];
   double time_right = _time_steps[time_step+1];
@@ -656,10 +656,10 @@ void FunctionalMaterial::setChi(double* xs, int num_time_steps, int num_groups) 
  * @param xs the chi value (\f$ \Chi \f$)
  * @param group the energy group
  */
-void FunctionalMaterial::setChiByGroup(double xs, int group, int position) {
+void FunctionalMaterial::setChiByGroup(double xs, int group, int state) {
 
-  log_printf(ERROR, "Unable to set the sigma t by group for FunctionalMaterial %d"
-             " since this Material subclass doesn't support settig xs by group", _id);
+  log_printf(ERROR, "Unable to set the chi by group for FunctionalMaterial %d"
+             " since this Material subclass doesn't support setting xs by group", _id);
 }
 
 
@@ -668,7 +668,7 @@ void FunctionalMaterial::setChiByGroup(double xs, int group, int position) {
  * @param xs the chi value (\f$ \Chi \f$)
  * @param group the energy group
  */
-double FunctionalMaterial::getChiByGroup(int group, int position, double temp) {
+double FunctionalMaterial::getChiByGroup(int group, int state, double temp) {
 
   if (_num_time_steps == 0)
     log_printf(ERROR, "Unable to get the chi for material %d and "
@@ -679,12 +679,12 @@ double FunctionalMaterial::getChiByGroup(int group, int position, double temp) {
     log_printf(ERROR, "Unable to get chi for group %d for Material "
                "%d which contains %d energy groups", group, _id, _num_energy_groups);
 
-  int time_step = getTimeStep(position);
+  int time_step = getTimeStep(state);
   int ng = _num_energy_groups;
   
   double chi_left = _chi[time_step*ng + group];
   double chi_right = _chi[(time_step+1)*ng + group];
-  double time = _clock->getTime(position);
+  double time = _clock->getTime(state);
   double time_left = _time_steps[time_step];
   double time_right = _time_steps[time_step+1];
 
@@ -743,10 +743,10 @@ void FunctionalMaterial::setDifCoef(double* xs, int num_time_steps, int num_grou
  * @param xs the diffusion coefficient
  * @param group the energy group
  */
-void FunctionalMaterial::setDifCoefByGroup(double xs, int group, int position) {
+void FunctionalMaterial::setDifCoefByGroup(double xs, int group, int state) {
 
-  log_printf(ERROR, "Unable to set the sigma t by group for FunctionalMaterial %d"
-             " since this Material subclass doesn't support settig xs by group", _id);
+  log_printf(ERROR, "Unable to set the dif coef by group for FunctionalMaterial %d"
+             " since this Material subclass doesn't support setting xs by group", _id);
 }
 
 
@@ -755,7 +755,7 @@ void FunctionalMaterial::setDifCoefByGroup(double xs, int group, int position) {
  * @param xs the diffusion coefficient
  * @param group the energy group
  */
-double FunctionalMaterial::getDifCoefByGroup(int group, int position, double temp) {
+double FunctionalMaterial::getDifCoefByGroup(int group, int state, double temp) {
 
   if (_num_time_steps == 0)
     log_printf(ERROR, "Unable to get the dif coef for material %d and "
@@ -767,12 +767,12 @@ double FunctionalMaterial::getDifCoefByGroup(int group, int position, double tem
                "Material %d which contains %d energy groups",
                group, _id, _num_energy_groups);
 
-  int time_step = getTimeStep(position);
+  int time_step = getTimeStep(state);
   int ng = _num_energy_groups;
   
   double dif_coef_left = _dif_coef[time_step*ng + group];
   double dif_coef_right = _dif_coef[(time_step+1)*ng + group];
-  double time = _clock->getTime(position);
+  double time = _clock->getTime(state);
   double time_left = _time_steps[time_step];
   double time_right = _time_steps[time_step+1];
 
@@ -831,10 +831,10 @@ void FunctionalMaterial::setVelocity(double* velocity, int num_time_steps, int n
  * @param xs the diffusion coefficient
  * @param group the energy group
  */
-void FunctionalMaterial::setVelocityByGroup(double velocity, int group, int position) {
+void FunctionalMaterial::setVelocityByGroup(double velocity, int group, int state) {
 
-  log_printf(ERROR, "Unable to set the sigma t by group for FunctionalMaterial %d"
-             " since this Material subclass doesn't support settig xs by group", _id);
+  log_printf(ERROR, "Unable to set the velocity by group for FunctionalMaterial %d"
+             " since this Material subclass doesn't support setting xs by group", _id);
 }
 
 
@@ -843,7 +843,7 @@ void FunctionalMaterial::setVelocityByGroup(double velocity, int group, int posi
  * @param xs the diffusion coefficient
  * @param group the energy group
  */
-double FunctionalMaterial::getVelocityByGroup(int group, int position, double temp) {
+double FunctionalMaterial::getVelocityByGroup(int group, int state, double temp) {
 
   if (_num_time_steps == 0)
     log_printf(ERROR, "Unable to get the velocity for material %d and "
@@ -855,12 +855,12 @@ double FunctionalMaterial::getVelocityByGroup(int group, int position, double te
                "Material %d which contains %d energy groups",
                group, _id, _num_energy_groups);
 
-  int time_step = getTimeStep(position);
+  int time_step = getTimeStep(state);
   int ng = _num_energy_groups;
   
   double velocity_left = _velocity[time_step*ng + group];
   double velocity_right = _velocity[(time_step+1)*ng + group];
-  double time = _clock->getTime(position);
+  double time = _clock->getTime(state);
   double time_left = _time_steps[time_step];
   double time_right = _time_steps[time_step+1];
 
@@ -869,6 +869,81 @@ double FunctionalMaterial::getVelocityByGroup(int group, int position, double te
     / (time_right - time_left);
   
   return velocity;
+}
+
+
+void FunctionalMaterial::setDelayedFraction(double* xs, int num_time_steps, int num_groups) {
+
+  if (_num_time_steps == 0)
+    log_printf(ERROR, "Unable to set the delayed fraction for material %d since "
+               "the number of time steps has not been set", _id);
+
+  if (_num_energy_groups != num_groups)
+    log_printf(ERROR, "Unable to set delayed fraction with %d groups for Material "
+               "%d which contains %d energy groups",
+               num_groups, _id, _num_energy_groups);
+
+  if (_num_time_steps != num_time_steps)
+    log_printf(ERROR, "Unable to set delayed fraction with %d time steps for Material "
+               "%d which contains %d time steps",
+               num_time_steps, _id, _num_time_steps);
+
+  for (int c=0; c < _num_time_steps; c++){
+    for (int i=0; i < _num_energy_groups; i++)
+      _delayed_fraction[c*_num_energy_groups+i] = xs[c*_num_energy_groups+i];
+  }  
+}
+
+
+void FunctionalMaterial::setDelayedFractionByGroup(double xs, int group, int state) {
+
+  log_printf(ERROR, "Unable to set the delayed fraction by group for FunctionalMaterial %d"
+             " since this Material subclass doesn't support setting xs by group", _id);
+}
+
+
+double FunctionalMaterial::getDelayedFractionByGroup(int group, int state, double temp) {
+  
+  if (_num_time_steps == 0)
+    log_printf(ERROR, "Unable to get the delayed fraction for material %d and "
+               "group %d since the number of time steps has not been set",
+               _id, group);
+  
+  if (group < 0 || group >= _num_energy_groups)
+    log_printf(ERROR, "Unable to get delayed fraction xfor group %d for Material "
+               "%d which contains %d energy groups", group, _id, _num_energy_groups);
+
+  int time_step = getTimeStep(state);
+  int ng = _num_energy_groups;
+
+  double delayed_fraction_left = _delayed_fraction[time_step*ng + group];
+  double delayed_fraction_right = _delayed_fraction[(time_step+1)*ng + group];
+  double time = _clock->getTime(state);
+  double time_left = _time_steps[time_step];
+  double time_right = _time_steps[time_step+1];
+
+  /* Interpolate sigma f */
+  double delayed_fraction = delayed_fraction_left + (time - time_left) *
+    (delayed_fraction_right - delayed_fraction_left)
+    / (time_right - time_left);
+
+  return delayed_fraction;
+}
+
+
+/**
+ * @brief Set the Material's diffusion coefficient for some energy group.
+ * @param xs the diffusion coefficient
+ * @param group the energy group
+ */
+double FunctionalMaterial::getDelayedFractionTotal(int state, double temp) {
+
+  double delayed_fraction = 0.0;
+
+  for (int i=0; i < _num_delayed_groups; i++)
+    delayed_fraction += getDelayedFractionByGroup(i, state, temp);
+  
+  return delayed_fraction;
 }
 
 
@@ -895,14 +970,14 @@ double FunctionalMaterial::getDopplerCoefficientByGroup(int group){
 }
 
 
-int FunctionalMaterial::getTimeStep(int position){
+int FunctionalMaterial::getTimeStep(int state){
 
   if (_clock == NULL){
     log_printf(ERROR, "Unable to get time step for FunctionalMaterial %d"
                " since Clock has not been set", _id);
   }
 
-  double time = _clock->getTime(position);
+  double time = _clock->getTime(state);
 
   int step = 1;
   while (time > _time_steps[step]){
@@ -984,18 +1059,23 @@ std::string FunctionalMaterial::toString() {
       for (int e = 0; e < _num_energy_groups; e++)
         string << _velocity[step*ng+e] << ", ";
     }
-
   }
   
-  for (int position=0; position < 8; position++){
+  for (int state=0; state < NUM_STATES; state++){
 
-    string << "\n\t Clock Position = " << _clock->getPositionName(position);
+    string << "\n\t Clock State = " << _clock->getStateName(state);
 
     if (_precursor_conc != NULL) {
       string << "\n\t\tPrecursor Conc = ";
       for (int e = 0; e < _num_delayed_groups; e++)
-        string << _precursor_conc[position*_num_delayed_groups+e] << ", ";
+        string << _precursor_conc[state*_num_delayed_groups+e] << ", ";
     }
+  }
+
+  if (_doppler_coefficients != NULL) {
+    string << "\n\t\tDoppler Coefficients = ";
+    for (int e = 0; e < _num_energy_groups; e++)
+      string << _doppler_coefficients[e] << ", ";
   }
 
   string << std::endl;
@@ -1020,7 +1100,8 @@ FunctionalMaterial* FunctionalMaterial::clone(){
   
   int ng = _num_energy_groups;
   int nt = _num_time_steps;
-
+  int nd = _num_delayed_groups;
+  
   clone->setSigmaT(_sigma_t, nt, ng);
   clone->setSigmaA(_sigma_a, nt, ng);
   clone->setSigmaF(_sigma_f, nt, ng);
@@ -1029,20 +1110,25 @@ FunctionalMaterial* FunctionalMaterial::clone(){
   clone->setDifCoef(_dif_coef, nt, ng);
   clone->setVelocity(_velocity, nt, ng);  
   clone->setSigmaS(_sigma_s, nt, ng*ng);
-  clone->setDopplerCoefficients(_doppler_coefficients, ng);
+  clone->setDopplerCoefficients(_doppler_coefficients, ng);  
+  clone->setDelayedFraction(_delayed_fraction, nt, nd);
 
-  for (int c=0; c < 8; c++){
-    for (int d=0; d < _num_delayed_groups; d++)
-      clone->setPrecursorConcByGroup(_precursor_conc[c*_num_delayed_groups+d], d, c);
+  for (int d=0; d < nd; d++)
+    clone->setDecayConstantByGroup(_decay_constant[d], d);
+  
+  for (int c=0; c < NUM_STATES; c++){
+    for (int d=0; d < nd; d++){
+      clone->setPrecursorConcByGroup(_precursor_conc[c*nd+d], d, c);
+    }
   }
 
   return clone;
 }
 
 
-void FunctionalMaterial::copy(int position_from, int position_to){
+void FunctionalMaterial::copy(int state_from, int state_to){
 
   for (int d=0; d < _num_delayed_groups; d++)
-    setPrecursorConcByGroup(_precursor_conc[position_from*_num_delayed_groups+d], d, position_to);
+    setPrecursorConcByGroup(_precursor_conc[state_from*_num_delayed_groups+d],
+                            d, state_to);
 }
-
