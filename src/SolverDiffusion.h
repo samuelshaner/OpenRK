@@ -51,7 +51,7 @@ public:
   virtual void computeInitialShape(double tol);
   void generateShapeMatrices(int state, int state_prev);
   void computeDiffusionCoefficientsFine(int state);
-  void generateInitialShapeMatrices();
+  void generateAdiabaticShapeMatrices();
   void generateAmpCurrent(int state);
 
 };

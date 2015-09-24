@@ -61,7 +61,7 @@ Vector* SolverDiffusion::getShapeSource(){
   return _shape_source;
 }
 
-void SolverDiffusion::generateInitialShapeMatrices(){
+void SolverDiffusion::generateAdiabaticShapeMatrices(){
 
   int nx = _geometry_diffusion->getNumXShape();
   int ny = _geometry_diffusion->getNumYShape();
@@ -300,7 +300,7 @@ void SolverDiffusion::generateShapeMatrices(int state, int state_prev){
   int ny = _geometry_diffusion->getNumYShape();
   int nz = _geometry_diffusion->getNumZShape();
   int ng = _num_energy_groups;
-    double width  = _geometry->getWidth()  / nx;
+  double width  = _geometry->getWidth()  / nx;
   double height = _geometry->getHeight() / ny;
   double depth  = _geometry->getDepth()  / nz;
   double val;
@@ -312,6 +312,7 @@ void SolverDiffusion::generateShapeMatrices(int state, int state_prev){
   _shape_AM_matrix->clear();
   _shape_M_matrix->clear();
 
+  #pragma omp parallel for private(val) collapse(3)
   for (int z=0; z < nz; z++){
     for (int y=0; y < ny; y++){
       for (int x=0; x < nx; x++){
@@ -326,9 +327,9 @@ void SolverDiffusion::generateShapeMatrices(int state, int state_prev){
 
           double v           = material->getVelocityByGroup(e, state, temp);
           double amp         = getAmplitudeByValue(cell_amp, e, state);
-          double amp_prev    = getAmplitudeByValue(cell_amp, e, state_prev);
           double freq        = getFrequencyByValue(cell_amp, e, state);
-          double flux        = getFluxByValue(cell_shape, e, state);
+          double flux_prev   = getFluxByValue(cell_shape, e, state_prev);
+          double shape_prev  = getShapeByValue(cell_shape, e, state_prev);
 
           double chi         = material->getChiByGroup(e, state, temp);
           double sig_a       = material->getSigmaAByGroup(e, state, temp); 
@@ -338,15 +339,27 @@ void SolverDiffusion::generateShapeMatrices(int state, int state_prev){
           double nu_sig_f;
 
           /* Time absorption term on the diagonal */
-          val = amp / v * volume / dt;
-          _shape_AM_matrix->incrementValue(cell_shape, e, cell_shape, e, val);
-          
-          val = flux / v * volume / dt;
-          _shape_source->incrementValue(cell_shape, e, val);
 
           if (_method == IQS){
             val = freq / v * volume;
             _shape_AM_matrix->incrementValue(cell_shape, e, cell_shape, e, val);
+
+            val = amp / v * volume / dt;
+            _shape_AM_matrix->incrementValue(cell_shape, e, cell_shape, e, val);
+            
+            val = shape_prev * amp / v * volume / dt;
+            _shape_source->incrementValue(cell_shape, e, val);
+          }
+          else if (_method == THETA) {
+            val = freq / v * volume;
+            _shape_AM_matrix->incrementValue(cell_shape, e, cell_shape, e, val);
+
+            val = amp / v * volume / dt;
+            _shape_AM_matrix->incrementValue(cell_shape, e, cell_shape, e, val);
+            
+            val = flux_prev / v * volume / dt;
+            _shape_source->incrementValue(cell_shape, e, val);
+
           }
             
           /* Delayed neutron precursors */
@@ -371,8 +384,7 @@ void SolverDiffusion::generateShapeMatrices(int state, int state_prev){
           /* Outscattering term on diagonal */
           for (int g=0; g < ng; g++){
             if (e != g){
-              sig_s      = material->getSigmaSByGroup(e, g, state, temp);
-              
+              sig_s = material->getSigmaSByGroup(e, g, state, temp);
               val = sig_s * volume * amp;
               _shape_AM_matrix->incrementValue(cell_shape, e, cell_shape, e, val);
             }
@@ -380,19 +392,18 @@ void SolverDiffusion::generateShapeMatrices(int state, int state_prev){
 
           /* Fission terms */
           for (int g=0; g < ng; g++){
-            nu_sig_f      = material->getNuSigmaFByGroup(g, state, temp);
+            nu_sig_f = material->getNuSigmaFByGroup(g, state, temp);
             
             val = - (1-delay_tot) * chi * nu_sig_f / _k_eff_0 * volume *
               getAmplitudeByValue(cell_amp, g, state);
             _shape_AM_matrix->incrementValue(cell_shape, g, cell_shape, e, val);
-            _shape_M_matrix->incrementValue(cell_shape, g, cell_shape, e, val);
+            _shape_M_matrix->incrementValue(cell_shape, g, cell_shape, e, -val);
           }
 
           /* Inscattering term on off diagonals */
           for (int g=0; g < ng; g++){
             if (e != g){
-              sig_s      = material->getSigmaSByGroup(g, e, state, temp);
-              
+              sig_s = material->getSigmaSByGroup(g, e, state, temp);              
               val = - sig_s * volume * getAmplitudeByValue(cell_amp, g, state);
               _shape_AM_matrix->incrementValue(cell_shape, g, cell_shape, e, val);
             }
@@ -571,7 +582,7 @@ void SolverDiffusion::computeInitialShape(double tol){
   /* Generate the initial shape matrices */
   computeDiffusionCoefficientsFine(CURRENT);
 
-  generateInitialShapeMatrices();
+  generateAdiabaticShapeMatrices();
 
   /* Solve the initial eigenvalue problem */
   _k_eff_0 = eigenvalueSolve(_shape_A_matrix, _shape_M_matrix, _flux[CURRENT], tol);
@@ -581,33 +592,23 @@ void SolverDiffusion::computeInitialShape(double tol){
   /* Normalize flux to initial power level */
   normalizeFlux();
 
-  log_printf(NORMAL, "1");
-  
   /* Generate the amp mesh currents */
   generateAmpCurrent(CURRENT);
 
-  log_printf(NORMAL, "2");
-  
   /* Compute initial shape */
   computeShape(CURRENT, CURRENT, CURRENT);
 
-  log_printf(NORMAL, "3");
-  
   /* Compute the initial precursor concentrations */
   computeInitialPrecursorConcentrations();
 
-  log_printf(NORMAL, "4");
-  
   /* Broadcast all field variables to all time steps */
   broadcastToAll(CURRENT);
-
-  log_printf(NORMAL, "5");
 }
 
 
 void SolverDiffusion::takeOuterStepOnly(){
 
-  double tolerance = 1.e-4;
+  double tolerance = 1.e-2;
   double lin_solve_tol = 1.e-6;
   double residual = 1.e10;
 
@@ -647,7 +648,7 @@ void SolverDiffusion::takeOuterStepOnly(){
     if (residual < tolerance)
       break;
     else{
-      _flux[FORWARD_OUT]->copyTo(_flux[FORWARD_OUT_OLD]);
+      copyFieldVariables(FORWARD_OUT, FORWARD_OUT_OLD);
     }
   }
 
@@ -662,6 +663,49 @@ void SolverDiffusion::takeInnerStep(){
 
 
 void SolverDiffusion::takeOuterStep(){
+
+  double tolerance = 1.e-2;
+  double lin_solve_tol = 1.e-6;
+  double residual = 1.e10;
+
+  /* Take step forward with clock */
+  _clock->takeOuterStep();
+
+  while(true){
+
+    /* Prolongate flux */
+    while (_clock->getTime(CURRENT) < _clock->getTime(FORWARD_OUT) - 1.e-6)
+      takeInnerStep();
+    
+    /* Reconstruct flux at FORWARD_OUT */
+
+    /* Generate the shape matrices */
+    computeDiffusionCoefficientsFine(FORWARD_OUT);
+    generateShapeMatrices(FORWARD_OUT, PREVIOUS_OUT);
+
+    /* Solve the linear problem to get the shape at the forward time step */
+    linearSolve(_shape_AM_matrix, _shape_M_matrix, _shape[FORWARD_OUT],
+                _shape_source, lin_solve_tol);
+    
+    /* Reconstruct flux at FORWARD_OUT */
+
+    /* Check for convergence of the forward power */
+    residual = computePowerRMSError(FORWARD_OUT, FORWARD_OUT_OLD);
+
+    log_printf(NORMAL, "TIME = %1.4f, POWER = %.6e, RESIDUAL = %.6e",
+               _clock->getTime(FORWARD_OUT), computeAveragePower(FORWARD_OUT), residual);
+    
+    if (residual < tolerance)
+      break;
+    else{
+      _clock->resetToPreviousOuterStep();
+      copyFieldVariables(FORWARD_OUT, FORWARD_OUT_OLD);
+    }
+  }
+
+  /* Broadcast all field variables to all time steps */
+  broadcastToAll(FORWARD_OUT);
+
   return;
 }
 

@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='utf-8'?>
+<materials>
+    <default_xs>71c</default_xs>
+<!--3.1% Fuel-->
+<material id="10000">
+        <density units="g/cm3" value="10.30166" />
+    <nuclide ao="0.022253" name="U-238" />
+    <nuclide ao="0.04594" name="O-16" />
+    <nuclide ao="5.7987e-06" name="U-234" />
+    <nuclide ao="0.00072175" name="U-235" />
+    </material>
+</materials>

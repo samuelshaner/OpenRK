@@ -28,7 +28,8 @@ class Solver {
 
 protected:
 
-  Matrix* _amp_matrix;
+  Matrix* _amp_AM_matrix;
+  Matrix* _amp_M_matrix;
   Vector* _amp_source;
 
   double _k_eff_0;
@@ -61,7 +62,8 @@ public:
   virtual ~Solver();
 
   /* Getter functions */
-  Matrix* getAmpMatrix();
+  Matrix* getAmpAMMatrix();
+  Matrix* getAmpMMatrix();
   Vector* getAmpSource();
   double getKeff0();
   int getMethod();

@@ -26,8 +26,8 @@ Geometry::Geometry(double width, double height, double depth) {
   setZMin(-depth/2.0);
   setZMax(depth/2.0);
 
-  _boundaries = new int[6];
-  for (int i=0; i < 6; i++)
+  _boundaries = new int[NUM_SURFACES];
+  for (int i=0; i < NUM_SURFACES; i++)
     _boundaries[i] = REFLECTIVE;
   
   return;

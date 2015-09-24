@@ -21,7 +21,8 @@ Solver::Solver(Geometry* geometry){
   int num_x = _geometry->getNumXAmp();
   int num_y = _geometry->getNumYAmp();
   int num_z = _geometry->getNumZAmp();
-  _amp_matrix = new Matrix(num_x, num_y, num_z, _num_energy_groups);
+  _amp_AM_matrix = new Matrix(num_x, num_y, num_z, _num_energy_groups);
+  _amp_M_matrix = new Matrix(num_x, num_y, num_z, _num_energy_groups);
   _amp_source = new Vector(num_x, num_y, num_z, _num_energy_groups);
 
   /* Allocate memory for coarse mesh field variables */
@@ -50,16 +51,24 @@ Solver::Solver(Geometry* geometry){
 
 Solver::~Solver(){
 
-  if (_amp_matrix != NULL)
-    delete _amp_matrix;
+  if (_amp_AM_matrix != NULL)
+    delete _amp_AM_matrix;
+
+  if (_amp_M_matrix != NULL)
+    delete _amp_M_matrix;
 
   if (_amp_source != NULL)
     delete _amp_source;
 }
 
 
-Matrix* Solver::getAmpMatrix(){
-  return _amp_matrix;
+Matrix* Solver::getAmpAMMatrix(){
+  return _amp_AM_matrix;
+}
+
+
+Matrix* Solver::getAmpMMatrix(){
+  return _amp_M_matrix;
 }
 
 
@@ -83,7 +92,8 @@ void Solver::generateAmplitudeMatrix(){
   std::vector< std::vector<int> >* amp_to_shape = _geometry->getAmpToShapeMap();
 
   _amp_source->clear();
-  _amp_matrix->clear();
+  _amp_AM_matrix->clear();
+  _amp_M_matrix->clear();
 
   #pragma omp parallel for private(val) collapse(3)
   for (int z=0; z < nz; z++){
@@ -94,8 +104,6 @@ void Solver::generateAmplitudeMatrix(){
         
         for (int e=0; e < ng; e++){
 
-          double amp_prev = getAmplitudeByValue(cell_amp, e, PREVIOUS_IN);
-          
           /* Loop over shape cells in this amp cell */
           std::vector<int>::iterator iter;
           for (iter = amp_to_shape->at(cell_amp).begin();
@@ -110,7 +118,7 @@ void Solver::generateAmplitudeMatrix(){
             double sig_a         = material->getSigmaAByGroup(e, CURRENT, temp);
             double shape         = getShapeByValue(cell_shape, e, CURRENT);
             double shape_prev    = getShapeByValue(cell_shape, e, PREVIOUS_IN);
-            double amp           = getAmplitudeByValue(cell_amp, e, CURRENT);
+            double amp_prev      = getAmplitudeByValue(cell_amp, e, PREVIOUS_IN);
             double beta          = material->getDelayedFractionTotal(CURRENT);
             double dif_coef      = material->getDifCoefByGroup(e, CURRENT, temp);
             double sig_s;
@@ -118,14 +126,14 @@ void Solver::generateAmplitudeMatrix(){
             
             /* Time absorption term on the diagonal */
             val = shape / v * volume / dt;
-            _amp_matrix->incrementValue(cell_amp, e, cell_amp, e, val);
+            _amp_AM_matrix->incrementValue(cell_amp, e, cell_amp, e, val);
             
-            val = shape * amp / v * volume / dt;
+            val = shape * amp_prev / v * volume / dt;
             _amp_source->incrementValue(cell_amp, e, val);
 
             if (_method == IQS){
               val = (shape - shape_prev) / v * volume / dt;
-              _amp_matrix->incrementValue(cell_amp, e, cell_amp, e, val);
+              _amp_AM_matrix->incrementValue(cell_amp, e, cell_amp, e, val);
             }
                     
             /* Delayed neutron precursors */
@@ -139,11 +147,11 @@ void Solver::generateAmplitudeMatrix(){
           
             /* Absorption term on the diagonal */
             val = sig_a * volume * shape;
-            _amp_matrix->incrementValue(cell_amp, e, cell_amp, e, val);
+            _amp_AM_matrix->incrementValue(cell_amp, e, cell_amp, e, val);
  
             /* Buckling term on the diagonal */
             val = dif_coef * volume * _buckling * shape;
-            _amp_matrix->incrementValue(cell_amp, e, cell_amp, e, val);
+            _amp_AM_matrix->incrementValue(cell_amp, e, cell_amp, e, val);
             
             /* Outscattering term on diagonal */
             for (int g=0; g < ng; g++){
@@ -151,7 +159,7 @@ void Solver::generateAmplitudeMatrix(){
                 sig_s = material->getSigmaSByGroup(e,g, CURRENT, temp);
                 
                 val = sig_s * volume * shape;
-                _amp_matrix->incrementValue(cell_amp, e, cell_amp, e, val);
+                _amp_AM_matrix->incrementValue(cell_amp, e, cell_amp, e, val);
               }
             }
             
@@ -161,7 +169,8 @@ void Solver::generateAmplitudeMatrix(){
                             
               val = - (1-beta) * chi * nu_sig_f / _k_eff_0 * volume *
                 getShapeByValue(cell_shape, g, CURRENT);
-              _amp_matrix->incrementValue(cell_amp, g, cell_amp, e, val);
+              _amp_AM_matrix->incrementValue(cell_amp, g, cell_amp, e, val);
+              _amp_M_matrix->incrementValue(cell_amp, g, cell_amp, e, -val);
             }
             
             /* Inscattering term on off diagonals */
@@ -170,7 +179,7 @@ void Solver::generateAmplitudeMatrix(){
                 sig_s = material->getSigmaSByGroup(g,e, CURRENT, temp);
                 
                 val = - sig_s * volume * getShapeByValue(cell_shape, g, CURRENT);
-                _amp_matrix->incrementValue(cell_amp, g, cell_amp, e, val);
+                _amp_AM_matrix->incrementValue(cell_amp, g, cell_amp, e, val);
               }
             }
           }          
@@ -182,14 +191,14 @@ void Solver::generateAmplitudeMatrix(){
                  getDifNonlinearByValue(cell_amp, e, SURFACE_X_MIN, CURRENT))
             * height * depth;
 
-          _amp_matrix->incrementValue(cell_amp, e, cell_amp, e, val);
+          _amp_AM_matrix->incrementValue(cell_amp, e, cell_amp, e, val);
           
           /* Transport term on off diagonals */
           if (x != 0){
             val = - (getDifLinearByValue(cell_amp, e, SURFACE_X_MIN, CURRENT) -
                      getDifNonlinearByValue(cell_amp, e, SURFACE_X_MIN, CURRENT))
               * height * depth;
-            _amp_matrix->incrementValue(cell_amp - 1, e, cell_amp, e, val);
+            _amp_AM_matrix->incrementValue(cell_amp - 1, e, cell_amp, e, val);
           }          
 
           /* X_MAX SURFACE */
@@ -198,14 +207,14 @@ void Solver::generateAmplitudeMatrix(){
           val = (getDifLinearByValue(cell_amp, e, SURFACE_X_MAX, CURRENT) -
                  getDifNonlinearByValue(cell_amp, e, SURFACE_X_MAX, CURRENT))
             * height * depth;
-          _amp_matrix->incrementValue(cell_amp, e, cell_amp, e, val);
+          _amp_AM_matrix->incrementValue(cell_amp, e, cell_amp, e, val);
           
           /* Transport term on off diagonals */
           if (x != nx - 1){
             val = - (getDifLinearByValue(cell_amp, e, SURFACE_X_MAX, CURRENT) +
                      getDifNonlinearByValue(cell_amp, e, SURFACE_X_MAX, CURRENT))
               * height * depth;
-            _amp_matrix->incrementValue(cell_amp + 1, e, cell_amp, e, val);
+            _amp_AM_matrix->incrementValue(cell_amp + 1, e, cell_amp, e, val);
           }
           
           /* Y_MIN SURFACE */
@@ -214,14 +223,14 @@ void Solver::generateAmplitudeMatrix(){
           val = (getDifLinearByValue(cell_amp, e, SURFACE_Y_MIN, CURRENT) +
                  getDifNonlinearByValue(cell_amp, e, SURFACE_Y_MIN, CURRENT))
             * width * depth;
-          _amp_matrix->incrementValue(cell_amp, e, cell_amp, e, val);
+          _amp_AM_matrix->incrementValue(cell_amp, e, cell_amp, e, val);
           
           /* Transport term on off diagonals */
           if (y != 0){
             val = - (getDifLinearByValue(cell_amp, e, SURFACE_Y_MIN, CURRENT) -
                      getDifNonlinearByValue(cell_amp, e, SURFACE_Y_MIN, CURRENT))
               * width * depth;
-            _amp_matrix->incrementValue(cell_amp - nx, e, cell_amp, e, val);
+            _amp_AM_matrix->incrementValue(cell_amp - nx, e, cell_amp, e, val);
           }
           
           /* Y_MAX SURFACE */
@@ -230,14 +239,14 @@ void Solver::generateAmplitudeMatrix(){
           val = (getDifLinearByValue(cell_amp, e, SURFACE_Y_MAX, CURRENT) -
                  getDifNonlinearByValue(cell_amp, e, SURFACE_Y_MAX, CURRENT))
             * width * depth;
-          _amp_matrix->incrementValue(cell_amp, e, cell_amp, e, val);
+          _amp_AM_matrix->incrementValue(cell_amp, e, cell_amp, e, val);
 
           /* Transport term on off diagonals */
           if (y != ny - 1){
             val = - (getDifLinearByValue(cell_amp, e, SURFACE_Y_MAX, CURRENT) +
                      getDifNonlinearByValue(cell_amp, e, SURFACE_Y_MAX, CURRENT))
               * width * depth;
-            _amp_matrix->incrementValue(cell_amp + nx, e, cell_amp, e, val);
+            _amp_AM_matrix->incrementValue(cell_amp + nx, e, cell_amp, e, val);
           }
 
           /* Z_MIN SURFACE */
@@ -246,14 +255,14 @@ void Solver::generateAmplitudeMatrix(){
           val = (getDifLinearByValue(cell_amp, e, SURFACE_Z_MIN, CURRENT) +
                  getDifNonlinearByValue(cell_amp, e, SURFACE_Z_MIN, CURRENT))
             * width * height;
-          _amp_matrix->incrementValue(cell_amp, e, cell_amp, e, val);
+          _amp_AM_matrix->incrementValue(cell_amp, e, cell_amp, e, val);
 
           /* Transport term on off diagonals */
           if (z != 0){
             val = - (getDifLinearByValue(cell_amp, e, SURFACE_Z_MIN, CURRENT) -
                      getDifNonlinearByValue(cell_amp, e, SURFACE_Z_MIN, CURRENT))
               * width * height;
-            _amp_matrix->incrementValue(cell_amp - nx*ny, e, cell_amp, e, val);
+            _amp_AM_matrix->incrementValue(cell_amp - nx*ny, e, cell_amp, e, val);
           }
           
           /* Z_MAX SURFACE */
@@ -262,14 +271,14 @@ void Solver::generateAmplitudeMatrix(){
           val = (getDifLinearByValue(cell_amp, e, SURFACE_Z_MAX, CURRENT) -
                  getDifNonlinearByValue(cell_amp, e, SURFACE_Z_MAX, CURRENT))
             * width * height;
-          _amp_matrix->incrementValue(cell_amp, e, cell_amp, e, val);
+          _amp_AM_matrix->incrementValue(cell_amp, e, cell_amp, e, val);
           
           /* Transport term on off diagonals */
           if (z != nz - 1){
             val = - (getDifLinearByValue(cell_amp, e, SURFACE_Z_MAX, CURRENT) +
                      getDifNonlinearByValue(cell_amp, e, SURFACE_Z_MAX, CURRENT))
               * width * height;
-            _amp_matrix->incrementValue(cell_amp + nx*ny, e, cell_amp, e, val);
+            _amp_AM_matrix->incrementValue(cell_amp + nx*ny, e, cell_amp, e, val);
           }
         }
       }
@@ -523,7 +532,7 @@ void Solver::computePower(int state){
 
     double cell_power = 0.0;
     Material* material = _geometry->getMaterial(i);
-    double temp = getTemperatureByValue(i, CURRENT);
+    double temp = getTemperatureByValue(i, state);
     
     if (material->isFissionable()){
       for (int g=0; g < _num_energy_groups; g++){
@@ -544,7 +553,6 @@ void Solver::normalizeFlux(){
   double average_power = computeAveragePower(CURRENT);
 
   for (int i=0; i < _num_shape_cells; i++){
-
     for (int e=0; e < _num_energy_groups; e++){
       double old_flux = getFluxByValue(i, e, CURRENT);
       setFluxByValue(old_flux * _initial_power / average_power, i, e, CURRENT);

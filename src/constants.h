@@ -35,6 +35,7 @@
 /** The transient methods */
 #define IQS 0
 #define ADIABATIC 1
+#define THETA 2
 
 /** The maximum number of iterations allowed for a power method eigenvalue
  *  solve in linalg.cpp */
