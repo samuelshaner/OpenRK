@@ -90,6 +90,7 @@ class configuration:
                     'src/Vector.cpp',
                     'src/Solver.cpp',
                     'src/SolverDiffusion.cpp',
+                    'src/SolverDiffusionTheta.cpp',
                     'src/log.cpp' ]
 
 

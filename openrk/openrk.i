@@ -11,6 +11,7 @@
   #include "../src/Vector.h"
   #include "../src/Solver.h"
   #include "../src/SolverDiffusion.h"
+  #include "../src/SolverDiffusionTheta.h"
   #include "../src/FunctionalMaterial.h"
   #include "../src/Geometry.h"
   #include "../src/GeometryDiffusion.h"
@@ -82,5 +83,6 @@
 %include ../src/GeometryDiffusion.h
 %include ../src/Solver.h
 %include ../src/SolverDiffusion.h
+%include ../src/SolverDiffusionTheta.h
 
 #define printf PySys_WriteStdout

@@ -18,14 +18,13 @@ class SolverDiffusion : public Solver {
 
 protected:
 
-  Matrix* _shape_A_matrix;
-  Matrix* _shape_M_matrix;
-  Matrix* _shape_AM_matrix;
-  Vector* _shape_source;
+  /* Matrix and vector objects */
+  Matrix* _shape_A;
+  Matrix* _shape_M;
+  Matrix* _shape_AM;
+  Vector* _shape_b;
 
   /* Fine mesh field variables */
-  std::map<int, Vector*> _dif_linear_fine;
-
   GeometryDiffusion* _geometry_diffusion;
 
 public:
@@ -33,27 +32,17 @@ public:
   virtual ~SolverDiffusion();
 
   /* Getter functions */
-  Matrix* getShapeAMatrix();
-  Matrix* getShapeMMatrix();
-  Matrix* getShapeAMMatrix();
-  Vector* getShapeSource();
-  Vector* getDifLinearFine(int state);
-  double getDifLinearFineByValue(int cell, int group, int side, int state);
+  Matrix* getShapeA();
+  Matrix* getShapeM();
+  Matrix* getShapeAM();
+  Vector* getShapeb();
   GeometryDiffusion* getGeometryDiffusion();
   
   /* Setter functions */
-  void setDifLinearFineByValue(double value, int cell, int group, int side, int state);  
 
   /* Worker functions */
-  virtual void takeInnerStep();
-  virtual void takeOuterStep();
-  virtual void takeOuterStepOnly();
-  virtual void computeInitialShape(double tol);
-  void generateShapeMatrices(int state, int state_prev);
-  void computeDiffusionCoefficientsFine(int state);
-  void generateAdiabaticShapeMatrices();
-  void generateAmpCurrent(int state);
-
+  virtual void takeStep()=0;
+  virtual void computeInitialFlux(double tol)=0;
 };
 
 #endif /* SOLVERDIFFUSION_H_ */

@@ -22,10 +22,10 @@
 /** The surfaces of a cube */
 #define NUM_SURFACES 6
 #define SURFACE_X_MIN 0
-#define SURFACE_Y_MIN 2
-#define SURFACE_Z_MIN 4
 #define SURFACE_X_MAX 1
+#define SURFACE_Y_MIN 2
 #define SURFACE_Y_MAX 3
+#define SURFACE_Z_MIN 4
 #define SURFACE_Z_MAX 5
 
 /** The boundary conditions */
@@ -43,5 +43,8 @@
 
 /** The maximum number of iterations allowed for a linear solve in linalg.cpp */
 #define MAX_LINEAR_SOLVE_ITERATIONS 1000
+
+/** The tolerance on the initial and adiabatic flux solves */
+#define FLUX_SOLVE_TOLERANCE 1.e-6
 
 #endif /* CONSTANTS_H_ */

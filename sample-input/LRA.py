@@ -172,7 +172,7 @@ for i in xrange(1, 5):
 for cell_id in xrange(1, 5):
     geometry.setMaterial(fuel1bin, cell_id)
 
-geometry = geometry.uniformRefine(15,15,1)
+geometry = geometry.uniformRefine(5,5,1)
 geometry.uniquifyMaterials()
 geometry.generateCellMap()
 
@@ -180,17 +180,18 @@ geometry.generateCellMap()
 ###############   Create Solver   ###############
 #################################################
 
-solver = rk.SolverDiffusion(geometry)
+solver = rk.SolverDiffusionTheta(geometry)
 solver.setBuckling(1.e-4)
-rk.setNumThreads(40)
-solver.setOuterTimeStepSize(1.e-3)
-solver.computeInitialShape(1.e-8)
+rk.setNumThreads(4)
+solver.setStepSize(1.e-2)
+solver.setFluxSolveTolerance(1.e-7)
+solver.computeInitialFlux(1.e-7)
 
-for i in range(3000):
-  solver.takeOuterStepOnly()
+for i in range(300):
+  solver.takeStep()
 
 #solver.computeFrequency()
   
-plotter.plot_flux(solver)
-plotter.plot_precursors(solver)
+#plotter.plot_flux(solver)
+#plotter.plot_precursors(solver)
 #plotter.plot_frequency(solver)
