@@ -59,7 +59,7 @@ class configuration:
 
   # Compile using ccache (for developers needing fast recompilation)
   with_ccache = False
-  
+
   # Supported C++ compilers: 'gcc'
   cpp_compilers = list()
 
@@ -70,7 +70,7 @@ class configuration:
   # List of the packages to install - only openmoc is guaranteed to be built
   # while the others will be built based on which flags are specified
   # at compile time
-  packages = ['openrk', 'openrk.compatible']
+  packages = ['openrk']
 
   #############################################################################
   #                                 Source Code
@@ -81,17 +81,8 @@ class configuration:
 
   sources['gcc'] = ['openrk/openrk_wrap.cpp',
                     'src/linalg.cpp',
-                    'src/Material.cpp',
-                    'src/FunctionalMaterial.cpp',
-                    'src/Clock.cpp',
-                    'src/Geometry.cpp',
-                    'src/GeometryDiffusion.cpp',
                     'src/Matrix.cpp',
-                    'src/Vector.cpp',
-                    'src/Solver.cpp',
-                    'src/SolverDiffusion.cpp',
-                    'src/SolverDiffusionTheta.cpp',
-                    'src/log.cpp' ]
+                    'src/Vector.cpp']
 
 
   #############################################################################
