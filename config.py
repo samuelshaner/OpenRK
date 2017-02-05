@@ -57,9 +57,6 @@ class configuration:
   # Default C++ compiler for the main openmoc module is GCC
   cc = 'gcc'
 
-  # Compile using ccache (for developers needing fast recompilation)
-  with_ccache = False
-
   # Supported C++ compilers: 'gcc'
   cpp_compilers = list()
 
@@ -80,9 +77,10 @@ class configuration:
   sources = dict()
 
   sources['gcc'] = ['openrk/openrk_wrap.cpp',
-                    'src/linalg.cpp',
+                    'src/Array.cpp',
                     'src/Matrix.cpp',
-                    'src/Vector.cpp']
+                    'src/linalg.cpp',
+                    'src/log.cpp']
 
 
   #############################################################################

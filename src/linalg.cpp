@@ -16,46 +16,31 @@
  * @param SOR_factor the successive over-relaxation factor
  * @return k_eff the dominant eigenvalue
  */
-double eigenvalueSolve(Matrix* A, Matrix* M, Vector* X, double tol,
-                             double SOR_factor) {
+double eigenvalueSolve(Matrix* A, Matrix* M, Array* X, double tol,
+                       double SOR_factor) {
 
   log_printf(INFO, "Computing the Matrix-Vector eigenvalue...");
 
+  long int size = X->getSize();
+
   /* Check for consistency of matrix and vector dimensions */
-  if (A->getNumX() != M->getNumX() || A->getNumX() != X->getNumX())
+  if (A->getNumCells() != M->getNumCells() || A->getNumCells() != size)
     log_printf(ERROR, "Cannot compute the Matrix-Vector eigenvalue with "
                "different x dimensions for the A matrix, M matrix, and X vector"
-               ": (%d, %d, %d)", A->getNumX(), M->getNumX(), X->getNumX());
-  else if (A->getNumY() != M->getNumY() || A->getNumY() != X->getNumY())
-    log_printf(ERROR, "Cannot compute the Matrix-Vector eigenvalue with "
-               "different y dimensions for the A matrix, M matrix, and X vector"
-               ": (%d, %d, %d)", A->getNumY(), M->getNumY(), X->getNumY());
-  else if (A->getNumZ() != M->getNumZ() || A->getNumZ() != X->getNumZ())
-    log_printf(ERROR, "Cannot compute the Matrix-Vector eigenvalue with "
-               "different z dimensions for the A matrix, M matrix, and X vector"
-               ": (%d, %d, %d)", A->getNumZ(), M->getNumZ(), X->getNumZ());
-  else if (A->getNumGroups() != M->getNumGroups() ||
-           A->getNumGroups() != X->getNumGroups())
-    log_printf(ERROR, "Cannot compute the Matrix-Vector eigenvalue with "
-               "different num groups  for the A matrix, M matrix, and X vector:"
-               " (%d, %d, %d)", A->getNumGroups(), M->getNumGroups(),
-               X->getNumGroups());
+               ": (%d, %d, %d)", A->getNumCells(), M->getNumCells(), size);
 
   /* Initialize variables */
-  int num_rows = X->getNumRows();
-  int num_x = X->getNumX();
-  int num_y = X->getNumY();
-  int num_z = X->getNumZ();
-  int num_groups = X->getNumGroups();
-  Vector old_source(num_x, num_y, num_z, num_groups);
-  Vector new_source(num_x, num_y, num_z, num_groups);
+  long int dimensions[1];
+  dimensions[0] = size;
+  Array old_source(dimensions, 1);
+  Array new_source(dimensions, 1);
   double residual, _k_eff;
   int iter;
 
   /* Compute and normalize the initial source */
   matrixMultiplication(M, X, &old_source);
-  old_source.scaleByValue(num_rows / old_source.getSum());
-  X->scaleByValue(num_rows / old_source.getSum());
+  old_source.scaleByValue(size / old_source.getSum());
+  X->scaleByValue(size / old_source.getSum());
 
   /* Power iteration Matrix-Vector solver */
   for (iter = 0; iter < MAX_LINALG_POWER_ITERATIONS; iter++) {
@@ -67,16 +52,16 @@ double eigenvalueSolve(Matrix* A, Matrix* M, Vector* X, double tol,
     matrixMultiplication(M, X, &new_source);
 
     /* Compute and set keff */
-    _k_eff = new_source.getSum() / num_rows;
+    _k_eff = new_source.getSum() / size;
 
     /* Scale the old source by keff */
     old_source.scaleByValue(_k_eff);
 
     /* Compute the residual */
-    residual = computeRMSE(&new_source, &old_source, true);
+    residual = computeRMSE(&new_source, &old_source);
 
     /* Normalize the new source to have an average value of 1.0 */
-    new_source.scaleByValue(num_rows / new_source.getSum());
+    new_source.scaleByValue(size / new_source.getSum());
     new_source.copyTo(&old_source);
 
     log_printf(INFO, "Matrix-Vector eigenvalue iter: %d, keff: %f, residual: "
@@ -109,55 +94,35 @@ double eigenvalueSolve(Matrix* A, Matrix* M, Vector* X, double tol,
  * @param tol the power method and linear solve source convergence threshold
  * @param SOR_factor the successive over-relaxation factor
  */
-void linearSolve(Matrix* A, Matrix* M, Vector* X, Vector* B, double tol,
+void linearSolve(Matrix* A, Matrix* M, Array* X, Array* B, double tol,
                  double SOR_factor) {
 
+  long int size = X->getSize();
+
   /* Check for consistency of matrix and vector dimensions */
-  if (A->getNumX() != B->getNumX() || A->getNumX() != X->getNumX() ||
-      A->getNumX() != M->getNumX())
+  if (A->getNumCells() != B->getSize() || A->getNumCells() != size ||
+      A->getNumCells() != M->getNumCells())
     log_printf(ERROR, "Cannot perform linear solve with different x dimensions"
                " for the A matrix, M matrix, B vector, and X vector: "
-               "(%d, %d, %d, %d)", A->getNumX(), M->getNumX(),
-               B->getNumX(), X->getNumX());
-  else if (A->getNumY() != B->getNumY() || A->getNumY() != X->getNumY() ||
-           A->getNumY() != M->getNumY())
-    log_printf(ERROR, "Cannot perform linear solve with different y dimensions"
-               " for the A matrix, M matrix, B vector, and X vector: "
-               "(%d, %d, %d, %d)", A->getNumY(), M->getNumY(),
-               B->getNumY(), X->getNumY());
-  else if (A->getNumZ() != B->getNumZ() || A->getNumZ() != X->getNumZ() ||
-           A->getNumZ() != M->getNumZ())
-    log_printf(ERROR, "Cannot perform linear solve with different z dimensions"
-               " for the A matrix, M matrix, B vector, and X vector: "
-               "(%d, %d, %d, %d)", A->getNumZ(), M->getNumZ(),
-               B->getNumZ(), X->getNumZ());
-  else if (A->getNumGroups() != B->getNumGroups() ||
-           A->getNumGroups() != X->getNumGroups() ||
-           A->getNumGroups() != M->getNumGroups())
-    log_printf(ERROR, "Cannot perform linear solve with different num groups"
-               " for the A matrix, M matrix, B vector, and X vector: "
-               "(%d, %d, %d, %d)", A->getNumGroups(), M->getNumGroups(),
-               B->getNumGroups(), X->getNumGroups());
+               "(%d, %d, %d, %d)", A->getNumCells(), M->getNumCells(),
+               B->getSize(), size);
 
   /* Initialize variables */
   double residual;
   int iter = 0;
-  int num_x = X->getNumX();
-  int num_y = X->getNumY();
-  int num_z = X->getNumZ();
-  int num_groups = X->getNumGroups();
-  int num_rows = X->getNumRows();
-  Vector X_old(num_rows);
-  double* x_old = X_old.getArray();
-  int* IA = A->getIA();
-  int* JA = A->getJA();
+  long int dimensions[1];
+  dimensions[0] = size;
+  Array X_old(dimensions, 1);
+  double* x_old = X_old.getValues();
+  long int* IA = A->getIA();
+  long int* JA = A->getJA();
   double* DIAG = A->getDiag();
   double* a = A->getA();
-  double* x = X->getArray();
-  double* b = B->getArray();
-  int row, col;
-  Vector old_source(num_x, num_y, num_z, num_groups);
-  Vector new_source(num_x, num_y, num_z, num_groups);
+  double* x = X->getValues();
+  double* b = B->getValues();
+  long int col;
+  Array old_source(dimensions, 1);
+  Array new_source(dimensions, 1);
 
   /* Compute initial source */
   matrixMultiplication(M, X, &old_source);
@@ -168,41 +133,20 @@ void linearSolve(Matrix* A, Matrix* M, Vector* X, Vector* B, double tol,
     X->copyTo(&X_old);
 
     /* Iteration over red/black cells */
-    for (int color = 0; color < 2; color++) {
-      for (int oct = 0; oct < 8; oct++) {
-        #pragma omp parallel for private(row, col) collapse(3)
-        for (int cz = (oct / 4) * num_z/2; cz < (oct / 4 + 1) * num_z/2;
-             cz++) {
-          for (int cy = (oct % 4 / 2) * num_y/2; cy < (oct % 4 / 2 + 1) * num_y/2;
-               cy++) {
-            for (int cx = (oct % 4 % 2) * num_x/2; cx < (oct % 4 % 2 + 1) * num_x/2;
-                 cx++) {
-              
-              /* check for correct color */
-              if (((cx % 2)+(cy % 2)+(cz % 2)) % 2 == color) {
-                
-                for (int g = 0; g < num_groups; g++) {
-                  
-                  row = ((cz*num_y + cy)*num_x + cx)*num_groups + g;
-                  
-                  /* Over-relax the x array */
-                  x[row] = (1.0 - SOR_factor) * x[row];
-                  
-                  for (int i = IA[row]; i < IA[row+1]; i++) {
-                    
-                    /* Get the column index */
-                    col = JA[i];
-                    
-                    if (row == col)
-                      x[row] += SOR_factor * b[row] / DIAG[row];
-                    else
-                      x[row] -= SOR_factor * a[i] * x[col] / DIAG[row];
-                  }
-                }
-              }
-            }
-          }
-        }
+    for (long int row = 0; row < size; row++) {
+
+      /* Over-relax the x array */
+      x[row] = (1.0 - SOR_factor) * x[row];
+
+      for (long int i = IA[row]; i < IA[row+1]; i++) {
+
+        /* Get the column index */
+        col = JA[i];
+
+        if (row == col)
+          x[row] += SOR_factor * b[row] / DIAG[row];
+        else
+          x[row] -= SOR_factor * a[i] * x[col] / DIAG[row];
       }
     }
 
@@ -210,7 +154,7 @@ void linearSolve(Matrix* A, Matrix* M, Vector* X, Vector* B, double tol,
     matrixMultiplication(M, X, &new_source);
 
     /* Compute the residual */
-    residual = computeRMSE(&new_source, &old_source, true);
+    residual = computeRMSE(&new_source, &old_source);
 
     /* Copy the new source to the old source */
     new_source.copyTo(&old_source);
@@ -218,7 +162,7 @@ void linearSolve(Matrix* A, Matrix* M, Vector* X, Vector* B, double tol,
     /* Increment the interations counter */
     iter++;
 
-    log_printf(INFO, "SOR iter: %d, residual: %f", iter, residual);
+    log_printf(INFO, "SOR iter: %d, residual: %g", iter, residual);
 
     if (residual < tol && iter > 10)
       break;
@@ -237,39 +181,25 @@ void linearSolve(Matrix* A, Matrix* M, Vector* X, Vector* B, double tol,
  * @param X the variable Vector object
  * @param B the solution Vector object
  */
-void matrixMultiplication(Matrix* A, Vector* X, Vector* B) {
+void matrixMultiplication(Matrix* A, Array* X, Array* B) {
 
   /* Check for consistency of matrix and vector dimensions */
-  if (A->getNumX() != B->getNumX() || A->getNumX() != X->getNumX())
+  if (A->getNumCells() != B->getSize() || A->getNumCells() != X->getSize())
     log_printf(ERROR, "Cannot perform matrix multiplication  with different x "
                "dimensions for the A matrix, B vector, and X vector: "
-               "(%d, %d, %d)", A->getNumX(), B->getNumX(), X->getNumX());
-  else if (A->getNumY() != B->getNumY() || A->getNumY() != X->getNumY())
-    log_printf(ERROR, "Cannot perform matrix multiplication with different y "
-               "dimensions for the A matrix, B vector, and X vector: "
-               "(%d, %d, %d)", A->getNumY(), B->getNumY(), X->getNumY());
-  else if (A->getNumZ() != B->getNumZ() || A->getNumZ() != X->getNumZ())
-    log_printf(ERROR, "Cannot perform matrix multiplication with different z "
-               "dimensions for the A matrix, B vector, and X vector: "
-               "(%d, %d, %d)", A->getNumZ(), B->getNumZ(), X->getNumZ());
-  else if (A->getNumGroups() != B->getNumGroups() ||
-           A->getNumGroups() != X->getNumGroups())
-    log_printf(ERROR, "Cannot perform matrix multiplication with different "
-               "num groups for the A matrix, M matrix, and X vector: "
-               "(%d, %d, %d)", A->getNumGroups(), B->getNumGroups(),
-               X->getNumGroups());
+               "(%d, %d, %d)", A->getNumCells(), B->getSize(), X->getSize());
 
   B->setAll(0.0);
-  int* IA = A->getIA();
-  int* JA = A->getJA();
+  long int* IA = A->getIA();
+  long int* JA = A->getJA();
   double* a = A->getA();
-  double* x = X->getArray();
-  double* b = B->getArray();
-  int num_rows = X->getNumRows();
+  double* x = X->getValues();
+  double* b = B->getValues();
+  long int size = X->getSize();
 
   #pragma omp parallel for
-  for (int row = 0; row < num_rows; row++) {
-    for (int i = IA[row]; i < IA[row+1]; i++)
+  for (long int row = 0; row < size; row++) {
+    for (long int i = IA[row]; i < IA[row+1]; i++)
       b[row] += a[i] * x[JA[i]];
   }
 }
@@ -286,59 +216,30 @@ void matrixMultiplication(Matrix* A, Vector* X, Vector* B) {
  * @param Y a second Vector object
  * @param integrated a boolean indicating whether to group-wise integrate.
  */
-double computeRMSE(Vector* X, Vector* Y, bool integrated) {
+double computeRMSE(Array* X, Array* Y) {
 
   /* Check for consistency of vector dimensions */
-  if (X->getNumX() != Y->getNumX() || X->getNumY() != Y->getNumY() ||
-      X->getNumZ() != Y->getNumZ() || X->getNumGroups() != Y->getNumGroups())
+  if (X->getSize() != Y->getSize())
     log_printf(ERROR, "Cannot compute RMSE with different vector dimensions: "
-               "(%d, %d, %d, %d) and (%d, %d, %d, %d)",
-               X->getNumX(), X->getNumY(), X->getNumZ(), X->getNumGroups(),
-               Y->getNumX(), Y->getNumY(), Y->getNumY(), Y->getNumGroups());
+               "(%d) and (%d)", X->getSize(), Y->getSize());
 
   double rmse;
-  int num_x = X->getNumX();
-  int num_y = X->getNumY();
-  int num_z = X->getNumZ();
-  int num_groups = X->getNumGroups();
+  long int size = X->getSize();
 
-  if (integrated) {
+  long int dimensions[1];
+  dimensions[0] = size;
+  Array residual(dimensions, 1);
+  double* x_values = X->getValues();
+  double* y_values = Y->getValues();
 
-    double new_source, old_source;
-    Vector residual(num_x, num_y, num_z, 1);
-
-    /* Compute the RMSE */
-    #pragma omp parallel for private(new_source, old_source)
-    for (int i = 0; i < num_x*num_y*num_z; i++) {
-      new_source = 0.0;
-      old_source = 0.0;
-      for (int g = 0; g < num_groups; g++) {
-        new_source += X->getValue(i, g);
-        old_source += Y->getValue(i, g);
-      }
-
-      if (new_source != 0.0)
-        residual.setValue(i, 0, pow((new_source - old_source) / new_source, 2));
-    }
-
-    rmse = sqrt(residual.getSum() / (num_x * num_y * num_z));
+  /* Compute the RMSE */
+#pragma omp parallel for
+  for (long int i = 0; i < size; i++) {
+    if (x_values[i] != 0.0)
+      residual.setValue(i, pow((x_values[i] - y_values[i]) / x_values[i], 2));
   }
-  else{
 
-    Vector residual(num_x, num_y, num_z, num_groups);
-
-    /* Compute the RMSE */
-    #pragma omp parallel for
-    for (int i = 0; i < num_x*num_y*num_z; i++) {
-      for (int g = 0; g < num_groups; g++) {
-        if (X->getValue(i, g) != 0.0)
-          residual.setValue(i, g, pow((X->getValue(i, g) - Y->getValue(i, g)) /
-                                      X->getValue(i, g), 2));
-      }
-    }
-
-    rmse = sqrt(residual.getSum() / (num_x * num_y * num_z * num_groups));
-  }
+  rmse = sqrt(residual.getSum() / size);
 
   return rmse;
 }

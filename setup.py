@@ -35,8 +35,7 @@ class custom_install(install):
   # The user options for a customized OpenMOC build
   user_options = [
     ('cc=', None, "Compiler (gcc) for main openmoc module"),
-    ('with-gcc', None, "Build openmoc.gnu modules using GNU compiler"),
-    ('with-ccache', None, "Build with ccache for rapid recompilation")
+    ('with-gcc', None, "Build openmoc.gnu modules using GNU compiler")
   ]
 
   # Include all of the default options provided by distutils for the
@@ -44,9 +43,7 @@ class custom_install(install):
   user_options += install.user_options
 
   # Set some compile options to be boolean switches
-  boolean_options = ['with-gcc',
-                     'with-ccache']
-
+  boolean_options = ['with-gcc']
 
   # Include all of the boolean options provided by distutils for the
   # install command parent class
@@ -70,12 +67,11 @@ class custom_install(install):
 
     # Default compiler and precision level for the main openmoc module
     self.cc = 'gcc'
-    
+
     # By default, do not build openmoc.gnu.single, openmoc.intel.double, etc
     # extension modules
     self.with_gcc = False
-    self.with_ccache = True
-    
+
   def finalize_options(self):
     """Extract options from the flags invoked by the user at compile time.
 
@@ -90,8 +86,6 @@ class custom_install(install):
     # Run the install command parent class' finalize_options method
     install.finalize_options(self)
 
-    config.with_ccache = self.with_ccache
-    
     # Check that the user specified a supported C++ compiler
     if self.cc not in ['gcc']:
       raise DistutilsOptionError \
@@ -128,7 +122,7 @@ def customize_compiler(self):
   # based on source extension, so we add that functionality here
   def _compile(obj, src, ext, cc_args, extra_postargs, pp_opts):
 
-    self.set_executable('compiler_so', 'ccache gcc')
+    self.set_executable('compiler_so', 'gcc')
 
     postargs = config.compiler_flags['gcc']
 

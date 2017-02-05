@@ -20,6 +20,7 @@
 #include <iomanip>
 #include <omp.h>
 #include "log.h"
+#include "Array.h"
 #endif
 
 
@@ -28,58 +29,47 @@ class Matrix {
 private:
 
   /** A list of lists representing the matrix */
-  std::vector< std::map<int, double> > _LIL;
+  std::vector< std::map<long int, double> > _LIL;
 
   /** The CSR matrix variables */
   double* _A;
-  int* _IA;
-  int* _JA;
+  long int* _IA;
+  long int* _JA;
   double* _DIAG;
-  
-  bool _modified;
-  int _num_x;
-  int _num_y;
-  int _num_z;
-  int _num_groups;
-  int _num_rows;
 
-  /** OpenMP mutual exclusion locks for atomic cell updates */
-  omp_lock_t* _cell_locks;
-  
+  int* _diags;
+  int _num_diags;
+  bool _modified;
+  long int _num_cells;
+
   void convertToCSR();
-  void setNumX(int num_x);
-  void setNumY(int num_y);
-  void setNumZ(int num_z);
-  void setNumGroups(int num_groups);
-  
+  void setNumCells(long int num_cells);
+
 public:
-  Matrix(int num_x=1, int num_y=1, int num_z=1, int num_groups=1);
+  Matrix(long int num_cells=1);
   virtual ~Matrix();
 
   /* Worker functions */
-  void incrementValue(int cell_from, int group_from, int cell_to, int group_to,
-                      double val);
+  void incrementValue(long int col, long int row, double value);
   void clear();
   void printString();
   void transpose();
+  void diags(Array* array);
+  void blockDiags(Array* array, int block_size);
+  void fillWithRandom();
 
   /* Getter functions */
-  double getValue(int cell_from, int group_from, int cell_to,
-                        int group_to);
+  double getValue(long int col, long int row);
   double* getA();
-  int* getIA();
-  int* getJA();
+  long int* getIA();
+  long int* getJA();
   double* getDiag();
-  int getNumX();
-  int getNumY();
-  int getNumZ();
-  int getNumGroups();
-  int getNumRows();
-  int getNNZ();
+  long int getNumCells();
+  long int getNNZ();
 
   /* Setter functions */
-  void setValue(int cell_from, int group_from, int cell_to, int group_to,
-                double val);
+  void setValue(long int col, long int row, double value);
+  void setDiags(int* diags, int num_diags);
 };
 
 #endif /* MATRIX_H_ */

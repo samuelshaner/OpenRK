@@ -4,11 +4,11 @@
  * @brief Constructor initializes Matrix as a list of lists
  *        and sets the matrix dimensions.
  * @detail The matrix object uses a "lists of lists" structure (implemented as
- *         a map of lists) to allow for easy setting and incrementing of the 
+ *         a map of lists) to allow for easy setting and incrementing of the
  *         values in the object. When the matrix is needed to perform linear
  *         algebra operations, it is converted to compressed row storage (CSR)
  *         form. The matrix is ordered by cell (as opposed to by group) on the
- *         outside. Locks are used to make the matrix thread-safe against 
+ *         outside. Locks are used to make the matrix thread-safe against
  *         concurrent writes the same value. One lock locks out multiple rows of
  *         the matrix at a time reprsenting multiple groups in the same cell.
  * @param num_x The number of cells in the x direction.
@@ -16,31 +16,21 @@
  * @param num_z The number of cells in the z direction.
  * @param num_groups The number of energy groups in each cell.
  */
-Matrix::Matrix(int num_x, int num_y, int num_z, int num_groups) {
+Matrix::Matrix(long int num_cells) {
 
-  setNumX(num_x);
-  setNumY(num_y);
-  setNumZ(num_z);
-  setNumGroups(num_groups);  
-  _num_rows = _num_x*_num_y*_num_z*_num_groups;
-  
+  setNumCells(num_cells);
+
   /* Initialize variables */
-  for (int i=0; i < _num_rows; i++)
-    _LIL.push_back(std::map<int, double>());
+  for (long int i=0; i < _num_cells; i++)
+    _LIL.push_back(std::map<long int, double>());
 
   _A = NULL;
   _IA = NULL;
   _JA = NULL;
   _DIAG = NULL;
   _modified = true;
-
-  /* Allocate memory for OpenMP locks for each Matrix cell */ 
-  _cell_locks = new omp_lock_t[_num_x*_num_y*_num_z];
-
-  /* Loop over all Matrix cells to initialize OpenMP locks */
-  #pragma omp parallel for schedule(guided)
-  for (int r=0; r < _num_x*_num_y*_num_z; r++)
-    omp_init_lock(&_cell_locks[r]);  
+  _diags = NULL;
+  _num_diags = 0;
 }
 
 
@@ -61,13 +51,10 @@ Matrix::~Matrix() {
 
   if (_DIAG != NULL)
     delete [] _DIAG;
-  
-  for (int i=0; i < _num_rows; i++)
+
+  for (long int i=0; i < _num_cells; i++)
     _LIL[i].clear();
   _LIL.clear();
-
-  if (_cell_locks != NULL)
-    delete [] _cell_locks;
 }
 
 
@@ -84,32 +71,16 @@ Matrix::~Matrix() {
  * @param group_from The destination group.
  * @param val The value used to increment the row/column location.
  */
-void Matrix::incrementValue(int cell_from, int group_from,
-                            int cell_to, int group_to, double val) {
+void Matrix::incrementValue(long int col, long int row, double value) {
 
-  if (cell_from >= _num_x*_num_y*_num_z || cell_from < 0)
-    log_printf(ERROR, "Unable to increment Matrix value for cell_from %d"
-               " which is not between 0 and %d", cell_from, _num_x*_num_y*_num_z-1);
-  else if (cell_to >= _num_x*_num_y*_num_z || cell_to < 0)
-    log_printf(ERROR, "Unable to increment Matrix value for cell_to %d"
-               " which is not between 0 and %d", cell_from, _num_x*_num_y*_num_z-1);
-  else if (group_from >= _num_groups || group_from < 0)
-    log_printf(ERROR, "Unable to increment Matrix value for group_from %d"
-               " which is not between 0 and %d", group_from, _num_groups-1);
-  else if (group_to >= _num_groups || group_to < 0)
-    log_printf(ERROR, "Unable to increment Matrix value for group_to %d"
-               " which is not between 0 and %d", group_to, _num_groups-1);
-  
-  /* Atomically increment the Matrix value from the
-   * temporary array using mutual exclusion locks */
-  omp_set_lock(&_cell_locks[cell_to]);
+  if (col >= _num_cells || col < 0)
+    log_printf(ERROR, "Unable to increment Matrix value for col %d"
+               " which is not between 0 and %d", col, _num_cells-1);
+  else if (row >= _num_cells || row < 0)
+    log_printf(ERROR, "Unable to increment Matrix value for row %d"
+               " which is not between 0 and %d", row, _num_cells-1);
 
-  int row = cell_to*_num_groups + group_to;
-  int col = cell_from*_num_groups + group_from;
-  _LIL[row][col] += val;
-  
-  /* Release Matrix cell mutual exclusion lock */
-  omp_unset_lock(&_cell_locks[cell_to]);
+  _LIL[row][col] += value;
 
   /* Set global modified flag to true */
   _modified = true;
@@ -129,35 +100,19 @@ void Matrix::incrementValue(int cell_from, int group_from,
  * @param group_from The destination group.
  * @param val The value used to set the row/column location.
  */
-void Matrix::setValue(int cell_from, int group_from,
-                      int cell_to, int group_to, double val) {
+void Matrix::setValue(long int col, long int row, double value) {
 
-  if (cell_from >= _num_x*_num_y*_num_z || cell_from < 0)
+  if (col >= _num_cells || col < 0)
     log_printf(ERROR, "Unable to set Matrix value for cell_from %d"
-               " which is not between 0 and %d", cell_from, _num_x*_num_y*_num_z-1);
-  else if (cell_to >= _num_x*_num_y*_num_z || cell_to < 0)
+               " which is not between 0 and %d", col, _num_cells-1);
+  else if (row >= _num_cells || row < 0)
     log_printf(ERROR, "Unable to set Matrix value for cell_to %d"
-               " which is not between 0 and %d", cell_from, _num_x*_num_y*_num_z-1);
-  else if (group_from >= _num_groups || group_from < 0)
-    log_printf(ERROR, "Unable to set Matrix value for group_from %d"
-               " which is not between 0 and %d", group_from, _num_groups-1);
-  else if (group_to >= _num_groups || group_to < 0)
-    log_printf(ERROR, "Unable to set Matrix value for group_to %d"
-               " which is not between 0 and %d", group_to, _num_groups-1);
-  
-  /* Atomically set the Matrix value from the
-   * temporary array using mutual exclusion locks */
-  omp_set_lock(&_cell_locks[cell_to]);
+               " which is not between 0 and %d", row, _num_cells-1);
 
-  int row = cell_to*_num_groups + group_to;
-  int col = cell_from*_num_groups + group_from;
-  _LIL[row][col] = val;
-  
-  /* Release Matrix cell mutual exclusion lock */
-  omp_unset_lock(&_cell_locks[cell_to]);
+  _LIL[row][col] = value;
 
   /* Set global modified flag to true */
-  _modified = true;  
+  _modified = true;
 }
 
 
@@ -165,7 +120,7 @@ void Matrix::setValue(int cell_from, int group_from,
  * @brief Clear all values in the matrix list of lists.
  */
 void Matrix::clear() {
-  for (int i=0; i < _num_rows; i++)
+  for (long int i=0; i < _num_cells; i++)
     _LIL[i].clear();
 
   _modified = true;
@@ -173,55 +128,55 @@ void Matrix::clear() {
 
 
 /**
- * @brief Convert the matrix lists of lists to compressed row (CSR) storage 
+ * @brief Convert the matrix lists of lists to compressed row (CSR) storage
  *        form.
  */
 void Matrix::convertToCSR() {
-  
+
   /* Get number of nonzero values */
-  int NNZ = getNNZ();
-  
+  long int NNZ = getNNZ();
+
   /* Deallocate memory for arrays if previously allocated */
   if (_A != NULL)
     delete [] _A;
-  
+
   if (_IA != NULL)
     delete [] _IA;
-  
+
   if (_JA != NULL)
     delete [] _JA;
-  
+
   if (_DIAG != NULL)
     delete [] _DIAG;
 
   /* Allocate memory for arrays */
   _A = new double[NNZ];
-  _IA = new int[_num_rows+1];
-  _JA = new int[NNZ];
-  _DIAG = new double[_num_rows];
-  std::fill_n(_DIAG, _num_rows, 0.0);  
-  
+  _IA = new long int[_num_cells+1];
+  _JA = new long int[NNZ];
+  _DIAG = new double[_num_cells];
+  std::fill_n(_DIAG, _num_cells, 0.0);
+
   /* Form arrays */
-  int j = 0;
-  std::map<int, double>::iterator iter;
-  for (int row=0; row < _num_rows; row++) {
+  long int j = 0;
+  std::map<long int, double>::iterator iter;
+  for (long int row=0; row < _num_cells; row++) {
     _IA[row] = j;
     for (iter = _LIL[row].begin(); iter != _LIL[row].end(); ++iter) {
       if (iter->second != 0.0) {
         _JA[j] = iter->first;
         _A[j] = iter->second;
-        
+
         if (row == iter->first)
           _DIAG[row] = iter->second;
-        
+
         j++;
       }
     }
   }
-  
-  _IA[_num_rows] = NNZ;
 
-  /* Reset flat indicating the CSR objects have the same values as the 
+  _IA[_num_cells] = NNZ;
+
+  /* Reset flat indicating the CSR objects have the same values as the
    * LIL object */
   _modified = false;
 }
@@ -237,19 +192,18 @@ void Matrix::printString() {
   convertToCSR();
 
   std::stringstream string;
-  string << std::setprecision(6) << std::endl;
+  string << std::setprecision(6);
   string << " Matrix Object " << std::endl;
-  string << " Num rows: " << _num_rows << std::endl;
-  string << " NNZ     : " << getNNZ() << std::endl;
+  string << " Num cells: " << _num_cells << std::endl;
+  string << " NNZ      : " << getNNZ() << std::endl;
 
-  for (int row=0; row < _num_rows; row++) {
-    for (int i = _IA[row]; i < _IA[row+1]; i++)
+  for (long int row=0; row < _num_cells; row++) {
+    for (long int i = _IA[row]; i < _IA[row+1]; i++)
       string << " ( " << row << ", " << _JA[i] << "): " << _A[i] << std::endl;
   }
 
   string << "End Matrix " << std::endl;
-  
-  log_printf(NORMAL, string.str().c_str());
+  std::cout << string.str();
 }
 
 
@@ -258,7 +212,7 @@ void Matrix::printString() {
  * @detail This method takes a cell and group of origin (cell/group from)
  *         and cell and group of destination (cell/group to).
  *         The origin and destination are used to compute the
- *         row and column in the matrix. The value at the location specified 
+ *         row and column in the matrix. The value at the location specified
  *         by the row/column is returned.
  * @param cell_from The origin cell.
  * @param group_from The origin group.
@@ -266,10 +220,7 @@ void Matrix::printString() {
  * @param group_from The destination group.
  * @return The value at the corresponding row/column location.
  */
-double Matrix::getValue(int cell_from, int group_from,
-                              int cell_to, int group_to) {
-  int row = cell_to*_num_groups + group_to;
-  int col = cell_from*_num_groups + group_from;
+double Matrix::getValue(long int col, long int row) {
   return _LIL[row][col];
 }
 
@@ -282,7 +233,7 @@ double* Matrix::getA() {
 
   if (_modified)
     convertToCSR();
-  
+
   return _A;
 }
 
@@ -291,7 +242,7 @@ double* Matrix::getA() {
  * @brief Get the IA component of the CSR form of the matrix object.
  * @return A pointer to the IA component of the CSR form matrix object.
  */
-int* Matrix::getIA() {
+long int* Matrix::getIA() {
 
   if (_modified)
     convertToCSR();
@@ -304,11 +255,11 @@ int* Matrix::getIA() {
  * @brief Get the JA component of the CSR form of the matrix object.
  * @return A pointer to the JA component of the CSR form matrix object.
  */
-int* Matrix::getJA() {
+long int* Matrix::getJA() {
 
   if (_modified)
     convertToCSR();
-    
+
   return _JA;
 }
 
@@ -321,7 +272,7 @@ double* Matrix::getDiag() {
 
   if (_modified)
     convertToCSR();
-    
+
   return _DIAG;
 }
 
@@ -330,44 +281,8 @@ double* Matrix::getDiag() {
  * @brief Get the number of cells in the x dimension.
  * @return The number of cells in the x dimension.
  */
-int Matrix::getNumX() {
-  return _num_x;
-}
-
-
-/**
- * @brief Get the number of cells in the y dimension.
- * @return The number of cells in the y dimension.
- */
-int Matrix::getNumY() {
-  return _num_y;
-}
-
-
-/**
- * @brief Get the number of cells in the z dimension.
- * @return The number of cells in the z dimension.
- */
-int Matrix::getNumZ() {
-  return _num_z;
-}
-
-
-/**
- * @brief Get the number of groups in each cell.
- * @return The number of groups in each cell.
- */
-int Matrix::getNumGroups() {
-  return _num_groups;
-}
-
-
-/**
- * @brief Get the number of rows in the matrix.
- * @return The number of rows in the matrix.
- */
-int Matrix::getNumRows() {
-  return _num_rows;
+long int Matrix::getNumCells() {
+  return _num_cells;
 }
 
 
@@ -375,11 +290,11 @@ int Matrix::getNumRows() {
  * @brief Get the number of non-zero values in the matrix.
  * @return The number of non-zero values in the matrix.
  */
-int Matrix::getNNZ() {
+long int Matrix::getNNZ() {
 
-  int NNZ = 0;
-  std::map<int, double>::iterator iter;
-  for (int row=0; row < _num_rows; row++) {
+  long int NNZ = 0;
+  std::map<long int, double>::iterator iter;
+  for (long int row=0; row < _num_cells; row++) {
     for (iter = _LIL[row].begin(); iter != _LIL[row].end(); ++iter) {
       if (iter->second != 0.0)
         NNZ++;
@@ -394,55 +309,13 @@ int Matrix::getNNZ() {
  * @brief Set the number of cells in the x dimension.
  * @param num_x The number of cells in the x dimension.
  */
-void Matrix::setNumX(int num_x) {
+void Matrix::setNumCells(long int num_cells) {
 
-  if (num_x < 1)
+  if (num_cells < 1)
     log_printf(ERROR, "Unable to set Matrix num x to non-positive value %d",
-               num_x);
+               num_cells);
 
-  _num_x = num_x;
-}
-
-
-/**
- * @brief Set the number of cells in the y dimension.
- * @param num_y The number of cells in the y dimension.
- */
-void Matrix::setNumY(int num_y) {
-
-  if (num_y < 1)
-    log_printf(ERROR, "Unable to set Matrix num y to non-positive value %d",
-               num_y);
-
-  _num_y = num_y;
-}
-
-
-/**
- * @brief Set the number of cells in the z dimension.
- * @param num_z The number of cells in the z dimension.
- */
-void Matrix::setNumZ(int num_z) {
-
-  if (num_z < 1)
-    log_printf(ERROR, "Unable to set Matrix num z to non-positive value %d",
-               num_z);
-
-  _num_z = num_z;
-}
-
-
-/**
- * @brief Set the number of groups in each cell.
- * @param num_groups The number of groups in each cell.
- */
-void Matrix::setNumGroups(int num_groups) {
-
-  if (num_groups < 1)
-    log_printf(ERROR, "Unable to set Matrix num groups to non-positive value"
-               " %d", num_groups);
-
-  _num_groups = num_groups;
+  _num_cells = num_cells;
 }
 
 
@@ -451,40 +324,113 @@ void Matrix::setNumGroups(int num_groups) {
  */
 void Matrix::transpose() {
 
-  Matrix temp(_num_x, _num_y, _num_z, _num_groups);
+  Matrix temp(_num_cells);
   convertToCSR();
-  int col, cell_to, cell_from, group_to, group_from;
+  long int col;
   double val;
 
   /* Transpose matrix to temp */
-  for (int row=0; row < _num_rows; row++) {
-    for (int i = _IA[row]; i < _IA[row+1]; i++) {
-      col = _JA[row];
-      cell_to = row / _num_groups;
-      group_to = row % _num_groups;
-      cell_from = col / _num_groups;
-      group_from = col % _num_groups;
+  for (long int row=0; row < _num_cells; row++) {
+    for (long int i = _IA[row]; i < _IA[row+1]; i++) {
+      col = _JA[i];
       val = _A[i];
-      temp.setValue(cell_to, group_to, cell_from, group_from, val);
+      temp.setValue(row, col, val);
     }
   }
 
   /* Copy temp to current matrix */
   clear();
   temp.convertToCSR();
-  int* IA = temp.getIA();
-  int* JA = temp.getJA();
+  long int* IA = temp.getIA();
+  long int* JA = temp.getJA();
   double* A = temp.getA();
 
-  for (int row=0; row < _num_rows; row++) {
-    for (int i = IA[row]; i < IA[row+1]; i++) {
-      col = JA[row];
-      cell_to = row / _num_groups;
-      group_to = row % _num_groups;
-      cell_from = col / _num_groups;
-      group_from = col % _num_groups;
+  for (long int row=0; row < _num_cells; row++) {
+    for (long int i = IA[row]; i < IA[row+1]; i++) {
+      col = JA[i];
       val = A[i];
-      setValue(cell_from, group_from, cell_to, group_to, val);
+      setValue(col, row, val);
+    }
+  }
+}
+
+
+void Matrix::setDiags(int* diags, int num_diags) {
+
+  if (_diags == NULL)
+    delete [] _diags;
+
+  /* Create dimensions array */
+  _num_diags = num_diags;
+  _diags = new int[num_diags];
+  std::copy(diags, diags + num_diags, _diags);
+}
+
+
+void Matrix::diags(Array* array) {
+
+  if (array->getShape(0) != _num_diags)
+    log_printf(ERROR, "diags values array not the same length as the diag "
+               "numbers array: (%d, %d)", array->getShape(0), _num_diags);
+
+  long int shape[2];
+  shape[0] = _num_diags;
+  shape[1] = array->getSize() / _num_diags;
+  array->reshape(shape, 2);
+  double* values = array->getValues();
+  long int num_values = array->getShape(1);
+  long int row, col;
+  for (int d=0; d < _num_diags; d++) {
+    if (_diags[d] >= 0) {
+      for (row = 0; row < _num_cells - _diags[d]; row++) {
+        col = row + _diags[d];
+        _LIL[row][col] = values[d * num_values + row];
+      }
+    }
+    else {
+      for (row = -_diags[d]; row < _num_cells; row++) {
+        col = row + _diags[d];
+        _LIL[row][col] = values[d * num_values + col];
+      }
+    }
+  }
+}
+
+
+void Matrix::blockDiags(Array* array, int block_size) {
+
+  int bs2 = block_size * block_size;
+
+  if (array->getShape(0) != _num_cells / block_size)
+    log_printf(ERROR, "number of block diags not equal to the 1st dimension "
+               "of the array: (%d, %d)", array->getShape(0), _num_cells / block_size);
+  if (array->getSize() != _num_cells * block_size)
+    log_printf(ERROR, "array size not equal to number of block values"
+               " : (%d, %d)", array->getSize(), _num_cells*block_size);
+
+  long int shape[3];
+  shape[0] = _num_cells / block_size;
+  shape[1] = block_size;
+  shape[2] = block_size;
+  array->reshape(shape, 3);
+  double* values = array->getValues();
+  long int row, col;
+  for (long int i=0; i < _num_cells / block_size; i++) {
+    for (int r=0; r < block_size; r++) {
+      row = i*block_size + r;
+      for (int c=0; c < block_size; c++) {
+        col = i*block_size + c;
+        _LIL[row][col] = values[i * bs2 + r * block_size + c];
+      }
+    }
+  }
+}
+
+
+void Matrix::fillWithRandom() {
+  for (long int row=0; row < _num_cells; row++) {
+    for (long int col=0; col < _num_cells; col++) {
+      _LIL[row][col] = static_cast <double> (rand()) / static_cast <double> (RAND_MAX);
     }
   }
 }

@@ -16,7 +16,7 @@
  * @return the sum of all numbers in the array
  */
 template <typename T>
-inline T pairwise_sum(T* vector, int length) {
+inline T pairwise_sum(T* vector, long int length) {
 
   T sum = 0;
 
@@ -24,12 +24,12 @@ inline T pairwise_sum(T* vector, int length) {
   if (length < 16) {
 
     #pragma simd reduction(+:sum)
-    for (int i=0; i < length; i++)
+    for (long int i=0; i < length; i++)
       sum += vector[i];
   }
 
   else {
-    int offset = length % 2;
+    long int offset = length % 2;
     length = floor(length / 2);
     sum = pairwise_sum<T>(&vector[0], length) +
           pairwise_sum<T>(&vector[length], length+offset);
