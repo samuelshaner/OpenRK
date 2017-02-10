@@ -55,6 +55,7 @@ public:
   Array* divide(Array* array, Array* result=NULL);
   Array* add(Array* array, Array* result=NULL);
   Array* subtract(Array* array, Array* result=NULL);
+  void reverseAxis(int axis);
   void incrementValue(long int index, double value);
   void reshape(long int* dimensions, int num_dimensions);
   Array* flatten();

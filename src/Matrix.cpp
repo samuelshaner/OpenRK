@@ -52,6 +52,9 @@ Matrix::~Matrix() {
   if (_DIAG != NULL)
     delete [] _DIAG;
 
+  if (_diags != NULL)
+    delete [] _diags;
+
   for (long int i=0; i < _num_cells; i++)
     _LIL[i].clear();
   _LIL.clear();

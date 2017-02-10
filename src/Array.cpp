@@ -353,6 +353,35 @@ Array* Array::sumAxis(int axis) {
 }
 
 
+void Array::reverseAxis(int axis) {
+
+  if (axis >= _num_dimensions)
+    log_printf(ERROR, "Cannot reverse along axis %d since it is outside the "
+               "Array only has %d dimensions", axis, _num_dimensions);
+
+  /* Create a new Array object */
+  Array new_array(_dimensions, _num_dimensions);
+
+  /* Sum over axis */
+  long int indices[_num_dimensions];
+  long int new_indices[num_dimensions];
+  long int new_index;
+  for (long int i=0; i < getSize(); i++) {
+    getIndices(i, indices);
+
+    /* Get the new indices */
+    new_indices[axis] = _dimensions[axis] - indices[axis] - 1;
+
+    /* Set the new array values */
+    new_index = new_array->getIndex(new_indices, _num_dimensions);
+    new_array->setValue(new_index, _values[i]);
+  }
+
+  /* Copy reversed array to this array */
+  new_array->copyTo(this);
+}
+
+
 Array* Array::tile(int factor) {
 
   if (factor < 1)
