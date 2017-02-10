@@ -12,8 +12,6 @@ Array::Array(long int* dimensions, int num_dimensions) {
   _values = NULL;
   _dimensions = NULL;
 
-  //srand (static_cast <unsigned> (time(0)));
-
   setDimensions(dimensions, num_dimensions);
 }
 
@@ -79,6 +77,10 @@ void Array::printString() {
 
 void Array::setDimensions(long int* dimensions, int num_dimensions) {
 
+  if (num_dimensions < 1)
+    log_printf(NORMAL, "The number of dimensions of an array must be positive"
+               ": %d", num_dimensions);
+
   /* Clear objects */
   clearObjects();
 
@@ -100,6 +102,10 @@ void Array::setAll(double val) {
 
 long int Array::getSize() {
 
+  if (_dimensions == NULL)
+    log_printf(NORMAL, "Cannot get size of array since the dimensions has not "
+               "been set");
+
   long int size = 1;
   for (int d=0; d < _num_dimensions; d++)
     size *= _dimensions[d];
@@ -109,6 +115,14 @@ long int Array::getSize() {
 
 
 void Array::getIndices(long int index, long int* indices) {
+
+  if (_dimensions == NULL)
+    log_printf(NORMAL, "Cannot get indices of array since the dimensions has not "
+               "been set");
+  else if (index >= getSize())
+    log_printf(NORMAL, "Cannot get indices of array since with an index that is"
+               " greater than or equal to the size of the array: (%d, %d)",
+               index, getSize());
 
   long int size = 1;
   long int offset;
@@ -123,6 +137,12 @@ void Array::getIndices(long int index, long int* indices) {
 
 
 long int Array::getIndex(long int* dimensions, int num_dimensions) {
+
+  if (num_dimensions != _num_dimensions)
+    log_printf(NORMAL, "In order to get the index in an Array, "
+               "the number of dimensions of the input array must be equal to "
+               "the number of dimensions of the Array: (%d, %d)",
+               num_dimensions, _num_dimensions);
 
   long int index = 0;
   long int offset;
@@ -158,7 +178,10 @@ long int Array::getShape(int dimension) {
 }
 
 
-void Array::multiply(Array* array, Array* result) {
+Array* Array::multiply(Array* array, Array* result) {
+
+  if (result == NULL)
+    result = new Array(dimensions, num_dimensions);
 
   if (getSize() != array->getSize() ||
       getSize() != result->getSize())
@@ -169,10 +192,15 @@ void Array::multiply(Array* array, Array* result) {
 
   for (long int i=0; i < getSize(); i++)
     result_values[i] = _values[i] * array_values[i];
+
+  return result;
 }
 
 
-void Array::divide(Array* array, Array* result) {
+Array* Array::divide(Array* array, Array* result) {
+
+  if (result == NULL)
+    result = new Array(dimensions, num_dimensions);
 
   if (getSize() != array->getSize() ||
       getSize() != result->getSize())
@@ -187,10 +215,15 @@ void Array::divide(Array* array, Array* result) {
     else
       result_values[i] = _values[i] / array_values[i];
   }
+
+  return result;
 }
 
 
-void Array::add(Array* array, Array* result) {
+Array* Array::add(Array* array, Array* result) {
+
+  if (result == NULL)
+    result = new Array(dimensions, num_dimensions);
 
   if (getSize() != array->getSize() ||
       getSize() != result->getSize())
@@ -201,10 +234,15 @@ void Array::add(Array* array, Array* result) {
 
   for (long int i=0; i < getSize(); i++)
     result_values[i] = _values[i] + array_values[i];
+
+  return result;
 }
 
 
-void Array::subtract(Array* array, Array* result) {
+Array* Array::subtract(Array* array, Array* result) {
+
+  if (result == NULL)
+    result = new Array(dimensions, num_dimensions);
 
   if (getSize() != array->getSize() ||
       getSize() != result->getSize())
@@ -215,6 +253,8 @@ void Array::subtract(Array* array, Array* result) {
 
   for (long int i=0; i < getSize(); i++)
     result_values[i] = _values[i] - array_values[i];
+
+  return result;
 }
 
 
@@ -232,27 +272,48 @@ void Array::outputValues(double* np_array, long int num_values) {
  * @brief Get the sum of all the values in the array.
  * @return The sum of all the values in the array.
  */
-double Array::getSum() {
+double Array::sum() {
   return pairwise_sum(_values, getSize());
 }
 
 
 double Array::getValue(long int* dimensions, int num_dimensions) {
+
+  if (num_dimensions != _num_dimensions)
+    log_printf(NORMAL, "In order to get the value in an Array, "
+               "the number of dimensions of the input array must be equal to "
+               "the number of dimensions of the Array: (%d, %d)",
+               num_dimensions, _num_dimensions);
+
   return _values[getIndex(dimensions, num_dimensions)];
 }
 
 
 void Array::setValue(long int index, double value) {
+
+  if (index >= getSize())
+    log_printf(ERROR, "Cannot set value at index %d since it is outside the "
+               "bounds of the Array: (0, %d)", index, getSize() - 1);
+
   _values[index] = value;
 }
 
 
 void Array::incrementValue(long int index, double value) {
+
+  if (index >= getSize())
+    log_printf(ERROR, "Cannot increment value at index %d since it is outside the "
+               "bounds of the Array: (0, %d)", index, getSize() - 1);
+
   _values[index] += value;
 }
 
 
 Array* Array::sumAxis(int axis) {
+
+  if (axis >= _num_dimensions)
+    log_printf(ERROR, "Cannot sum along axis %d since it is outside the "
+               "Array only has %d dimensions", axis, _num_dimensions);
 
   /* Create new dimensions array */
   int num_dimensions = _num_dimensions - 1;
@@ -294,6 +355,9 @@ Array* Array::sumAxis(int axis) {
 
 Array* Array::tile(int factor) {
 
+  if (factor < 1)
+    log_printf(ERROR, "The tile factor for an array must be positive: %d", factor);
+
   /* Create new dimensions array */
   long int dimensions[_num_dimensions];
   std::copy(_dimensions, _dimensions + _num_dimensions, dimensions);
@@ -319,7 +383,18 @@ Array* Array::tile(int factor) {
 }
 
 
+Array* Array::copy() {
+
+  /* Create a new Array object */
+  Array* new_array = new Array(dimensions, _num_dimensions);
+  copyTo(new_array);
+  return new_array;
+}
+
 Array* Array::repeat(int factor) {
+
+  if (factor < 1)
+    log_printf(ERROR, "The repeat factor for an array must be positive: %d", factor);
 
   /* Create new dimensions array */
   long int dimensions[_num_dimensions];
@@ -372,6 +447,8 @@ void Array::flatten() {
   _num_dimensions = 1;
   _dimensions = new long int[1];
   _dimensions[0] = getSize();
+
+  return this;
 }
 
 

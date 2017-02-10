@@ -221,6 +221,14 @@ void Matrix::printString() {
  * @return The value at the corresponding row/column location.
  */
 double Matrix::getValue(long int col, long int row) {
+
+  if (col >= _num_cells || col < 0)
+    log_printf(ERROR, "Unable to get Matrix value for col %d"
+               " which is not between 0 and %d", col, _num_cells-1);
+  else if (row >= _num_cells || row < 0)
+    log_printf(ERROR, "Unable to get Matrix value for row %d"
+               " which is not between 0 and %d", row, _num_cells-1);
+
   return _LIL[row][col];
 }
 
@@ -367,11 +375,7 @@ void Matrix::setDiags(int* diags, int num_diags) {
 }
 
 
-void Matrix::diags(Array* array) {
-
-  if (array->getShape(0) != _num_diags)
-    log_printf(ERROR, "diags values array not the same length as the diag "
-               "numbers array: (%d, %d)", array->getShape(0), _num_diags);
+Matrix* Matrix::diags(Array* array) {
 
   long int shape[2];
   shape[0] = _num_diags;
@@ -432,5 +436,56 @@ void Matrix::fillWithRandom() {
     for (long int col=0; col < _num_cells; col++) {
       _LIL[row][col] = static_cast <double> (rand()) / static_cast <double> (RAND_MAX);
     }
+  }
+}
+
+
+/**
+ * @brief Performs a matrix vector multiplication.
+ * @details This function takes in a Matrix (A), a variable Vector (X),
+ *          and a solution Vector (B) and computes the matrix vector product.
+ *          The solution Vector is modified in place.
+ * @param A a Matrix object
+ * @param X the variable Vector object
+ * @param B the solution Vector object
+ */
+void Matrix::scaleByValue(double val) {
+
+  std::map<long int, double>::iterator iter;
+  for (long int row=0; row < _num_cells; row++) {
+    for (iter = _LIL[row].begin(); iter != _LIL[row].end(); ++iter)
+      iter->second *= val;
+  }
+}
+
+
+void Matrix::add(Matrix* matrix) {
+
+  if (getNumCells() != matrix->getNumCells())
+    log_printf(ERROR, "Cannot add matrices with different sizes");
+
+  long int* IA = matrix->getIA();
+  long int* JA = matrix->getJA();
+  double* a = matrix->getA();
+
+  for (long int row = 0; row < size; row++) {
+    for (long int i = IA[row]; i < IA[row+1]; i++)
+      _LIL[row][JA[i]] += a[i];
+  }
+}
+
+
+void Matrix::subtract(Matrix* matrix) {
+
+  if (getNumCells() != matrix->getNumCells())
+    log_printf(ERROR, "Cannot add matrices with different sizes");
+
+  long int* IA = matrix->getIA();
+  long int* JA = matrix->getJA();
+  double* a = matrix->getA();
+
+  for (long int row = 0; row < size; row++) {
+    for (long int i = IA[row]; i < IA[row+1]; i++)
+      _LIL[row][JA[i]] -= a[i];
   }
 }

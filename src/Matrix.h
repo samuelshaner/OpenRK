@@ -56,7 +56,12 @@ public:
   void transpose();
   void diags(Array* array);
   void blockDiags(Array* array, int block_size);
+  void scaleByValue(double val);
   void fillWithRandom();
+  Matrix* multiply(Matrix* matrix, Matrix* result=NULL);
+  Matrix* divide(Matrix* matrix, Matrix* result=NULL);
+  Matrix* add(Matrix* matrix, Matrix* result=NULL);
+  Matrix* subtract(Matrix* matrix, Matrix* result=NULL);
 
   /* Getter functions */
   double getValue(long int col, long int row);

@@ -21,9 +21,9 @@
 
 double eigenvalueSolve(Matrix* A, Matrix* M, Array* X, double tol,
                              double SOR_factor=1.5);
-void linearSolve(Matrix* A, Matrix* M, Array* X, Array* B, double tol,
+Array* linearSolve(Matrix* A, Matrix* M, Array* B, Array* X=NULL, double tol=1.e-6,
                  double SOR_factor=1.5);
-void matrixMultiplication(Matrix* A, Array* X, Array* B);
+Array* matrixMultiplication(Matrix* A, Array* X, Array* B=NULL);
 double computeRMSE(Array* x, Array* y);
 void setNumThreads(int num_threads);
 

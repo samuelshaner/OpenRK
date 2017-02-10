@@ -50,15 +50,17 @@ public:
   Array* tile(int factor);
   Array* repeat(int factor);
   Array* sumAxis(int axis);
-  void multiply(Array* array, Array* result);
-  void divide(Array* array, Array* result);
-  void add(Array* array, Array* result);
-  void subtract(Array* array, Array* result);
+  Array* copy();
+  Array* multiply(Array* array, Array* result=NULL);
+  Array* divide(Array* array, Array* result=NULL);
+  Array* add(Array* array, Array* result=NULL);
+  Array* subtract(Array* array, Array* result=NULL);
   void incrementValue(long int index, double value);
   void reshape(long int* dimensions, int num_dimensions);
-  void flatten();
+  Array* flatten();
   void fillWithRandom();
   void outputValues(double* np_array, long int num_values);
+  double sum();
 
   /* Getter functions */
   double getValue(long int* dimensions, int num_dimensions);
@@ -66,7 +68,6 @@ public:
   int getNumDimensions();
   long int getShape(int dimension);
   long int getSize();
-  double getSum();
   long int getIndex(long int* dimensions, int num_dimensions);
   void getIndices(long int index, long int* indices);
 
