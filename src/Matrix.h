@@ -36,6 +36,7 @@ private:
   long int* _IA;
   long int* _JA;
   double* _DIAG;
+  long int _NNZ;
 
   int* _diags;
   int _num_diags;
@@ -58,10 +59,7 @@ public:
   void blockDiags(Array* array, int block_size);
   void scaleByValue(double val);
   void fillWithRandom();
-  Matrix* multiply(Matrix* matrix, Matrix* result=NULL);
-  Matrix* divide(Matrix* matrix, Matrix* result=NULL);
-  Matrix* add(Matrix* matrix, Matrix* result=NULL);
-  Matrix* subtract(Matrix* matrix, Matrix* result=NULL);
+  void generateDiag();
 
   /* Getter functions */
   double getValue(long int col, long int row);
@@ -75,6 +73,9 @@ public:
   /* Setter functions */
   void setValue(long int col, long int row, double value);
   void setDiags(int* diags, int num_diags);
+  void setA(double* values, long int num_values);
+  void setIA(double* values, long int num_values);
+  void setJA(double* values, long int num_values);
 };
 
 #endif /* MATRIX_H_ */

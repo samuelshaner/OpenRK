@@ -31,6 +31,7 @@ Matrix::Matrix(long int num_cells) {
   _modified = true;
   _diags = NULL;
   _num_diags = 0;
+  _NNZ = -1;
 }
 
 
@@ -137,7 +138,7 @@ void Matrix::clear() {
 void Matrix::convertToCSR() {
 
   /* Get number of nonzero values */
-  long int NNZ = getNNZ();
+  _NNZ = getNNZ();
 
   /* Deallocate memory for arrays if previously allocated */
   if (_A != NULL)
@@ -153,9 +154,9 @@ void Matrix::convertToCSR() {
     delete [] _DIAG;
 
   /* Allocate memory for arrays */
-  _A = new double[NNZ];
+  _A = new double[_NNZ];
   _IA = new long int[_num_cells+1];
-  _JA = new long int[NNZ];
+  _JA = new long int[_NNZ];
   _DIAG = new double[_num_cells];
   std::fill_n(_DIAG, _num_cells, 0.0);
 
@@ -177,7 +178,7 @@ void Matrix::convertToCSR() {
     }
   }
 
-  _IA[_num_cells] = NNZ;
+  _IA[_num_cells] = _NNZ;
 
   /* Reset flat indicating the CSR objects have the same values as the
    * LIL object */
@@ -192,13 +193,14 @@ void Matrix::convertToCSR() {
 void Matrix::printString() {
 
   /* Convert to CSR form */
-  convertToCSR();
+  if (_modified)
+    convertToCSR();
 
   std::stringstream string;
   string << std::setprecision(6);
   string << " Matrix Object " << std::endl;
   string << " Num cells: " << _num_cells << std::endl;
-  string << " NNZ      : " << getNNZ() << std::endl;
+  string << " NNZ      : " << _NNZ << std::endl;
 
   for (long int row=0; row < _num_cells; row++) {
     for (long int i = _IA[row]; i < _IA[row+1]; i++)
@@ -289,6 +291,76 @@ double* Matrix::getDiag() {
 
 
 /**
+ * @brief Get the A component of the CSR form of the matrix object.
+ * @return A pointer to the A component of the CSR form matrix object.
+ */
+void Matrix::setA(double* values, long int num_values) {
+  _modified = false;
+  _NNZ = num_values;
+
+  if (_A == NULL)
+    delete [] _A;
+
+  _A = new double[_NNZ];
+  std::copy(values, values + num_values, _A);
+}
+
+
+/**
+ * @brief Get the A component of the CSR form of the matrix object.
+ * @return A pointer to the A component of the CSR form matrix object.
+ */
+void Matrix::setIA(double* values, long int num_values) {
+  _modified = false;
+
+  if (_IA == NULL)
+    delete [] _IA;
+
+  if (num_values != _num_cells + 1)
+    log_printf(ERROR, "Cannot set IA since the length of the input array "
+               "is not equal to _num_cells + 1: (%d, %d)",
+               num_values, _num_cells + 1);
+
+  _IA = new long int[_num_cells+1];
+  std::copy(values, values + num_values, _IA);
+}
+
+
+/**
+ * @brief Get the A component of the CSR form of the matrix object.
+ * @return A pointer to the A component of the CSR form matrix object.
+ */
+void Matrix::setJA(double* values, long int num_values) {
+  _modified = false;
+  _NNZ = num_values;
+
+  if (_JA == NULL)
+    delete [] _JA;
+
+  _JA = new long int[_NNZ];
+  std::copy(values, values + num_values, _JA);
+}
+
+
+void Matrix::generateDiag() {
+
+  if (_DIAG == NULL)
+    delete [] _DIAG;
+
+  _DIAG = new double[_num_cells];
+  std::fill_n(_DIAG, _num_cells, 0.0);
+
+  /* Form arrays */
+  for (long int row = 0; row < _num_cells; row++) {
+    for (long int i = _IA[row]; i < _IA[row+1]; i++) {
+      if (row == _JA[i])
+        _DIAG[row] = _A[i];
+    }
+  }
+}
+
+
+/**
  * @brief Get the number of cells in the x dimension.
  * @return The number of cells in the x dimension.
  */
@@ -335,8 +407,10 @@ void Matrix::setNumCells(long int num_cells) {
  */
 void Matrix::transpose() {
 
+  if (_modified)
+    convertToCSR();
+
   Matrix temp(_num_cells);
-  convertToCSR();
   long int col;
   double val;
 
@@ -351,7 +425,6 @@ void Matrix::transpose() {
 
   /* Copy temp to current matrix */
   clear();
-  temp.convertToCSR();
   long int* IA = temp.getIA();
   long int* JA = temp.getJA();
   double* A = temp.getA();
@@ -378,7 +451,7 @@ void Matrix::setDiags(int* diags, int num_diags) {
 }
 
 
-Matrix* Matrix::diags(Array* array) {
+void Matrix::diags(Array* array) {
 
   long int shape[2];
   shape[0] = _num_diags;
@@ -458,37 +531,5 @@ void Matrix::scaleByValue(double val) {
   for (long int row=0; row < _num_cells; row++) {
     for (iter = _LIL[row].begin(); iter != _LIL[row].end(); ++iter)
       iter->second *= val;
-  }
-}
-
-
-void Matrix::add(Matrix* matrix) {
-
-  if (getNumCells() != matrix->getNumCells())
-    log_printf(ERROR, "Cannot add matrices with different sizes");
-
-  long int* IA = matrix->getIA();
-  long int* JA = matrix->getJA();
-  double* a = matrix->getA();
-
-  for (long int row = 0; row < size; row++) {
-    for (long int i = IA[row]; i < IA[row+1]; i++)
-      _LIL[row][JA[i]] += a[i];
-  }
-}
-
-
-void Matrix::subtract(Matrix* matrix) {
-
-  if (getNumCells() != matrix->getNumCells())
-    log_printf(ERROR, "Cannot add matrices with different sizes");
-
-  long int* IA = matrix->getIA();
-  long int* JA = matrix->getJA();
-  double* a = matrix->getA();
-
-  for (long int row = 0; row < size; row++) {
-    for (long int i = IA[row]; i < IA[row+1]; i++)
-      _LIL[row][JA[i]] -= a[i];
   }
 }

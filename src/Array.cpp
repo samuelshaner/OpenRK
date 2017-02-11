@@ -181,7 +181,7 @@ long int Array::getShape(int dimension) {
 Array* Array::multiply(Array* array, Array* result) {
 
   if (result == NULL)
-    result = new Array(dimensions, num_dimensions);
+    result = new Array(_dimensions, _num_dimensions);
 
   if (getSize() != array->getSize() ||
       getSize() != result->getSize())
@@ -200,7 +200,7 @@ Array* Array::multiply(Array* array, Array* result) {
 Array* Array::divide(Array* array, Array* result) {
 
   if (result == NULL)
-    result = new Array(dimensions, num_dimensions);
+    result = new Array(_dimensions, _num_dimensions);
 
   if (getSize() != array->getSize() ||
       getSize() != result->getSize())
@@ -223,7 +223,7 @@ Array* Array::divide(Array* array, Array* result) {
 Array* Array::add(Array* array, Array* result) {
 
   if (result == NULL)
-    result = new Array(dimensions, num_dimensions);
+    result = new Array(_dimensions, _num_dimensions);
 
   if (getSize() != array->getSize() ||
       getSize() != result->getSize())
@@ -242,7 +242,7 @@ Array* Array::add(Array* array, Array* result) {
 Array* Array::subtract(Array* array, Array* result) {
 
   if (result == NULL)
-    result = new Array(dimensions, num_dimensions);
+    result = new Array(_dimensions, _num_dimensions);
 
   if (getSize() != array->getSize() ||
       getSize() != result->getSize())
@@ -364,7 +364,7 @@ void Array::reverseAxis(int axis) {
 
   /* Sum over axis */
   long int indices[_num_dimensions];
-  long int new_indices[num_dimensions];
+  long int new_indices[_num_dimensions];
   long int new_index;
   for (long int i=0; i < getSize(); i++) {
     getIndices(i, indices);
@@ -373,12 +373,12 @@ void Array::reverseAxis(int axis) {
     new_indices[axis] = _dimensions[axis] - indices[axis] - 1;
 
     /* Set the new array values */
-    new_index = new_array->getIndex(new_indices, _num_dimensions);
-    new_array->setValue(new_index, _values[i]);
+    new_index = new_array.getIndex(new_indices, _num_dimensions);
+    new_array.setValue(new_index, _values[i]);
   }
 
   /* Copy reversed array to this array */
-  new_array->copyTo(this);
+  new_array.copyTo(this);
 }
 
 
@@ -415,7 +415,7 @@ Array* Array::tile(int factor) {
 Array* Array::copy() {
 
   /* Create a new Array object */
-  Array* new_array = new Array(dimensions, _num_dimensions);
+  Array* new_array = new Array(_dimensions, _num_dimensions);
   copyTo(new_array);
   return new_array;
 }
@@ -470,7 +470,7 @@ void Array::reshape(long int* dimensions, int num_dimensions) {
 }
 
 
-void Array::flatten() {
+Array* Array::flatten() {
 
   delete [] _dimensions;
   _num_dimensions = 1;

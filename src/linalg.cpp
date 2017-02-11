@@ -64,8 +64,8 @@ double eigenvalueSolve(Matrix* A, Matrix* M, Array* X, double tol,
     new_source->scaleByValue(size / new_source->sum());
     new_source->copyTo(old_source);
 
-    log_printf(INFO, "Matrix-Vector eigenvalue iter: %d, keff: %f, residual: "
-               "%f", iter, _k_eff, residual);
+    log_printf(NORMAL, "Eigen iter: %d, keff: %f, res: %f",
+               iter, _k_eff, residual);
 
     /* Check for convergence */
     if (residual < tol && iter > 10)
@@ -121,7 +121,7 @@ Array* linearSolve(Matrix* A, Matrix* M, Array* B, Array* X, double tol,
   long int dimensions[1];
   dimensions[0] = size;
   Array* X_old = new Array(dimensions, 1);
-  double* x_old = X_old.getValues();
+  double* x_old = X_old->getValues();
   long int* IA = A->getIA();
   long int* JA = A->getJA();
   double* DIAG = A->getDiag();
@@ -181,6 +181,8 @@ Array* linearSolve(Matrix* A, Matrix* M, Array* B, Array* X, double tol,
   delete X_old;
 
   log_printf(INFO, "linear solve iterations: %d", iter);
+
+  return X;
 }
 
 
@@ -256,7 +258,7 @@ double computeRMSE(Array* X, Array* Y) {
       residual.setValue(i, pow((x_values[i] - y_values[i]) / x_values[i], 2));
   }
 
-  rmse = sqrt(residual.getSum() / size);
+  rmse = sqrt(residual.sum() / size);
 
   return rmse;
 }
@@ -265,5 +267,3 @@ double computeRMSE(Array* X, Array* Y) {
 void setNumThreads(int num_threads) {
   omp_set_num_threads(num_threads);
 }
-
-
